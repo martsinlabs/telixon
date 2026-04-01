@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "paths": {
-      "@telixon/core": ["packages/core/src/index.ts"]
+      "@telixon/core/*": ["packages/core/src/*"]
     }
   }
 }
