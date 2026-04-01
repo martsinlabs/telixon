@@ -7,7 +7,16 @@
   "sideEffects": false,
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup && pnpm run copy:engine",
+    "copy:engine": "cpy \"src/engine/**/*\" dist/engine"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "node": "./index.node.js",
+      "browser": "./index.browser.js",
+      "default": "./index.node.js"
+    }
   },
   "keywords": [],
   "license": "MIT",
