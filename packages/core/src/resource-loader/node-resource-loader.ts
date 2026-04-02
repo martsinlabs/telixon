@@ -9,8 +9,13 @@ const __dirname = dirname(__filename);
 export class NodeResourceLoader implements ResourceLoader {
   private basePath = join(__dirname, "..");
 
-  async load<T>(path: string): Promise<T> {
+  async load(path: string): Promise<ArrayBuffer> {
     const fullPath: string = join(this.basePath, path);
-    return readFile(fullPath, "utf-8") as Promise<T>;
+    const buffer: Buffer = await readFile(fullPath);
+
+    return buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    );
   }
 }
