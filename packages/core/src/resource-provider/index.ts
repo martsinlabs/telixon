@@ -1,1 +1,1 @@
-export { getResourceProvider } from "./resource-provider";
+export { getResourceProvider } from './resource-provider';

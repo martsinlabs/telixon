@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -14,8 +13,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "ignoreDeprecations": "6.0",
     "paths": {
-      "@telixon/core/*": ["packages/core/src/*"]
+      "@telixon/core/*": ["./packages/core/src/*"]
     }
   }
 }

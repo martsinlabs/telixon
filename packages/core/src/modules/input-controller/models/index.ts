@@ -10,24 +10,11 @@ export interface InputControllerState extends InputState {
 }
 
 export abstract class InputController {
-  abstract insert(
-    value: string,
-    text: string,
-    selectionStart: number,
-    selectionEnd: number
-  ): InputState;
+  abstract insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState;
 
-  abstract deleteBackward(
-    value: string,
-    selectionStart: number,
-    selectionEnd: number
-  ): InputState;
+  abstract deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
 
-  abstract deleteForward(
-    value: string,
-    selectionStart: number,
-    selectionEnd: number
-  ): InputState;
+  abstract deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
 
   abstract setValue(value: string): InputState;
 

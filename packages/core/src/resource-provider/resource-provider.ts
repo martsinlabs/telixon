@@ -1,26 +1,26 @@
-import { ResourceLoader } from "../resource-loader/models";
-import { getResourceLoader } from "../resource-loader/resource-loader.config";
 import {
-  ReferenceMapping,
-  FormatsTable,
-  TerritorySpecTable,
-  GraphLayer,
   CallingCodeLayer,
   CountryScopeLayer,
-  NumberTypeScopeLayer,
+  FormatsTable,
+  GraphLayer,
   NumberTypeProfileLayer,
-} from "../engine";
+  NumberTypeScopeLayer,
+  ReferenceMapping,
+  TerritorySpecTable,
+} from '../engine';
+import { ResourceLoader } from '../resource-loader/models';
+import { getResourceLoader } from '../resource-loader/resource-loader.config';
+import { ResourceProvider } from './models';
 import {
-  resolveRefMapping,
-  resolveFormatsTable,
-  resolveTerritorySpecTable,
-  resolveGraphLayer,
   resolveCallingCodeLayer,
   resolveCountryScopeLayer,
-  resolveNumberTypeScopeLayer,
+  resolveFormatsTable,
+  resolveGraphLayer,
   resolveNumberTypeProfileLayer,
-} from "./resource-resolver";
-import { ResourceProvider } from "./models";
+  resolveNumberTypeScopeLayer,
+  resolveRefMapping,
+  resolveTerritorySpecTable,
+} from './resource-resolver';
 
 class DefaultResourceProvider extends ResourceProvider {
   private ready = false;

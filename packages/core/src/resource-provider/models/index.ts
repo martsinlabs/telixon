@@ -1,13 +1,13 @@
 import {
-  ReferenceMapping,
-  FormatsTable,
-  TerritorySpecTable,
-  GraphLayer,
   CallingCodeLayer,
   CountryScopeLayer,
-  NumberTypeScopeLayer,
+  FormatsTable,
+  GraphLayer,
   NumberTypeProfileLayer,
-} from "@telixon/core/engine";
+  NumberTypeScopeLayer,
+  ReferenceMapping,
+  TerritorySpecTable,
+} from '@telixon/core/engine';
 
 export abstract class ResourceProvider {
   abstract refMapping: ReferenceMapping;

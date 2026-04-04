@@ -1,4 +1,4 @@
-import { ResourceLoader } from "./models";
+import { ResourceLoader } from './models';
 
 let currentLoader: ResourceLoader | undefined;
 
@@ -8,7 +8,7 @@ export function setResourceLoader(loader: ResourceLoader) {
 
 export function getResourceLoader(): ResourceLoader {
   if (!currentLoader) {
-    throw new Error("ResourceLoader is not configured");
+    throw new Error('ResourceLoader is not configured');
   }
 
   return currentLoader;

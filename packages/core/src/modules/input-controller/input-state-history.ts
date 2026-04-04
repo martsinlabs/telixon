@@ -1,8 +1,6 @@
-import { InputControllerState } from "./models";
+import { InputControllerState } from './models';
 
-export class InputStateHistory<
-  State extends InputControllerState = InputControllerState
-> {
+export class InputStateHistory<State extends InputControllerState = InputControllerState> {
   private stack!: State[];
   private index!: number;
 

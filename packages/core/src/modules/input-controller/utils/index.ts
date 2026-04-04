@@ -1,4 +1,4 @@
-import { InputControllerState, InputState } from "../models";
+import { InputControllerState, InputState } from '../models';
 
 export const toInputState = (state: InputControllerState): InputState => {
   return {

@@ -2,14 +2,11 @@
   "name": "@telixon/core",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "type": "module",
-  "sideEffects": false,
+  "keywords": [],
+  "license": "MIT",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "scripts": {
-    "build": "tsup && pnpm run copy:engine",
-    "copy:engine": "cpy \"src/engine/**/*\" dist/engine"
-  },
+  "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": {
       "types": "./index.d.ts",
@@ -18,7 +15,10 @@
       "default": "./index.node.js"
     }
   },
-  "keywords": [],
-  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsup && pnpm run copy:engine",
+    "copy:engine": "cpy \"src/engine/**/*\" dist/engine"
+  },
   "packageManager": "pnpm@10.16.1"
 }

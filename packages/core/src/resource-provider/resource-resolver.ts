@@ -13,8 +13,8 @@ import {
   parseNumberTypeScopeBinary,
   ReferenceMapping,
   TerritorySpecTable,
-} from "../engine";
-import { ResourceLoader } from "../resource-loader/models";
+} from '../engine';
+import { ResourceLoader } from '../resource-loader/models';
 
 const FORMATS_PATH: string = `${ENGINE_LAYOUT.ROOT}/${ENGINE_LAYOUT.METADATA.FOLDER}/${ENGINE_LAYOUT.METADATA.FILES.FORMATS}`;
 const REF_MAPPING_PATH: string = `${ENGINE_LAYOUT.ROOT}/${ENGINE_LAYOUT.METADATA.FOLDER}/${ENGINE_LAYOUT.METADATA.FILES.REFERENCE_MAPPING}`;
@@ -30,58 +30,42 @@ function parseJson<T>(buffer: ArrayBuffer): T {
   return JSON.parse(text);
 }
 
-export async function resolveRefMapping(
-  loader: ResourceLoader
-): Promise<ReferenceMapping> {
+export async function resolveRefMapping(loader: ResourceLoader): Promise<ReferenceMapping> {
   const buffer: ArrayBuffer = await loader.load(REF_MAPPING_PATH);
   return parseJson(buffer);
 }
 
-export async function resolveFormatsTable(
-  loader: ResourceLoader
-): Promise<FormatsTable> {
+export async function resolveFormatsTable(loader: ResourceLoader): Promise<FormatsTable> {
   const buffer: ArrayBuffer = await loader.load(FORMATS_PATH);
   return parseJson(buffer);
 }
 
-export async function resolveTerritorySpecTable(
-  loader: ResourceLoader
-): Promise<TerritorySpecTable> {
+export async function resolveTerritorySpecTable(loader: ResourceLoader): Promise<TerritorySpecTable> {
   const buffer: ArrayBuffer = await loader.load(TERRITORIES_PATH);
   return parseJson(buffer);
 }
 
-export async function resolveGraphLayer(
-  loader: ResourceLoader
-): Promise<GraphLayer> {
+export async function resolveGraphLayer(loader: ResourceLoader): Promise<GraphLayer> {
   const buffer: ArrayBuffer = await loader.load(GRAPH_PATH);
   return parseGraphBinary(buffer);
 }
 
-export async function resolveCallingCodeLayer(
-  loader: ResourceLoader
-): Promise<CallingCodeLayer> {
+export async function resolveCallingCodeLayer(loader: ResourceLoader): Promise<CallingCodeLayer> {
   const buffer: ArrayBuffer = await loader.load(CALLING_CODES_PATH);
   return parseCallingCodeBinary(buffer);
 }
 
-export async function resolveCountryScopeLayer(
-  loader: ResourceLoader
-): Promise<CountryScopeLayer> {
+export async function resolveCountryScopeLayer(loader: ResourceLoader): Promise<CountryScopeLayer> {
   const buffer: ArrayBuffer = await loader.load(COUNTRY_SCOPE_PATH);
   return parseCountryScopeBinary(buffer);
 }
 
-export async function resolveNumberTypeScopeLayer(
-  loader: ResourceLoader
-): Promise<NumberTypeScopeLayer> {
+export async function resolveNumberTypeScopeLayer(loader: ResourceLoader): Promise<NumberTypeScopeLayer> {
   const buffer: ArrayBuffer = await loader.load(NUMBER_TYPE_SCOPE_PATH);
   return parseNumberTypeScopeBinary(buffer);
 }
 
-export async function resolveNumberTypeProfileLayer(
-  loader: ResourceLoader
-): Promise<NumberTypeProfileLayer> {
+export async function resolveNumberTypeProfileLayer(loader: ResourceLoader): Promise<NumberTypeProfileLayer> {
   const buffer: ArrayBuffer = await loader.load(NUMBER_TYPE_PROFILE_PATH);
   return parseNumberTypeProfileBinary(buffer);
 }
