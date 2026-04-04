@@ -1,5 +1,6 @@
 export interface InputState {
   value: string;
+  country: string | null;
   selectionStart: number;
   selectionEnd: number;
 }
@@ -10,28 +11,31 @@ export interface InputControllerState extends InputState {
 
 export abstract class InputController {
   abstract insert(
+    value: string,
     text: string,
     selectionStart: number,
     selectionEnd: number
   ): InputState;
 
   abstract deleteBackward(
+    value: string,
     selectionStart: number,
     selectionEnd: number
   ): InputState;
 
   abstract deleteForward(
+    value: string,
     selectionStart: number,
     selectionEnd: number
   ): InputState;
 
-  abstract replaceAll(
-    text: string,
-    selectionStart: number,
-    selectionEnd: number
-  ): InputState;
+  abstract setValue(value: string): InputState;
 
-  abstract undo(): InputState | undefined;
+  abstract setCountry(country: string): InputState;
 
-  abstract redo(): InputState | undefined;
+  abstract undo(): InputState;
+
+  abstract redo(): InputState;
+
+  abstract get currentState(): InputState;
 }

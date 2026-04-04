@@ -3,29 +3,42 @@ import { InputControllerState } from "./models";
 export class InputStateHistory<
   State extends InputControllerState = InputControllerState
 > {
-  private stack: State[] = [];
-  private index = -1;
+  private stack!: State[];
+  private index!: number;
 
-  push(state: State) {
-    this.stack.length = this.index + 1;
+  constructor(initialState: State) {
+    this.stack = [initialState];
+    this.index = 0;
+  }
+
+  push(state: State): void {
+    if (this.index < this.stack.length - 1) {
+      this.stack.length = this.index + 1;
+    }
 
     this.stack.push(state);
     this.index++;
   }
 
-  undo(): State | undefined {
-    if (this.index <= 0) return;
+  undo(): State {
+    if (this.index === 0) {
+      return this.stack[0]!;
+    }
 
-    return this.stack[--this.index];
+    this.index--;
+    return this.stack[this.index]!;
   }
 
-  redo(): State | undefined {
-    if (this.index >= this.stack.length - 1) return;
+  redo(): State {
+    if (this.index >= this.stack.length - 1) {
+      return this.stack[this.index]!;
+    }
 
-    return this.stack[++this.index];
+    this.index++;
+    return this.stack[this.index]!;
   }
 
-  get current(): State | undefined {
-    return this.stack[this.index];
+  get current(): State {
+    return this.stack[this.index]!;
   }
 }
