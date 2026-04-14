@@ -24,6 +24,7 @@ export declare interface CountryScopeLayer {
     stateOffset: Uint32Array;
     stateLength: Uint8Array;
     countryPool: Uint8Array;
+    countryHasTerminal: Uint8Array;
 }
 
 /**
@@ -73,6 +74,12 @@ export declare function forEachLength(mask: number, callback: (length: number) =
  * Iterates over all countries assigned to a state.
  */
 export declare function forEachStateCountry(scope: CountryScopeLayer, stateId: number, callback: (stateCountryIndex: number, countryIndex: number) => void): void;
+
+/**
+ * @public
+ * Iterates over countries of a state that have a terminal prefix.
+ */
+export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScopeLayer, stateId: number, callback: (stateCountryIndex: number, countryIndex: number) => void): void;
 
 /**
  * @public
@@ -143,12 +150,26 @@ export declare function getStateCountries(scope: CountryScopeLayer, stateId: num
 
 /**
  * @public
+ * Returns country indices of a state that have a terminal prefix.
+ */
+export declare function getStateCountriesWithTerminalPrefix(scope: CountryScopeLayer, stateId: number): number[];
+
+/**
+ * @public
+ * Returns terminal-prefix number type mask
+ * for the given state-country index.
+ */
+export declare function getTerminalPrefixNumberTypeMask(scope: NumberTypeScopeLayer, stateCountryIndex: number): number;
+
+/**
+ * @public
  * Graph layer structure.
  */
 export declare interface GraphLayer {
     stateTransitionIndex: Uint32Array;
     transitionTable: Uint32Array;
     deadStateId: number;
+    stateHasTerminal: Uint8Array;
 }
 
 /**
@@ -156,6 +177,12 @@ export declare interface GraphLayer {
  * Checks if country exists in calling code state.
  */
 export declare function hasCountryInCallingCodeState(layer: CallingCodeLayer, stateId: number, countryIndex: number): boolean;
+
+/**
+ * @public
+ * Checks whether the given state has a terminal prefix.
+ */
+export declare function hasTerminalPrefix(graph: GraphLayer, state: number): boolean;
 
 /**
  * @public
@@ -198,6 +225,7 @@ export declare interface NumberTypeProfileLayer {
  */
 export declare interface NumberTypeScopeLayer {
     numberTypeMask: Uint16Array;
+    terminalTypeMask: Uint16Array;
 }
 
 /**
