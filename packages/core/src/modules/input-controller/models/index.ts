@@ -26,12 +26,7 @@ export interface InputResolveContext {
   };
 }
 
-export interface InputSnapshot {
-  graphState: number;
-  callingCode: string;
-  nationalNumber: string;
-  caretPosition: number;
-}
+export type CaretIndex = number;
 
 export abstract class InputController {
   abstract insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState;
