@@ -5,8 +5,11 @@ import {
   hasTerminalPrefix,
   isCallingCodeState,
 } from '@telixon/core/engine';
+import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
+import { stateMatchesFilters } from './utils/state-matches-filters';
+import { terminalStateMatchesFilters } from './utils/terminal-state-matches-filters';
 
 export class NumberResolver {
   private readonly resourceProvider: ResourceProvider = getResourceProvider();
@@ -23,8 +26,19 @@ export class NumberResolver {
 
   private _nationalDigits: number[] = [];
 
+  private _countryFilter: BinaryFilter | null = null;
+
+  private _numberTypeFilter: BinaryFilter | null = null;
+
   advance(digit: number): void {
     this._state = getNextGraphState(this.graphLayer, this._state, digit);
+
+    if (
+      this._state !== this.graphLayer.deadStateId &&
+      !stateMatchesFilters(this._state, this._countryFilter, this._numberTypeFilter)
+    ) {
+      this._state = this.graphLayer.deadStateId;
+    }
 
     if (isCallingCodeState(this.callingCodeLayer, this._state)) {
       this._callingCodeDigits.push(digit);
@@ -32,7 +46,9 @@ export class NumberResolver {
       this._nationalDigits.push(digit);
     }
 
-    if (hasTerminalPrefix(this.graphLayer, this._state)) {
+    const isTerminal: boolean = hasTerminalPrefix(this.graphLayer, this._state);
+
+    if (isTerminal && terminalStateMatchesFilters(this._state, this._countryFilter, this._numberTypeFilter)) {
       this._lastTerminalState = this._state;
     }
   }
@@ -58,6 +74,14 @@ export class NumberResolver {
 
   getNationalNumber(): string {
     return this._nationalDigits.join('');
+  }
+
+  setCountryFilter(filter: BinaryFilter | null): void {
+    this._countryFilter = filter;
+  }
+
+  setNumberTypeFilter(filter: BinaryFilter | null): void {
+    this._numberTypeFilter = filter;
   }
 
   get state(): number {

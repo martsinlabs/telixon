@@ -1,15 +1,15 @@
-import { NumberResolver } from '../../number-resolver';
+
 import { CaretIndex, InputChange } from '../models';
 
 /**
- * Replays all digits of the resulting input through the resolver.
+ * Extracts digits from the resulting input and invokes callback for each digit in order.
  *
  * @param value Raw input value.
  * @param change Input change description.
- * @param resolver Prepared NumberResolver (will be mutated).
+ * @param onDigit Callback invoked for each extracted digit (digit, digitIndex).
  * @returns Caret index relative to the extracted digit sequence.
  */
-export function resolveInput(value: string, change: InputChange, resolver: NumberResolver): CaretIndex {
+export function resolveInput(value: string, change: InputChange, onDigit: (digit: number, digitIndex: number) => void): CaretIndex {
   const valueLength: number = value.length;
   const selectionStart: number = Math.max(0, Math.min(change.selectionStart, valueLength));
   const selectionEnd: number = Math.max(selectionStart, Math.min(change.selectionEnd, valueLength));
@@ -23,9 +23,10 @@ export function resolveInput(value: string, change: InputChange, resolver: Numbe
 
     if (digit < 0 || digit > 9) continue;
 
+    onDigit(digit, digitIndex);
+
     digitIndex++;
 
-    resolver.advance(digit);
   }
 
   // ---- INSERT ----
@@ -34,9 +35,9 @@ export function resolveInput(value: string, change: InputChange, resolver: Numbe
 
     if (digit < 0 || digit > 9) continue;
 
-    digitIndex++;
+    onDigit(digit, digitIndex);
 
-    resolver.advance(digit);
+    digitIndex++;
   }
 
   const caretIndex: number = digitIndex;
@@ -47,9 +48,9 @@ export function resolveInput(value: string, change: InputChange, resolver: Numbe
 
     if (digit < 0 || digit > 9) continue;
 
-    digitIndex++;
+    onDigit(digit, digitIndex);
 
-    resolver.advance(digit);
+    digitIndex++;
   }
 
   return caretIndex;

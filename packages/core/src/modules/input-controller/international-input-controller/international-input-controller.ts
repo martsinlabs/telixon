@@ -1,8 +1,11 @@
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
+import { NumberResolver } from '../../number-resolver';
 import { InputStateHistory } from '../input-state-history';
 import { InputController, InputControllerState, InputState } from '../models';
 import { toInputState } from '../utils';
+import { resolveInput } from '../utils/resolve-input';
+import { CaretIndex } from './../models/index';
 import { InternationalInputControllerConfig } from './models';
 
 function createInitialState(country: string | null = null): InputControllerState {
@@ -20,6 +23,8 @@ function createInitialState(country: string | null = null): InputControllerState
 class InternationalInputController extends InputController {
   #history!: InputStateHistory<InputControllerState>;
 
+  #numberResolver: NumberResolver = new NumberResolver();
+
   constructor(private config: InternationalInputControllerConfig = {}) {
     super();
 
@@ -29,12 +34,34 @@ class InternationalInputController extends InputController {
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
-    console.log('insert', { value, text, selectionStart, selectionEnd });
+    const numberResolver: NumberResolver = this.#numberResolver;
+
+    numberResolver.reset();
+
+    const caretIndex: CaretIndex = resolveInput(
+      value,
+      { insertText: text, selectionStart, selectionEnd },
+      (digit: number) => numberResolver.advance(digit),
+    );
+
+    console.log(caretIndex, numberResolver.getCallingCode(), numberResolver.getNationalNumber());
+
     return this.#history.current!;
   }
 
   deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState {
-    console.log('deleteBackward', { value, selectionStart, selectionEnd });
+    const numberResolver: NumberResolver = this.#numberResolver;
+
+    numberResolver.reset();
+
+    const caretIndex: CaretIndex = resolveInput(
+      value,
+      { insertText: '', selectionStart, selectionEnd },
+      (digit: number) => numberResolver.advance(digit),
+    );
+
+    console.log(caretIndex, numberResolver.getCallingCode(), numberResolver.getNationalNumber());
+
     return this.#history.current!;
   }
 

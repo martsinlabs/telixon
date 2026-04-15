@@ -59,27 +59,40 @@ export declare const ENGINE_LAYOUT: {
 
 /**
  * @public
+ * Iterates over all country indices associated with a calling code state.
+ * Stops iteration if the callback returns true.
+ */
+export declare function forEachCountryInCallingCodeState(layer: CallingCodeLayer, state: number, callback: (countryIndex: number) => StopIteration): void;
+
+/**
+ * @public
  * Iterates over all set format bit indices in ascending order.
  */
-export declare function forEachFormatIndex(mask: number, callback: (index: number) => void): void;
+export declare function forEachFormatIndex(mask: number, callback: (index: number) => StopIteration): void;
 
 /**
  * @public
  * Iterates over all set length values encoded in the bitmask.
  */
-export declare function forEachLength(mask: number, callback: (length: number) => void): void;
+export declare function forEachLength(mask: number, callback: (length: number) => StopIteration): void;
+
+/**
+ * @public
+ * Iterates over number type indices encoded in the mask.
+ */
+export declare function forEachNumberTypeIndex(mask: number, callback: (typeIndex: number) => StopIteration): void;
 
 /**
  * @public
  * Iterates over all countries assigned to a state.
  */
-export declare function forEachStateCountry(scope: CountryScopeLayer, stateId: number, callback: (stateCountryIndex: number, countryIndex: number) => void): void;
+export declare function forEachStateCountry(scope: CountryScopeLayer, state: number, callback: (stateCountryIndex: number, countryIndex: number) => StopIteration): void;
 
 /**
  * @public
  * Iterates over countries of a state that have a terminal prefix.
  */
-export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScopeLayer, stateId: number, callback: (stateCountryIndex: number, countryIndex: number) => void): void;
+export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScopeLayer, state: number, callback: (stateCountryIndex: number, countryIndex: number) => StopIteration): void;
 
 /**
  * @public
@@ -91,13 +104,13 @@ export declare type FormatsTable = PhoneNumberFormatList[];
  * @public
  * Get primary country for calling code state.
  */
-export declare function getCallingCodePrimaryCountry(layer: CallingCodeLayer, stateId: number): number;
+export declare function getCallingCodePrimaryCountry(layer: CallingCodeLayer, state: number): number;
 
 /**
  * @public
  * Returns all countries for a calling code state.
  */
-export declare function getCallingCodeStateCountries(layer: CallingCodeLayer, stateId: number): Uint8Array;
+export declare function getCallingCodeStateCountries(layer: CallingCodeLayer, state: number): Uint8Array;
 
 /**
  * @public
@@ -146,13 +159,13 @@ export declare function getNumberTypeProfileId(profile: NumberTypeProfileLayer, 
  * @public
  * Returns a view over country indices assigned to a state.
  */
-export declare function getStateCountries(scope: CountryScopeLayer, stateId: number): Uint8Array;
+export declare function getStateCountries(scope: CountryScopeLayer, state: number): Uint8Array;
 
 /**
  * @public
  * Returns country indices of a state that have a terminal prefix.
  */
-export declare function getStateCountriesWithTerminalPrefix(scope: CountryScopeLayer, stateId: number): number[];
+export declare function getStateCountriesWithTerminalPrefix(scope: CountryScopeLayer, state: number): number[];
 
 /**
  * @public
@@ -176,7 +189,7 @@ export declare interface GraphLayer {
  * @public
  * Checks if country exists in calling code state.
  */
-export declare function hasCountryInCallingCodeState(layer: CallingCodeLayer, stateId: number, countryIndex: number): boolean;
+export declare function hasCountryInCallingCodeState(layer: CallingCodeLayer, state: number, countryIndex: number): boolean;
 
 /**
  * @public
@@ -188,19 +201,19 @@ export declare function hasTerminalPrefix(graph: GraphLayer, state: number): boo
  * @public
  * Is state part of a calling code.
  */
-export declare function isCallingCodeState(layer: CallingCodeLayer, stateId: number): boolean;
+export declare function isCallingCodeState(layer: CallingCodeLayer, state: number): boolean;
 
 /**
  * @public
  * Checks if state is terminal for calling code (only national digits follow).
  */
-export declare function isCallingCodeStateTerminal(layer: CallingCodeLayer, stateId: number): boolean;
+export declare function isCallingCodeStateTerminal(layer: CallingCodeLayer, state: number): boolean;
 
 /**
  * @public
  * Checks if state is the end of a valid calling code.
  */
-export declare function isCallingCodeStateValid(layer: CallingCodeLayer, stateId: number): boolean;
+export declare function isCallingCodeStateValid(layer: CallingCodeLayer, state: number): boolean;
 
 /**
  * @public
@@ -328,6 +341,15 @@ export declare type ReferenceMapping = {
     ignoredDigitPlaceholder: string;
     nationalPrefixPlaceholder: string;
 };
+
+/**
+ * @public
+ * Signals whether iteration should stop.
+ *
+ * true → stop iteration
+ * void → continue iteration
+ */
+export declare type StopIteration = true | void;
 
 /**
  * @public
