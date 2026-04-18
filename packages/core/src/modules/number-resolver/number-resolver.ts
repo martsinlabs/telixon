@@ -8,6 +8,7 @@ import {
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
+import { NumberResolverSnapshot } from './models';
 import { stateMatchesFilters } from './utils/state-matches-filters';
 import { terminalStateMatchesFilters } from './utils/terminal-state-matches-filters';
 
@@ -90,5 +91,16 @@ export class NumberResolver {
 
   get lastTerminalState(): number {
     return this._lastTerminalState;
+  }
+
+  get snapshot(): NumberResolverSnapshot {
+    return {
+      state: this._state,
+      lastTerminalState: this._lastTerminalState,
+      callingCodeDigits: this.getCallingCode(),
+      nationalDigits: this.getNationalNumber(),
+      countryFilter: this._countryFilter,
+      numberTypeFilter: this._numberTypeFilter,
+    };
   }
 }

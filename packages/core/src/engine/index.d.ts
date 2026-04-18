@@ -96,6 +96,15 @@ export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScop
 
 /**
  * @public
+ * Formats a phone number according to the provided formatting context.
+ */
+export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number): {
+    formatted: string;
+    caretIndex: number;
+};
+
+/**
+ * @public
  * Table of phone number formats.
  */
 export declare type FormatsTable = PhoneNumberFormatList[];
@@ -111,6 +120,12 @@ export declare function getCallingCodePrimaryCountry(layer: CallingCodeLayer, st
  * Returns all countries for a calling code state.
  */
 export declare function getCallingCodeStateCountries(layer: CallingCodeLayer, state: number): Uint8Array;
+
+/**
+ * @public
+ * Returns the country index for a given stateCountryIndex.
+ */
+export declare function getCountryIndex(scope: CountryScopeLayer, stateCountryIndex: number): number;
 
 /**
  * @public
@@ -217,6 +232,15 @@ export declare function isCallingCodeStateValid(layer: CallingCodeLayer, state: 
 
 /**
  * @public
+ * Normalizes national digits and remaps the caret position accordingly.
+ */
+export declare function normalizeNationalNumber(digits: string, territory: TerritorySpec, caretIndex?: number): {
+    normalizedDigits: string;
+    caretIndex: number;
+};
+
+/**
+ * @public
  * Number type index.
  */
 export declare type NumberTypeIndex = number;
@@ -292,6 +316,19 @@ export declare interface PhoneNumberFormat {
  * List of phone number formats.
  */
 export declare type PhoneNumberFormatList = readonly PhoneNumberFormat[];
+
+/**
+ * @public
+ * Phone number formatting context.
+ */
+export declare interface PhoneNumberFormattingContext {
+    mask: string;
+    nationalNumber: string;
+    digitPlaceholder: string;
+    nationalPrefixPlaceholder: string;
+    ignoredDigitPlaceholder: string;
+    nationalPrefix?: string;
+}
 
 /**
  * @public

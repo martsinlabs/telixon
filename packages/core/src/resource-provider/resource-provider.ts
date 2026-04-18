@@ -88,9 +88,9 @@ class DefaultResourceProvider extends ResourceProvider {
 let instance: ResourceProvider | null = null;
 
 export function getResourceProvider(): ResourceProvider {
-  if (!instance) {
-    instance = new DefaultResourceProvider();
-  }
+  if (instance) return instance;
+
+  instance = new DefaultResourceProvider();
 
   return instance;
 }
