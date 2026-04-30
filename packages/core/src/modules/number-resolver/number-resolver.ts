@@ -21,7 +21,7 @@ export class NumberResolver {
 
   private _state: number = 0;
 
-  private _lastTerminalState: number = this.graphLayer.deadStateId;
+  private _terminalStates: number[] = [];
 
   private _callingCodeDigits: number[] = [];
 
@@ -50,7 +50,7 @@ export class NumberResolver {
     const isTerminal: boolean = hasTerminalPrefix(this.graphLayer, this._state);
 
     if (isTerminal && terminalStateMatchesFilters(this._state, this._countryFilter, this._numberTypeFilter)) {
-      this._lastTerminalState = this._state;
+      this._terminalStates.push(this._state);
     }
   }
 
@@ -64,7 +64,7 @@ export class NumberResolver {
 
   reset(): void {
     this._state = 0;
-    this._lastTerminalState = this.graphLayer.deadStateId;
+    this._terminalStates.length = 0;
     this._callingCodeDigits.length = 0;
     this._nationalDigits.length = 0;
   }
@@ -89,14 +89,14 @@ export class NumberResolver {
     return this._state;
   }
 
-  get lastTerminalState(): number {
-    return this._lastTerminalState;
+  get terminalStates(): readonly number[] {
+    return this._terminalStates;
   }
 
   get snapshot(): NumberResolverSnapshot {
     return {
       state: this._state,
-      lastTerminalState: this._lastTerminalState,
+      terminalStates: this._terminalStates,
       callingCodeDigits: this.getCallingCode(),
       nationalDigits: this.getNationalNumber(),
       countryFilter: this._countryFilter,

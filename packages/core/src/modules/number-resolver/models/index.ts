@@ -2,16 +2,19 @@ import { BinaryFilter } from '@telixon/core/models';
 
 export interface NumberResolverSnapshot {
   readonly state: number;
-  readonly lastTerminalState: number;
+  readonly terminalStates: number[];
   readonly callingCodeDigits: string;
   readonly nationalDigits: string;
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
 }
 
-export interface NumberFormatRef {
+export interface NumberTypeProfileRef {
   stateCountryIndex: number;
   numberTypeIndex: number;
   numberTypeProfileId: number;
+}
+
+export interface NumberFormatRef extends NumberTypeProfileRef {
   formatIndex: number;
 }

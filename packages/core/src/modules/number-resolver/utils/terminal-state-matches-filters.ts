@@ -6,6 +6,7 @@ import {
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
+import { isNumberTypeAllowed } from './is-number-type-allowed';
 
 export function terminalStateMatchesFilters(
   terminalState: number,
@@ -27,9 +28,9 @@ export function terminalStateMatchesFilters(
       const mask: number = getTerminalPrefixNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
 
       forEachNumberTypeIndex(mask, (numberTypeIndex: number) => {
-        if (!numberTypeFilter || numberTypeFilter[numberTypeIndex]) {
+        if (!numberTypeFilter || isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) {
           foundMatch = true;
-          return true; // stop inner
+          return true;
         }
       });
 
