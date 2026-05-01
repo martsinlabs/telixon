@@ -1,9 +1,10 @@
 import {
-  forEachLength,
+  containsLength,
   forEachNumberTypeIndex,
   forEachStateCountry,
   forEachStateCountryWithTerminalPrefix,
   getLengthMask,
+  getMaxLength,
   getNumberTypeMask,
   getNumberTypeProfileId,
   getTerminalPrefixNumberTypeMask,
@@ -11,8 +12,12 @@ import {
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
-import { NumberTypeProfileRef, NumberResolverSnapshot } from './models';
+import { NumberResolverSnapshot, NumberTypeProfileRef } from './models';
 import { isNumberTypeAllowed } from './utils/is-number-type-allowed';
+
+function isCountryExcluded(snapshot: NumberResolverSnapshot, countryIndex: number): boolean {
+  return snapshot.countryFilter != null && snapshot.countryFilter[countryIndex] === 0;
+}
 
 function resolveNumberTypeProfileForCountry(
   snapshot: NumberResolverSnapshot,
@@ -21,21 +26,24 @@ function resolveNumberTypeProfileForCountry(
   getMask: (layer: NumberTypeScopeLayer, stateCountryIndex: number) => number,
 ): NumberTypeProfileRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
-
-  const numberTypeMask: number = getMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const numberTypeMask = getMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const digitsLength = snapshot.nationalDigits.length;
 
   let resolvedProfile: NumberTypeProfileRef | null = null;
 
-  forEachNumberTypeIndex(numberTypeMask, (numberTypeIndex: number) => {
+  forEachNumberTypeIndex(numberTypeMask, (numberTypeIndex) => {
     if (snapshot.numberTypeFilter && !isNumberTypeAllowed(snapshot.numberTypeFilter, countryIndex, numberTypeIndex))
       return;
 
-    const numberTypeProfileId: number = getNumberTypeProfileId(
+    const numberTypeProfileId = getNumberTypeProfileId(
       resourceProvider.numberTypeProfileLayer,
       stateCountryIndex,
       numberTypeMask,
       numberTypeIndex,
     );
+
+    if (digitsLength > getMaxLength(getLengthMask(resourceProvider.numberTypeProfileLayer, numberTypeProfileId)))
+      return;
 
     resolvedProfile = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
 
@@ -51,38 +59,24 @@ function resolveCompletedNumberTypeProfileForCountry(
   countryIndex: number,
 ): NumberTypeProfileRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
-
-  const numberTypeMask: number = getTerminalPrefixNumberTypeMask(
-    resourceProvider.numberTypeScopeLayer,
-    stateCountryIndex,
-  );
-
-  const digitsLength: number = snapshot.nationalDigits.length;
+  const numberTypeMask = getTerminalPrefixNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const digitsLength = snapshot.nationalDigits.length;
 
   let resolvedProfile: NumberTypeProfileRef | null = null;
 
-  forEachNumberTypeIndex(numberTypeMask, (numberTypeIndex: number) => {
+  forEachNumberTypeIndex(numberTypeMask, (numberTypeIndex) => {
     if (snapshot.numberTypeFilter && !isNumberTypeAllowed(snapshot.numberTypeFilter, countryIndex, numberTypeIndex))
       return;
 
-    const numberTypeProfileId: number = getNumberTypeProfileId(
+    const numberTypeProfileId = getNumberTypeProfileId(
       resourceProvider.numberTypeProfileLayer,
       stateCountryIndex,
       numberTypeMask,
       numberTypeIndex,
     );
 
-    const lengthMask: number = getLengthMask(resourceProvider.numberTypeProfileLayer, numberTypeProfileId);
-
-    let isCompleted: boolean = false;
-    forEachLength(lengthMask, (length: number) => {
-      if (length === digitsLength) {
-        isCompleted = true;
-        return true;
-      }
-    });
-
-    if (!isCompleted) return;
+    if (!containsLength(getLengthMask(resourceProvider.numberTypeProfileLayer, numberTypeProfileId), digitsLength))
+      return;
 
     resolvedProfile = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
 
@@ -99,47 +93,38 @@ function resolveCompletedTerminalNumberTypeProfile(
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   for (let i = snapshot.terminalStates.length - 1; i >= 0; i--) {
-    const terminalState: number = snapshot.terminalStates[i]!;
+    const terminalState = snapshot.terminalStates[i]!;
 
-    let resolvedProfile: NumberTypeProfileRef | null = null;
-
-    if (preferredCountryIndex !== -1) {
-      forEachStateCountryWithTerminalPrefix(
-        resourceProvider.countryScopeLayer,
-        terminalState,
-        (stateCountryIndex: number, countryIndex: number) => {
-          if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-          if (stateCountryIndex !== preferredCountryIndex) return;
-
-          resolvedProfile = resolveCompletedNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex);
-
-          return true;
-        },
-      );
-
-      if (resolvedProfile) return resolvedProfile;
-    }
+    let preferredProfile: NumberTypeProfileRef | null = null;
+    let fallbackProfile: NumberTypeProfileRef | null = null;
 
     forEachStateCountryWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
-      (stateCountryIndex: number, countryIndex: number) => {
-        if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-        if (stateCountryIndex === preferredCountryIndex) return;
+      (stateCountryIndex, countryIndex) => {
+        if (isCountryExcluded(snapshot, countryIndex)) return;
 
-        resolvedProfile = resolveCompletedNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex);
+        if (preferredCountryIndex !== -1 && countryIndex === preferredCountryIndex) {
+          preferredProfile = resolveCompletedNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex);
+          if (preferredProfile !== null) return true; // resolved → stop early
+          return; // not resolved → continue scanning for fallback
+        }
 
-        if (resolvedProfile) return true;
+        if (fallbackProfile === null) {
+          fallbackProfile = resolveCompletedNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex);
+          if (preferredCountryIndex === -1 && fallbackProfile !== null) return true; // no preference → stop
+        }
       },
     );
 
-    if (resolvedProfile) return resolvedProfile;
+    const resolved = preferredProfile ?? fallbackProfile;
+    if (resolved) return resolved;
   }
 
   return null;
 }
 
-function resolveNonTerminalNumberTypeProfile(
+function resolvePreferredInState(
   snapshot: NumberResolverSnapshot,
   preferredCountryIndex: number,
 ): NumberTypeProfileRef | null {
@@ -147,19 +132,41 @@ function resolveNonTerminalNumberTypeProfile(
 
   let resolvedProfile: NumberTypeProfileRef | null = null;
 
-  if (preferredCountryIndex !== -1) {
-    forEachStateCountry(
+  forEachStateCountry(resourceProvider.countryScopeLayer, snapshot.state, (stateCountryIndex, countryIndex) => {
+    if (isCountryExcluded(snapshot, countryIndex)) return;
+    if (countryIndex !== preferredCountryIndex) return;
+
+    resolvedProfile = resolveNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex, getNumberTypeMask);
+
+    return true;
+  });
+
+  return resolvedProfile;
+}
+
+function resolvePreferredInTerminalStates(
+  snapshot: NumberResolverSnapshot,
+  preferredCountryIndex: number,
+): NumberTypeProfileRef | null {
+  const resourceProvider: ResourceProvider = getResourceProvider();
+
+  for (let i = snapshot.terminalStates.length - 1; i >= 0; i--) {
+    const terminalState = snapshot.terminalStates[i]!;
+
+    let resolvedProfile: NumberTypeProfileRef | null = null;
+
+    forEachStateCountryWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
-      snapshot.state,
-      (stateCountryIndex: number, countryIndex: number) => {
-        if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-        if (stateCountryIndex !== preferredCountryIndex) return;
+      terminalState,
+      (stateCountryIndex, countryIndex) => {
+        if (isCountryExcluded(snapshot, countryIndex)) return;
+        if (countryIndex !== preferredCountryIndex) return;
 
         resolvedProfile = resolveNumberTypeProfileForCountry(
           snapshot,
           stateCountryIndex,
           countryIndex,
-          getNumberTypeMask,
+          getTerminalPrefixNumberTypeMask,
         );
 
         return true;
@@ -169,66 +176,46 @@ function resolveNonTerminalNumberTypeProfile(
     if (resolvedProfile) return resolvedProfile;
   }
 
-  forEachStateCountry(
-    resourceProvider.countryScopeLayer,
-    snapshot.state,
-    (stateCountryIndex: number, countryIndex: number) => {
-      if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-      if (stateCountryIndex === preferredCountryIndex) return;
+  return null;
+}
 
-      resolvedProfile = resolveNumberTypeProfileForCountry(
-        snapshot,
-        stateCountryIndex,
-        countryIndex,
-        getNumberTypeMask,
-      );
+function resolveFallbackInState(
+  snapshot: NumberResolverSnapshot,
+  preferredCountryIndex: number,
+): NumberTypeProfileRef | null {
+  const resourceProvider: ResourceProvider = getResourceProvider();
 
-      if (resolvedProfile) return true;
-    },
-  );
+  let resolvedProfile: NumberTypeProfileRef | null = null;
+
+  forEachStateCountry(resourceProvider.countryScopeLayer, snapshot.state, (stateCountryIndex, countryIndex) => {
+    if (isCountryExcluded(snapshot, countryIndex)) return;
+    if (countryIndex === preferredCountryIndex) return;
+
+    resolvedProfile = resolveNumberTypeProfileForCountry(snapshot, stateCountryIndex, countryIndex, getNumberTypeMask);
+
+    if (resolvedProfile) return true;
+  });
 
   return resolvedProfile;
 }
 
-function resolveTerminalNumberTypeProfile(
+function resolveFallbackInTerminalStates(
   snapshot: NumberResolverSnapshot,
   preferredCountryIndex: number,
 ): NumberTypeProfileRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   for (let i = snapshot.terminalStates.length - 1; i >= 0; i--) {
-    const terminalState: number = snapshot.terminalStates[i]!;
+    const terminalState = snapshot.terminalStates[i]!;
 
     let resolvedProfile: NumberTypeProfileRef | null = null;
-
-    if (preferredCountryIndex !== -1) {
-      forEachStateCountryWithTerminalPrefix(
-        resourceProvider.countryScopeLayer,
-        terminalState,
-        (stateCountryIndex: number, countryIndex: number) => {
-          if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-          if (stateCountryIndex !== preferredCountryIndex) return;
-
-          resolvedProfile = resolveNumberTypeProfileForCountry(
-            snapshot,
-            stateCountryIndex,
-            countryIndex,
-            getTerminalPrefixNumberTypeMask,
-          );
-
-          return true;
-        },
-      );
-
-      if (resolvedProfile) return resolvedProfile;
-    }
 
     forEachStateCountryWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
-      (stateCountryIndex: number, countryIndex: number) => {
-        if (snapshot.countryFilter && snapshot.countryFilter[countryIndex] === 0) return;
-        if (stateCountryIndex === preferredCountryIndex) return;
+      (stateCountryIndex, countryIndex) => {
+        if (isCountryExcluded(snapshot, countryIndex)) return;
+        if (countryIndex === preferredCountryIndex) return;
 
         resolvedProfile = resolveNumberTypeProfileForCountry(
           snapshot,
@@ -258,21 +245,35 @@ export function resolveFirstMatchingNumberTypeProfile(
 ): NumberTypeProfileRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
-  const completedProfile: NumberTypeProfileRef | null = resolveCompletedTerminalNumberTypeProfile(
-    snapshot,
-    preferredCountryIndex,
-  );
+  const isAlive: boolean = snapshot.state !== resourceProvider.graphLayer.deadStateId;
+  const hasTerminalStates: boolean = snapshot.terminalStates.length > 0;
 
-  if (completedProfile) return completedProfile;
-
-  if (snapshot.state !== resourceProvider.graphLayer.deadStateId) {
-    return resolveNonTerminalNumberTypeProfile(snapshot, preferredCountryIndex);
+  if (hasTerminalStates) {
+    const completedProfile = resolveCompletedTerminalNumberTypeProfile(snapshot, preferredCountryIndex);
+    if (completedProfile) return completedProfile;
   }
 
-  if (snapshot.terminalStates.length > 0) {
-    return resolveTerminalNumberTypeProfile(snapshot, preferredCountryIndex);
+  if (preferredCountryIndex !== -1) {
+    if (isAlive) {
+      const profile: NumberTypeProfileRef | null = resolvePreferredInState(snapshot, preferredCountryIndex);
+      if (profile) return profile;
+    }
+
+    if (hasTerminalStates) {
+      const profile: NumberTypeProfileRef | null = resolvePreferredInTerminalStates(snapshot, preferredCountryIndex);
+      if (profile) return profile;
+    }
+  }
+
+  if (isAlive) {
+    const profile: NumberTypeProfileRef | null = resolveFallbackInState(snapshot, preferredCountryIndex);
+    if (profile) return profile;
+  }
+
+  if (hasTerminalStates) {
+    const profile: NumberTypeProfileRef | null = resolveFallbackInTerminalStates(snapshot, preferredCountryIndex);
+    if (profile) return profile;
   }
 
   return null;
 }
-

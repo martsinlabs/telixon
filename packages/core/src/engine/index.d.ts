@@ -12,6 +12,12 @@ export declare interface CallingCodeLayer {
 
 /**
  * @public
+ * Returns true if the given length is encoded in the bitmask.
+ */
+export declare function containsLength(mask: number, length: number): boolean;
+
+/**
+ * @public
  * Country identifier.
  */
 export declare type CountryId = string;
@@ -144,6 +150,12 @@ export declare function getFormatMask(profile: NumberTypeProfileLayer, profileId
  * Returns length bitmask for a given profile id.
  */
 export declare function getLengthMask(profile: NumberTypeProfileLayer, profileId: number): number;
+
+/**
+ * @public
+ * Returns the maximum length encoded in the bitmask (position of highest set bit).
+ */
+export declare function getMaxLength(mask: number): number;
 
 /**
  * @public
