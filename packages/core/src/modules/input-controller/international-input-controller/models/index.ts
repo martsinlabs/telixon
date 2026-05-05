@@ -1,8 +1,13 @@
-export interface InternationalInputControllerConfig {
-  initialCountry?: string;
+export type InternationalDisplayConfig =
+  | { readonly callingCodeInInput: false }
+  | { readonly callingCodeInInput: true; readonly plusPrefix: boolean };
 
-  display?: {
-    includePlusPrefix?: boolean;
-    includeCallingCode?: boolean;
-  };
-}
+export type InternationalInputControllerConfig =
+  | {
+      defaultCountry?: string;
+      display?: Extract<InternationalDisplayConfig, { callingCodeInInput: true }>;
+    }
+  | {
+      defaultCountry: string;
+      display: Extract<InternationalDisplayConfig, { callingCodeInInput: false }>;
+    };

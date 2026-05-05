@@ -5,6 +5,8 @@ export interface NumberResolverSnapshot {
   readonly terminalStates: number[];
   readonly callingCodeDigits: string;
   readonly nationalDigits: string;
+  readonly callingCodeCompleted: boolean;
+  readonly callingCodeState: number;
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
 }

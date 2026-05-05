@@ -1,4 +1,3 @@
-
 import { CaretIndex, InputChange } from '../models';
 
 /**
@@ -9,7 +8,11 @@ import { CaretIndex, InputChange } from '../models';
  * @param onDigit Callback invoked for each extracted digit (digit, digitIndex).
  * @returns Caret index relative to the extracted digit sequence.
  */
-export function resolveInput(value: string, change: InputChange, onDigit: (digit: number, digitIndex: number) => void): CaretIndex {
+export function resolveInput(
+  value: string,
+  change: InputChange,
+  onDigit: (digit: number, digitIndex: number) => void,
+): CaretIndex {
   const valueLength: number = value.length;
   const selectionStart: number = Math.max(0, Math.min(change.selectionStart, valueLength));
   const selectionEnd: number = Math.max(selectionStart, Math.min(change.selectionEnd, valueLength));
@@ -20,23 +23,16 @@ export function resolveInput(value: string, change: InputChange, onDigit: (digit
   // ---- BEFORE ----
   for (let i = 0; i < selectionStart; i++) {
     digit = value.charCodeAt(i) - 48;
-
     if (digit < 0 || digit > 9) continue;
-
     onDigit(digit, digitIndex);
-
     digitIndex++;
-
   }
 
   // ---- INSERT ----
   for (let i = 0; i < change.insertText.length; i++) {
     digit = change.insertText.charCodeAt(i) - 48;
-
     if (digit < 0 || digit > 9) continue;
-
     onDigit(digit, digitIndex);
-
     digitIndex++;
   }
 
@@ -45,11 +41,8 @@ export function resolveInput(value: string, change: InputChange, onDigit: (digit
   // ---- AFTER ----
   for (let i = selectionEnd; i < valueLength; i++) {
     digit = value.charCodeAt(i) - 48;
-
     if (digit < 0 || digit > 9) continue;
-
     onDigit(digit, digitIndex);
-
     digitIndex++;
   }
 

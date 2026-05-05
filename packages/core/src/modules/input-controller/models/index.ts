@@ -1,4 +1,5 @@
 import { CallingCodeLayer, GraphLayer } from '@telixon/core/engine';
+import { NumberTypeProfileRef } from '../../number-resolver/models';
 
 export interface InputState {
   value: string;
@@ -8,7 +9,10 @@ export interface InputState {
 }
 
 export interface InputControllerState extends InputState {
-  graphStateId: number;
+  state: number;
+  terminalStates: number[];
+  profileRef: NumberTypeProfileRef | null;
+  formatIndex: number | null;
 }
 
 export interface InputChange {
@@ -42,6 +46,10 @@ export abstract class InputController {
   abstract undo(): InputState;
 
   abstract redo(): InputState;
+
+  abstract get canUndo(): boolean;
+
+  abstract get canRedo(): boolean;
 
   abstract get currentState(): InputState;
 }

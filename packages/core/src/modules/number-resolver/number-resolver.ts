@@ -4,6 +4,7 @@ import {
   GraphLayer,
   hasTerminalPrefix,
   isCallingCodeState,
+  isCallingCodeStateTerminal,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -27,30 +28,48 @@ export class NumberResolver {
 
   private _nationalDigits: number[] = [];
 
+  private _callingCodeCompleted: boolean = false;
+
+  private _callingCodeState: number = -1;
+
   private _countryFilter: BinaryFilter | null = null;
 
   private _numberTypeFilter: BinaryFilter | null = null;
 
   advance(digit: number): void {
-    this._state = getNextGraphState(this.graphLayer, this._state, digit);
+    const deadStateId: number = this.graphLayer.deadStateId;
 
-    if (
-      this._state !== this.graphLayer.deadStateId &&
-      !stateMatchesFilters(this._state, this._countryFilter, this._numberTypeFilter)
-    ) {
-      this._state = this.graphLayer.deadStateId;
+    if (this._state === deadStateId) {
+      if (this._callingCodeCompleted) this._nationalDigits.push(digit);
+      return;
     }
 
-    if (isCallingCodeState(this.callingCodeLayer, this._state)) {
+    let state: number = getNextGraphState(this.graphLayer, this._state, digit);
+
+    if (state !== deadStateId && !stateMatchesFilters(state, this._countryFilter, this._numberTypeFilter)) {
+      state = deadStateId;
+    }
+
+    this._state = state;
+
+    if (state === deadStateId) {
+      if (this._callingCodeCompleted) this._nationalDigits.push(digit);
+      return;
+    }
+
+    if (isCallingCodeState(this.callingCodeLayer, state)) {
       this._callingCodeDigits.push(digit);
+      this._callingCodeState = state;
+      this._callingCodeCompleted = isCallingCodeStateTerminal(this.callingCodeLayer, state);
     } else {
       this._nationalDigits.push(digit);
     }
 
-    const isTerminal: boolean = hasTerminalPrefix(this.graphLayer, this._state);
-
-    if (isTerminal && terminalStateMatchesFilters(this._state, this._countryFilter, this._numberTypeFilter)) {
-      this._terminalStates.push(this._state);
+    if (
+      hasTerminalPrefix(this.graphLayer, state) &&
+      terminalStateMatchesFilters(state, this._countryFilter, this._numberTypeFilter)
+    ) {
+      this._terminalStates.push(state);
     }
   }
 
@@ -67,6 +86,8 @@ export class NumberResolver {
     this._terminalStates.length = 0;
     this._callingCodeDigits.length = 0;
     this._nationalDigits.length = 0;
+    this._callingCodeCompleted = false;
+    this._callingCodeState = -1;
   }
 
   getCallingCode(): string {
@@ -93,12 +114,26 @@ export class NumberResolver {
     return this._terminalStates;
   }
 
+  get nationalNumberLength(): number {
+    return this._nationalDigits.length;
+  }
+
+  get callingCodeCompleted(): boolean {
+    return this._callingCodeCompleted;
+  }
+
+  get callingCodeState(): number {
+    return this._callingCodeState;
+  }
+
   get snapshot(): NumberResolverSnapshot {
     return {
       state: this._state,
       terminalStates: this._terminalStates,
       callingCodeDigits: this.getCallingCode(),
       nationalDigits: this.getNationalNumber(),
+      callingCodeCompleted: this._callingCodeCompleted,
+      callingCodeState: this._callingCodeState,
       countryFilter: this._countryFilter,
       numberTypeFilter: this._numberTypeFilter,
     };

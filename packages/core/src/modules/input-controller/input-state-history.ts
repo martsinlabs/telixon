@@ -18,6 +18,16 @@ export class InputStateHistory<State extends InputControllerState = InputControl
     this.index++;
   }
 
+  updateCurrentSelection(selectionStart: number, selectionEnd: number): void {
+    const current: State = this.stack[this.index]!;
+
+    this.stack[this.index] = {
+      ...current,
+      selectionStart,
+      selectionEnd,
+    };
+  }
+
   undo(): State {
     if (this.index === 0) {
       return this.stack[0]!;
@@ -38,5 +48,13 @@ export class InputStateHistory<State extends InputControllerState = InputControl
 
   get current(): State {
     return this.stack[this.index]!;
+  }
+
+  get canUndo(): boolean {
+    return this.index > 0;
+  }
+
+  get canRedo(): boolean {
+    return this.index < this.stack.length - 1;
   }
 }

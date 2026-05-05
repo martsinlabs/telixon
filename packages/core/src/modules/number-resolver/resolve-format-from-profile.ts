@@ -31,7 +31,7 @@ export function resolveFormatFromProfile(
   forEachFormatIndex(formatMask, (formatIndex: number) => {
     const format: PhoneNumberFormat = formatsList[formatIndex]!;
 
-    if (digitsLength > format.lengthRange[1]) return;
+    if (digitsLength === 0 || digitsLength > format.lengthRange[1]) return;
 
     resolvedFormat = { ...profileRef, formatIndex };
 

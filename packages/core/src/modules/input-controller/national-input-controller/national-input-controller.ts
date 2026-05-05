@@ -1,3 +1,4 @@
+import { normalizeNationalNumber, TerritorySpec } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
@@ -7,10 +8,18 @@ import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
 import { findNextDigitPosition, findPreviousDigitPosition, toInputState } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
-import { InternationalInputControllerConfig } from './models';
-import { resolveInternationalControllerState } from './utils';
+import { NationalInputControllerConfig } from './models';
+import { resolveNationalControllerState } from './utils';
 
-class InternationalInputController extends InputController {
+function hasTypedNationalPrefix(rawDigits: string, territorySpec: TerritorySpec | undefined): boolean {
+  if (!territorySpec?.nationalPrefix) {
+    return false;
+  }
+
+  return rawDigits.startsWith(territorySpec.nationalPrefix);
+}
+
+class NationalInputController extends InputController {
   #history!: InputStateHistory<InputControllerState>;
 
   #numberResolver: NumberResolver = new NumberResolver();
@@ -19,26 +28,17 @@ class InternationalInputController extends InputController {
 
   #defaultCallingCode: string | null = null;
 
-  constructor(private config: InternationalInputControllerConfig = {}) {
+  constructor(private config: NationalInputControllerConfig) {
     super();
 
-    if (this.config.defaultCountry) {
-      this.#setDefaultCountry(this.config.defaultCountry);
-    }
-
-    const shouldShowCallingCode: boolean = this.config.display?.callingCodeInInput !== false;
-    const insertText: string = shouldShowCallingCode ? (this.#defaultCallingCode ?? '') : '';
+    this.#setCountry(this.config.country);
 
     this.#history = new InputStateHistory(
-      this.#resolveState('', {
-        insertText,
-        selectionStart: 0,
-        selectionEnd: 0,
-      }),
+      this.#resolveState('', { insertText: '', selectionStart: 0, selectionEnd: 0 }),
     );
   }
 
-  #setDefaultCountry(country: string): void {
+  #setCountry(country: string): void {
     this.#defaultCountryIndex = getResourceProvider().refMapping.countries.keyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
@@ -48,7 +48,7 @@ class InternationalInputController extends InputController {
   }
 
   #seedResolver(): void {
-    if (this.config.display?.callingCodeInInput === false && this.#defaultCallingCode !== null) {
+    if (this.#defaultCallingCode !== null) {
       this.#numberResolver.setCallingCode(this.#defaultCallingCode);
     } else {
       this.#numberResolver.reset();
@@ -60,7 +60,26 @@ class InternationalInputController extends InputController {
 
     this.#seedResolver();
 
-    const caretIndex: number = resolveInput(value, change, (digit: number) => numberResolver.advance(digit));
+    const rawDigits: number[] = [];
+    const rawCaretIndex: number = resolveInput(value, change, (digit: number) => rawDigits.push(digit));
+
+    const territorySpec: TerritorySpec | undefined =
+      this.#defaultCountryIndex !== -1
+        ? getResourceProvider().territorySpecTable[this.#defaultCountryIndex]
+        : undefined;
+
+    const rawString: string = rawDigits.join('');
+
+    const { normalizedDigits, caretIndex } =
+      rawString.length > 0 && territorySpec
+        ? normalizeNationalNumber(rawString, territorySpec, rawCaretIndex)
+        : { normalizedDigits: rawString, caretIndex: rawCaretIndex };
+
+    const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, territorySpec);
+
+    for (let i = 0; i < normalizedDigits.length; i++) {
+      numberResolver.advance(normalizedDigits.charCodeAt(i) - 48);
+    }
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
 
@@ -69,7 +88,15 @@ class InternationalInputController extends InputController {
       this.#defaultCountryIndex,
     );
 
-    return resolveInternationalControllerState(snapshot, caretIndex, profile, this.config.display);
+    return resolveNationalControllerState(
+      snapshot,
+      caretIndex,
+      profile,
+      this.#defaultCountryIndex,
+      nationalPrefixTyped,
+      rawString,
+      rawCaretIndex,
+    );
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
@@ -147,7 +174,7 @@ class InternationalInputController extends InputController {
   }
 
   setCountry(country: string): InputState {
-    this.#setDefaultCountry(country);
+    this.#setCountry(country);
 
     const { value } = this.#history.current;
 
@@ -183,8 +210,8 @@ class InternationalInputController extends InputController {
   }
 }
 
-export function createInternationalInputController(config: InternationalInputControllerConfig = {}): InputController {
+export function createNationalInputController(config: NationalInputControllerConfig): InputController {
   assertResourcesReady();
 
-  return new InternationalInputController(config);
+  return new NationalInputController(config);
 }
