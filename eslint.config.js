@@ -14,6 +14,9 @@ export default [
         ecmaVersion: 'latest',
       },
     },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
   {
     ignores: ['node_modules', 'dist', 'coverage', '**/engine'],
