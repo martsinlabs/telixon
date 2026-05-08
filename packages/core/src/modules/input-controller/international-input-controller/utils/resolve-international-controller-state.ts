@@ -1,5 +1,6 @@
 import {
   formatNumber,
+  FormattingDirection,
   getCallingCodePrimaryCountry,
   getCountryIndex,
   PhoneNumberFormat,
@@ -19,6 +20,7 @@ export function resolveInternationalControllerState(
   caretIndex: CaretIndex,
   profile: NumberTypeProfileRef | null,
   display: InternationalDisplayConfig = DEFAULT_DISPLAY,
+  direction: FormattingDirection = 'forward',
 ): InputControllerState {
   const { refMapping, countryScopeLayer, callingCodeLayer } = getResourceProvider();
 
@@ -50,6 +52,7 @@ export function resolveInternationalControllerState(
       const { formatted, caretIndex: natCaretFormatted } = formatNumber(
         formattingContext,
         caretInCallingCode ? 0 : nationalCaretIndex,
+        direction,
       );
 
       formattedNationalNumber = formatted;

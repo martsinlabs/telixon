@@ -1,6 +1,6 @@
 import { InputControllerState, InputState } from '../models';
 
-export { findNextDigitPosition, findPreviousDigitPosition } from './find-digit-position';
+export { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar } from './find-digit-position';
 
 export const toInputState = (state: InputControllerState): InputState => {
   return {

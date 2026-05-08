@@ -6,7 +6,7 @@ import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resol
 import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
-import { findNextDigitPosition, findPreviousDigitPosition, toInputState } from '../utils';
+import { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar, toInputState } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
@@ -55,7 +55,11 @@ class NationalInputController extends InputController {
     }
   }
 
-  #resolveState(value: string, change: InputChange): InputControllerState {
+  #resolveState(
+    value: string,
+    change: InputChange,
+    direction: 'forward' | 'backward' = 'forward',
+  ): InputControllerState {
     const numberResolver: NumberResolver = this.#numberResolver;
 
     this.#seedResolver();
@@ -82,10 +86,12 @@ class NationalInputController extends InputController {
     }
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
+    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(this.#defaultCountryIndex);
 
     const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
       snapshot,
       this.#defaultCountryIndex,
+      anchoredCountryIndex,
     );
 
     return resolveNationalControllerState(
@@ -96,41 +102,78 @@ class NationalInputController extends InputController {
       nationalPrefixTyped,
       rawString,
       rawCaretIndex,
+      direction,
     );
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: text,
-      selectionStart,
-      selectionEnd,
-    });
+    const nextState: InputControllerState = this.#resolveState(
+      value,
+      {
+        insertText: text,
+        selectionStart,
+        selectionEnd,
+      },
+      'forward',
+    );
 
     this.#history.push(nextState);
 
     return toInputState(this.#history.current);
   }
 
+  #skipFormattingChar(value: string, selectionStart: number, selectionEnd: number): InputState {
+    const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
+
+    if (prevDigit === -1) return { ...toInputState(this.#history.current), selectionStart, selectionEnd };
+
+    const reformatted: InputControllerState = this.#resolveState(
+      value,
+      { insertText: '', selectionStart, selectionEnd },
+      'backward',
+    );
+
+    if (findNextDigitPosition(value, selectionStart) === -1) return toInputState(reformatted);
+
+    return { ...toInputState(reformatted), selectionStart: prevDigit + 1, selectionEnd: prevDigit + 1 };
+  }
+
   deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState {
-    this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+    if (selectionStart === 0 && selectionEnd === 0) {
+      return { ...toInputState(this.#history.current), selectionStart: 0, selectionEnd: 0 };
+    }
+
+    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
+      return this.#skipFormattingChar(value, selectionStart, selectionEnd);
+    }
 
     let effectiveStart: number = selectionStart;
     let effectiveEnd: number = selectionEnd;
 
     if (selectionStart === selectionEnd) {
       const position: number = findPreviousDigitPosition(value, selectionStart);
-      if (position === -1) return toInputState(this.#history.current);
+
+      if (position === -1) {
+        return toInputState(this.#resolveState(value, { insertText: '', selectionStart, selectionEnd }, 'backward'));
+      }
+
       effectiveStart = position;
       effectiveEnd = position + 1;
     }
 
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart: effectiveStart,
-      selectionEnd: effectiveEnd,
-    });
+    this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+
+    const nextState: InputControllerState = this.#resolveState(
+      value,
+      {
+        insertText: '',
+        selectionStart: effectiveStart,
+        selectionEnd: effectiveEnd,
+      },
+      'backward',
+    );
 
     this.#history.push(nextState);
 
@@ -138,6 +181,13 @@ class NationalInputController extends InputController {
   }
 
   deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState {
+    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart)) {
+      const nextDigit: number = findNextDigitPosition(value, selectionStart + 1);
+      const pos: number = nextDigit === -1 ? selectionStart : nextDigit;
+
+      return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
+    }
+
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
     let effectiveStart: number = selectionStart;
@@ -150,11 +200,15 @@ class NationalInputController extends InputController {
       effectiveEnd = position + 1;
     }
 
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart: effectiveStart,
-      selectionEnd: effectiveEnd,
-    });
+    const nextState: InputControllerState = this.#resolveState(
+      value,
+      {
+        insertText: '',
+        selectionStart: effectiveStart,
+        selectionEnd: effectiveEnd,
+      },
+      'forward',
+    );
 
     this.#history.push(nextState);
 

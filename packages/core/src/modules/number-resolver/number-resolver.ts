@@ -10,6 +10,7 @@ import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { NumberResolverSnapshot } from './models';
+import { resolveLatestConcreteCountryIndex } from './resolve-first-matching-number-type-profile';
 import { stateMatchesFilters } from './utils/state-matches-filters';
 import { terminalStateMatchesFilters } from './utils/terminal-state-matches-filters';
 
@@ -24,9 +25,13 @@ export class NumberResolver {
 
   private _terminalStates: number[] = [];
 
+  private _terminalStateEnds: number[] = [];
+
   private _callingCodeDigits: number[] = [];
 
   private _nationalDigits: number[] = [];
+
+  private _nationalStates: number[] = [];
 
   private _callingCodeCompleted: boolean = false;
 
@@ -40,7 +45,11 @@ export class NumberResolver {
     const deadStateId: number = this.graphLayer.deadStateId;
 
     if (this._state === deadStateId) {
-      if (this._callingCodeCompleted) this._nationalDigits.push(digit);
+      if (this._callingCodeCompleted) {
+        this._nationalDigits.push(digit);
+        this._nationalStates.push(deadStateId);
+        this._terminalStateEnds.push(this._terminalStates.length);
+      }
       return;
     }
 
@@ -53,7 +62,11 @@ export class NumberResolver {
     this._state = state;
 
     if (state === deadStateId) {
-      if (this._callingCodeCompleted) this._nationalDigits.push(digit);
+      if (this._callingCodeCompleted) {
+        this._nationalDigits.push(digit);
+        this._nationalStates.push(state);
+        this._terminalStateEnds.push(this._terminalStates.length);
+      }
       return;
     }
 
@@ -63,6 +76,7 @@ export class NumberResolver {
       this._callingCodeCompleted = isCallingCodeStateTerminal(this.callingCodeLayer, state);
     } else {
       this._nationalDigits.push(digit);
+      this._nationalStates.push(state);
     }
 
     if (
@@ -70,6 +84,10 @@ export class NumberResolver {
       terminalStateMatchesFilters(state, this._countryFilter, this._numberTypeFilter)
     ) {
       this._terminalStates.push(state);
+    }
+
+    if (!isCallingCodeState(this.callingCodeLayer, state) && this._callingCodeCompleted) {
+      this._terminalStateEnds.push(this._terminalStates.length);
     }
   }
 
@@ -84,10 +102,21 @@ export class NumberResolver {
   reset(): void {
     this._state = 0;
     this._terminalStates.length = 0;
+    this._terminalStateEnds.length = 0;
     this._callingCodeDigits.length = 0;
     this._nationalDigits.length = 0;
+    this._nationalStates.length = 0;
     this._callingCodeCompleted = false;
     this._callingCodeState = -1;
+  }
+
+  resolveLatestConcreteCountryIndex(preferredCountryIndex: number): number {
+    return resolveLatestConcreteCountryIndex(
+      this.snapshot,
+      preferredCountryIndex,
+      this._nationalStates,
+      this._terminalStateEnds,
+    );
   }
 
   getCallingCode(): string {

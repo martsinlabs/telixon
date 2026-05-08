@@ -104,7 +104,7 @@ export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScop
  * @public
  * Formats a phone number according to the provided formatting context.
  */
-export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number): {
+export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number, direction?: FormattingDirection): {
     formatted: string;
     caretIndex: number;
 };
@@ -114,6 +114,12 @@ export declare function formatNumber(context: PhoneNumberFormattingContext, care
  * Table of phone number formats.
  */
 export declare type FormatsTable = PhoneNumberFormatList[];
+
+/**
+ * @public
+ * Controls whether trailing formatting characters after the last digit are stripped.
+ */
+export declare type FormattingDirection = 'forward' | 'backward';
 
 /**
  * @public
