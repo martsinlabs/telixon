@@ -1,0 +1,23 @@
+{
+  "name": "@telixon/web-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "MIT",
+  "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@telixon/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.16.1"
+}
