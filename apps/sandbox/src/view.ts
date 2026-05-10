@@ -1,14 +1,16 @@
 import type { Controller } from './types';
-import { eventsEl, redoBtn, stateEl, undoBtn, warningEl } from './elements';
+import { eventsEl, redoBtn, sealBtn, stateEl, undoBtn, warningEl } from './elements';
 
 const MAX_LOG_LINES = 20;
 const log: string[] = [];
 
 export function sync(current: Controller | null): void {
   const phone = current?.phone ?? null;
+  const state = phone?.getState() ?? null;
 
   undoBtn.disabled = phone === null || !phone.canUndo();
   redoBtn.disabled = phone === null || !phone.canRedo();
+  sealBtn.disabled = phone === null;
 
   warningEl.textContent =
     current === null
@@ -18,11 +20,7 @@ export function sync(current: Controller | null): void {
   stateEl.textContent =
     current === null
       ? 'No input attached.'
-      : JSON.stringify(
-          { mode: current.mode, canUndo: current.phone.canUndo(), canRedo: current.phone.canRedo(), ...current.phone.getState() },
-          null,
-          2,
-        );
+      : JSON.stringify({ mode: current.mode, ...state }, null, 2);
 }
 
 export function record(message: string): void {

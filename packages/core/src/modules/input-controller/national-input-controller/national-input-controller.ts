@@ -4,6 +4,7 @@ import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
+import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
 import { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar, toInputState } from '../utils';
@@ -35,6 +36,7 @@ class NationalInputController extends InputController {
 
     this.#history = new InputStateHistory(
       this.#resolveState('', { insertText: config.initialValue ?? '', selectionStart: 0, selectionEnd: 0 }),
+      config.maxHistorySize,
     );
   }
 
@@ -229,6 +231,18 @@ class NationalInputController extends InputController {
     this.#history.push(nextState);
 
     return toInputState(this.#history.current);
+  }
+
+  setCountryFilter(countries: string[] | null): void {
+    this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
+  }
+
+  setNumberTypeFilter(numberTypes: string[] | null): void {
+    this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
+  }
+
+  seal(): void {
+    this.#history.seal();
   }
 
   undo(): InputState {

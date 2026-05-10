@@ -188,6 +188,19 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       if (inputController.canRedo) commit(() => inputController.redo());
     },
 
+    seal(): void {
+      inputController.seal();
+      notify(getControllerState());
+    },
+
+    setCountryFilter(countries: string[] | null): void {
+      inputController.setCountryFilter(countries);
+    },
+
+    setNumberTypeFilter(numberTypes: string[] | null): void {
+      inputController.setNumberTypeFilter(numberTypes);
+    },
+
     destroy(): void {
       isDestroyed = true;
       ATTACHED_INPUTS.delete(input);

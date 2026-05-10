@@ -47,6 +47,12 @@ export abstract class InputController {
 
   abstract redo(): InputState;
 
+  abstract setCountryFilter(countries: string[] | null): void;
+
+  abstract setNumberTypeFilter(numberTypes: string[] | null): void;
+
+  abstract seal(): void;
+
   abstract get canUndo(): boolean;
 
   abstract get canRedo(): boolean;

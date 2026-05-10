@@ -37,14 +37,7 @@
 
               <div class="field">
                 <label class="label" for="country">Country</label>
-                <input
-                  class="control"
-                  id="country"
-                  type="text"
-                  value="US"
-                  autocomplete="off"
-                  spellcheck="false"
-                />
+                <input class="control" id="country" type="text" value="US" autocomplete="off" spellcheck="false" />
               </div>
 
               <div class="field">
@@ -61,12 +54,45 @@
             </div>
 
             <div class="actions">
-              <button class="btn btn--primary" id="apply-initial-value" type="button">
-                Reattach
-              </button>
+              <button class="btn btn--primary" id="apply-initial-value" type="button">Reattach</button>
               <button class="btn" id="apply-country" type="button">Apply Country</button>
               <button class="btn" id="set-value" type="button">Set Value</button>
               <button class="btn" id="clear-value" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Filters</h2>
+
+            <div class="field-group">
+              <div class="field">
+                <label class="label" for="country-filter">Countries</label>
+                <input
+                  class="control"
+                  id="country-filter"
+                  type="text"
+                  placeholder="US, CA …"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
+              <div class="field">
+                <label class="label" for="number-type-filter">Number Types</label>
+                <input
+                  class="control"
+                  id="number-type-filter"
+                  type="text"
+                  placeholder="mobile, fixedLine, voip …"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="apply-filters" type="button">Apply</button>
+              <button class="btn" id="clear-filters" type="button">Clear Filters</button>
             </div>
           </section>
 
@@ -88,6 +114,7 @@
             <div class="actions">
               <button class="btn btn--primary" id="undo" type="button">Undo</button>
               <button class="btn btn--primary" id="redo" type="button">Redo</button>
+              <button class="btn" id="seal" type="button">Seal</button>
               <button class="btn" id="reattach" type="button">Test Duplicate Attach</button>
             </div>
 

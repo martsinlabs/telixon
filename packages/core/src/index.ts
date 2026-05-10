@@ -5,3 +5,5 @@ export type { NationalInputControllerConfig } from './modules/input-controller/n
 
 export { createInternationalInputController } from './modules/input-controller/international-input-controller';
 export { createNationalInputController } from './modules/input-controller/national-input-controller';
+
+export { ensureReady } from './resource-provider';

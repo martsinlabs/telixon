@@ -1,15 +1,20 @@
-import { getResourceProvider } from '@telixon/core/resource-provider';
+import { ensureReady } from '@telixon/core';
 import './style.css';
 
 import {
   applyCountryBtn,
+  applyFiltersBtn,
   applyInitialValueBtn,
+  clearFiltersBtn,
   clearValueBtn,
   countryEl,
+  countryFilterEl,
   initialValueEl,
   modeEl,
+  numberTypeFilterEl,
   reattachBtn,
   redoBtn,
+  sealBtn,
   setValueBtn,
   stateEl,
   undoBtn,
@@ -62,6 +67,36 @@ redoBtn.addEventListener('click', () => {
   record('redo()');
 });
 
+sealBtn.addEventListener('click', () => {
+  const ctrl = getCurrent();
+  ctrl?.phone.seal();
+  sync(ctrl);
+  record('seal()');
+});
+
+applyFiltersBtn.addEventListener('click', () => {
+  const ctrl = getCurrent();
+  if (!ctrl) return;
+
+  const countries = parseCountryFilter(countryFilterEl.value);
+  const numberTypes = parseNumberTypeFilter(numberTypeFilterEl.value);
+
+  ctrl.phone.setCountryFilter(countries);
+  ctrl.phone.setNumberTypeFilter(numberTypes);
+  sync(ctrl);
+  record(`setCountryFilter(${JSON.stringify(countries)}) · setNumberTypeFilter(${JSON.stringify(numberTypes)})`);
+});
+
+clearFiltersBtn.addEventListener('click', () => {
+  const ctrl = getCurrent();
+  countryFilterEl.value = '';
+  numberTypeFilterEl.value = '';
+  ctrl?.phone.setCountryFilter(null);
+  ctrl?.phone.setNumberTypeFilter(null);
+  sync(ctrl);
+  record('filters cleared');
+});
+
 reattachBtn.addEventListener('click', () => {
   try {
     mount(resolveMode(), initialValueEl.value);
@@ -73,7 +108,7 @@ reattachBtn.addEventListener('click', () => {
 
 async function bootstrap(): Promise<void> {
   try {
-    await getResourceProvider().ensureReady();
+    await ensureReady();
     attach(resolveMode());
     record('resources ready');
   } catch (err) {
@@ -86,4 +121,14 @@ async function bootstrap(): Promise<void> {
 
 function resolveMode(): Mode {
   return modeEl.value === 'international' ? 'international' : 'national';
+}
+
+function parseCountryFilter(value: string): string[] | null {
+  const items = value.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  return items.length > 0 ? items : null;
+}
+
+function parseNumberTypeFilter(value: string): string[] | null {
+  const items = value.split(',').map((s) => s.trim()).filter(Boolean);
+  return items.length > 0 ? items : null;
 }

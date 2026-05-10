@@ -45,11 +45,9 @@ export class NumberResolver {
     const deadStateId: number = this.graphLayer.deadStateId;
 
     if (this._state === deadStateId) {
-      if (this._callingCodeCompleted) {
-        this._nationalDigits.push(digit);
-        this._nationalStates.push(deadStateId);
-        this._terminalStateEnds.push(this._terminalStates.length);
-      }
+      this._nationalDigits.push(digit);
+      this._nationalStates.push(deadStateId);
+      this._terminalStateEnds.push(this._terminalStates.length);
       return;
     }
 
@@ -62,11 +60,9 @@ export class NumberResolver {
     this._state = state;
 
     if (state === deadStateId) {
-      if (this._callingCodeCompleted) {
-        this._nationalDigits.push(digit);
-        this._nationalStates.push(state);
-        this._terminalStateEnds.push(this._terminalStates.length);
-      }
+      this._nationalDigits.push(digit);
+      this._nationalStates.push(state);
+      this._terminalStateEnds.push(this._terminalStates.length);
       return;
     }
 

@@ -34,5 +34,8 @@ export type PhoneInput = {
   canRedo(): boolean;
   undo(): void;
   redo(): void;
+  seal(): void;
+  setCountryFilter(countries: string[] | null): void;
+  setNumberTypeFilter(numberTypes: string[] | null): void;
   destroy(): void;
 };
