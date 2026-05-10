@@ -4,7 +4,8 @@
     "noEmit": true,
     "paths": {
       "@telixon/core": ["../../packages/core/src/index.browser.ts"],
-      "@telixon/core/*": ["../../packages/core/src/*"]
+      "@telixon/core/*": ["../../packages/core/src/*"],
+      "@telixon/web-sdk": ["../../packages/web-sdk/src/index.ts"]
     }
   },
   "include": ["src", "vite.config.ts"]

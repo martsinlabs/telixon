@@ -5,6 +5,7 @@ import { defineConfig, Plugin, ViteDevServer } from 'vite';
 
 const ROOT_DIR = resolve(import.meta.dirname, '../..');
 const CORE_SRC_DIR = resolve(ROOT_DIR, 'packages/core/src');
+const WEB_SDK_SRC_DIR = resolve(ROOT_DIR, 'packages/web-sdk/src');
 const ENGINE_DIR = resolve(CORE_SRC_DIR, 'engine');
 const ENGINE_URL_PREFIX = '/engine/';
 const CORE_ALIASES = [
@@ -15,6 +16,10 @@ const CORE_ALIASES = [
   {
     find: '@telixon/core',
     replacement: resolve(CORE_SRC_DIR, 'index.browser.ts'),
+  },
+  {
+    find: '@telixon/web-sdk',
+    replacement: resolve(WEB_SDK_SRC_DIR, 'index.ts'),
   },
 ];
 
