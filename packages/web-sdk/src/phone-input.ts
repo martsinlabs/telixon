@@ -2,34 +2,26 @@ import { InputController } from '@telixon/core';
 import {
   isBackwardDeleteInputType,
   isBlockedInputType,
-  isCompositionInputType,
   isForwardDeleteInputType,
   isInsertInputType,
 } from './constants/before-input-types';
 import type { PhoneInput, PhoneInputListener, PhoneInputOptions, PhoneInputState } from './models';
 import { applyInputState } from './utils/apply-input-state';
 import { assertTextInputType } from './utils/assert-text-input-type';
-import {
-  resolveEntireValueRange,
-  resolveInsertText,
-  resolveLineDeleteBackwardRange,
-  resolveLineDeleteForwardRange,
-} from './utils/before-input';
+import { resolveInsertText } from './utils/before-input';
 import { buildController } from './utils/build-controller';
 import { deriveState } from './utils/derive-state';
 
 const ATTACHED_INPUTS: WeakSet<HTMLInputElement> = new WeakSet();
 
 function assertInputIsAvailable(input: HTMLInputElement): void {
-  if (!ATTACHED_INPUTS.has(input)) {
-    return;
-  }
+  if (!ATTACHED_INPUTS.has(input)) return;
 
   throw new Error('@telixon/web-sdk cannot attach multiple phone inputs to the same DOM input element.');
 }
 
 export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
-  const { initialValue, input } = options;
+  const { input } = options;
   assertTextInputType(input);
   assertInputIsAvailable(input);
   ATTACHED_INPUTS.add(input);
@@ -37,66 +29,43 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const inputController: InputController = buildController(options);
   const listeners: Set<PhoneInputListener> = new Set();
 
-  let isComposing: boolean = false;
-  let isSyncingComposition: boolean = false;
   let isDestroyed: boolean = false;
 
-  if (initialValue !== undefined) {
-    inputController.setValue(initialValue);
+  function getControllerState(): PhoneInputState {
+    return deriveState(inputController.currentState);
   }
 
-  function getState(): PhoneInputState {
-    return deriveState(inputController.currentState);
+  function emit(state: PhoneInputState): void {
+    for (const listener of listeners) listener(state);
   }
 
   function notify(state: PhoneInputState): void {
     if (isDestroyed) return;
 
     applyInputState(input, state);
-
-    for (const listener of listeners) listener(state);
+    emit(state);
   }
 
   function commit(change: () => void): void {
     change();
-    notify(getState());
-  }
-
-  function syncCompositionValue(): void {
-    isSyncingComposition = true;
-
-    queueMicrotask(() => {
-      // Let the browser finish committing the final IME text before reading from the DOM.
-      if (isDestroyed) return;
-
-      isSyncingComposition = false;
-      commit(() => {
-        inputController.setValue(input.value);
-      });
-    });
-  }
-
-  function handleCompositionStart(event: CompositionEvent): void {
-    if (event.target !== input) return;
-
-    isComposing = true;
-    isSyncingComposition = false;
+    notify(getControllerState());
   }
 
   function handleCompositionEnd(event: CompositionEvent): void {
     if (event.target !== input) return;
+    if (!event.data) return;
 
-    isComposing = false;
-    syncCompositionValue();
+    const start: number = input.selectionStart ?? 0;
+    const end: number = input.selectionEnd ?? 0;
+
+    commit(() => inputController.insert(input.value, event.data!, start, end));
   }
 
   function handleBeforeInput(event: InputEvent): void {
     if (event.target !== input) return;
+    if (event.isComposing) return;
 
     const { inputType } = event;
-
-    // During IME composition the browser owns the transient DOM value and caret.
-    if (isComposing || isSyncingComposition || isCompositionInputType(inputType)) return;
 
     const value: string = input.value;
     const selectionStart: number = input.selectionStart ?? 0;
@@ -127,10 +96,8 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
     switch (inputType) {
       case 'deleteSoftLineBackward': {
-        const range = resolveLineDeleteBackwardRange(selectionStart, selectionEnd);
-
         commit(() => {
-          inputController.deleteBackward(value, range.start, range.end);
+          inputController.deleteBackward(value, 0, selectionStart);
         });
         return;
       }
@@ -138,33 +105,25 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       case 'deleteSoftLineForward':
       case 'deleteHardLineForward':
       case 'deleteEntireSoftLine': {
-        const range = resolveLineDeleteForwardRange(value, selectionStart, selectionEnd);
-
         commit(() => {
-          inputController.deleteForward(value, range.start, range.end);
+          inputController.deleteForward(value, selectionEnd, value.length);
         });
         return;
       }
 
       case 'deleteEntireHardLine': {
-        const range = resolveEntireValueRange(value, selectionStart, selectionEnd);
-
         commit(() => {
-          inputController.deleteBackward(value, range.start, range.end);
+          inputController.deleteBackward(value, 0, value.length);
         });
         return;
       }
 
       case 'historyUndo':
-        commit(() => {
-          inputController.undo();
-        });
+        if (inputController.canUndo) commit(() => inputController.undo());
         return;
 
       case 'historyRedo':
-        commit(() => {
-          inputController.redo();
-        });
+        if (inputController.canRedo) commit(() => inputController.redo());
         return;
 
       default:
@@ -178,33 +137,27 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
   function handleKeyDown(event: KeyboardEvent): void {
     if (event.target !== input) return;
-    if (isComposing || isSyncingComposition) return;
     if (!event.ctrlKey && !event.metaKey) return;
 
-    const isUndo = event.key === 'z' && !event.shiftKey;
-    const isRedo = (event.key === 'z' && event.shiftKey) || event.key === 'y';
+    const key: string = event.key.toLowerCase();
+    const isUndo: boolean = key === 'z' && !event.shiftKey;
+    const isRedo: boolean = (key === 'z' && event.shiftKey) || key === 'y';
 
     if (!isUndo && !isRedo) return;
 
     event.preventDefault();
 
-    commit(() => {
-      if (isUndo) {
-        inputController.undo();
-      } else {
-        inputController.redo();
-      }
-    });
+    if (isUndo && inputController.canUndo) commit(() => inputController.undo());
+    else if (isRedo && inputController.canRedo) commit(() => inputController.redo());
   }
 
-  input.addEventListener('beforeinput', handleBeforeInput);
-  input.addEventListener('compositionstart', handleCompositionStart);
   input.addEventListener('compositionend', handleCompositionEnd);
+  input.addEventListener('beforeinput', handleBeforeInput);
   input.addEventListener('keydown', handleKeyDown);
-  notify(getState());
+  notify(getControllerState());
 
   return {
-    getState,
+    getState: getControllerState,
 
     canUndo(): boolean {
       return inputController.canUndo;
@@ -228,19 +181,18 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     },
 
     undo(): void {
-      commit(() => inputController.undo());
+      if (inputController.canUndo) commit(() => inputController.undo());
     },
 
     redo(): void {
-      commit(() => inputController.redo());
+      if (inputController.canRedo) commit(() => inputController.redo());
     },
 
     destroy(): void {
       isDestroyed = true;
       ATTACHED_INPUTS.delete(input);
-      input.removeEventListener('beforeinput', handleBeforeInput);
-      input.removeEventListener('compositionstart', handleCompositionStart);
       input.removeEventListener('compositionend', handleCompositionEnd);
+      input.removeEventListener('beforeinput', handleBeforeInput);
       input.removeEventListener('keydown', handleKeyDown);
       listeners.clear();
     },

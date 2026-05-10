@@ -5,9 +5,11 @@ export type InternationalDisplayConfig =
 export type InternationalInputControllerConfig =
   | {
       defaultCountry?: string;
+      initialValue?: string;
       display?: Extract<InternationalDisplayConfig, { callingCodeInInput: true }>;
     }
   | {
       defaultCountry: string;
+      initialValue?: string;
       display: Extract<InternationalDisplayConfig, { callingCodeInInput: false }>;
     };

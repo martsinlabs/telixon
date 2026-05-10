@@ -2,13 +2,13 @@ import { createInternationalInputController, createNationalInputController, Inpu
 import type { InternationalPhoneInputOptions, NationalPhoneInputOptions, PhoneInputOptions } from '../models';
 
 function createNationalController(options: NationalPhoneInputOptions): InputController {
-  const { input: _input, initialValue: _initialValue, mode: _mode, ...config } = options;
+  const { input: _input, mode: _mode, ...config } = options;
 
   return createNationalInputController(config);
 }
 
 function createInternationalController(options: InternationalPhoneInputOptions): InputController {
-  const { input: _input, initialValue: _initialValue, mode: _mode, ...config } = options;
+  const { input: _input, mode: _mode, ...config } = options;
 
   return createInternationalInputController(config);
 }
