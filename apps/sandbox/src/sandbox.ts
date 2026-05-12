@@ -1,5 +1,5 @@
 import { createPhoneInput, PhoneInput } from '@telixon/web-sdk';
-import { countryEl, initialValueEl, phoneInputEl } from './elements';
+import { countryEl, initialValueEl, phoneInputEl, strictEl } from './elements';
 import type { Controller, Mode } from './types';
 import { record, sync } from './view';
 
@@ -26,10 +26,14 @@ export function attach(mode: Mode, value: string = initialValueEl.value): void {
 }
 
 export function mount(mode: Mode, value: string): PhoneInput {
+  const country = countryEl.value || DEFAULT_COUNTRY;
+  const strict = strictEl.checked;
+
   if (mode === 'national') {
     return createPhoneInput({
       mode: 'national',
-      country: countryEl.value || DEFAULT_COUNTRY,
+      country,
+      strict,
       initialValue: value,
       input: phoneInputEl,
     });
@@ -37,7 +41,8 @@ export function mount(mode: Mode, value: string): PhoneInput {
 
   return createPhoneInput({
     mode: 'international',
-    defaultCountry: countryEl.value || DEFAULT_COUNTRY,
+    defaultCountry: country,
+    strict,
     display: { callingCodeInInput: true, plusPrefix: true },
     initialValue: value,
     input: phoneInputEl,

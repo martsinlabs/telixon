@@ -17,6 +17,7 @@ import {
   sealBtn,
   setValueBtn,
   stateEl,
+  strictEl,
   undoBtn,
   warningEl,
 } from './elements';
@@ -28,6 +29,8 @@ stateEl.textContent = 'Loading…';
 void bootstrap();
 
 modeEl.addEventListener('change', () => attach(resolveMode()));
+
+strictEl.addEventListener('change', () => attach(resolveMode()));
 
 applyInitialValueBtn.addEventListener('click', () => attach(resolveMode(), initialValueEl.value));
 

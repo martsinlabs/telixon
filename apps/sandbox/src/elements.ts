@@ -16,6 +16,7 @@ export const countryFilterEl = el('#country-filter', HTMLInputElement);
 export const numberTypeFilterEl = el('#number-type-filter', HTMLInputElement);
 export const applyFiltersBtn = el('#apply-filters', HTMLButtonElement);
 export const clearFiltersBtn = el('#clear-filters', HTMLButtonElement);
+export const strictEl = el('#strict', HTMLInputElement);
 export const undoBtn = el('#undo', HTMLButtonElement);
 export const redoBtn = el('#redo', HTMLButtonElement);
 export const sealBtn = el('#seal', HTMLButtonElement);

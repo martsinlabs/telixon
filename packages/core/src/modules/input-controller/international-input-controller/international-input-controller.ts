@@ -27,6 +27,10 @@ class InternationalInputController extends InputController {
       this.#setDefaultCountry(this.config.defaultCountry);
     }
 
+    if (this.config.strict) {
+      this.#numberResolver.setStrict(true);
+    }
+
     const shouldShowCallingCode: boolean = this.config.display?.callingCodeInInput !== false;
     const insertText: string = config.initialValue ?? (shouldShowCallingCode ? (this.#defaultCallingCode ?? '') : '');
 
@@ -69,7 +73,7 @@ class InternationalInputController extends InputController {
     const caretIndex: number = resolveInput(value, change, (digit: number) => numberResolver.advance(digit));
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(this.#defaultCountryIndex);
+    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex();
 
     const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
       snapshot,

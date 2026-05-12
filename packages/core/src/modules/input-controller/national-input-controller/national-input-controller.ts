@@ -34,6 +34,10 @@ class NationalInputController extends InputController {
 
     this.#setCountry(this.config.country);
 
+    if (this.config.strict) {
+      this.#numberResolver.setStrict(true);
+    }
+
     this.#history = new InputStateHistory(
       this.#resolveState('', { insertText: config.initialValue ?? '', selectionStart: 0, selectionEnd: 0 }),
       config.maxHistorySize,
@@ -88,7 +92,7 @@ class NationalInputController extends InputController {
     }
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(this.#defaultCountryIndex);
+    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex();
 
     const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
       snapshot,

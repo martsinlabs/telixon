@@ -5,12 +5,14 @@ export type InternationalDisplayConfig =
 export type InternationalInputControllerConfig =
   | {
       defaultCountry?: string;
+      strict?: boolean;
       initialValue?: string;
       maxHistorySize?: number;
       display?: Extract<InternationalDisplayConfig, { callingCodeInInput: true }>;
     }
   | {
       defaultCountry: string;
+      strict?: boolean;
       initialValue?: string;
       maxHistorySize?: number;
       display: Extract<InternationalDisplayConfig, { callingCodeInInput: false }>;

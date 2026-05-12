@@ -117,7 +117,8 @@ export declare type FormatsTable = PhoneNumberFormatList[];
 
 /**
  * @public
- * Controls whether trailing formatting characters after the last digit are stripped.
+ * Input direction. `backward` strips trailing formatting characters
+ * after the last digit; `forward` retains them.
  */
 export declare type FormattingDirection = 'forward' | 'backward';
 

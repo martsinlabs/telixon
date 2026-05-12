@@ -41,6 +41,8 @@ export class NumberResolver {
 
   private _numberTypeFilter: BinaryFilter | null = null;
 
+  private _strict: boolean = false;
+
   advance(digit: number): void {
     const deadStateId: number = this.graphLayer.deadStateId;
 
@@ -106,13 +108,8 @@ export class NumberResolver {
     this._callingCodeState = -1;
   }
 
-  resolveLatestConcreteCountryIndex(preferredCountryIndex: number): number {
-    return resolveLatestConcreteCountryIndex(
-      this.snapshot,
-      preferredCountryIndex,
-      this._nationalStates,
-      this._terminalStateEnds,
-    );
+  resolveLatestConcreteCountryIndex(): number {
+    return resolveLatestConcreteCountryIndex(this.snapshot, this._nationalStates, this._terminalStateEnds);
   }
 
   getCallingCode(): string {
@@ -129,6 +126,10 @@ export class NumberResolver {
 
   setNumberTypeFilter(filter: BinaryFilter | null): void {
     this._numberTypeFilter = filter;
+  }
+
+  setStrict(strict: boolean): void {
+    this._strict = strict;
   }
 
   get state(): number {
@@ -161,6 +162,7 @@ export class NumberResolver {
       callingCodeState: this._callingCodeState,
       countryFilter: this._countryFilter,
       numberTypeFilter: this._numberTypeFilter,
+      strict: this._strict,
     };
   }
 }

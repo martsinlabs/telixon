@@ -9,6 +9,7 @@ export interface NumberResolverSnapshot {
   readonly callingCodeState: number;
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
+  readonly strict: boolean;
 }
 
 export interface NumberTypeProfileRef {
