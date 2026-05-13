@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -28,7 +28,9 @@
     "prettier-plugin-packagejson": "^3.0.2",
     "tsup": "^8.5.1",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.58.0",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.6"
   },
   "packageManager": "pnpm@10.16.1"
 }
