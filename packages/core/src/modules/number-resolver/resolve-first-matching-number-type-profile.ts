@@ -12,65 +12,66 @@ import {
   NumberTypeScopeLayer,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from './models';
 import { isNumberTypeAllowed } from './utils/is-number-type-allowed';
 
-function isGeneralDescNumberType(countryIndex: number, numberTypeIndex: number): boolean {
-  const resourceProvider = getResourceProvider();
+function isGeneralDescNumberType(
+  resourceProvider: ResourceProvider,
+  countryIndex: number,
+  numberTypeIndex: number,
+): boolean {
   const generalDescTypeId = resourceProvider.refMapping.numberTypes.length - 1;
   return resourceProvider.territorySpecTable[countryIndex]!.numberTypes[numberTypeIndex]!.type === generalDescTypeId;
 }
 
-function isGeneralDescProfile(profile: NumberTypeProfileRef): boolean {
-  const resourceProvider = getResourceProvider();
+function isGeneralDescProfile(resourceProvider: ResourceProvider, profile: NumberTypeProfileRef): boolean {
   const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
-  return isGeneralDescNumberType(countryIndex, profile.numberTypeIndex);
+  return isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex);
 }
 
 function isCountryExcluded(snapshot: NumberResolverSnapshot, countryIndex: number): boolean {
   return snapshot.countryFilter != null && snapshot.countryFilter[countryIndex] === 0;
 }
 
-function canProfileReachLength(profile: NumberTypeProfileRef, digitsLength: number): boolean {
-  const resourceProvider = getResourceProvider();
+function canProfileReachLength(
+  resourceProvider: ResourceProvider,
+  profile: NumberTypeProfileRef,
+  digitsLength: number,
+): boolean {
   const lengthMask = getLengthMask(resourceProvider.numberTypeProfileLayer, profile.numberTypeProfileId);
 
   return digitsLength <= getMaxLength(lengthMask);
 }
 
-// Resolves the first profile for one country that is still valid at the current length.
-function resolveFirstCountryProfile(
+// Resolves the first profile for one country whose length mask contains the current digit length.
+function resolveFirstCountryProfileExact(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   stateCountryIndex: number,
   countryIndex: number,
   getCandidateMask: (layer: NumberTypeScopeLayer, stateCountryIndex: number) => number,
-  isCompleted: boolean,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   const numberTypeMask = getNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
   const candidateMask = getCandidateMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const numberTypeFilter = snapshot.numberTypeFilter;
+  const profileLayer = resourceProvider.numberTypeProfileLayer;
+
   let resolved: NumberTypeProfileRef | null = null;
 
-  forEachNumberTypeIndex(candidateMask, (numberTypeIndex) => {
-    if (snapshot.numberTypeFilter && !isNumberTypeAllowed(snapshot.numberTypeFilter, countryIndex, numberTypeIndex)) {
-      return;
-    }
+  forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
+    if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) return;
 
     const numberTypeProfileId = getNumberTypeProfileId(
-      resourceProvider.numberTypeProfileLayer,
+      profileLayer,
       stateCountryIndex,
       numberTypeMask,
       numberTypeIndex,
     );
+    const lengthMask = getLengthMask(profileLayer, numberTypeProfileId);
 
-    const lengthMask = getLengthMask(resourceProvider.numberTypeProfileLayer, numberTypeProfileId);
-
-    if (isCompleted) {
-      if (!containsLength(lengthMask, digitsLength)) return;
-    } else if (digitsLength > getMaxLength(lengthMask)) {
-      return;
-    }
+    if (!containsLength(lengthMask, digitsLength)) return;
 
     resolved = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
     return true;
@@ -79,29 +80,68 @@ function resolveFirstCountryProfile(
   return resolved;
 }
 
-function isConcreteProfile(profile: NumberTypeProfileRef | null): profile is NumberTypeProfileRef {
-  return profile !== null && !isGeneralDescProfile(profile);
+// Resolves the first profile for one country that can still grow to a valid length.
+function resolveFirstCountryProfilePartial(
+  resourceProvider: ResourceProvider,
+  snapshot: NumberResolverSnapshot,
+  digitsLength: number,
+  stateCountryIndex: number,
+  countryIndex: number,
+  getCandidateMask: (layer: NumberTypeScopeLayer, stateCountryIndex: number) => number,
+): NumberTypeProfileRef | null {
+  const numberTypeMask = getNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const candidateMask = getCandidateMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+  const numberTypeFilter = snapshot.numberTypeFilter;
+  const profileLayer = resourceProvider.numberTypeProfileLayer;
+
+  let resolved: NumberTypeProfileRef | null = null;
+
+  forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
+    if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) return;
+
+    const numberTypeProfileId = getNumberTypeProfileId(
+      profileLayer,
+      stateCountryIndex,
+      numberTypeMask,
+      numberTypeIndex,
+    );
+    const lengthMask = getLengthMask(profileLayer, numberTypeProfileId);
+
+    if (digitsLength > getMaxLength(lengthMask)) return;
+
+    resolved = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
+    return true;
+  });
+
+  return resolved;
+}
+
+function isConcreteProfile(
+  resourceProvider: ResourceProvider,
+  profile: NumberTypeProfileRef | null,
+): profile is NumberTypeProfileRef {
+  return profile !== null && !isGeneralDescProfile(resourceProvider, profile);
 }
 
 // Resolves one specific country from the current DFA state.
 function resolveCountryInCurrentState(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
   countryIndexToResolve: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let resolved: NumberTypeProfileRef | null = null;
 
   forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
-    resolved = resolveFirstCountryProfile(
+    resolved = resolveFirstCountryProfilePartial(
+      resourceProvider,
       snapshot,
       digitsLength,
       stateCountryIndex,
       countryIndex,
       getNumberTypeMask,
-      false,
     );
     return true;
   });
@@ -111,12 +151,12 @@ function resolveCountryInCurrentState(
 
 // Resolves one specific country from terminal-prefix states.
 function resolveCountryInTerminalStates(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
   countryIndexToResolve: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let generalProfile: NumberTypeProfileRef | null = null;
 
   for (let i = terminalStateCount - 1; i >= 0; i--) {
@@ -129,17 +169,17 @@ function resolveCountryInTerminalStates(
       (stateCountryIndex, countryIndex) => {
         if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
 
-        const profile = resolveFirstCountryProfile(
+        const profile = resolveFirstCountryProfilePartial(
+          resourceProvider,
           snapshot,
           digitsLength,
           stateCountryIndex,
           countryIndex,
           getTerminalPrefixNumberTypeMask,
-          false,
         );
         if (!profile) return;
 
-        if (isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) {
+        if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
           if (!generalProfile) generalProfile = profile;
           return;
         }
@@ -157,12 +197,12 @@ function resolveCountryInTerminalStates(
 
 // Resolves any exact terminal-prefix match with preferred-country tie-breaks.
 function resolveExactInTerminalStates(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
   preferredCountryIndex: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let generalProfile: NumberTypeProfileRef | null = null;
 
   for (let i = terminalStateCount - 1; i >= 0; i--) {
@@ -179,17 +219,17 @@ function resolveExactInTerminalStates(
         if (isCountryExcluded(snapshot, countryIndex)) return;
 
         const isPreferred = preferredCountryIndex !== -1 && countryIndex === preferredCountryIndex;
-        const profile = resolveFirstCountryProfile(
+        const profile = resolveFirstCountryProfileExact(
+          resourceProvider,
           snapshot,
           digitsLength,
           stateCountryIndex,
           countryIndex,
           getTerminalPrefixNumberTypeMask,
-          true,
         );
         if (!profile) return;
 
-        if (isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) {
+        if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
           if (isPreferred && !generalPreferred) generalPreferred = profile;
           else if (!isPreferred && !generalFallback) generalFallback = profile;
           return;
@@ -215,12 +255,12 @@ function resolveExactInTerminalStates(
 
 // Resolves an exact terminal-prefix match for one specific country.
 function resolveCountryExactInTerminalStates(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
   countryIndexToResolve: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let generalProfile: NumberTypeProfileRef | null = null;
 
   for (let i = terminalStateCount - 1; i >= 0; i--) {
@@ -233,17 +273,17 @@ function resolveCountryExactInTerminalStates(
       (stateCountryIndex, countryIndex) => {
         if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
 
-        const profile = resolveFirstCountryProfile(
+        const profile = resolveFirstCountryProfileExact(
+          resourceProvider,
           snapshot,
           digitsLength,
           stateCountryIndex,
           countryIndex,
           getTerminalPrefixNumberTypeMask,
-          true,
         );
         if (!profile) return;
 
-        if (isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) {
+        if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
           if (!generalProfile) generalProfile = profile;
           return;
         }
@@ -261,29 +301,29 @@ function resolveCountryExactInTerminalStates(
 
 // Resolves any non-preferred country from the current DFA state.
 function resolveFallbackInCurrentState(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
   preferredCountryIndex: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let resolved: NumberTypeProfileRef | null = null;
   let generalProfile: NumberTypeProfileRef | null = null;
 
   forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex) || countryIndex === preferredCountryIndex) return;
 
-    const profile = resolveFirstCountryProfile(
+    const profile = resolveFirstCountryProfilePartial(
+      resourceProvider,
       snapshot,
       digitsLength,
       stateCountryIndex,
       countryIndex,
       getNumberTypeMask,
-      false,
     );
     if (!profile) return;
 
-    if (isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) {
+    if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
       if (!generalProfile) generalProfile = profile;
       return;
     }
@@ -297,12 +337,12 @@ function resolveFallbackInCurrentState(
 
 // Resolves any non-preferred country from terminal-prefix states.
 function resolveFallbackInTerminalStates(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
   preferredCountryIndex: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let generalProfile: NumberTypeProfileRef | null = null;
 
   for (let i = terminalStateCount - 1; i >= 0; i--) {
@@ -316,17 +356,17 @@ function resolveFallbackInTerminalStates(
       (stateCountryIndex, countryIndex) => {
         if (isCountryExcluded(snapshot, countryIndex) || countryIndex === preferredCountryIndex) return;
 
-        const profile = resolveFirstCountryProfile(
+        const profile = resolveFirstCountryProfilePartial(
+          resourceProvider,
           snapshot,
           digitsLength,
           stateCountryIndex,
           countryIndex,
           getTerminalPrefixNumberTypeMask,
-          false,
         );
         if (!profile) return;
 
-        if (isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) {
+        if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
           if (!terminalGeneralProfile) terminalGeneralProfile = profile;
           return;
         }
@@ -345,12 +385,11 @@ function resolveFallbackInTerminalStates(
 
 // Finds a uniquely concrete terminal-prefix country at the current digit position.
 function resolveUniqueConcreteProfileInTerminalStates(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
-
   for (let i = terminalStateCount - 1; i >= 0; i--) {
     const terminalState = snapshot.terminalStates[i]!;
     let uniqueProfile: NumberTypeProfileRef | null = null;
@@ -363,16 +402,16 @@ function resolveUniqueConcreteProfileInTerminalStates(
       (stateCountryIndex, countryIndex) => {
         if (isCountryExcluded(snapshot, countryIndex)) return;
 
-        const profile = resolveFirstCountryProfile(
+        const profile = resolveFirstCountryProfilePartial(
+          resourceProvider,
           snapshot,
           digitsLength,
           stateCountryIndex,
           countryIndex,
           getTerminalPrefixNumberTypeMask,
-          false,
         );
 
-        if (!profile || isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) return;
+        if (!profile || isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) return;
 
         if (uniqueCountryIndex === -1) {
           uniqueCountryIndex = countryIndex;
@@ -395,11 +434,11 @@ function resolveUniqueConcreteProfileInTerminalStates(
 
 // Finds a uniquely concrete current-state country at the current digit position.
 function resolveUniqueConcreteProfileInCurrentState(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
 ): NumberTypeProfileRef | null {
-  const resourceProvider = getResourceProvider();
   let uniqueProfile: NumberTypeProfileRef | null = null;
   let uniqueCountryIndex = -1;
   let hasMultipleCountries = false;
@@ -407,15 +446,15 @@ function resolveUniqueConcreteProfileInCurrentState(
   forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex)) return;
 
-    const profile = resolveFirstCountryProfile(
+    const profile = resolveFirstCountryProfilePartial(
+      resourceProvider,
       snapshot,
       digitsLength,
       stateCountryIndex,
       countryIndex,
       getNumberTypeMask,
-      false,
     );
-    if (!profile || isGeneralDescNumberType(countryIndex, profile.numberTypeIndex)) return;
+    if (!profile || isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) return;
 
     if (uniqueCountryIndex === -1) {
       uniqueCountryIndex = countryIndex;
@@ -431,22 +470,29 @@ function resolveUniqueConcreteProfileInCurrentState(
 
 // Resolves the anchor candidate for one digit position: terminal-prefix uniqueness first, then current-state uniqueness.
 function resolveAnchorProfileAtPosition(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
   terminalStateCount: number,
   isAlive: boolean,
 ): NumberTypeProfileRef | null {
-  const terminalProfile = resolveUniqueConcreteProfileInTerminalStates(snapshot, digitsLength, terminalStateCount);
+  const terminalProfile = resolveUniqueConcreteProfileInTerminalStates(
+    resourceProvider,
+    snapshot,
+    digitsLength,
+    terminalStateCount,
+  );
   if (terminalProfile !== null) return terminalProfile;
 
   if (!isAlive) return null;
 
-  return resolveUniqueConcreteProfileInCurrentState(snapshot, state, digitsLength);
+  return resolveUniqueConcreteProfileInCurrentState(resourceProvider, snapshot, state, digitsLength);
 }
 
 // Strict mode checks only the preferred country: exact, current partial, then terminal partial.
 function resolveStrictPreferredMatch(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
@@ -459,24 +505,37 @@ function resolveStrictPreferredMatch(
 
   if (hasTerminals) {
     const profile = resolveCountryExactInTerminalStates(
+      resourceProvider,
       snapshot,
       digitsLength,
       terminalStateCount,
       preferredCountryIndex,
     );
-    if (isConcreteProfile(profile)) return profile;
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null) generalProfile = profile;
   }
 
   if (isAlive) {
-    const profile = resolveCountryInCurrentState(snapshot, state, digitsLength, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInCurrentState(
+      resourceProvider,
+      snapshot,
+      state,
+      digitsLength,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null && generalProfile === null) generalProfile = profile;
   }
 
   if (hasTerminals) {
-    const profile = resolveCountryInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null && generalProfile === null) generalProfile = profile;
   }
 
@@ -485,6 +544,7 @@ function resolveStrictPreferredMatch(
 
 // Step 1: an anchored concrete exact match always wins before any partial candidate is considered.
 function resolveAnchoredConcreteExactMatch(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   digitsLength: number,
   terminalStateCount: number,
@@ -492,14 +552,20 @@ function resolveAnchoredConcreteExactMatch(
 ): NumberTypeProfileRef | null {
   if (anchoredCountryIndex === -1) return null;
 
-  const profile = resolveCountryExactInTerminalStates(snapshot, digitsLength, terminalStateCount, anchoredCountryIndex);
+  const profile = resolveCountryExactInTerminalStates(
+    resourceProvider,
+    snapshot,
+    digitsLength,
+    terminalStateCount,
+    anchoredCountryIndex,
+  );
 
-  return profile !== null && !isGeneralDescProfile(profile) ? profile : null;
+  return profile !== null && !isGeneralDescProfile(resourceProvider, profile) ? profile : null;
 }
-
 
 // Step 3: preferred concrete partial matches outrank anchored partial matches.
 function resolvePreferredConcretePartialMatch(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
@@ -511,13 +577,25 @@ function resolvePreferredConcretePartialMatch(
   if (preferredCountryIndex === -1) return null;
 
   if (isAlive) {
-    const profile = resolveCountryInCurrentState(snapshot, state, digitsLength, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInCurrentState(
+      resourceProvider,
+      snapshot,
+      state,
+      digitsLength,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
   }
 
   if (hasTerminals) {
-    const profile = resolveCountryInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
   }
 
   return null;
@@ -525,6 +603,7 @@ function resolvePreferredConcretePartialMatch(
 
 // Step 4: anchored partial keeps its country before generic fallback candidates.
 function resolveAnchoredPartialChain(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
@@ -539,14 +618,20 @@ function resolveAnchoredPartialChain(
   let generalProfile: NumberTypeProfileRef | null = null;
 
   if (isAlive) {
-    const profile = resolveCountryInCurrentState(snapshot, state, digitsLength, anchoredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInCurrentState(resourceProvider, snapshot, state, digitsLength, anchoredCountryIndex);
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null) generalProfile = profile;
   }
 
   if (hasTerminals) {
-    const profile = resolveCountryInTerminalStates(snapshot, digitsLength, terminalStateCount, anchoredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveCountryInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      anchoredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null && generalProfile === null) generalProfile = profile;
   }
 
@@ -555,6 +640,7 @@ function resolveAnchoredPartialChain(
 
 // Step 5: if preferred and anchored country do not resolve, use any concrete non-preferred partial match.
 function resolveFallbackConcretePartialMatch(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
@@ -564,13 +650,25 @@ function resolveFallbackConcretePartialMatch(
   hasTerminals: boolean,
 ): NumberTypeProfileRef | null {
   if (isAlive) {
-    const profile = resolveFallbackInCurrentState(snapshot, state, digitsLength, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveFallbackInCurrentState(
+      resourceProvider,
+      snapshot,
+      state,
+      digitsLength,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
   }
 
   if (hasTerminals) {
-    const profile = resolveFallbackInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveFallbackInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
   }
 
   return null;
@@ -578,6 +676,7 @@ function resolveFallbackConcretePartialMatch(
 
 // Step 6: returns the first generalDesc in chain order (preferred current -> preferred terminal -> other current -> other terminal).
 function resolveGeneralDescPartialFallback(
+  resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
   state: number,
   digitsLength: number,
@@ -590,27 +689,51 @@ function resolveGeneralDescPartialFallback(
 
   if (preferredCountryIndex !== -1) {
     if (isAlive) {
-      const profile = resolveCountryInCurrentState(snapshot, state, digitsLength, preferredCountryIndex);
-      if (isConcreteProfile(profile)) return profile;
+      const profile = resolveCountryInCurrentState(
+        resourceProvider,
+        snapshot,
+        state,
+        digitsLength,
+        preferredCountryIndex,
+      );
+      if (isConcreteProfile(resourceProvider, profile)) return profile;
       if (profile !== null) generalProfile = profile;
     }
 
     if (hasTerminals) {
-      const profile = resolveCountryInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
-      if (isConcreteProfile(profile)) return profile;
+      const profile = resolveCountryInTerminalStates(
+        resourceProvider,
+        snapshot,
+        digitsLength,
+        terminalStateCount,
+        preferredCountryIndex,
+      );
+      if (isConcreteProfile(resourceProvider, profile)) return profile;
       if (profile !== null && generalProfile === null) generalProfile = profile;
     }
   }
 
   if (isAlive) {
-    const profile = resolveFallbackInCurrentState(snapshot, state, digitsLength, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveFallbackInCurrentState(
+      resourceProvider,
+      snapshot,
+      state,
+      digitsLength,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null && generalProfile === null) generalProfile = profile;
   }
 
   if (hasTerminals) {
-    const profile = resolveFallbackInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
-    if (isConcreteProfile(profile)) return profile;
+    const profile = resolveFallbackInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      preferredCountryIndex,
+    );
+    if (isConcreteProfile(resourceProvider, profile)) return profile;
     if (profile !== null && generalProfile === null) generalProfile = profile;
   }
 
@@ -632,6 +755,7 @@ export function resolveLatestConcreteCountryIndex(
   for (let i = 0; i < snapshot.nationalDigits.length; i++) {
     const state = nationalStates[i]!;
     const profile = resolveAnchorProfileAtPosition(
+      resourceProvider,
       snapshot,
       state,
       i + 1,
@@ -640,7 +764,7 @@ export function resolveLatestConcreteCountryIndex(
     );
 
     if (profile === null) continue;
-    if (!canProfileReachLength(profile, finalDigitsLength)) continue;
+    if (!canProfileReachLength(resourceProvider, profile, finalDigitsLength)) continue;
 
     latestCountryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   }
@@ -690,6 +814,7 @@ export function resolveFirstMatchingNumberTypeProfile(
   // Strict mode never leaves the preferred country.
   if (snapshot.strict && preferredCountryIndex !== -1) {
     return resolveStrictPreferredMatch(
+      resourceProvider,
       snapshot,
       state,
       digitsLength,
@@ -703,6 +828,7 @@ export function resolveFirstMatchingNumberTypeProfile(
   // Exact matches always win before any partial chain.
   if (hasTerminals) {
     const anchoredExact = resolveAnchoredConcreteExactMatch(
+      resourceProvider,
       snapshot,
       digitsLength,
       terminalStateCount,
@@ -711,12 +837,19 @@ export function resolveFirstMatchingNumberTypeProfile(
     if (anchoredExact !== null) return anchoredExact;
 
     // Step 2: among exact matches, use the deterministic preferred-then-fallback order.
-    const anyExact = resolveExactInTerminalStates(snapshot, digitsLength, terminalStateCount, preferredCountryIndex);
+    const anyExact = resolveExactInTerminalStates(
+      resourceProvider,
+      snapshot,
+      digitsLength,
+      terminalStateCount,
+      preferredCountryIndex,
+    );
     if (anyExact !== null) return anyExact;
   }
 
   // Preferred concrete partial wins while the number is still incomplete.
   const preferredConcrete = resolvePreferredConcretePartialMatch(
+    resourceProvider,
     snapshot,
     state,
     digitsLength,
@@ -729,6 +862,7 @@ export function resolveFirstMatchingNumberTypeProfile(
 
   // Then keep the anchored country alive before trying other countries.
   const anchoredProfile = resolveAnchoredPartialChain(
+    resourceProvider,
     snapshot,
     state,
     digitsLength,
@@ -741,6 +875,7 @@ export function resolveFirstMatchingNumberTypeProfile(
   if (anchoredProfile !== null) return anchoredProfile;
 
   const fallbackConcrete = resolveFallbackConcretePartialMatch(
+    resourceProvider,
     snapshot,
     state,
     digitsLength,
@@ -752,6 +887,7 @@ export function resolveFirstMatchingNumberTypeProfile(
   if (fallbackConcrete !== null) return fallbackConcrete;
 
   return resolveGeneralDescPartialFallback(
+    resourceProvider,
     snapshot,
     state,
     digitsLength,
