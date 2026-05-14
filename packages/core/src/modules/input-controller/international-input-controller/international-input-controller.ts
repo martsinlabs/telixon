@@ -110,7 +110,11 @@ class InternationalInputController extends InputController {
 
     if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
       const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
-      const pos: number = prevDigit === -1 ? 0 : prevDigit + 1;
+      if (prevDigit === -1) {
+        this.#history.updateCurrentSelection(selectionStart, selectionStart);
+        return { ...toInputState(this.#history.current), selectionStart, selectionEnd: selectionStart };
+      }
+      const pos: number = prevDigit + 1;
       this.#history.updateCurrentSelection(pos, pos);
       return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
     }

@@ -4,6 +4,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    setupFiles: ['./packages/core/src/modules/number-resolver/__tests__/setup.ts'],
+    setupFiles: ['./packages/core/src/test-setup.ts'],
   },
 });

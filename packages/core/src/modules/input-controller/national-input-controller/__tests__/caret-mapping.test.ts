@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { InputState } from '../models';
-import { createNationalInputController } from '../national-input-controller';
+import { InputState } from '../../models';
+import { createNationalInputController } from '..';
 
 function placeCaretInRaw(country: string, raw: string, caret: number): InputState {
   const controller = createNationalInputController({ country });

@@ -4,6 +4,8 @@ import {
   isBlockedInputType,
   isForwardDeleteInputType,
   isInsertInputType,
+  isWordBackwardDeleteInputType,
+  isWordForwardDeleteInputType,
 } from './constants/before-input-types';
 import type { PhoneInput, PhoneInputListener, PhoneInputOptions, PhoneInputState } from './models';
 import { applyInputState } from './utils/apply-input-state';
@@ -11,6 +13,7 @@ import { assertTextInputType } from './utils/assert-text-input-type';
 import { resolveInsertText } from './utils/before-input';
 import { buildController } from './utils/build-controller';
 import { deriveState } from './utils/derive-state';
+import { findNextWordBoundary, findPreviousWordBoundary } from './utils/word-boundary';
 
 const ATTACHED_INPUTS: WeakSet<HTMLInputElement> = new WeakSet();
 
@@ -90,6 +93,24 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     if (isForwardDeleteInputType(inputType)) {
       commit(() => {
         inputController.deleteForward(value, selectionStart, selectionEnd);
+      });
+      return;
+    }
+
+    if (isWordBackwardDeleteInputType(inputType)) {
+      const wordStart: number =
+        selectionStart === selectionEnd ? findPreviousWordBoundary(value, selectionStart) : selectionStart;
+      commit(() => {
+        inputController.deleteBackward(value, wordStart, selectionEnd);
+      });
+      return;
+    }
+
+    if (isWordForwardDeleteInputType(inputType)) {
+      const wordEnd: number =
+        selectionStart === selectionEnd ? findNextWordBoundary(value, selectionEnd) : selectionEnd;
+      commit(() => {
+        inputController.deleteForward(value, selectionStart, wordEnd);
       });
       return;
     }

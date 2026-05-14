@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createNationalInputController } from '../national-input-controller';
+import { createNationalInputController } from '..';
 
 describe('national controller history de-duplication', () => {
   it('does not push when typing a non-digit leaves value and country unchanged', () => {

@@ -8,13 +8,16 @@ const INSERT_INPUT_TYPES = new Set([
 
 const BACKWARD_DELETE_INPUT_TYPES = new Set([
   'deleteContentBackward',
-  'deleteWordBackward',
   'deleteByCut',
   'deleteContent',
   'deleteByDrag',
 ]);
 
-const FORWARD_DELETE_INPUT_TYPES = new Set(['deleteContentForward', 'deleteWordForward']);
+const FORWARD_DELETE_INPUT_TYPES = new Set(['deleteContentForward']);
+
+const WORD_BACKWARD_DELETE_INPUT_TYPES = new Set(['deleteWordBackward']);
+
+const WORD_FORWARD_DELETE_INPUT_TYPES = new Set(['deleteWordForward']);
 
 const BLOCKED_INPUT_TYPES = new Set([
   'insertLineBreak',
@@ -57,6 +60,14 @@ export function isBackwardDeleteInputType(inputType: string): boolean {
 
 export function isForwardDeleteInputType(inputType: string): boolean {
   return FORWARD_DELETE_INPUT_TYPES.has(inputType);
+}
+
+export function isWordBackwardDeleteInputType(inputType: string): boolean {
+  return WORD_BACKWARD_DELETE_INPUT_TYPES.has(inputType);
+}
+
+export function isWordForwardDeleteInputType(inputType: string): boolean {
+  return WORD_FORWARD_DELETE_INPUT_TYPES.has(inputType);
 }
 
 export function isBlockedInputType(inputType: string): boolean {
