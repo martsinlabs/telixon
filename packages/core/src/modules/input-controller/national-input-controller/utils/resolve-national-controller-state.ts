@@ -1,4 +1,10 @@
-import { formatNumber, FormattingDirection, getCountryIndex, PhoneNumberFormat, PhoneNumberFormattingContext } from '@telixon/core/engine';
+import {
+  formatNumberWithRawCaret,
+  FormattingDirection,
+  getCountryIndex,
+  PhoneNumberFormat,
+  PhoneNumberFormattingContext,
+} from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
 import { resolveFormatFromProfile } from '../../../number-resolver/resolve-format-from-profile';
@@ -7,7 +13,6 @@ import { CaretIndex, InputControllerState } from '../../models';
 
 export function resolveNationalControllerState(
   snapshot: NumberResolverSnapshot,
-  caretIndex: CaretIndex,
   profile: NumberTypeProfileRef | null,
   defaultCountryIndex: number,
   nationalPrefixTyped: boolean,
@@ -51,7 +56,11 @@ export function resolveNationalControllerState(
           ...(nationalPrefix !== undefined && { nationalPrefix }),
         };
 
-        const { formatted, caretIndex: natCaretFormatted } = formatNumber(formattingContext, caretIndex, direction);
+        const { formatted, caretIndex: natCaretFormatted } = formatNumberWithRawCaret(
+          formattingContext,
+          rawCaretIndex,
+          direction,
+        );
 
         formattedNationalNumber = formatted;
         formattedNationalCaretIndex = natCaretFormatted;

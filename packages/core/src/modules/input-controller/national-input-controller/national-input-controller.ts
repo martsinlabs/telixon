@@ -80,10 +80,10 @@ class NationalInputController extends InputController {
 
     const rawString: string = rawDigits.join('');
 
-    const { normalizedDigits, caretIndex } =
+    const normalizedDigits: string =
       rawString.length > 0 && territorySpec
-        ? normalizeNationalNumber(rawString, territorySpec, rawCaretIndex)
-        : { normalizedDigits: rawString, caretIndex: rawCaretIndex };
+        ? normalizeNationalNumber(rawString, territorySpec).normalizedDigits
+        : rawString;
 
     const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, territorySpec);
 
@@ -102,7 +102,6 @@ class NationalInputController extends InputController {
 
     return resolveNationalControllerState(
       snapshot,
-      caretIndex,
       profile,
       this.#defaultCountryIndex,
       nationalPrefixTyped,

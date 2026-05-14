@@ -111,9 +111,24 @@ export declare function formatNumber(context: PhoneNumberFormattingContext, care
 
 /**
  * @public
+ * Formats the national number and returns the caret position aligned to the given raw digit index.
+ */
+export declare function formatNumberWithRawCaret(context: PhoneNumberFormattingContext, rawCaretIndex: number, direction: FormattingDirection): FormattedWithCaret;
+
+/**
+ * @public
  * Table of phone number formats.
  */
 export declare type FormatsTable = PhoneNumberFormatList[];
+
+/**
+ * @public
+ * Formatted phone number with the corresponding caret position.
+ */
+export declare interface FormattedWithCaret {
+    formatted: string;
+    caretIndex: number;
+}
 
 /**
  * @public
