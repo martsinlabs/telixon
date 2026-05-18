@@ -242,4 +242,18 @@ describe('filters', () => {
       expect(getProfileType(profile)).not.toBe('fixedLine');
     }
   });
+
+  it('numberTypeFilter still resolves country via GENERAL_DESC fallback for non-matching types', () => {
+    const resolver = new NumberResolver();
+    resolver.setNumberTypeFilter(createNumberTypeFilter(['MOBILE']));
+    resolver.setCallingCode('1');
+    for (let i = 0; i < '8005551234'.length; i++) {
+      resolver.advance('8005551234'.charCodeAt(i) - 48);
+    }
+
+    const profile = resolveProfile(resolver, 'US');
+
+    expect(profile).not.toBeNull();
+    expect(getProfileCountry(profile!)).toBe('US');
+  });
 });
