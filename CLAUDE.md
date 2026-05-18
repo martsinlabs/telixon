@@ -88,13 +88,24 @@ Build: `tsup`. Engine binaries copied post-build via `cpy`.
 - No mutations
 - No silent failures
 
-## After Changes
+## Roadmap
 
-Whenever code is modified in a session, run before reporting the work as done:
+Active work items live in [GitHub Project v2 "Telixon Roadmap"](https://github.com/orgs/martsinlabs/projects/2). The `Issues` tab is reserved for external bug reports and feature requests; internal planning belongs in the project board.
+
+List the current backlog:
+
+```
+gh project item-list 2 --owner martsinlabs --format json
+```
+
+Lifecycle: move an item to `In Progress` when work starts, and to `Done` when it ships. Reference the project URL or item title in the related commit or pull request.
+
+## Pre-commit verification
+
+Before reporting a code change as complete, run:
 
 1. `pnpm test` — all tests must pass
 2. `pnpm lint` — must be clean
 3. `pnpm format` — auto-fix style
 
-If any step fails, fix the cause and re-run. Skip only for pure documentation
-edits or read-only sessions.
+Fix the root cause and re-run on failure. Skip only for pure documentation changes or read-only sessions.
