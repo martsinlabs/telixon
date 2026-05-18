@@ -2,14 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '..';
 
 describe('InternationalInputController.deleteBackward', () => {
-  it('snaps caret past the trailing space separator when typed right after the calling code', () => {
+  it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    // Initial value: '1 '. Caret at 2 (end). Char at index 1 is the space — a formatting char.
+    // Initial value: '1 '. Caret at 2 (end). Char at index 1 is the calling-code separator.
+    // The separator is structurally re-added on resolve, so backspace cannot remove it —
+    // caret snaps back to the position right after the calling-code digit instead.
     const state = controller.deleteBackward('1 ', 2, 2);
 
-    // Caret snaps back to the position right after the last digit (index 1), no actual delete.
     expect(state.value).toBe('1 ');
     expect(state.selectionStart).toBe(1);
+  });
+
+  it('strips trailing formatting after a partial national number without losing a digit', () => {
+    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const seeded = controller.setValue('1212');
+    const valueWithTrailingFormatter = `${seeded.value}-`;
+    const caret = valueWithTrailingFormatter.length;
+
+    const state = controller.deleteBackward(valueWithTrailingFormatter, caret, caret);
+
+    // All four national digits remain; only the trailing dash is removed.
+    expect(state.value.replace(/\D/g, '')).toBe('1212');
+    expect(state.value.endsWith('-')).toBe(false);
+    expect(state.selectionStart).toBe(state.value.length);
   });
 
   it('deletes the last digit from a full US number with calling code shown', () => {

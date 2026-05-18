@@ -127,11 +127,17 @@ function resolveMode(): Mode {
 }
 
 function parseCountryFilter(value: string): string[] | null {
-  const items = value.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  const items = value
+    .split(',')
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
   return items.length > 0 ? items : null;
 }
 
 function parseNumberTypeFilter(value: string): string[] | null {
-  const items = value.split(',').map((s) => s.trim()).filter(Boolean);
+  const items = value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   return items.length > 0 ? items : null;
 }

@@ -18,9 +18,19 @@ export declare function containsLength(mask: number, length: number): boolean;
 
 /**
  * @public
- * Country identifier.
+ * CLDR two-letter region codes recognized by the engine. Source of truth for
+ * {@link CountryId}; cross-checked against raw XML by `raw-metadata-validator`.
+ * Excludes the non-geographical `'001'` (filtered by the raw loader).
  */
-export declare type CountryId = string;
+export declare const COUNTRY_IDS: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
+
+/**
+ * @public
+ * Territory identifier per CLDR two-letter region code.
+ * Derived from {@link COUNTRY_IDS} so the literal union and runtime list
+ * cannot drift apart.
+ */
+export declare type CountryId = (typeof COUNTRY_IDS)[number];
 
 /**
  * @public
@@ -43,6 +53,7 @@ export declare const ENGINE_LAYOUT: {
         readonly JS: "index.js";
         readonly DTS: "index.d.ts";
     };
+    readonly PROVENANCE: "PROVENANCE.json";
     readonly DFA: {
         readonly FOLDER: "dfa";
         readonly FILES: {
@@ -266,12 +277,29 @@ export declare function isCallingCodeStateValid(layer: CallingCodeLayer, state: 
 
 /**
  * @public
+ * Subset of {@link NumberType} that maps 1:1 to XML metadata elements.
+ * Drops runtime-only `FIXED_LINE_OR_MOBILE`/`UNKNOWN`, adds catch-all
+ * `GENERAL_DESC`. Used as keys in `ReferenceMapping.numberTypes` and as
+ * bit positions in the DFA number-type bitmask.
+ */
+export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBILE' | 'UNKNOWN'> | 'GENERAL_DESC';
+
+/**
+ * @public
  * Normalizes national digits and remaps the caret position accordingly.
  */
 export declare function normalizeNationalNumber(digits: string, territory: TerritorySpec, caretIndex?: number): {
     normalizedDigits: string;
     caretIndex: number;
 };
+
+/**
+ * @public
+ * Phone number type per libphonenumber `PhoneNumberType`. Adds runtime-only
+ * `FIXED_LINE_OR_MOBILE` (ambiguous region) and `UNKNOWN` (no pattern match).
+ * For the metadata-category subset, see {@link MetadataNumberType}.
+ */
+export declare type NumberType = 'FIXED_LINE' | 'MOBILE' | 'FIXED_LINE_OR_MOBILE' | 'TOLL_FREE' | 'PREMIUM_RATE' | 'SHARED_COST' | 'VOIP' | 'PERSONAL_NUMBER' | 'PAGER' | 'UAN' | 'VOICEMAIL' | 'UNKNOWN';
 
 /**
  * @public
@@ -407,7 +435,7 @@ export declare type ReferenceMapping = {
         indexToKey: number[];
         keyToIndex: Record<number, number>;
     };
-    numberTypes: readonly string[];
+    numberTypes: readonly MetadataNumberType[];
     digitPlaceholder: string;
     ignoredDigitPlaceholder: string;
     nationalPrefixPlaceholder: string;
@@ -427,7 +455,7 @@ export declare type StopIteration = true | void;
  * Territory specification schema.
  */
 export declare interface TerritorySpec {
-    id: string;
+    id: CountryId;
     countryCode: string;
     internationalPrefix?: string;
     leadingDigits?: string;
@@ -447,5 +475,14 @@ export declare interface TerritorySpec {
  * Table of territory specifications.
  */
 export declare type TerritorySpecTable = readonly TerritorySpec[];
+
+/**
+ * @public
+ * Map metadata number types to public {@link NumberType} per libphonenumber
+ * `getNumberType` semantics: drops `GENERAL_DESC`, collapses
+ * `FIXED_LINE`+`MOBILE` into `FIXED_LINE_OR_MOBILE`, returns `['UNKNOWN']`
+ * if empty.
+ */
+export declare function toNumberTypes(metadataTypes: readonly MetadataNumberType[]): NumberType[];
 
 export { }

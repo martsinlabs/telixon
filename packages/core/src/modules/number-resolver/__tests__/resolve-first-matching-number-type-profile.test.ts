@@ -1,4 +1,4 @@
-import { getCountryIndex, normalizeNationalNumber } from '@telixon/core/engine';
+import { CountryId, getCountryIndex, MetadataNumberType, normalizeNationalNumber } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberTypeProfileRef } from '../models';
@@ -17,7 +17,7 @@ function createResolver(callingCode: string, nationalDigits: string): NumberReso
   return resolver;
 }
 
-function createNationalResolver(country: string, rawNationalDigits: string): NumberResolver {
+function createNationalResolver(country: CountryId, rawNationalDigits: string): NumberResolver {
   const resourceProvider = getResourceProvider();
   const countryIndex = resourceProvider.refMapping.countries.keyToIndex[country] ?? -1;
   const territorySpec = resourceProvider.territorySpecTable[countryIndex]!;
@@ -26,9 +26,11 @@ function createNationalResolver(country: string, rawNationalDigits: string): Num
   return createResolver(territorySpec.countryCode, normalizedDigits);
 }
 
-function resolveProfile(resolver: NumberResolver, preferredCountry: string): NumberTypeProfileRef | null {
+function resolveProfile(resolver: NumberResolver, preferredCountry?: CountryId): NumberTypeProfileRef | null {
   const resourceProvider = getResourceProvider();
-  const preferredCountryIndex = resourceProvider.refMapping.countries.keyToIndex[preferredCountry] ?? -1;
+  const preferredCountryIndex = preferredCountry
+    ? (resourceProvider.refMapping.countries.keyToIndex[preferredCountry] ?? -1)
+    : -1;
 
   return resolveFirstMatchingNumberTypeProfile(
     resolver.snapshot,
@@ -37,14 +39,14 @@ function resolveProfile(resolver: NumberResolver, preferredCountry: string): Num
   );
 }
 
-function getProfileCountry(profile: NumberTypeProfileRef): string {
+function getProfileCountry(profile: NumberTypeProfileRef): CountryId {
   const resourceProvider = getResourceProvider();
   const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
 
   return resourceProvider.refMapping.countries.indexToKey[countryIndex]!;
 }
 
-function getProfileType(profile: NumberTypeProfileRef): string {
+function getProfileType(profile: NumberTypeProfileRef): MetadataNumberType {
   const resourceProvider = getResourceProvider();
   const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   const numberType = resourceProvider.territorySpecTable[countryIndex]!.numberTypes[profile.numberTypeIndex]!;
@@ -106,7 +108,7 @@ describe('resolveFirstMatchingNumberTypeProfile', () => {
 
     expect(profile).not.toBeNull();
     expect(getProfileCountry(profile!)).toBe('AR');
-    expect(getProfileType(profile!)).toBe('mobile');
+    expect(getProfileType(profile!)).toBe('MOBILE');
   });
 });
 
@@ -202,7 +204,7 @@ describe('priority chain: strict', () => {
   });
 
   it('strict + preferred=-1 falls through to non-strict resolution', () => {
-    const profile = resolveProfile(createStrictResolver('1', '2681234567'), '__no_preferred__');
+    const profile = resolveProfile(createStrictResolver('1', '2681234567'));
 
     expect(profile).not.toBeNull();
     expect(getProfileCountry(profile!)).toBe('AG');
@@ -228,7 +230,7 @@ describe('filters', () => {
 
   it('numberTypeFilter restricted to mobile excludes fixedLine resolutions', () => {
     const resolver = new NumberResolver();
-    resolver.setNumberTypeFilter(createNumberTypeFilter(['mobile']));
+    resolver.setNumberTypeFilter(createNumberTypeFilter(['MOBILE']));
     resolver.setCallingCode('1');
     for (let i = 0; i < '4165551234'.length; i++) {
       resolver.advance('4165551234'.charCodeAt(i) - 48);

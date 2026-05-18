@@ -1,4 +1,9 @@
-import type { InternationalInputControllerConfig, NationalInputControllerConfig } from '@telixon/core';
+import type {
+  CountryId,
+  InternationalInputControllerConfig,
+  NationalInputControllerConfig,
+  NumberType,
+} from '@telixon/core';
 
 type PhoneInputBaseOptions = {
   input: PhoneInputElement;
@@ -9,7 +14,7 @@ export type PhoneInputElement = HTMLInputElement;
 
 export type PhoneInputState = {
   value: string;
-  country: string | null;
+  country: CountryId | null;
   selectionStart: number;
   selectionEnd: number;
 };
@@ -28,14 +33,14 @@ export type PhoneInputListener = (state: PhoneInputState) => void;
 export type PhoneInput = {
   subscribe(listener: PhoneInputListener): () => void;
   setValue(value: string): void;
-  setCountry(country: string): void;
+  setCountry(country: CountryId): void;
   getState(): PhoneInputState;
   canUndo(): boolean;
   canRedo(): boolean;
   undo(): void;
   redo(): void;
   seal(): void;
-  setCountryFilter(countries: string[] | null): void;
-  setNumberTypeFilter(numberTypes: string[] | null): void;
+  setCountryFilter(countries: CountryId[] | null): void;
+  setNumberTypeFilter(numberTypes: NumberType[] | null): void;
   destroy(): void;
 };

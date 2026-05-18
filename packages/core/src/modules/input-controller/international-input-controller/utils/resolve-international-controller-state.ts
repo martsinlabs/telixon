@@ -1,4 +1,5 @@
 import {
+  CountryId,
   formatNumber,
   FormattingDirection,
   getCallingCodePrimaryCountry,
@@ -63,7 +64,7 @@ export function resolveInternationalControllerState(
     }
   }
 
-  let country: string | null = null;
+  let country: CountryId | null = null;
 
   if (profile) {
     country = refMapping.countries.indexToKey[getCountryIndex(countryScopeLayer, profile.stateCountryIndex)]!;

@@ -1,4 +1,4 @@
-import { InputController } from '@telixon/core';
+import { CountryId, InputController, NumberType } from '@telixon/core';
 import {
   isBackwardDeleteInputType,
   isBlockedInputType,
@@ -197,7 +197,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       commit(() => inputController.setValue(value));
     },
 
-    setCountry(country: string): void {
+    setCountry(country: CountryId): void {
       commit(() => inputController.setCountry(country));
     },
 
@@ -214,11 +214,11 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       notify(getControllerState());
     },
 
-    setCountryFilter(countries: string[] | null): void {
+    setCountryFilter(countries: CountryId[] | null): void {
       inputController.setCountryFilter(countries);
     },
 
-    setNumberTypeFilter(numberTypes: string[] | null): void {
+    setNumberTypeFilter(numberTypes: NumberType[] | null): void {
       inputController.setNumberTypeFilter(numberTypes);
     },
 

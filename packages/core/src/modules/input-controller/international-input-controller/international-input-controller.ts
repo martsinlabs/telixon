@@ -1,3 +1,4 @@
+import { CountryId, NumberType } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
@@ -44,7 +45,7 @@ class InternationalInputController extends InputController {
     );
   }
 
-  #setDefaultCountry(country: string): void {
+  #setDefaultCountry(country: CountryId): void {
     this.#defaultCountryIndex = getResourceProvider().refMapping.countries.keyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
@@ -109,9 +110,32 @@ class InternationalInputController extends InputController {
     }
 
     if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
+      if (findNextDigitPosition(value, selectionStart) !== -1) {
+        const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
+        if (prevDigit === -1) {
+          this.#history.updateCurrentSelection(selectionStart, selectionStart);
+          return { ...toInputState(this.#history.current), selectionStart, selectionEnd: selectionStart };
+        }
+        const pos: number = prevDigit + 1;
+        this.#history.updateCurrentSelection(pos, pos);
+        return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
+      }
+
+      this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+
+      const trimmedState: InputControllerState = this.#resolveState(
+        value,
+        { insertText: '', selectionStart, selectionEnd },
+        'backward',
+      );
+
+      if (trimmedState.value.length < value.length) {
+        this.#history.push(trimmedState);
+        return toInputState(this.#history.current);
+      }
+
       const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
       if (prevDigit === -1) {
-        this.#history.updateCurrentSelection(selectionStart, selectionStart);
         return { ...toInputState(this.#history.current), selectionStart, selectionEnd: selectionStart };
       }
       const pos: number = prevDigit + 1;
@@ -197,7 +221,7 @@ class InternationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountry(country: string): InputState {
+  setCountry(country: CountryId): InputState {
     this.#setDefaultCountry(country);
 
     const { value } = this.#history.current;
@@ -213,11 +237,11 @@ class InternationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountryFilter(countries: string[] | null): void {
+  setCountryFilter(countries: CountryId[] | null): void {
     this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
   }
 
-  setNumberTypeFilter(numberTypes: string[] | null): void {
+  setNumberTypeFilter(numberTypes: NumberType[] | null): void {
     this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
   }
 

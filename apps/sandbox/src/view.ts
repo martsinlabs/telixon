@@ -1,5 +1,5 @@
-import type { Controller } from './types';
 import { eventsEl, redoBtn, sealBtn, stateEl, undoBtn, warningEl } from './elements';
+import type { Controller } from './types';
 
 const MAX_LOG_LINES = 20;
 const log: string[] = [];
@@ -18,9 +18,7 @@ export function sync(current: Controller | null): void {
       : 'Check: typing · paste · Cmd+Z · Cmd+Shift+Z · delete-word · selection replace · duplicate attach';
 
   stateEl.textContent =
-    current === null
-      ? 'No input attached.'
-      : JSON.stringify({ mode: current.mode, ...state }, null, 2);
+    current === null ? 'No input attached.' : JSON.stringify({ mode: current.mode, ...state }, null, 2);
 }
 
 export function record(message: string): void {

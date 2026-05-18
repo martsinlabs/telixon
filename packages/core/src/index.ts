@@ -7,3 +7,5 @@ export { createInternationalInputController } from './modules/input-controller/i
 export { createNationalInputController } from './modules/input-controller/national-input-controller';
 
 export { ensureReady } from './resource-provider';
+
+export type { CountryId, NumberType } from './engine';

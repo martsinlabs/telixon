@@ -1,4 +1,5 @@
 import {
+  CountryId,
   formatNumberWithRawCaret,
   FormattingDirection,
   getCountryIndex,
@@ -24,7 +25,7 @@ export function resolveNationalControllerState(
 
   let formattedNationalNumber: string = rawString;
   let formattedNationalCaretIndex: number = rawCaretIndex;
-  let country: string | null = null;
+  let country: CountryId | null = null;
 
   if (profile) {
     const countryIndex: number = getCountryIndex(countryScopeLayer, profile.stateCountryIndex);

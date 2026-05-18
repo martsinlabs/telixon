@@ -1,0 +1,19 @@
+{
+  "source": {
+    "repo": "https://github.com/google/libphonenumber",
+    "commit": "1caffa8bfb2f4562ace38cce75f547692d484835",
+    "xmlPath": "resources/PhoneNumberMetadata.xml",
+    "fetchedAt": "2026-05-15",
+    "xmlSha256": "56e87aa619446e17651434e1e9c8f4cee670f61f13a875bf19bd01245dadb2b5"
+  },
+  "coverage": {
+    "territories": 245,
+    "callingCodes": 206,
+    "formats": 740,
+    "numberTypes": 11
+  },
+  "validation": {
+    "passedAt": "2026-05-15T18:36:24.530Z"
+  },
+  "builtAt": "2026-05-15T18:36:24.531Z"
+}

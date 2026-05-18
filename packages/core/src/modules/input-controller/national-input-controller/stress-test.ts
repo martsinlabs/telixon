@@ -1,3 +1,4 @@
+import { CountryId } from '@telixon/core/engine';
 import { NodeResourceLoader } from '@telixon/core/resource-loader/node-resource-loader';
 import { setResourceLoader } from '@telixon/core/resource-loader/resource-loader.config';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -23,7 +24,7 @@ type BenchmarkCase = {
 };
 
 type BenchmarkSuite = {
-  country: string;
+  country: CountryId;
   setValueInput: string;
   typedInput: string;
   selectionStart: number;

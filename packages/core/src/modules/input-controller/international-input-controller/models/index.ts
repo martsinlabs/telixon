@@ -1,17 +1,19 @@
+import { CountryId } from '@telixon/core/engine';
+
 export type InternationalDisplayConfig =
   | { readonly callingCodeInInput: false }
   | { readonly callingCodeInInput: true; readonly plusPrefix: boolean };
 
 export type InternationalInputControllerConfig =
   | {
-      defaultCountry?: string;
+      defaultCountry?: CountryId;
       strict?: boolean;
       initialValue?: string;
       maxHistorySize?: number;
       display?: Extract<InternationalDisplayConfig, { callingCodeInInput: true }>;
     }
   | {
-      defaultCountry: string;
+      defaultCountry: CountryId;
       strict?: boolean;
       initialValue?: string;
       maxHistorySize?: number;

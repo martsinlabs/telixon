@@ -1,9 +1,9 @@
-import { CallingCodeLayer, GraphLayer } from '@telixon/core/engine';
+import { CallingCodeLayer, CountryId, GraphLayer, NumberType } from '@telixon/core/engine';
 import { NumberTypeProfileRef } from '../../number-resolver/models';
 
 export interface InputState {
   value: string;
-  country: string | null;
+  country: CountryId | null;
   selectionStart: number;
   selectionEnd: number;
 }
@@ -41,15 +41,15 @@ export abstract class InputController {
 
   abstract setValue(value: string): InputState;
 
-  abstract setCountry(country: string): InputState;
+  abstract setCountry(country: CountryId): InputState;
 
   abstract undo(): InputState;
 
   abstract redo(): InputState;
 
-  abstract setCountryFilter(countries: string[] | null): void;
+  abstract setCountryFilter(countries: CountryId[] | null): void;
 
-  abstract setNumberTypeFilter(numberTypes: string[] | null): void;
+  abstract setNumberTypeFilter(numberTypes: NumberType[] | null): void;
 
   abstract seal(): void;
 

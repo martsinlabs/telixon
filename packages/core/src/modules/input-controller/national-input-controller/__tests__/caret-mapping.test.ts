@@ -1,8 +1,9 @@
+import { CountryId } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
-import { InputState } from '../../models';
 import { createNationalInputController } from '..';
+import { InputState } from '../../models';
 
-function placeCaretInRaw(country: string, raw: string, caret: number): InputState {
+function placeCaretInRaw(country: CountryId, raw: string, caret: number): InputState {
   const controller = createNationalInputController({ country });
 
   return controller.insert(raw, '', caret, caret);
@@ -14,20 +15,20 @@ describe('national controller caret mapping', () => {
     const FORMATTED = '011 15-2345-6789';
 
     it.each([
-      { name: 'before national prefix',          rawCaret: 0,  formattedCaret: 0  },
-      { name: 'after national prefix "0"',       rawCaret: 1,  formattedCaret: 1  },
-      { name: 'inside area code "0|1|1"',        rawCaret: 2,  formattedCaret: 2  },
-      { name: 'after area code, jumps past " "', rawCaret: 3,  formattedCaret: 4  },
-      { name: 'inside mobile indicator "1|5"',   rawCaret: 4,  formattedCaret: 5  },
-      { name: 'after "15", jumps past "-"',      rawCaret: 5,  formattedCaret: 7  },
-      { name: 'after subscriber digit 1',        rawCaret: 6,  formattedCaret: 8  },
-      { name: 'after subscriber digit 2',        rawCaret: 7,  formattedCaret: 9  },
-      { name: 'after subscriber digit 3',        rawCaret: 8,  formattedCaret: 10 },
-      { name: 'after first 4-digit chunk, "-"',  rawCaret: 9,  formattedCaret: 12 },
-      { name: 'after subscriber digit 5',        rawCaret: 10, formattedCaret: 13 },
-      { name: 'after subscriber digit 6',        rawCaret: 11, formattedCaret: 14 },
-      { name: 'after subscriber digit 7',        rawCaret: 12, formattedCaret: 15 },
-      { name: 'end of input',                    rawCaret: 13, formattedCaret: 16 },
+      { name: 'before national prefix', rawCaret: 0, formattedCaret: 0 },
+      { name: 'after national prefix "0"', rawCaret: 1, formattedCaret: 1 },
+      { name: 'inside area code "0|1|1"', rawCaret: 2, formattedCaret: 2 },
+      { name: 'after area code, jumps past " "', rawCaret: 3, formattedCaret: 4 },
+      { name: 'inside mobile indicator "1|5"', rawCaret: 4, formattedCaret: 5 },
+      { name: 'after "15", jumps past "-"', rawCaret: 5, formattedCaret: 7 },
+      { name: 'after subscriber digit 1', rawCaret: 6, formattedCaret: 8 },
+      { name: 'after subscriber digit 2', rawCaret: 7, formattedCaret: 9 },
+      { name: 'after subscriber digit 3', rawCaret: 8, formattedCaret: 10 },
+      { name: 'after first 4-digit chunk, "-"', rawCaret: 9, formattedCaret: 12 },
+      { name: 'after subscriber digit 5', rawCaret: 10, formattedCaret: 13 },
+      { name: 'after subscriber digit 6', rawCaret: 11, formattedCaret: 14 },
+      { name: 'after subscriber digit 7', rawCaret: 12, formattedCaret: 15 },
+      { name: 'end of input', rawCaret: 13, formattedCaret: 16 },
     ])('$name: raw $rawCaret -> formatted $formattedCaret', ({ rawCaret, formattedCaret }) => {
       const state = placeCaretInRaw('AR', RAW, rawCaret);
 

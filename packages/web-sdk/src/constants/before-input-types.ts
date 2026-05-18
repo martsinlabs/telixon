@@ -6,12 +6,7 @@ const INSERT_INPUT_TYPES = new Set([
   'insertFromYank',
 ]);
 
-const BACKWARD_DELETE_INPUT_TYPES = new Set([
-  'deleteContentBackward',
-  'deleteByCut',
-  'deleteContent',
-  'deleteByDrag',
-]);
+const BACKWARD_DELETE_INPUT_TYPES = new Set(['deleteContentBackward', 'deleteByCut', 'deleteContent', 'deleteByDrag']);
 
 const FORWARD_DELETE_INPUT_TYPES = new Set(['deleteContentForward']);
 
