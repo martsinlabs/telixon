@@ -176,6 +176,48 @@ body {
   padding: 12px 14px;
 }
 
+/* ── Chip filter ─────────────────────────────────────── */
+
+.chip-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+
+.chip:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
+}
+
+.chip--selected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip--selected:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Toggle ──────────────────────────────────────────── */
 
 .toggle {

@@ -1,6 +1,7 @@
-import { ensureReady } from '@telixon/core';
+import { ensureReady, type CountryId, type NumberType } from '@telixon/core';
 import './style.css';
 
+import { createChipFilter } from './chip-filter';
 import {
   applyCountryBtn,
   applyFiltersBtn,
@@ -21,8 +22,25 @@ import {
   undoBtn,
   warningEl,
 } from './elements';
+import { isCountryId } from './guards';
 import { attach, getCurrent, mount, type Mode } from './sandbox';
 import { record, sync } from './view';
+
+const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, {
+  options: [
+    { value: 'FIXED_LINE', label: 'Fixed line' },
+    { value: 'MOBILE', label: 'Mobile' },
+    { value: 'FIXED_LINE_OR_MOBILE', label: 'Fixed line or mobile' },
+    { value: 'TOLL_FREE', label: 'Toll free' },
+    { value: 'PREMIUM_RATE', label: 'Premium rate' },
+    { value: 'SHARED_COST', label: 'Shared cost' },
+    { value: 'VOIP', label: 'VoIP' },
+    { value: 'PERSONAL_NUMBER', label: 'Personal number' },
+    { value: 'PAGER', label: 'Pager' },
+    { value: 'UAN', label: 'UAN' },
+    { value: 'VOICEMAIL', label: 'Voicemail' },
+  ],
+});
 
 stateEl.textContent = 'Loading…';
 
@@ -35,11 +53,15 @@ strictEl.addEventListener('change', () => attach(resolveMode()));
 applyInitialValueBtn.addEventListener('click', () => attach(resolveMode(), initialValueEl.value));
 
 applyCountryBtn.addEventListener('click', () => {
-  const country = countryEl.value || 'US';
+  const raw = countryEl.value.toUpperCase();
+  if (!isCountryId(raw)) {
+    record(`setCountry skipped — invalid country "${raw}"`);
+    return;
+  }
   const ctrl = getCurrent();
-  ctrl?.phone.setCountry(country);
+  ctrl?.phone.setCountry(raw);
   sync(ctrl);
-  record(`setCountry("${country}")`);
+  record(`setCountry("${raw}")`);
 });
 
 setValueBtn.addEventListener('click', () => {
@@ -82,7 +104,8 @@ applyFiltersBtn.addEventListener('click', () => {
   if (!ctrl) return;
 
   const countries = parseCountryFilter(countryFilterEl.value);
-  const numberTypes = parseNumberTypeFilter(numberTypeFilterEl.value);
+  const selected = numberTypeFilter.getValues();
+  const numberTypes = selected.length > 0 ? selected : null;
 
   ctrl.phone.setCountryFilter(countries);
   ctrl.phone.setNumberTypeFilter(numberTypes);
@@ -93,7 +116,7 @@ applyFiltersBtn.addEventListener('click', () => {
 clearFiltersBtn.addEventListener('click', () => {
   const ctrl = getCurrent();
   countryFilterEl.value = '';
-  numberTypeFilterEl.value = '';
+  numberTypeFilter.setValues([]);
   ctrl?.phone.setCountryFilter(null);
   ctrl?.phone.setNumberTypeFilter(null);
   sync(ctrl);
@@ -126,18 +149,10 @@ function resolveMode(): Mode {
   return modeEl.value === 'international' ? 'international' : 'national';
 }
 
-function parseCountryFilter(value: string): string[] | null {
-  const items = value
+function parseCountryFilter(value: string): CountryId[] | null {
+  const items: CountryId[] = value
     .split(',')
     .map((s) => s.trim().toUpperCase())
-    .filter(Boolean);
-  return items.length > 0 ? items : null;
-}
-
-function parseNumberTypeFilter(value: string): string[] | null {
-  const items = value
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(isCountryId);
   return items.length > 0 ? items : null;
 }

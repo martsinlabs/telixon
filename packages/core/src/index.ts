@@ -8,4 +8,5 @@ export { createNationalInputController } from './modules/input-controller/nation
 
 export { ensureReady } from './resource-provider';
 
+export { COUNTRY_IDS } from './engine';
 export type { CountryId, NumberType } from './engine';

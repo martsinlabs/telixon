@@ -1,11 +1,13 @@
+import type { CountryId } from '@telixon/core';
 import { createPhoneInput, PhoneInput } from '@telixon/web-sdk';
 import { countryEl, initialValueEl, phoneInputEl, strictEl } from './elements';
+import { isCountryId } from './guards';
 import type { Controller, Mode } from './types';
 import { record, sync } from './view';
 
 export type { Controller, Mode } from './types';
 
-const DEFAULT_COUNTRY = 'US';
+const DEFAULT_COUNTRY: CountryId = 'US';
 
 let current: Controller | null = null;
 
@@ -26,7 +28,8 @@ export function attach(mode: Mode, value: string = initialValueEl.value): void {
 }
 
 export function mount(mode: Mode, value: string): PhoneInput {
-  const country = countryEl.value || DEFAULT_COUNTRY;
+  const raw = countryEl.value.toUpperCase();
+  const country: CountryId = isCountryId(raw) ? raw : DEFAULT_COUNTRY;
   const strict = strictEl.checked;
 
   if (mode === 'national') {
