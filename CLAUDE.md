@@ -87,3 +87,14 @@ Build: `tsup`. Engine binaries copied post-build via `cpy`.
 - No default exports
 - No mutations
 - No silent failures
+
+## After Changes
+
+Whenever code is modified in a session, run before reporting the work as done:
+
+1. `pnpm test` — all tests must pass
+2. `pnpm lint` — must be clean
+3. `pnpm format` — auto-fix style
+
+If any step fails, fix the cause and re-run. Skip only for pure documentation
+edits or read-only sessions.

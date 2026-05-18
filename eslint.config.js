@@ -19,7 +19,7 @@ export default [
     },
   },
   {
-    ignores: ['node_modules', 'dist', 'coverage', '**/engine'],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/engine/**'],
   },
   prettier,
 ];
