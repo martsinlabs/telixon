@@ -99,6 +99,7 @@ export function resolveInternationalControllerState(
     selectionEnd: finalCaret,
     state: snapshot.state,
     terminalStates: snapshot.terminalStates,
+    nationalDigits: snapshot.nationalDigits,
     profileRef: profile,
     formatIndex,
   };

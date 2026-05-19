@@ -40,6 +40,7 @@ export type PhoneInput = {
   undo(): void;
   redo(): void;
   seal(): void;
+  isValid(): boolean;
   setCountryFilter(countries: CountryId[] | null): void;
   setNumberTypeFilter(numberTypes: NumberType[] | null): void;
   destroy(): void;

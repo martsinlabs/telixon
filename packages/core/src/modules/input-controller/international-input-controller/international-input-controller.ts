@@ -1,10 +1,11 @@
-import { CountryId, NumberType } from '@telixon/core/engine';
+import { containsLength, CountryId, getLengthMask, NumberType } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
+import { isGeneralDescProfile } from '../../number-resolver/utils/is-general-desc-profile';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
 import { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar, toInputState } from '../utils';
@@ -243,6 +244,15 @@ class InternationalInputController extends InputController {
 
   setNumberTypeFilter(numberTypes: NumberType[] | null): void {
     this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
+  }
+
+  isValid(): boolean {
+    const { profileRef, nationalDigits } = this.#history.current;
+    if (!profileRef) return false;
+    if (isGeneralDescProfile(profileRef)) return false;
+
+    const mask: number = getLengthMask(getResourceProvider().numberTypeProfileLayer, profileRef.numberTypeProfileId);
+    return containsLength(mask, nationalDigits.length);
   }
 
   seal(): void {

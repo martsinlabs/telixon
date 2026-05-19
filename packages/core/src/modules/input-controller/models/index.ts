@@ -11,6 +11,7 @@ export interface InputState {
 export interface InputControllerState extends InputState {
   state: number;
   terminalStates: number[];
+  nationalDigits: string;
   profileRef: NumberTypeProfileRef | null;
   formatIndex: number | null;
 }
@@ -52,6 +53,8 @@ export abstract class InputController {
   abstract setNumberTypeFilter(numberTypes: NumberType[] | null): void;
 
   abstract seal(): void;
+
+  abstract isValid(): boolean;
 
   abstract get canUndo(): boolean;
 

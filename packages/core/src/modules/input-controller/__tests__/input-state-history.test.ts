@@ -11,6 +11,7 @@ function makeState(value: string, country: CountryId | null = null, selectionSta
     selectionEnd: selectionStart,
     state: 0,
     terminalStates: [],
+    nationalDigits: '',
     profileRef: null,
     formatIndex: null,
   };

@@ -214,6 +214,10 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       notify(getControllerState());
     },
 
+    isValid(): boolean {
+      return inputController.isValid();
+    },
+
     setCountryFilter(countries: CountryId[] | null): void {
       inputController.setCountryFilter(countries);
     },
