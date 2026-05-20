@@ -1,3 +1,4 @@
+import { NumberType } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { NumberTypeProfileRef } from '../../number-resolver/models';
 
@@ -21,4 +22,5 @@ export interface PhoneNumber {
   isValid(): boolean;
   isPossible(): boolean;
   isPossibleWithReason(): PhoneNumberValidationResult;
+  getNumberType(): NumberType | null;
 }
