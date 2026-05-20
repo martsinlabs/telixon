@@ -9,8 +9,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "bench:international-input-controller": "npx tsx packages/core/src/modules/input-controller/international-input-controller/stress-test.ts",
-    "bench:national-input-controller": "npx tsx packages/core/src/modules/input-controller/national-input-controller/stress-test.ts",
+    "bench": "vitest bench --run",
+    "bench:watch": "vitest bench",
     "build": "pnpm --filter \"./packages/*\" run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
