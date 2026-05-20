@@ -23,4 +23,5 @@ export interface PhoneNumber {
   isPossible(): boolean;
   isPossibleWithReason(): PhoneNumberValidationResult;
   getNumberType(): NumberType | null;
+  getNationalNumber(): string;
 }

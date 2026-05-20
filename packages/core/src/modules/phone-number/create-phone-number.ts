@@ -1,4 +1,5 @@
 import { PhoneNumber, ResolvedPhoneNumber } from './models';
+import { getNationalNumber } from './query/get-national-number';
 import { getNumberType } from './query/get-number-type';
 import { isPossible } from './query/is-possible';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
@@ -10,5 +11,6 @@ export function createPhoneNumber(resolved: ResolvedPhoneNumber): PhoneNumber {
     isPossible: () => isPossible(resolved),
     isPossibleWithReason: () => isPossibleWithReason(resolved),
     getNumberType: () => getNumberType(resolved),
+    getNationalNumber: () => getNationalNumber(resolved),
   };
 }
