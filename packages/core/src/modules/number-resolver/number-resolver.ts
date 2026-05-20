@@ -152,6 +152,14 @@ export class NumberResolver {
     return this._callingCodeState;
   }
 
+  get countryFilter(): BinaryFilter | null {
+    return this._countryFilter;
+  }
+
+  get numberTypeFilter(): BinaryFilter | null {
+    return this._numberTypeFilter;
+  }
+
   get snapshot(): NumberResolverSnapshot {
     return {
       state: this._state,

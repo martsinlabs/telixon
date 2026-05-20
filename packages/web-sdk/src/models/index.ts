@@ -3,7 +3,7 @@ import type {
   InternationalInputControllerConfig,
   NationalInputControllerConfig,
   NumberType,
-  PhoneNumberValidationResult,
+  PhoneNumber,
 } from '@telixon/core';
 
 type PhoneInputBaseOptions = {
@@ -41,9 +41,7 @@ export type PhoneInput = {
   undo(): void;
   redo(): void;
   seal(): void;
-  isValid(): boolean;
-  isPossible(): boolean;
-  isPossibleWithReason(): PhoneNumberValidationResult;
+  getPhoneNumber(): PhoneNumber;
   setCountryFilter(countries: CountryId[] | null): void;
   setNumberTypeFilter(numberTypes: NumberType[] | null): void;
   destroy(): void;

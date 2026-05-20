@@ -1,18 +1,21 @@
-import { containsLength, CountryId, getLengthMask, NumberType } from '@telixon/core/engine';
+import { CountryId, NumberType } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
-import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
-import { isGeneralDescProfile } from '../../number-resolver/utils/is-general-desc-profile';
-import { resolveCountryIndex } from '../../number-resolver/utils/resolve-country-index';
+import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
-import { InputChange, InputController, InputControllerState, InputState, PhoneNumberValidationResult } from '../models';
-import { validationResultFromLength } from '../utils/validation-result-from-length';
+import { InputChange, InputController, InputControllerState, InputState } from '../models';
 
-import { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar, toInputState } from '../utils';
+import {
+  findNextDigitPosition,
+  findPreviousDigitPosition,
+  isFormattingChar,
+  toInputState,
+  toInputStateWithSelection,
+} from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { InternationalInputControllerConfig } from './models';
 import { resolveInternationalControllerState } from './utils';
@@ -111,7 +114,7 @@ class InternationalInputController extends InputController {
   deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState {
     if (selectionStart === 0 && selectionEnd === 0) {
       this.#history.updateCurrentSelection(0, 0);
-      return { ...toInputState(this.#history.current), selectionStart: 0, selectionEnd: 0 };
+      return toInputStateWithSelection(this.#history.current, 0, 0);
     }
 
     if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
@@ -119,11 +122,11 @@ class InternationalInputController extends InputController {
         const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
         if (prevDigit === -1) {
           this.#history.updateCurrentSelection(selectionStart, selectionStart);
-          return { ...toInputState(this.#history.current), selectionStart, selectionEnd: selectionStart };
+          return toInputStateWithSelection(this.#history.current, selectionStart, selectionStart);
         }
         const pos: number = prevDigit + 1;
         this.#history.updateCurrentSelection(pos, pos);
-        return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
+        return toInputStateWithSelection(this.#history.current, pos, pos);
       }
 
       this.#history.updateCurrentSelection(selectionStart, selectionEnd);
@@ -141,11 +144,11 @@ class InternationalInputController extends InputController {
 
       const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
       if (prevDigit === -1) {
-        return { ...toInputState(this.#history.current), selectionStart, selectionEnd: selectionStart };
+        return toInputStateWithSelection(this.#history.current, selectionStart, selectionStart);
       }
       const pos: number = prevDigit + 1;
       this.#history.updateCurrentSelection(pos, pos);
-      return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
+      return toInputStateWithSelection(this.#history.current, pos, pos);
     }
 
     let effectiveStart: number = selectionStart;
@@ -184,7 +187,7 @@ class InternationalInputController extends InputController {
       const nextDigit: number = findNextDigitPosition(value, selectionStart + 1);
       const pos: number = nextDigit === -1 ? selectionStart : nextDigit;
       this.#history.updateCurrentSelection(pos, pos);
-      return { ...toInputState(this.#history.current), selectionStart: pos, selectionEnd: pos };
+      return toInputStateWithSelection(this.#history.current, pos, pos);
     }
 
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
@@ -250,29 +253,12 @@ class InternationalInputController extends InputController {
     this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
   }
 
-  isValid(): boolean {
+  getPhoneNumber(): PhoneNumber {
     const { profileRef, nationalDigits } = this.#history.current;
-    if (!profileRef) return false;
-    if (isGeneralDescProfile(profileRef)) return false;
 
-    const mask: number = getLengthMask(getResourceProvider().numberTypeProfileLayer, profileRef.numberTypeProfileId);
-    return containsLength(mask, nationalDigits.length);
-  }
-
-  isPossible(): boolean {
-    return this.isPossibleWithReason() === 'IS_POSSIBLE';
-  }
-
-  isPossibleWithReason(): PhoneNumberValidationResult {
-    const snapshot: NumberResolverSnapshot = this.#numberResolver.snapshot;
-    const { profileRef, nationalDigits } = this.#history.current;
-    const countryIndex: number = resolveCountryIndex(snapshot, profileRef, this.#defaultCountryIndex);
-    if (countryIndex < 0) return 'INVALID_COUNTRY_CODE';
-
-    const mask: number = getAllowedLengthMask(countryIndex, snapshot.countryFilter, snapshot.numberTypeFilter);
-    if (mask === 0) return 'INVALID_LENGTH';
-
-    return validationResultFromLength(mask, nationalDigits.length);
+    return createPhoneNumber(
+      toResolvedPhoneNumber(this.#numberResolver, profileRef, nationalDigits, this.#defaultCountryIndex),
+    );
   }
 
   seal(): void {

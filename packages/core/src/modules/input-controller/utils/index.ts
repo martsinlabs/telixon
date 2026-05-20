@@ -10,3 +10,16 @@ export const toInputState = (state: InputControllerState): InputState => {
     selectionEnd: state.selectionEnd,
   };
 };
+
+export const toInputStateWithSelection = (
+  state: InputControllerState,
+  selectionStart: number,
+  selectionEnd: number,
+): InputState => {
+  return {
+    value: state.value,
+    country: state.country,
+    selectionStart,
+    selectionEnd,
+  };
+};

@@ -1,12 +1,8 @@
 import { CallingCodeLayer, CountryId, GraphLayer, NumberType } from '@telixon/core/engine';
 import { NumberTypeProfileRef } from '../../number-resolver/models';
+import { PhoneNumber } from '../../phone-number/models';
 
-export type PhoneNumberValidationResult =
-  | 'IS_POSSIBLE'
-  | 'INVALID_COUNTRY_CODE'
-  | 'TOO_SHORT'
-  | 'TOO_LONG'
-  | 'INVALID_LENGTH';
+export type { PhoneNumberValidationResult } from '../../phone-number/models';
 
 export interface InputState {
   value: string;
@@ -61,11 +57,7 @@ export abstract class InputController {
 
   abstract seal(): void;
 
-  abstract isValid(): boolean;
-
-  abstract isPossible(): boolean;
-
-  abstract isPossibleWithReason(): PhoneNumberValidationResult;
+  abstract getPhoneNumber(): PhoneNumber;
 
   abstract get canUndo(): boolean;
 

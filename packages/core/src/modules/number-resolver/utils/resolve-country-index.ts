@@ -1,9 +1,9 @@
 import { getCallingCodePrimaryCountry, getCountryIndex } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { NumberResolverSnapshot, NumberTypeProfileRef } from '../models';
+import { NumberTypeProfileRef } from '../models';
 
 export function resolveCountryIndex(
-  snapshot: NumberResolverSnapshot,
+  callingCodeState: number,
   profileRef: NumberTypeProfileRef | null,
   defaultCountryIndex: number,
 ): number {
@@ -13,8 +13,8 @@ export function resolveCountryIndex(
     return getCountryIndex(resourceProvider.countryScopeLayer, profileRef.stateCountryIndex);
   }
 
-  if (snapshot.callingCodeState !== -1) {
-    return getCallingCodePrimaryCountry(resourceProvider.callingCodeLayer, snapshot.callingCodeState);
+  if (callingCodeState !== -1) {
+    return getCallingCodePrimaryCountry(resourceProvider.callingCodeLayer, callingCodeState);
   }
 
   return defaultCountryIndex;
