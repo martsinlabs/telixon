@@ -12,11 +12,14 @@ import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
+import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
 import { isGeneralDescProfile } from '../../number-resolver/utils/is-general-desc-profile';
+import { resolveCountryIndex } from '../../number-resolver/utils/resolve-country-index';
 import { InputStateHistory } from '../input-state-history';
-import { InputChange, InputController, InputControllerState, InputState } from '../models';
+import { InputChange, InputController, InputControllerState, InputState, PhoneNumberValidationResult } from '../models';
 import { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar, toInputState } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
+import { validationResultFromLength } from '../utils/validation-result-from-length';
 import { NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
 
@@ -283,6 +286,22 @@ class NationalInputController extends InputController {
 
     const mask: number = getLengthMask(getResourceProvider().numberTypeProfileLayer, profileRef.numberTypeProfileId);
     return containsLength(mask, nationalDigits.length);
+  }
+
+  isPossible(): boolean {
+    return this.isPossibleWithReason() === 'IS_POSSIBLE';
+  }
+
+  isPossibleWithReason(): PhoneNumberValidationResult {
+    const snapshot: NumberResolverSnapshot = this.#numberResolver.snapshot;
+    const { profileRef, nationalDigits } = this.#history.current;
+    const countryIndex: number = resolveCountryIndex(snapshot, profileRef, this.#defaultCountryIndex);
+    if (countryIndex < 0) return 'INVALID_COUNTRY_CODE';
+
+    const mask: number = getAllowedLengthMask(countryIndex, snapshot.countryFilter, snapshot.numberTypeFilter);
+    if (mask === 0) return 'INVALID_LENGTH';
+
+    return validationResultFromLength(mask, nationalDigits.length);
   }
 
   undo(): InputState {

@@ -1,4 +1,4 @@
-import { CountryId, InputController, NumberType } from '@telixon/core';
+import { CountryId, InputController, NumberType, PhoneNumberValidationResult } from '@telixon/core';
 import {
   isBackwardDeleteInputType,
   isBlockedInputType,
@@ -216,6 +216,14 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
     isValid(): boolean {
       return inputController.isValid();
+    },
+
+    isPossible(): boolean {
+      return inputController.isPossible();
+    },
+
+    isPossibleWithReason(): PhoneNumberValidationResult {
+      return inputController.isPossibleWithReason();
     },
 
     setCountryFilter(countries: CountryId[] | null): void {

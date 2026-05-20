@@ -408,10 +408,7 @@ export declare interface PhoneNumberMasks {
  */
 export declare interface PhoneNumberType {
     type: NumberTypeIndex;
-    possibleLengths?: {
-        national: string;
-        localOnly?: string;
-    };
+    possibleLengths?: PossibleLengths;
     nationalNumberPattern: string;
     exampleNumber?: number;
 }
@@ -421,6 +418,21 @@ export declare interface PhoneNumberType {
  * List of phone number types.
  */
 export declare type PhoneNumberTypeList = readonly PhoneNumberType[];
+
+/**
+ * @public
+ * National + optional local-only length masks.
+ */
+export declare interface PossibleLengths {
+    national: PossibleLengthsMask;
+    localOnly?: PossibleLengthsMask;
+}
+
+/**
+ * @public
+ * 32-bit length bitmask; bit `n` set ⇒ length `n` is valid.
+ */
+export declare type PossibleLengthsMask = number;
 
 /**
  * @public
@@ -467,6 +479,7 @@ export declare interface TerritorySpec {
     preferredExtnPrefix?: string;
     preferredInternationalPrefix?: string;
     noInternationalDialling?: string;
+    possibleLengths: PossibleLengths;
     numberTypes: PhoneNumberTypeList;
 }
 
