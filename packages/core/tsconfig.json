@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@telixon/core": ["./src/index.ts"],
+      "@telixon/core/*": ["./src/*"]
+    }
   },
   "include": ["src"]
 }

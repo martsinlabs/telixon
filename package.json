@@ -11,11 +11,13 @@
   "scripts": {
     "bench:international-input-controller": "npx tsx packages/core/src/modules/input-controller/international-input-controller/stress-test.ts",
     "bench:national-input-controller": "npx tsx packages/core/src/modules/input-controller/national-input-controller/stress-test.ts",
+    "build": "pnpm --filter \"./packages/*\" run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "pnpm -r run typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -18,7 +18,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup && pnpm run copy:engine",
-    "copy:engine": "cpy \"src/engine/**/*\" dist/engine"
+    "copy:engine": "cpy \"src/engine/**/*\" dist/engine",
+    "typecheck": "tsc --noEmit"
   },
   "packageManager": "pnpm@10.16.1"
 }
