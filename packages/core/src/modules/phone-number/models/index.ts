@@ -12,6 +12,7 @@ export type PhoneNumberValidationResult =
 
 export interface ResolvedPhoneNumber {
   readonly nationalDigits: string;
+  readonly callingCode: string;
   readonly callingCodeState: number;
   readonly profileRef: NumberTypeProfileRef | null;
   readonly defaultCountryIndex: number;
@@ -26,4 +27,5 @@ export interface PhoneNumber {
   isPossibleWithReason(): PhoneNumberValidationResult;
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
   getNationalNumber(): string;
+  getCallingCode(): string | null;
 }

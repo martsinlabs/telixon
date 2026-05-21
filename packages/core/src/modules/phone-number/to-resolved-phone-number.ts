@@ -9,6 +9,7 @@ export function toResolvedPhoneNumber(
 ): ResolvedPhoneNumber {
   return {
     nationalDigits: snapshot.nationalDigits,
+    callingCode: snapshot.callingCodeDigits,
     callingCodeState: snapshot.callingCodeState,
     profileRef,
     defaultCountryIndex,

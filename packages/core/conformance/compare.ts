@@ -25,6 +25,7 @@ function emptyTally(): Record<MethodName, MethodTally> {
     isPossibleWithReason: { total: 0, matched: 0, mismatches: [] },
     getNumberType: { total: 0, matched: 0, mismatches: [] },
     getNationalNumber: { total: 0, matched: 0, mismatches: [] },
+    getCallingCode: { total: 0, matched: 0, mismatches: [] },
   };
 }
 

@@ -7,6 +7,7 @@ export const COMPARED_METHODS = [
   'isPossibleWithReason',
   'getNumberType',
   'getNationalNumber',
+  'getCallingCode',
 ] as const;
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
@@ -25,6 +26,7 @@ export interface MethodResults {
   readonly isPossibleWithReason: string;
   readonly getNumberType: NumberType | null;
   readonly getNationalNumber: string;
+  readonly getCallingCode: string | null;
 }
 
 export interface Mismatch {

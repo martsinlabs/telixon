@@ -85,5 +85,6 @@ export function evaluateWithOracle(e164: string): MethodResults | null {
     isPossibleWithReason: VALIDATION_RESULT_NAMES[reasonId] ?? String(reasonId),
     getNumberType: typeId === PhoneNumberType.UNKNOWN ? null : (NUMBER_TYPE_NAMES[typeId] ?? null),
     getNationalNumber: util.getNationalSignificantNumber(parsed),
+    getCallingCode: String(parsed.getCountryCodeOrDefault()),
   };
 }

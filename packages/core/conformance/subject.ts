@@ -13,5 +13,6 @@ export function evaluateWithTelixon(e164: string): MethodResults {
     isPossibleWithReason: phoneNumber.isPossibleWithReason(),
     getNumberType: phoneNumber.getNumberType(),
     getNationalNumber: phoneNumber.getNationalNumber(),
+    getCallingCode: phoneNumber.getCallingCode(),
   };
 }
