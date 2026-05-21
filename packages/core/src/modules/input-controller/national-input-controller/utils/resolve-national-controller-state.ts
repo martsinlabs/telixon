@@ -72,9 +72,7 @@ export function resolveNationalControllerState(
         value: formattedNationalNumber,
         selectionStart: formattedNationalCaretIndex,
         selectionEnd: formattedNationalCaretIndex,
-        state: snapshot.state,
-        terminalStates: snapshot.terminalStates,
-        nationalDigits: snapshot.nationalDigits,
+        snapshot,
         profileRef: profile,
         formatIndex: formatRef.formatIndex,
       };
@@ -88,9 +86,7 @@ export function resolveNationalControllerState(
     value: formattedNationalNumber,
     selectionStart: formattedNationalCaretIndex,
     selectionEnd: formattedNationalCaretIndex,
-    state: snapshot.state,
-    terminalStates: snapshot.terminalStates,
-    nationalDigits: snapshot.nationalDigits,
+    snapshot,
     profileRef: profile,
     formatIndex: null,
   };

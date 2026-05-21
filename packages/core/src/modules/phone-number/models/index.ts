@@ -4,6 +4,7 @@ import { NumberTypeProfileRef } from '../../number-resolver/models';
 
 export type PhoneNumberValidationResult =
   | 'IS_POSSIBLE'
+  | 'IS_POSSIBLE_LOCAL_ONLY'
   | 'INVALID_COUNTRY_CODE'
   | 'TOO_SHORT'
   | 'TOO_LONG'
@@ -16,12 +17,13 @@ export interface ResolvedPhoneNumber {
   readonly defaultCountryIndex: number;
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
+  readonly terminalStates: readonly number[];
 }
 
 export interface PhoneNumber {
   isValid(): boolean;
   isPossible(): boolean;
   isPossibleWithReason(): PhoneNumberValidationResult;
-  getNumberType(): NumberType | null;
+  getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
   getNationalNumber(): string;
 }

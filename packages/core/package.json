@@ -21,5 +21,9 @@
     "copy:engine": "cpy \"src/engine/**/*\" dist/engine",
     "typecheck": "tsc --noEmit"
   },
+  "devDependencies": {
+    "@types/google-libphonenumber": "^7.4.30",
+    "google-libphonenumber": "^3.2.44"
+  },
   "packageManager": "pnpm@10.16.1"
 }

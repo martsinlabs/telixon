@@ -1,5 +1,5 @@
 import { CallingCodeLayer, CountryId, GraphLayer, NumberType } from '@telixon/core/engine';
-import { NumberTypeProfileRef } from '../../number-resolver/models';
+import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
 export type { PhoneNumberValidationResult } from '../../phone-number/models';
@@ -12,9 +12,7 @@ export interface InputState {
 }
 
 export interface InputControllerState extends InputState {
-  state: number;
-  terminalStates: number[];
-  nationalDigits: string;
+  snapshot: NumberResolverSnapshot;
   profileRef: NumberTypeProfileRef | null;
   formatIndex: number | null;
 }

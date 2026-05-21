@@ -12,12 +12,14 @@
     "bench": "vitest bench --run",
     "bench:watch": "vitest bench",
     "build": "pnpm --filter \"./packages/*\" run build",
+    "conformance": "vitest run --config vitest.conformance.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "typecheck": "pnpm -r run typecheck"
+    "typecheck": "pnpm -r run typecheck",
+    "typecheck:conformance": "tsc --noEmit -p packages/core/conformance/tsconfig.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

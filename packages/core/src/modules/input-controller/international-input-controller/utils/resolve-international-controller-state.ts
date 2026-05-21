@@ -97,9 +97,7 @@ export function resolveInternationalControllerState(
     country,
     selectionStart: finalCaret,
     selectionEnd: finalCaret,
-    state: snapshot.state,
-    terminalStates: snapshot.terminalStates,
-    nationalDigits: snapshot.nationalDigits,
+    snapshot,
     profileRef: profile,
     formatIndex,
   };

@@ -1,25 +1,19 @@
-import { BinaryFilter } from '@telixon/core/models';
-import { NumberTypeProfileRef } from '../number-resolver/models';
+import { NumberResolverSnapshot, NumberTypeProfileRef } from '../number-resolver/models';
 import { ResolvedPhoneNumber } from './models';
 
-interface ResolverFields {
-  readonly callingCodeState: number;
-  readonly countryFilter: BinaryFilter | null;
-  readonly numberTypeFilter: BinaryFilter | null;
-}
-
+// Builds the query view from one snapshot, so every method reads a consistent point-in-time capture.
 export function toResolvedPhoneNumber(
-  resolver: ResolverFields,
+  snapshot: NumberResolverSnapshot,
   profileRef: NumberTypeProfileRef | null,
-  nationalDigits: string,
   defaultCountryIndex: number,
 ): ResolvedPhoneNumber {
   return {
-    nationalDigits,
-    callingCodeState: resolver.callingCodeState,
+    nationalDigits: snapshot.nationalDigits,
+    callingCodeState: snapshot.callingCodeState,
     profileRef,
     defaultCountryIndex,
-    countryFilter: resolver.countryFilter,
-    numberTypeFilter: resolver.numberTypeFilter,
+    countryFilter: snapshot.countryFilter,
+    numberTypeFilter: snapshot.numberTypeFilter,
+    terminalStates: snapshot.terminalStates,
   };
 }

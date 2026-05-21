@@ -47,8 +47,17 @@ describe('InputController.isPossibleWithReason — national', () => {
   });
 });
 
+describe('InputController.isPossibleWithReason — local-only length', () => {
+  it('returns IS_POSSIBLE_LOCAL_ONLY for a local-only number', () => {
+    const controller = createInternationalInputController({});
+    controller.setValue('+43123');
+
+    expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE_LOCAL_ONLY');
+  });
+});
+
 describe('InputController.isPossible — boolean wrapper', () => {
-  it('returns true only when isPossibleWithReason === IS_POSSIBLE', () => {
+  it('returns true for possible numbers, including local-only', () => {
     const controller = createNationalInputController({ country: 'US' });
 
     controller.setValue('21255');
@@ -58,6 +67,13 @@ describe('InputController.isPossible — boolean wrapper', () => {
     expect(controller.getPhoneNumber().isPossible()).toBe(true);
 
     controller.setValue('0001234567');
+    expect(controller.getPhoneNumber().isPossible()).toBe(true);
+  });
+
+  it('counts a local-only number as possible', () => {
+    const controller = createInternationalInputController({});
+    controller.setValue('+43123');
+
     expect(controller.getPhoneNumber().isPossible()).toBe(true);
   });
 });

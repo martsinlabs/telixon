@@ -92,3 +92,41 @@ describe('PhoneNumber.getNumberType — international', () => {
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
   });
 });
+
+describe('PhoneNumber.getNumberType — returns FIXED_LINE_OR_MOBILE for numbers valid as fixed line and mobile', () => {
+  it.each([
+    ['+917410410123', 'IN'],
+    ['+18765230123', 'JM'],
+    ['+21630010123', 'TN'],
+    ['+998669050123', 'UZ'],
+  ])('classifies %s (%s) as FIXED_LINE_OR_MOBILE', (e164) => {
+    const controller = createInternationalInputController({});
+    controller.setValue(e164);
+
+    expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
+  });
+});
+
+describe('PhoneNumber.getNumberType — classifies service and special-rate numbers', () => {
+  it.each([
+    ['+9513331234', 'VOIP'],
+    ['+508800012345', 'TOLL_FREE'],
+    ['+508810123456', 'PREMIUM_RATE'],
+  ])('classifies %s as %s', (e164, expected) => {
+    const controller = createInternationalInputController({});
+    controller.setValue(e164);
+
+    expect(controller.getPhoneNumber().getNumberType()).toBe(expected);
+  });
+});
+
+describe('PhoneNumber.getNumberType — after undo', () => {
+  it('returns the type of the restored state', () => {
+    const controller = createNationalInputController({ country: 'US' });
+    controller.setValue('2125551234');
+    controller.setValue('');
+    controller.undo();
+
+    expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
+  });
+});

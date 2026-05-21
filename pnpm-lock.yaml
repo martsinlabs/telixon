@@ -57,7 +57,14 @@ importers:
         specifier: ^6.3.0
         version: 6.4.2(@types/node@25.5.0)
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      '@types/google-libphonenumber':
+        specifier: ^7.4.30
+        version: 7.4.30
+      google-libphonenumber:
+        specifier: ^3.2.44
+        version: 3.2.44
 
   packages/web-sdk:
     dependencies:
@@ -704,6 +711,10 @@ packages:
     resolution:
       { integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w== }
 
+  '@types/google-libphonenumber@7.4.30':
+    resolution:
+      { integrity: sha512-Td1X1ayRxePEm6/jPHUBs2tT6TzW1lrVB6ZX7ViPGellyzO/0xMNi+wx5nH6jEitjznq276VGIqjK5qAju0XVw== }
+
   '@types/json-schema@7.0.15':
     resolution:
       { integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA== }
@@ -1117,6 +1128,11 @@ packages:
   globrex@0.1.2:
     resolution:
       { integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg== }
+
+  google-libphonenumber@3.2.44:
+    resolution:
+      { integrity: sha512-9p2TghluF2LTChFMLWsDRD5N78SZDsILdUk4gyqYxBXluCyxoPiOq+Fqt7DKM+LUd33+OgRkdrc+cPR93AypCQ== }
+    engines: { node: '>=0.10' }
 
   graceful-fs@4.2.11:
     resolution:
@@ -2040,6 +2056,8 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/google-libphonenumber@7.4.30': {}
+
   '@types/json-schema@7.0.15': {}
 
   '@types/node@25.5.0':
@@ -2469,6 +2487,8 @@ snapshots:
       unicorn-magic: 0.4.0
 
   globrex@0.1.2: {}
+
+  google-libphonenumber@3.2.44: {}
 
   graceful-fs@4.2.11: {}
 

@@ -163,7 +163,7 @@ export class NumberResolver {
   get snapshot(): NumberResolverSnapshot {
     return {
       state: this._state,
-      terminalStates: this._terminalStates,
+      terminalStates: this._terminalStates.slice(),
       callingCodeDigits: this.getCallingCode(),
       nationalDigits: this.getNationalNumber(),
       callingCodeCompleted: this._callingCodeCompleted,

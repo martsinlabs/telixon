@@ -1,10 +1,10 @@
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { configDefaults, defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    include: ['packages/core/conformance/**/*.test.ts'],
     setupFiles: ['./packages/core/src/test-setup.ts'],
-    exclude: [...configDefaults.exclude, '**/conformance/**'],
   },
 });
