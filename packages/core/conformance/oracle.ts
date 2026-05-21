@@ -79,12 +79,14 @@ export function evaluateWithOracle(e164: string): MethodResults | null {
   }
   const typeId: number = util.getNumberType(parsed);
   const reasonId: number = util.isPossibleNumberWithReason(parsed);
+  const valid: boolean = util.isValidNumber(parsed);
   return {
-    isValid: util.isValidNumber(parsed),
+    isValid: valid,
     isPossible: util.isPossibleNumber(parsed),
     isPossibleWithReason: VALIDATION_RESULT_NAMES[reasonId] ?? String(reasonId),
     getNumberType: typeId === PhoneNumberType.UNKNOWN ? null : (NUMBER_TYPE_NAMES[typeId] ?? null),
     getNationalNumber: util.getNationalSignificantNumber(parsed),
     getCallingCode: String(parsed.getCountryCodeOrDefault()),
+    getE164: valid ? util.format(parsed, PhoneNumberFormat.E164) : null,
   };
 }

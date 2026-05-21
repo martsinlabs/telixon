@@ -8,6 +8,7 @@ export const COMPARED_METHODS = [
   'getNumberType',
   'getNationalNumber',
   'getCallingCode',
+  'getE164',
 ] as const;
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
@@ -27,6 +28,7 @@ export interface MethodResults {
   readonly getNumberType: NumberType | null;
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
+  readonly getE164: string | null;
 }
 
 export interface Mismatch {

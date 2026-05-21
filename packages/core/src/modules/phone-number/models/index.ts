@@ -28,4 +28,5 @@ export interface PhoneNumber {
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
   getNationalNumber(): string;
   getCallingCode(): string | null;
+  getE164(): string | null;
 }

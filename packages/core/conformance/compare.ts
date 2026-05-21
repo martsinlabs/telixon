@@ -26,6 +26,7 @@ function emptyTally(): Record<MethodName, MethodTally> {
     getNumberType: { total: 0, matched: 0, mismatches: [] },
     getNationalNumber: { total: 0, matched: 0, mismatches: [] },
     getCallingCode: { total: 0, matched: 0, mismatches: [] },
+    getE164: { total: 0, matched: 0, mismatches: [] },
   };
 }
 
