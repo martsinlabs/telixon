@@ -201,19 +201,19 @@ export async function loadOracle(): Promise<Oracle> {
       }
       const typeId = util.getNumberType(parsed);
       const reasonId = util.isPossibleNumberWithReason(parsed);
-      const valid = util.isValidNumber(parsed);
-      const internationalFormat = valid ? util.format(parsed, ph.PhoneNumberFormat.INTERNATIONAL) : null;
+      const possible = util.isPossibleNumber(parsed);
+      // libphonenumber formats validity-independently; gate only on possibility, matching telixon.
       return {
-        isValid: valid,
-        isPossible: util.isPossibleNumber(parsed),
+        isValid: util.isValidNumber(parsed),
+        isPossible: possible,
         isPossibleWithReason: validationResultName[reasonId] ?? String(reasonId),
         getNumberType: typeId === ph.PhoneNumberType.UNKNOWN ? null : (numberTypeName[typeId] ?? null),
         getNationalNumber: util.getNationalSignificantNumber(parsed),
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
         getCountry: util.getRegionCodeForNumber(parsed) ?? null,
-        getE164: valid ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
-        formatInternational: internationalFormat,
-        getURI: valid ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,
+        getE164: possible ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
+        formatInternational: possible ? util.format(parsed, ph.PhoneNumberFormat.INTERNATIONAL) : null,
+        getURI: possible ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,
       };
     },
     countryCallingCode: (regionCode) => String(util.getCountryCodeForRegion(regionCode)),

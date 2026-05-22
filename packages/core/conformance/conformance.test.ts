@@ -6,6 +6,7 @@ import { buildCorpus } from './corpus';
 import { auditMismatches } from './known-divergences';
 import { loadOracle } from './oracle';
 import { formatConformanceReport } from './report';
+import { evaluateWithTelixon } from './subject';
 
 const oracle = await loadOracle();
 const corpus = buildCorpus(oracle);
@@ -47,6 +48,27 @@ describe('getCallingCodeForRegion vs Google getCountryCodeForRegion', () => {
 
     expect(mismatches).toEqual([]);
   });
+});
+
+describe('possible-but-invalid numbers format like Google', () => {
+  // NANPA central-office code starting with 1 is invalid, but the number stays possible (10 digits).
+  const samples = ['+13101234434', '+14151230000'];
+
+  for (const e164 of samples) {
+    it(`${e164}: formats despite being invalid, instead of returning null`, () => {
+      const google = oracle.evaluate(e164);
+      const telixon = evaluateWithTelixon(e164);
+
+      expect(google).not.toBeNull();
+      expect(google!.isPossible).toBe(true);
+      expect(google!.isValid).toBe(false);
+
+      expect(telixon.getE164).not.toBeNull();
+      expect(telixon.getE164).toBe(google!.getE164);
+      expect(telixon.formatInternational).toBe(google!.formatInternational);
+      expect(telixon.getURI).toBe(google!.getURI);
+    });
+  }
 });
 
 describe('as-you-type vs Google AsYouTypeFormatter (measurement)', () => {
