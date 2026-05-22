@@ -1,4 +1,4 @@
-import { REGION_IDS, getCountryCallingCode } from '@telixon/core';
+import { REGION_IDS, getCallingCodeForRegion } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
 import { formatAsYouTypeMeasurement, internationalProbe, measureAsYouType, nationalProbe } from './as-you-type';
 import { buildConformanceReport } from './compare';
@@ -35,11 +35,15 @@ describe('conformance vs Google libphonenumber', () => {
   });
 });
 
-describe('getCountryCallingCode vs Google getCountryCodeForRegion', () => {
+describe('getCallingCodeForRegion vs Google getCountryCodeForRegion', () => {
   it('matches Google for every supported region', () => {
     const mismatches = REGION_IDS.filter(
-      (region) => getCountryCallingCode(region) !== oracle.countryCallingCode(region),
-    ).map((region) => ({ region, telixon: getCountryCallingCode(region), google: oracle.countryCallingCode(region) }));
+      (region) => getCallingCodeForRegion(region) !== oracle.countryCallingCode(region),
+    ).map((region) => ({
+      region,
+      telixon: getCallingCodeForRegion(region),
+      google: oracle.countryCallingCode(region),
+    }));
 
     expect(mismatches).toEqual([]);
   });
