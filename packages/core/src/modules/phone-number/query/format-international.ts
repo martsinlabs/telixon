@@ -7,9 +7,7 @@ import { selectInternationalFormatIndex } from '../../number-resolver/utils/sele
 import { ResolvedPhoneNumber } from '../models';
 import { isPossible } from './is-possible';
 
-// INTERNATIONAL format ('+<callingCode> <grouped national number>'), or null until the number is possible.
-// Groups the national number with the engine's per-length mask — the same source the controller uses.
-// Formats possible-but-invalid numbers, matching libphonenumber's format (which is validity-independent).
+// INTERNATIONAL format, or null until possible. Groups via the engine per-length mask, like the controller.
 export function formatInternational(resolved: ResolvedPhoneNumber): string | null {
   const { profileRef, nationalDigits, callingCode } = resolved;
   if (!profileRef || !isPossible(resolved)) return null;

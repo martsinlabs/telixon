@@ -3,20 +3,15 @@ import {
   createNationalInputController,
   InputController,
   InputState,
+  parsePhoneNumber,
   PhoneNumber,
   RegionId,
 } from '@telixon/core';
 import { MethodResults } from './models';
 
-// Telixon's verdict for every compared behavior, fed the E.164 number through the international controller.
-// plusPrefix renders the controller's live value as '+<calling code> <national>', matching the oracle.
+// Telixon's verdict for every compared behavior, parsed from the E.164 number with the standalone parser.
 export function evaluateWithTelixon(e164: string): MethodResults {
-  const controller: InputController = createInternationalInputController({
-    display: { callingCodeInInput: true, plusPrefix: true },
-  });
-  controller.setValue(e164);
-
-  const phoneNumber: PhoneNumber = controller.getPhoneNumber();
+  const phoneNumber: PhoneNumber = parsePhoneNumber(e164);
   return {
     isValid: phoneNumber.isValid(),
     isPossible: phoneNumber.isPossible(),

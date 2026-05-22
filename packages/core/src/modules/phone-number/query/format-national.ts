@@ -7,8 +7,7 @@ import { selectNationalFormatIndex } from '../../number-resolver/utils/select-na
 import { ResolvedPhoneNumber } from '../models';
 import { isPossible } from './is-possible';
 
-// NATIONAL format (grouped national number), or null until the number is possible. Applies the national
-// prefix only when the matched format defines a prefix rule (libphonenumber format(NATIONAL)).
+// NATIONAL format, or null until possible. Adds the national prefix only when the format has a prefix rule.
 export function formatNational(resolved: ResolvedPhoneNumber): string | null {
   const { profileRef, nationalDigits } = resolved;
   if (!profileRef || !isPossible(resolved)) return null;
