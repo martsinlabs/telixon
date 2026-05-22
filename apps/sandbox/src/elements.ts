@@ -22,5 +22,6 @@ export const redoBtn = el('#redo', HTMLButtonElement);
 export const sealBtn = el('#seal', HTMLButtonElement);
 export const reattachBtn = el('#reattach', HTMLButtonElement);
 export const stateEl = el('#state', HTMLPreElement);
+export const phoneNumberEl = el('#phone-number', HTMLPreElement);
 export const eventsEl = el('#events', HTMLPreElement);
 export const warningEl = el('#warning', HTMLParagraphElement);

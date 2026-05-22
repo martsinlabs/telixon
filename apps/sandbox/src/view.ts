@@ -1,8 +1,30 @@
-import { eventsEl, redoBtn, sealBtn, stateEl, undoBtn, warningEl } from './elements';
+import { eventsEl, phoneNumberEl, redoBtn, sealBtn, stateEl, undoBtn, warningEl } from './elements';
 import type { Controller } from './types';
 
 const MAX_LOG_LINES = 20;
 const log: string[] = [];
+
+// Every PhoneNumber query, rendered live from the attached input.
+function renderPhoneNumber(current: Controller | null): string {
+  if (current === null) return 'No input attached.';
+
+  const phoneNumber = current.phone.getPhoneNumber();
+  const rows: ReadonlyArray<readonly [string, unknown]> = [
+    ['isValid', phoneNumber.isValid()],
+    ['isPossible', phoneNumber.isPossible()],
+    ['isPossibleWithReason', phoneNumber.isPossibleWithReason()],
+    ['getNumberType', phoneNumber.getNumberType()],
+    ['getNationalNumber', phoneNumber.getNationalNumber()],
+    ['getCallingCode', phoneNumber.getCallingCode()],
+    ['getCountry', phoneNumber.getCountry()],
+    ['getE164', phoneNumber.getE164()],
+    ['formatInternational', phoneNumber.formatInternational()],
+    ['getURI', phoneNumber.getURI()],
+  ];
+
+  const width = Math.max(...rows.map(([name]) => name.length));
+  return rows.map(([name, value]) => `${name.padEnd(width)}  ${value === null ? 'null' : String(value)}`).join('\n');
+}
 
 export function sync(current: Controller | null): void {
   const phone = current?.phone ?? null;
@@ -19,6 +41,8 @@ export function sync(current: Controller | null): void {
 
   stateEl.textContent =
     current === null ? 'No input attached.' : JSON.stringify({ mode: current.mode, ...state }, null, 2);
+
+  phoneNumberEl.textContent = renderPhoneNumber(current);
 }
 
 export function record(message: string): void {
