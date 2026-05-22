@@ -18,6 +18,7 @@ function renderPhoneNumber(current: Controller | null): string {
     ['getCallingCode', phoneNumber.getCallingCode()],
     ['getCountry', phoneNumber.getCountry()],
     ['getE164', phoneNumber.getE164()],
+    ['formatNational', phoneNumber.formatNational()],
     ['formatInternational', phoneNumber.formatInternational()],
     ['getURI', phoneNumber.getURI()],
   ];

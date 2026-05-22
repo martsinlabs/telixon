@@ -11,6 +11,7 @@ export const COMPARED_METHODS = [
   'getCallingCode',
   'getCountry',
   'getE164',
+  'formatNational',
   'formatInternational',
   'getURI',
 ] as const;
@@ -34,6 +35,7 @@ export interface MethodResults {
   readonly getCallingCode: string | null;
   readonly getCountry: string | null;
   readonly getE164: string | null;
+  readonly formatNational: string | null;
   readonly formatInternational: string | null;
   readonly getURI: string | null;
 }

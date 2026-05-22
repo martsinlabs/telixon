@@ -30,6 +30,7 @@ export interface PhoneNumber {
   getCallingCode(): string | null;
   getCountry(): RegionId | null;
   getE164(): string | null;
+  formatNational(): string | null;
   formatInternational(): string | null;
   getURI(): string | null;
 }

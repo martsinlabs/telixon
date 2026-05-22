@@ -212,6 +212,7 @@ export async function loadOracle(): Promise<Oracle> {
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
         getCountry: util.getRegionCodeForNumber(parsed) ?? null,
         getE164: possible ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
+        formatNational: possible ? util.format(parsed, ph.PhoneNumberFormat.NATIONAL) : null,
         formatInternational: possible ? util.format(parsed, ph.PhoneNumberFormat.INTERNATIONAL) : null,
         getURI: possible ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,
       };
