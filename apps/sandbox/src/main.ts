@@ -1,4 +1,4 @@
-import { ensureReady, type CountryId, type NumberType } from '@telixon/core';
+import { ensureReady, type NumberType, type RegionId } from '@telixon/core';
 import './style.css';
 
 import { createChipFilter } from './chip-filter';
@@ -149,8 +149,8 @@ function resolveMode(): Mode {
   return modeEl.value === 'international' ? 'international' : 'national';
 }
 
-function parseCountryFilter(value: string): CountryId[] | null {
-  const items: CountryId[] = value
+function parseCountryFilter(value: string): RegionId[] | null {
+  const items: RegionId[] = value
     .split(',')
     .map((s) => s.trim().toUpperCase())
     .filter(isCountryId);

@@ -1,11 +1,11 @@
 import {
   CallingCodeLayer,
-  CountryScopeLayer,
   FormatsTable,
   GraphLayer,
   NumberTypeProfileLayer,
   NumberTypeScopeLayer,
   ReferenceMapping,
+  RegionScopeLayer,
   TerritorySpecTable,
 } from '@telixon/core/engine';
 
@@ -15,7 +15,7 @@ export abstract class ResourceProvider {
   abstract territorySpecTable: TerritorySpecTable;
   abstract graphLayer: GraphLayer;
   abstract callingCodeLayer: CallingCodeLayer;
-  abstract countryScopeLayer: CountryScopeLayer;
+  abstract countryScopeLayer: RegionScopeLayer;
   abstract numberTypeScopeLayer: NumberTypeScopeLayer;
   abstract numberTypeProfileLayer: NumberTypeProfileLayer;
 

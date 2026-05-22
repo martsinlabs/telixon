@@ -1,7 +1,7 @@
 import {
-  forEachCountryInCallingCodeState,
   forEachNumberTypeIndex,
-  forEachStateCountry,
+  forEachRegionInCallingCodeState,
+  forEachStateRegion,
   getNumberTypeMask,
   isCallingCodeState,
 } from '@telixon/core/engine';
@@ -22,7 +22,7 @@ export function stateMatchesFilters(
   let foundMatch: boolean = false;
 
   if (isCallingCodeState(resourceProvider.callingCodeLayer, state)) {
-    forEachCountryInCallingCodeState(resourceProvider.callingCodeLayer, state, (countryIndex: number) => {
+    forEachRegionInCallingCodeState(resourceProvider.callingCodeLayer, state, (countryIndex: number) => {
       if (!countryFilter || countryFilter[countryIndex]) {
         foundMatch = true;
         return true;
@@ -32,7 +32,7 @@ export function stateMatchesFilters(
     return foundMatch;
   }
 
-  forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex: number, countryIndex: number) => {
+  forEachStateRegion(resourceProvider.countryScopeLayer, state, (stateCountryIndex: number, countryIndex: number) => {
     if (countryFilter && countryFilter[countryIndex] === 0) return;
 
     const mask: number = getNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);

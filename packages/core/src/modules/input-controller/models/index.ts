@@ -1,4 +1,4 @@
-import { CallingCodeLayer, CountryId, GraphLayer, NumberType } from '@telixon/core/engine';
+import { CallingCodeLayer, GraphLayer, NumberType, RegionId } from '@telixon/core/engine';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
@@ -6,7 +6,7 @@ export type { PhoneNumberValidationResult } from '../../phone-number/models';
 
 export interface InputState {
   value: string;
-  country: CountryId | null;
+  country: RegionId | null;
   selectionStart: number;
   selectionEnd: number;
 }
@@ -43,13 +43,13 @@ export abstract class InputController {
 
   abstract setValue(value: string): InputState;
 
-  abstract setCountry(country: CountryId): InputState;
+  abstract setCountry(country: RegionId): InputState;
 
   abstract undo(): InputState;
 
   abstract redo(): InputState;
 
-  abstract setCountryFilter(countries: CountryId[] | null): void;
+  abstract setCountryFilter(countries: RegionId[] | null): void;
 
   abstract setNumberTypeFilter(numberTypes: NumberType[] | null): void;
 

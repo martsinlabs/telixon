@@ -1,11 +1,11 @@
 import {
   CallingCodeLayer,
-  CountryScopeLayer,
   FormatsTable,
   GraphLayer,
   NumberTypeProfileLayer,
   NumberTypeScopeLayer,
   ReferenceMapping,
+  RegionScopeLayer,
   TerritorySpecTable,
 } from '../engine';
 import { ResourceLoader } from '../resource-loader/models';
@@ -33,7 +33,7 @@ class DefaultResourceProvider extends ResourceProvider {
   territorySpecTable!: TerritorySpecTable;
   graphLayer!: GraphLayer;
   callingCodeLayer!: CallingCodeLayer;
-  countryScopeLayer!: CountryScopeLayer;
+  countryScopeLayer!: RegionScopeLayer;
   numberTypeScopeLayer!: NumberTypeScopeLayer;
   numberTypeProfileLayer!: NumberTypeProfileLayer;
 

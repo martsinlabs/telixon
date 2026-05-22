@@ -1,4 +1,4 @@
-import { CountryId, normalizeNationalNumber, NumberType, TerritorySpec } from '@telixon/core/engine';
+import { normalizeNationalNumber, NumberType, RegionId, TerritorySpec } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
@@ -51,8 +51,8 @@ class NationalInputController extends InputController {
     );
   }
 
-  #setCountry(country: CountryId): void {
-    this.#defaultCountryIndex = getResourceProvider().refMapping.countries.keyToIndex[country] ?? -1;
+  #setCountry(country: RegionId): void {
+    this.#defaultCountryIndex = getResourceProvider().refMapping.regions.keyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
       this.#defaultCountryIndex !== -1
@@ -87,10 +87,16 @@ class NationalInputController extends InputController {
 
     const rawString: string = rawDigits.join('');
 
-    const normalizedDigits: string =
-      rawString.length > 0 && territorySpec
-        ? normalizeNationalNumber(rawString, territorySpec).normalizedDigits
-        : rawString;
+    // normalizedDigits drive the resolver/validation; displayDigits drive the as-you-type formatting
+    // (they drop digit-adding transforms, so no untyped digit ever surfaces mid-typing). The caret stays
+    // in raw-typed space — formatNumberWithRawCaret maps it through the mask to the formatted position.
+    let normalizedDigits: string = rawString;
+    let displayDigits: string = rawString;
+    if (rawString.length > 0 && territorySpec) {
+      const normalized = normalizeNationalNumber(rawString, territorySpec);
+      normalizedDigits = normalized.normalizedDigits;
+      displayDigits = normalized.displayDigits;
+    }
 
     const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, territorySpec);
 
@@ -113,6 +119,7 @@ class NationalInputController extends InputController {
       this.#defaultCountryIndex,
       nationalPrefixTyped,
       rawString,
+      displayDigits,
       rawCaretIndex,
       direction,
     );
@@ -247,7 +254,7 @@ class NationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountry(country: CountryId): InputState {
+  setCountry(country: RegionId): InputState {
     this.#setCountry(country);
 
     const { value } = this.#history.current;
@@ -263,7 +270,7 @@ class NationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountryFilter(countries: CountryId[] | null): void {
+  setCountryFilter(countries: RegionId[] | null): void {
     this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
   }
 

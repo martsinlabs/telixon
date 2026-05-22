@@ -1,4 +1,4 @@
-import { formatNumber, getCountryIndex } from '@telixon/core/engine';
+import { formatNumber, getRegionIndex } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
 import { buildFormattingContext } from '../../number-resolver/utils/build-formatting-context';
@@ -15,7 +15,7 @@ export function formatInternational(resolved: ResolvedPhoneNumber): string | nul
 
   const { refMapping, countryScopeLayer, formatsTable } = getResourceProvider();
   const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(
-    getCountryIndex(countryScopeLayer, profileRef.stateCountryIndex),
+    getRegionIndex(countryScopeLayer, profileRef.stateCountryIndex),
   );
   const index: number = selectInternationalFormatIndex(callingCodeIndex, nationalDigits, false);
   const mask: string | undefined =

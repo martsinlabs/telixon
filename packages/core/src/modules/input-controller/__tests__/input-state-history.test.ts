@@ -1,9 +1,9 @@
-import { CountryId } from '@telixon/core/engine';
+import { RegionId } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
 import { InputStateHistory } from '../input-state-history';
 import { InputControllerState } from '../models';
 
-function makeState(value: string, country: CountryId | null = null, selectionStart = 0): InputControllerState {
+function makeState(value: string, country: RegionId | null = null, selectionStart = 0): InputControllerState {
   return {
     value,
     country,

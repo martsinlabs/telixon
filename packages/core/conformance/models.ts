@@ -1,6 +1,7 @@
 import { NumberType } from '@telixon/core';
 
-// Behaviors compared against the oracle: PhoneNumber query methods plus the controller's as-you-type output.
+// PhoneNumber query behaviors compared per number against the oracle. As-you-type formatting is a
+// per-keystroke axis (see as-you-type.ts), not a per-number method.
 export const COMPARED_METHODS = [
   'isValid',
   'isPossible',
@@ -12,7 +13,6 @@ export const COMPARED_METHODS = [
   'getE164',
   'formatInternational',
   'getURI',
-  'formatAsYouType',
 ] as const;
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
@@ -36,7 +36,6 @@ export interface MethodResults {
   readonly getE164: string | null;
   readonly formatInternational: string | null;
   readonly getURI: string | null;
-  readonly formatAsYouType: string | null;
 }
 
 export interface Mismatch {

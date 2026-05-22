@@ -12,11 +12,11 @@ function walkTo(digits: string): NumberResolver {
 }
 
 function matchAllCountries(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.countries.indexToKey.length).fill(1);
+  return new Uint8Array(getResourceProvider().refMapping.regions.indexToKey.length).fill(1);
 }
 
 function matchNoCountries(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.countries.indexToKey.length);
+  return new Uint8Array(getResourceProvider().refMapping.regions.indexToKey.length);
 }
 
 function matchAllNumberTypes(): Uint8Array {

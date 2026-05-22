@@ -1,10 +1,10 @@
 import {
-  CountryId,
   formatNumber,
   FormattingDirection,
-  getCallingCodePrimaryCountry,
-  getCountryIndex,
+  getCallingCodePrimaryRegion,
+  getRegionIndex,
   PhoneNumberFormat,
+  RegionId,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
@@ -34,20 +34,15 @@ export function resolveInternationalControllerState(
   let formattedNationalNumber: string = snapshot.nationalDigits;
   let formattedNationalCaretIndex: number = caretInCallingCode ? 0 : nationalCaretIndex;
   let formatIndex: number | null = null;
-  let country: CountryId | null = null;
+  let country: RegionId | null = null;
 
   if (profile) {
-    const countryIndex: number = getCountryIndex(countryScopeLayer, profile.stateCountryIndex);
+    const countryIndex: number = getRegionIndex(countryScopeLayer, profile.stateCountryIndex);
     const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
 
-    // Group progressively only while the number is still incomplete; once it reaches a terminal
-    // state, match formatInternational exactly (group only on a full pattern match).
-    const allowPartial: boolean = snapshot.terminalStates.length === 0;
-    const selectedIndex: number = selectInternationalFormatIndex(
-      callingCodeIndex,
-      snapshot.nationalDigits,
-      allowPartial,
-    );
+    // Group as aggressively as possible: a complete pattern wins (canonical formatInternational),
+    // otherwise fall back to progressive partial grouping at every keystroke.
+    const selectedIndex: number = selectInternationalFormatIndex(callingCodeIndex, snapshot.nationalDigits, true);
 
     if (selectedIndex >= 0) {
       formatIndex = selectedIndex;
@@ -73,9 +68,9 @@ export function resolveInternationalControllerState(
 
     country = resolveRegionCodeOrFallback(snapshot.callingCodeState, snapshot.nationalDigits, countryIndex);
   } else if (snapshot.callingCodeState !== -1) {
-    const primaryCountryIndex: number = getCallingCodePrimaryCountry(callingCodeLayer, snapshot.callingCodeState);
+    const primaryCountryIndex: number = getCallingCodePrimaryRegion(callingCodeLayer, snapshot.callingCodeState);
 
-    country = refMapping.countries.indexToKey[primaryCountryIndex] ?? null;
+    country = refMapping.regions.indexToKey[primaryCountryIndex] ?? null;
   }
 
   let value: string;

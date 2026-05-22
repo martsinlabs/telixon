@@ -1,4 +1,4 @@
-import { CountryId, getCallingCodeStateCountries, TerritorySpec } from '@telixon/core/engine';
+import { getCallingCodeStateRegions, RegionId, TerritorySpec } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { fullPattern } from './full-pattern';
 import { matchesLeadingDigits } from './matches-leading-digits';
@@ -23,17 +23,17 @@ function matchesRegion(territory: TerritorySpec, nationalDigits: string): boolea
 
 // libphonenumber getRegionCodeForNumber: the first region in the calling code's main-first order that
 // the number matches, or null. Shared by getCountry and the input controller so they always agree.
-export function resolveRegionCode(callingCodeState: number, nationalDigits: string): CountryId | null {
+export function resolveRegionCode(callingCodeState: number, nationalDigits: string): RegionId | null {
   if (callingCodeState === -1) return null;
 
   const { refMapping, callingCodeLayer, territorySpecTable } = getResourceProvider();
-  const regions: Uint8Array = getCallingCodeStateCountries(callingCodeLayer, callingCodeState);
-  if (regions.length === 1) return refMapping.countries.indexToKey[regions[0]!] ?? null;
+  const regions: Uint8Array = getCallingCodeStateRegions(callingCodeLayer, callingCodeState);
+  if (regions.length === 1) return refMapping.regions.indexToKey[regions[0]!] ?? null;
 
   for (const countryIndex of regions) {
     const territory: TerritorySpec | undefined = territorySpecTable[countryIndex];
     if (territory && matchesRegion(territory, nationalDigits)) {
-      return refMapping.countries.indexToKey[countryIndex] ?? null;
+      return refMapping.regions.indexToKey[countryIndex] ?? null;
     }
   }
   return null;

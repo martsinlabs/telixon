@@ -1,9 +1,9 @@
-import { CountryId } from '@telixon/core/engine';
+import { RegionId } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
 import { createNationalInputController } from '..';
 import { InputState } from '../../models';
 
-function placeCaretInRaw(country: CountryId, raw: string, caret: number): InputState {
+function placeCaretInRaw(country: RegionId, raw: string, caret: number): InputState {
   const controller = createNationalInputController({ country });
 
   return controller.insert(raw, '', caret, caret);

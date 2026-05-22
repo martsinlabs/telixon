@@ -1,4 +1,4 @@
-import { COUNTRY_IDS } from '@telixon/core';
+import { REGION_IDS } from '@telixon/core';
 import { COMPARED_METHODS, ConformanceReport, CorpusEntry, MethodName, MethodReport, Mismatch } from './models';
 import { Oracle } from './oracle';
 import { evaluateWithTelixon } from './subject';
@@ -51,7 +51,7 @@ export function buildConformanceReport(oracle: Oracle, corpus: readonly CorpusEn
     corpusSize: corpus.length,
     skipped,
     regionsCovered: regions.size,
-    regionsTotal: COUNTRY_IDS.length,
+    regionsTotal: REGION_IDS.length,
     commit: oracle.commit,
     methods,
   };

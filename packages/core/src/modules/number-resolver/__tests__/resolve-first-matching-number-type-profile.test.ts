@@ -1,4 +1,4 @@
-import { CountryId, getCountryIndex, MetadataNumberType, normalizeNationalNumber } from '@telixon/core/engine';
+import { getRegionIndex, MetadataNumberType, normalizeNationalNumber, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberTypeProfileRef } from '../models';
@@ -17,19 +17,19 @@ function createResolver(callingCode: string, nationalDigits: string): NumberReso
   return resolver;
 }
 
-function createNationalResolver(country: CountryId, rawNationalDigits: string): NumberResolver {
+function createNationalResolver(country: RegionId, rawNationalDigits: string): NumberResolver {
   const resourceProvider = getResourceProvider();
-  const countryIndex = resourceProvider.refMapping.countries.keyToIndex[country] ?? -1;
+  const countryIndex = resourceProvider.refMapping.regions.keyToIndex[country] ?? -1;
   const territorySpec = resourceProvider.territorySpecTable[countryIndex]!;
   const { normalizedDigits } = normalizeNationalNumber(rawNationalDigits, territorySpec);
 
   return createResolver(territorySpec.countryCode, normalizedDigits);
 }
 
-function resolveProfile(resolver: NumberResolver, preferredCountry?: CountryId): NumberTypeProfileRef | null {
+function resolveProfile(resolver: NumberResolver, preferredCountry?: RegionId): NumberTypeProfileRef | null {
   const resourceProvider = getResourceProvider();
   const preferredCountryIndex = preferredCountry
-    ? (resourceProvider.refMapping.countries.keyToIndex[preferredCountry] ?? -1)
+    ? (resourceProvider.refMapping.regions.keyToIndex[preferredCountry] ?? -1)
     : -1;
 
   return resolveFirstMatchingNumberTypeProfile(
@@ -39,16 +39,16 @@ function resolveProfile(resolver: NumberResolver, preferredCountry?: CountryId):
   );
 }
 
-function getProfileCountry(profile: NumberTypeProfileRef): CountryId {
+function getProfileCountry(profile: NumberTypeProfileRef): RegionId {
   const resourceProvider = getResourceProvider();
-  const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
 
-  return resourceProvider.refMapping.countries.indexToKey[countryIndex]!;
+  return resourceProvider.refMapping.regions.indexToKey[countryIndex]!;
 }
 
 function getProfileType(profile: NumberTypeProfileRef): MetadataNumberType {
   const resourceProvider = getResourceProvider();
-  const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   const numberType = resourceProvider.territorySpecTable[countryIndex]!.numberTypes[profile.numberTypeIndex]!;
 
   return resourceProvider.refMapping.numberTypes[numberType.type]!;
@@ -56,7 +56,7 @@ function getProfileType(profile: NumberTypeProfileRef): MetadataNumberType {
 
 function isGeneralDesc(profile: NumberTypeProfileRef): boolean {
   const resourceProvider = getResourceProvider();
-  const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   const generalDescType = resourceProvider.refMapping.numberTypes.length - 1;
 
   return (
@@ -69,14 +69,14 @@ describe('resolveLatestConcreteCountryIndex', () => {
     const resolver = createResolver('1', '3101234');
     const countryIndex = resolver.resolveLatestConcreteCountryIndex();
 
-    expect(getResourceProvider().refMapping.countries.indexToKey[countryIndex]).toBe('CA');
+    expect(getResourceProvider().refMapping.regions.indexToKey[countryIndex]).toBe('CA');
   });
 
   it('drops CA anchor once the input grows past the 7-digit UAN length', () => {
     const resolver = createResolver('1', '31012344');
     const countryIndex = resolver.resolveLatestConcreteCountryIndex();
 
-    expect(getResourceProvider().refMapping.countries.indexToKey[countryIndex]).not.toBe('CA');
+    expect(getResourceProvider().refMapping.regions.indexToKey[countryIndex]).not.toBe('CA');
   });
 });
 
@@ -175,7 +175,7 @@ describe('priority chain: non-strict', () => {
 
       const profile = resolveFirstMatchingNumberTypeProfile(
         resolver.snapshot,
-        getResourceProvider().refMapping.countries.keyToIndex['US']!,
+        getResourceProvider().refMapping.regions.keyToIndex['US']!,
         resolver.resolveLatestConcreteCountryIndex(),
       );
 

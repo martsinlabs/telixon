@@ -1,4 +1,11 @@
-import { createInternationalInputController, InputController, PhoneNumber } from '@telixon/core';
+import {
+  createInternationalInputController,
+  createNationalInputController,
+  InputController,
+  InputState,
+  PhoneNumber,
+  RegionId,
+} from '@telixon/core';
 import { MethodResults } from './models';
 
 // Telixon's verdict for every compared behavior, fed the E.164 number through the international controller.
@@ -21,6 +28,35 @@ export function evaluateWithTelixon(e164: string): MethodResults {
     getE164: phoneNumber.getE164(),
     formatInternational: phoneNumber.formatInternational(),
     getURI: phoneNumber.getURI(),
-    formatAsYouType: controller.currentState.value,
   };
+}
+
+// Telixon's live value after each input character of `input`, typed one character at a time through the
+// international controller — the real as-you-type path (insert), to compare against Google's formatter.
+export function asYouTypeWithTelixon(input: string): string[] {
+  const controller: InputController = createInternationalInputController({
+    display: { callingCodeInInput: true, plusPrefix: true },
+  });
+
+  let state: InputState = controller.currentState;
+  const snapshots: string[] = [];
+  for (const character of input) {
+    state = controller.insert(state.value, character, state.selectionStart, state.selectionEnd);
+    snapshots.push(state.value);
+  }
+  return snapshots;
+}
+
+// As asYouTypeWithTelixon, but through the national controller for a fixed country — typing the national
+// number (national prefix + NSN) one character at a time, to compare against Google in national mode.
+export function asYouTypeNationalWithTelixon(country: RegionId, input: string): string[] {
+  const controller: InputController = createNationalInputController({ country });
+
+  let state: InputState = controller.currentState;
+  const snapshots: string[] = [];
+  for (const character of input) {
+    state = controller.insert(state.value, character, state.selectionStart, state.selectionEnd);
+    snapshots.push(state.value);
+  }
+  return snapshots;
 }

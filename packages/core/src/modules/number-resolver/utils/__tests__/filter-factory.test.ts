@@ -1,4 +1,4 @@
-import { CountryId, MetadataNumberType } from '@telixon/core/engine';
+import { MetadataNumberType, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { createCountryFilter, createNumberTypeFilter } from '../filter-factory';
@@ -7,8 +7,8 @@ function metadataTypeIndex(type: MetadataNumberType): number {
   return getResourceProvider().refMapping.numberTypes.indexOf(type);
 }
 
-function countryIndex(id: CountryId): number {
-  return getResourceProvider().refMapping.countries.keyToIndex[id] ?? -1;
+function countryIndex(id: RegionId): number {
+  return getResourceProvider().refMapping.regions.keyToIndex[id] ?? -1;
 }
 
 function bitsSetAt(filter: Uint8Array, indices: readonly number[]): boolean {

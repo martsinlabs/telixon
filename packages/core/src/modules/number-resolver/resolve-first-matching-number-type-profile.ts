@@ -1,13 +1,13 @@
 import {
   containsLength,
   forEachNumberTypeIndex,
-  forEachStateCountry,
-  forEachStateCountryWithTerminalPrefix,
-  getCountryIndex,
+  forEachStateRegion,
+  forEachStateRegionWithTerminalPrefix,
   getLengthMask,
   getMaxLength,
   getNumberTypeMask,
   getNumberTypeProfileId,
+  getRegionIndex,
   getTerminalPrefixNumberTypeMask,
   NumberTypeScopeLayer,
 } from '@telixon/core/engine';
@@ -26,7 +26,7 @@ function isGeneralDescNumberType(
 }
 
 function isGeneralDescProfile(resourceProvider: ResourceProvider, profile: NumberTypeProfileRef): boolean {
-  const countryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   return isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex);
 }
 
@@ -133,7 +133,7 @@ function resolveCountryInCurrentState(
 ): NumberTypeProfileRef | null {
   let resolved: NumberTypeProfileRef | null = null;
 
-  forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
+  forEachStateRegion(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
     resolved = resolveFirstCountryProfilePartial(
       resourceProvider,
@@ -163,7 +163,7 @@ function resolveCountryInTerminalStates(
     const terminalState = snapshot.terminalStates[i]!;
     let resolved: NumberTypeProfileRef | null = null;
 
-    forEachStateCountryWithTerminalPrefix(
+    forEachStateRegionWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
       (stateCountryIndex, countryIndex) => {
@@ -212,7 +212,7 @@ function resolveExactInTerminalStates(
     let generalPreferred: NumberTypeProfileRef | null = null;
     let generalFallback: NumberTypeProfileRef | null = null;
 
-    forEachStateCountryWithTerminalPrefix(
+    forEachStateRegionWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
       (stateCountryIndex, countryIndex) => {
@@ -267,7 +267,7 @@ function resolveCountryExactInTerminalStates(
     const terminalState = snapshot.terminalStates[i]!;
     let concreteProfile: NumberTypeProfileRef | null = null;
 
-    forEachStateCountryWithTerminalPrefix(
+    forEachStateRegionWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
       (stateCountryIndex, countryIndex) => {
@@ -310,7 +310,7 @@ function resolveFallbackInCurrentState(
   let resolved: NumberTypeProfileRef | null = null;
   let generalProfile: NumberTypeProfileRef | null = null;
 
-  forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
+  forEachStateRegion(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex) || countryIndex === preferredCountryIndex) return;
 
     const profile = resolveFirstCountryProfilePartial(
@@ -350,7 +350,7 @@ function resolveFallbackInTerminalStates(
     let resolved: NumberTypeProfileRef | null = null;
     let terminalGeneralProfile: NumberTypeProfileRef | null = null;
 
-    forEachStateCountryWithTerminalPrefix(
+    forEachStateRegionWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
       (stateCountryIndex, countryIndex) => {
@@ -396,7 +396,7 @@ function resolveUniqueConcreteProfileInTerminalStates(
     let uniqueCountryIndex = -1;
     let hasMultipleCountries = false;
 
-    forEachStateCountryWithTerminalPrefix(
+    forEachStateRegionWithTerminalPrefix(
       resourceProvider.countryScopeLayer,
       terminalState,
       (stateCountryIndex, countryIndex) => {
@@ -443,7 +443,7 @@ function resolveUniqueConcreteProfileInCurrentState(
   let uniqueCountryIndex = -1;
   let hasMultipleCountries = false;
 
-  forEachStateCountry(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
+  forEachStateRegion(resourceProvider.countryScopeLayer, state, (stateCountryIndex, countryIndex) => {
     if (isCountryExcluded(snapshot, countryIndex)) return;
 
     const profile = resolveFirstCountryProfilePartial(
@@ -766,7 +766,7 @@ export function resolveLatestConcreteCountryIndex(
     if (profile === null) continue;
     if (!canProfileReachLength(resourceProvider, profile, finalDigitsLength)) continue;
 
-    latestCountryIndex = getCountryIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+    latestCountryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   }
 
   return latestCountryIndex;

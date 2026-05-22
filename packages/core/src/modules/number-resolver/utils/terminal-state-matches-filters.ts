@@ -1,6 +1,6 @@
 import {
   forEachNumberTypeIndex,
-  forEachStateCountryWithTerminalPrefix,
+  forEachStateRegionWithTerminalPrefix,
   getTerminalPrefixNumberTypeMask,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
@@ -19,7 +19,7 @@ export function terminalStateMatchesFilters(
 
   let foundMatch: boolean = false;
 
-  forEachStateCountryWithTerminalPrefix(
+  forEachStateRegionWithTerminalPrefix(
     resourceProvider.countryScopeLayer,
     terminalState,
     (stateCountryIndex: number, countryIndex: number) => {

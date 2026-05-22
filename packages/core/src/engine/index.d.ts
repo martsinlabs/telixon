@@ -3,10 +3,10 @@
  * Calling code layer structure.
  */
 export declare interface CallingCodeLayer {
-    stateCountryOffset: Uint16Array;
-    stateCountryCount: Uint8Array;
-    countryIndexPool: Uint8Array;
-    statePrimaryCountry: Uint8Array;
+    stateRegionOffset: Uint16Array;
+    stateRegionCount: Uint8Array;
+    regionIndexPool: Uint8Array;
+    statePrimaryRegion: Uint8Array;
     stateFlags: Uint8Array;
 }
 
@@ -15,33 +15,6 @@ export declare interface CallingCodeLayer {
  * Returns true if the given length is encoded in the bitmask.
  */
 export declare function containsLength(mask: number, length: number): boolean;
-
-/**
- * @public
- * CLDR two-letter region codes recognized by the engine. Source of truth for
- * {@link CountryId}; cross-checked against raw XML by `raw-metadata-validator`.
- * Excludes the non-geographical `'001'` (filtered by the raw loader).
- */
-export declare const COUNTRY_IDS: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
-
-/**
- * @public
- * Territory identifier per CLDR two-letter region code.
- * Derived from {@link COUNTRY_IDS} so the literal union and runtime list
- * cannot drift apart.
- */
-export declare type CountryId = (typeof COUNTRY_IDS)[number];
-
-/**
- * @public
- * Country scope layer structure.
- */
-export declare interface CountryScopeLayer {
-    stateOffset: Uint32Array;
-    stateLength: Uint8Array;
-    countryPool: Uint8Array;
-    countryHasTerminal: Uint8Array;
-}
 
 /**
  * @public
@@ -76,13 +49,6 @@ export declare const ENGINE_LAYOUT: {
 
 /**
  * @public
- * Iterates over all country indices associated with a calling code state.
- * Stops iteration if the callback returns true.
- */
-export declare function forEachCountryInCallingCodeState(layer: CallingCodeLayer, state: number, callback: (countryIndex: number) => StopIteration): void;
-
-/**
- * @public
  * Iterates over all set format bit indices in ascending order.
  */
 export declare function forEachFormatIndex(mask: number, callback: (index: number) => StopIteration): void;
@@ -101,15 +67,22 @@ export declare function forEachNumberTypeIndex(mask: number, callback: (typeInde
 
 /**
  * @public
- * Iterates over all countries assigned to a state.
+ * Iterates over all region indices associated with a calling code state.
+ * Stops iteration if the callback returns true.
  */
-export declare function forEachStateCountry(scope: CountryScopeLayer, state: number, callback: (stateCountryIndex: number, countryIndex: number) => StopIteration): void;
+export declare function forEachRegionInCallingCodeState(layer: CallingCodeLayer, state: number, callback: (regionIndex: number) => StopIteration): void;
 
 /**
  * @public
- * Iterates over countries of a state that have a terminal prefix.
+ * Iterates over all regions assigned to a state.
  */
-export declare function forEachStateCountryWithTerminalPrefix(scope: CountryScopeLayer, state: number, callback: (stateCountryIndex: number, countryIndex: number) => StopIteration): void;
+export declare function forEachStateRegion(scope: RegionScopeLayer, state: number, callback: (stateRegionIndex: number, regionIndex: number) => StopIteration): void;
+
+/**
+ * @public
+ * Iterates over regions of a state that have a terminal prefix.
+ */
+export declare function forEachStateRegionWithTerminalPrefix(scope: RegionScopeLayer, state: number, callback: (stateRegionIndex: number, regionIndex: number) => StopIteration): void;
 
 /**
  * @public
@@ -150,23 +123,17 @@ export declare type FormattingDirection = 'forward' | 'backward';
 
 /**
  * @public
- * Get primary country for calling code state.
+ * Get primary region for calling code state.
  */
-export declare function getCallingCodePrimaryCountry(layer: CallingCodeLayer, state: number): number;
+export declare function getCallingCodePrimaryRegion(layer: CallingCodeLayer, state: number): number;
 
 /**
  * @public
- * Returns a calling code state's countries in libphonenumber `countryCallingCodeToRegionCodeMap`
+ * Returns a calling code state's regions in libphonenumber `countryCallingCodeToRegionCodeMap`
  * order — the main region first, then the rest in document order. Iterate this and return the first
  * region the number validates for to resolve a region the way `getRegionCodeForNumber` does.
  */
-export declare function getCallingCodeStateCountries(layer: CallingCodeLayer, state: number): Uint8Array;
-
-/**
- * @public
- * Returns the country index for a given stateCountryIndex.
- */
-export declare function getCountryIndex(scope: CountryScopeLayer, stateCountryIndex: number): number;
+export declare function getCallingCodeStateRegions(layer: CallingCodeLayer, state: number): Uint8Array;
 
 /**
  * @public
@@ -206,35 +173,41 @@ export declare function getNumberTypeIndicesFromMask(mask: number): number[];
 
 /**
  * @public
- * Returns number type mask for a given state-country index.
+ * Returns number type mask for a given state-region index.
  */
-export declare function getNumberTypeMask(scope: NumberTypeScopeLayer, stateCountryIndex: number): number;
+export declare function getNumberTypeMask(scope: NumberTypeScopeLayer, stateRegionIndex: number): number;
 
 /**
  * @public
  * Computes profile id for a number type using bit position within typeMask
- * and state-country base offset.
+ * and state-region base offset.
  */
-export declare function getNumberTypeProfileId(profile: NumberTypeProfileLayer, stateCountryIndex: number, typeMask: number, typeIndex: number): number;
+export declare function getNumberTypeProfileId(profile: NumberTypeProfileLayer, stateRegionIndex: number, typeMask: number, typeIndex: number): number;
 
 /**
  * @public
- * Returns a view over country indices assigned to a state.
+ * Returns the region index for a given stateRegionIndex.
  */
-export declare function getStateCountries(scope: CountryScopeLayer, state: number): Uint8Array;
+export declare function getRegionIndex(scope: RegionScopeLayer, stateRegionIndex: number): number;
 
 /**
  * @public
- * Returns country indices of a state that have a terminal prefix.
+ * Returns a view over region indices assigned to a state.
  */
-export declare function getStateCountriesWithTerminalPrefix(scope: CountryScopeLayer, state: number): number[];
+export declare function getStateRegions(scope: RegionScopeLayer, state: number): Uint8Array;
+
+/**
+ * @public
+ * Returns region indices of a state that have a terminal prefix.
+ */
+export declare function getStateRegionsWithTerminalPrefix(scope: RegionScopeLayer, state: number): number[];
 
 /**
  * @public
  * Returns terminal-prefix number type mask
- * for the given state-country index.
+ * for the given state-region index.
  */
-export declare function getTerminalPrefixNumberTypeMask(scope: NumberTypeScopeLayer, stateCountryIndex: number): number;
+export declare function getTerminalPrefixNumberTypeMask(scope: NumberTypeScopeLayer, stateRegionIndex: number): number;
 
 /**
  * @public
@@ -249,9 +222,9 @@ export declare interface GraphLayer {
 
 /**
  * @public
- * Checks if country exists in calling code state.
+ * Checks if region exists in calling code state.
  */
-export declare function hasCountryInCallingCodeState(layer: CallingCodeLayer, state: number, countryIndex: number): boolean;
+export declare function hasRegionInCallingCodeState(layer: CallingCodeLayer, state: number, regionIndex: number): boolean;
 
 /**
  * @public
@@ -288,12 +261,27 @@ export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBI
 
 /**
  * @public
- * Normalizes national digits and remaps the caret position accordingly.
+ * Result of {@link normalizeNationalNumber}.
+ *
+ * `normalizedDigits` / `caretIndex` are the parse- and validation-time form (prefix strip +
+ * `nationalPrefixTransformRule`). `displayDigits` / `displayCaretIndex` are the as-you-type form,
+ * which drops digit-adding transforms so no untyped digits ever surface mid-typing.
  */
-export declare function normalizeNationalNumber(digits: string, territory: TerritorySpec, caretIndex?: number): {
+export declare interface NormalizedNationalNumber {
     normalizedDigits: string;
     caretIndex: number;
-};
+    displayDigits: string;
+    displayCaretIndex: number;
+}
+
+/**
+ * @public
+ * Normalizes national digits and remaps the caret position accordingly.
+ *
+ * Returns two views of the input: `normalizedDigits` for parsing/validation, and `displayDigits`
+ * for as-you-type formatting (see {@link NormalizedNationalNumber}).
+ */
+export declare function normalizeNationalNumber(digits: string, territory: TerritorySpec, caretIndex?: number): NormalizedNationalNumber;
 
 /**
  * @public
@@ -337,12 +325,6 @@ export declare function parseCallingCodeBinary(buffer: ArrayBuffer): CallingCode
 
 /**
  * @public
- * Parse country scope binary buffer.
- */
-export declare function parseCountryScopeBinary(buffer: ArrayBuffer): CountryScopeLayer;
-
-/**
- * @public
  * Parse graph binary buffer.
  */
 export declare function parseGraphBinary(buffer: ArrayBuffer): GraphLayer;
@@ -358,6 +340,12 @@ export declare function parseNumberTypeProfileBinary(buffer: ArrayBuffer): Numbe
  * Parses NumberTypeScopeLayer from its binary representation.
  */
 export declare function parseNumberTypeScopeBinary(buffer: ArrayBuffer): NumberTypeScopeLayer;
+
+/**
+ * @public
+ * Parse region scope binary buffer.
+ */
+export declare function parseRegionScopeBinary(buffer: ArrayBuffer): RegionScopeLayer;
 
 /**
  * @public
@@ -447,9 +435,9 @@ export declare type PossibleLengthsMask = number;
  * Reference mapping schema.
  */
 export declare type ReferenceMapping = {
-    countries: {
-        indexToKey: CountryId[];
-        keyToIndex: Record<CountryId, number>;
+    regions: {
+        indexToKey: RegionId[];
+        keyToIndex: Record<RegionId, number>;
     };
     callingCodes: {
         indexToKey: number[];
@@ -460,6 +448,33 @@ export declare type ReferenceMapping = {
     ignoredDigitPlaceholder: string;
     nationalPrefixPlaceholder: string;
 };
+
+/**
+ * @public
+ * CLDR two-letter region codes recognized by the engine. Source of truth for
+ * {@link RegionId}; cross-checked against raw XML by `raw-metadata-validator`.
+ * Excludes the non-geographical `'001'` (filtered by the raw loader).
+ */
+export declare const REGION_IDS: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
+
+/**
+ * @public
+ * Territory identifier per CLDR two-letter region code.
+ * Derived from {@link REGION_IDS} so the literal union and runtime list
+ * cannot drift apart.
+ */
+export declare type RegionId = (typeof REGION_IDS)[number];
+
+/**
+ * @public
+ * Region scope layer structure.
+ */
+export declare interface RegionScopeLayer {
+    stateOffset: Uint32Array;
+    stateLength: Uint8Array;
+    regionPool: Uint8Array;
+    regionHasTerminal: Uint8Array;
+}
 
 /**
  * @public
@@ -475,7 +490,7 @@ export declare type StopIteration = true | void;
  * Territory specification schema.
  */
 export declare interface TerritorySpec {
-    id: CountryId;
+    id: RegionId;
     countryCode: string;
     internationalPrefix?: string;
     leadingDigits?: string;

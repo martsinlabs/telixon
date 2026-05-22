@@ -11,5 +11,5 @@ export { getCountryCallingCode } from './modules/country-calling-code';
 
 export { ensureReady } from './resource-provider';
 
-export { COUNTRY_IDS } from './engine';
-export type { CountryId, NumberType } from './engine';
+export { REGION_IDS } from './engine';
+export type { NumberType, RegionId } from './engine';

@@ -1,4 +1,4 @@
-import { CountryId, MetadataNumberType, NumberType } from '@telixon/core/engine';
+import { MetadataNumberType, NumberType, RegionId } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
@@ -12,12 +12,12 @@ function resolveMetadataTypes(type: NumberType): readonly string[] {
   return NUMBER_TYPE_ALIASES[type] ?? [type];
 }
 
-export function createCountryFilter(countryIds: CountryId[]): BinaryFilter {
+export function createCountryFilter(countryIds: RegionId[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
-  const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.countries.indexToKey.length);
+  const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.regions.indexToKey.length);
 
-  const keyToIndex: Record<CountryId, number> = resourceProvider.refMapping.countries.keyToIndex;
+  const keyToIndex: Record<RegionId, number> = resourceProvider.refMapping.regions.keyToIndex;
 
   for (const countryId of countryIds) {
     const idx: number | undefined = keyToIndex[countryId];

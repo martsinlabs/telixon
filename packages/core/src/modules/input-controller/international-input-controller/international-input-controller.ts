@@ -1,4 +1,4 @@
-import { CountryId, NumberType } from '@telixon/core/engine';
+import { NumberType, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
 import { NumberResolver } from '../../number-resolver';
@@ -53,8 +53,8 @@ class InternationalInputController extends InputController {
     );
   }
 
-  #setDefaultCountry(country: CountryId): void {
-    this.#defaultCountryIndex = getResourceProvider().refMapping.countries.keyToIndex[country] ?? -1;
+  #setDefaultCountry(country: RegionId): void {
+    this.#defaultCountryIndex = getResourceProvider().refMapping.regions.keyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
       this.#defaultCountryIndex !== -1
@@ -229,7 +229,7 @@ class InternationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountry(country: CountryId): InputState {
+  setCountry(country: RegionId): InputState {
     this.#setDefaultCountry(country);
 
     const { value } = this.#history.current;
@@ -245,7 +245,7 @@ class InternationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountryFilter(countries: CountryId[] | null): void {
+  setCountryFilter(countries: RegionId[] | null): void {
     this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
   }
 

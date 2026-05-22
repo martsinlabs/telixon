@@ -1,9 +1,9 @@
 import {
-  CountryId,
   formatNumberWithRawCaret,
   FormattingDirection,
-  getCountryIndex,
+  getRegionIndex,
   PhoneNumberFormat,
+  RegionId,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
@@ -20,21 +20,26 @@ export function resolveNationalControllerState(
   defaultCountryIndex: number,
   nationalPrefixTyped: boolean,
   rawString: string,
+  displayDigits: string,
   rawCaretIndex: CaretIndex,
   direction: FormattingDirection = 'forward',
 ): InputControllerState {
   const { refMapping, countryScopeLayer, territorySpecTable } = getResourceProvider();
 
+  // Fallback (no matching format, e.g. just the national prefix typed) shows the typed digits;
+  // the format path below groups displayDigits instead.
   let formattedNationalNumber: string = rawString;
   let formattedNationalCaretIndex: number = rawCaretIndex;
-  let country: CountryId | null = null;
+  let country: RegionId | null = null;
 
   if (profile) {
-    const countryIndex: number = getCountryIndex(countryScopeLayer, profile.stateCountryIndex);
+    const countryIndex: number = getRegionIndex(countryScopeLayer, profile.stateCountryIndex);
 
     country = resolveRegionCodeOrFallback(snapshot.callingCodeState, snapshot.nationalDigits, countryIndex);
 
-    const formatRef = resolveFormatFromProfile(profile, snapshot.nationalDigits);
+    // displayDigits already excludes parse-only digit-adding transforms (e.g. a NANPA area code), so
+    // the as-you-type form never shows a digit the user didn't type. Select and apply the format on it.
+    const formatRef = resolveFormatFromProfile(profile, displayDigits);
 
     if (formatRef) {
       const format: PhoneNumberFormat = resolvePhoneNumberFormat(formatRef);
@@ -42,14 +47,12 @@ export function resolveNationalControllerState(
         ? format.masks.nationalWithPrefix
         : undefined;
 
-      const prefixRequired: boolean =
-        !nationalPrefixTyped &&
-        format.masks.nationalWithPrefix !== undefined &&
-        format.nationalPrefixOptionalWhenFormatting !== 'true';
-
-      const mask: string | undefined = prefixRequired
-        ? undefined
-        : pickMaskForLength(withPrefixMasks ?? format.masks.national, snapshot.nationalDigits.length);
+      // Group whether or not the national prefix was typed (matching Google): with the prefix use the
+      // prefix mask, otherwise the plain national mask.
+      const mask: string | undefined = pickMaskForLength(
+        withPrefixMasks ?? format.masks.national,
+        displayDigits.length,
+      );
 
       if (mask !== undefined) {
         const nationalPrefix: string | undefined = withPrefixMasks
@@ -57,7 +60,7 @@ export function resolveNationalControllerState(
           : undefined;
 
         const { formatted, caretIndex: natCaretFormatted } = formatNumberWithRawCaret(
-          buildFormattingContext(mask, snapshot.nationalDigits, refMapping, nationalPrefix),
+          buildFormattingContext(mask, displayDigits, refMapping, nationalPrefix),
           rawCaretIndex,
           direction,
         );
@@ -77,7 +80,7 @@ export function resolveNationalControllerState(
       };
     }
   } else if (defaultCountryIndex !== -1) {
-    country = refMapping.countries.indexToKey[defaultCountryIndex] ?? null;
+    country = refMapping.regions.indexToKey[defaultCountryIndex] ?? null;
   }
 
   return {

@@ -1,17 +1,17 @@
 import {
   CallingCodeLayer,
-  CountryScopeLayer,
   ENGINE_LAYOUT,
   FormatsTable,
   GraphLayer,
   NumberTypeProfileLayer,
   NumberTypeScopeLayer,
   parseCallingCodeBinary,
-  parseCountryScopeBinary,
   parseGraphBinary,
   parseNumberTypeProfileBinary,
   parseNumberTypeScopeBinary,
+  parseRegionScopeBinary,
   ReferenceMapping,
+  RegionScopeLayer,
   TerritorySpecTable,
 } from '../engine';
 import { ResourceLoader } from '../resource-loader/models';
@@ -55,9 +55,9 @@ export async function resolveCallingCodeLayer(loader: ResourceLoader): Promise<C
   return parseCallingCodeBinary(buffer);
 }
 
-export async function resolveCountryScopeLayer(loader: ResourceLoader): Promise<CountryScopeLayer> {
+export async function resolveCountryScopeLayer(loader: ResourceLoader): Promise<RegionScopeLayer> {
   const buffer: ArrayBuffer = await loader.load(COUNTRY_SCOPE_PATH);
-  return parseCountryScopeBinary(buffer);
+  return parseRegionScopeBinary(buffer);
 }
 
 export async function resolveNumberTypeScopeLayer(loader: ResourceLoader): Promise<NumberTypeScopeLayer> {

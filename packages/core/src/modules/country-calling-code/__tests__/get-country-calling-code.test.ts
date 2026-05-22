@@ -1,4 +1,4 @@
-import { COUNTRY_IDS } from '@telixon/core/engine';
+import { REGION_IDS } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
 import { getCountryCallingCode } from '../get-country-calling-code';
 
@@ -18,7 +18,7 @@ describe('getCountryCallingCode', () => {
   });
 
   it('returns a non-empty numeric code for every supported region', () => {
-    for (const region of COUNTRY_IDS) {
+    for (const region of REGION_IDS) {
       expect(getCountryCallingCode(region), region).toMatch(/^\d+$/);
     }
   });

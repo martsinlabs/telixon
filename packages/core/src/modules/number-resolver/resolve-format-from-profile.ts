@@ -1,7 +1,7 @@
 import {
   forEachFormatIndex,
-  getCountryIndex,
   getFormatMask,
+  getRegionIndex,
   PhoneNumberFormat,
   PhoneNumberFormatList,
 } from '@telixon/core/engine';
@@ -23,7 +23,7 @@ export function resolveFormatFromProfile(
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(
-    getCountryIndex(resourceProvider.countryScopeLayer, profileRef.stateCountryIndex),
+    getRegionIndex(resourceProvider.countryScopeLayer, profileRef.stateCountryIndex),
   );
   const formatsList: PhoneNumberFormatList = resourceProvider.formatsTable[callingCodeIndex]!;
   const formatMask: number = getFormatMask(resourceProvider.numberTypeProfileLayer, profileRef.numberTypeProfileId);

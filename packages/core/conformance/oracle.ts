@@ -10,7 +10,13 @@ import { MethodResults } from './models';
 // Google publishes no npm package — its JS port lives as Closure-coupled source in the repo. We fetch
 // those sources at the engine's commit and run them on google-closure-library. Pinning the oracle to
 // the engine's commit removes metadata version drift: any mismatch is then a real engine bug.
-const SOURCE_FILES = ['phonemetadata.pb.js', 'phonenumber.pb.js', 'metadata.js', 'phonenumberutil.js'] as const;
+const SOURCE_FILES = [
+  'phonemetadata.pb.js',
+  'phonenumber.pb.js',
+  'metadata.js',
+  'phonenumberutil.js',
+  'asyoutypeformatter.js',
+] as const;
 
 // Closure modules the .pb.js sources expect loaded before they run.
 const CLOSURE_DEPENDENCIES = [
@@ -56,6 +62,10 @@ export interface Oracle {
   evaluate(e164: string): MethodResults | null;
   // Google's country calling code for a region, as a string ('0' for an unknown region).
   countryCallingCode(regionCode: string): string;
+  // Google's AsYouTypeFormatter snapshot after each input character of `input` (one entry per character).
+  asYouType(regionCode: string, input: string): readonly string[];
+  // The national-format digits a user types for `e164` (national prefix + NSN), or null if unparseable.
+  nationalInputDigits(e164: string): string | null;
 }
 
 // Minimal shapes of the closure objects we touch. The closure load is the system boundary:
@@ -78,6 +88,11 @@ interface OracleUtil {
   getCountryCodeForRegion(regionCode: string): number;
 }
 
+// Google's progressive formatter: one formatted snapshot per input character.
+interface OracleAsYouTypeFormatter {
+  inputDigit(nextCharacter: string): string;
+}
+
 interface PhoneNumbersNamespace {
   PhoneNumberUtil: {
     getInstance(): OracleUtil;
@@ -85,6 +100,7 @@ interface PhoneNumbersNamespace {
   };
   PhoneNumberType: Record<NumberType | 'UNKNOWN', number>;
   PhoneNumberFormat: Record<'E164' | 'INTERNATIONAL' | 'NATIONAL' | 'RFC3966', number>;
+  AsYouTypeFormatter: new (regionCode: string) => OracleAsYouTypeFormatter;
 }
 
 interface ClosureGlobal {
@@ -198,10 +214,23 @@ export async function loadOracle(): Promise<Oracle> {
         getE164: valid ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
         formatInternational: internationalFormat,
         getURI: valid ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,
-        // The controller's live value is held to Google's canonical international format.
-        formatAsYouType: internationalFormat,
       };
     },
     countryCallingCode: (regionCode) => String(util.getCountryCodeForRegion(regionCode)),
+    asYouType: (regionCode, input) => {
+      const formatter = new ph.AsYouTypeFormatter(regionCode);
+      const snapshots: string[] = [];
+      for (const character of input) snapshots.push(formatter.inputDigit(character));
+      return snapshots;
+    },
+    nationalInputDigits: (e164) => {
+      let parsed: OracleNumber;
+      try {
+        parsed = util.parse(e164, undefined);
+      } catch {
+        return null;
+      }
+      return util.format(parsed, ph.PhoneNumberFormat.NATIONAL).replace(/\D/g, '');
+    },
   };
 }

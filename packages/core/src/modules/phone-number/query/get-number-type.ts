@@ -1,11 +1,11 @@
 import {
   containsLength,
   forEachNumberTypeIndex,
-  forEachStateCountryWithTerminalPrefix,
-  getCountryIndex,
+  forEachStateRegionWithTerminalPrefix,
   getLengthMask,
   getNumberTypeMask,
   getNumberTypeProfileId,
+  getRegionIndex,
   getTerminalPrefixNumberTypeMask,
   MetadataNumberType,
   NumberType,
@@ -45,7 +45,7 @@ export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType
   const profileLayer = resourceProvider.numberTypeProfileLayer;
   const countryScopeLayer = resourceProvider.countryScopeLayer;
 
-  const countryIndex: number = getCountryIndex(countryScopeLayer, profileRef.stateCountryIndex);
+  const countryIndex: number = getRegionIndex(countryScopeLayer, profileRef.stateCountryIndex);
   const territory = resourceProvider.territorySpecTable[countryIndex];
   if (!territory) return null;
 
@@ -54,7 +54,7 @@ export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType
   let seenTypeIds = 0;
 
   for (const terminalState of terminalStates) {
-    forEachStateCountryWithTerminalPrefix(countryScopeLayer, terminalState, (stateCountryIndex, stateCountry) => {
+    forEachStateRegionWithTerminalPrefix(countryScopeLayer, terminalState, (stateCountryIndex, stateCountry) => {
       if (stateCountry !== countryIndex) return;
 
       const numberTypeMask: number = getNumberTypeMask(scope, stateCountryIndex);
