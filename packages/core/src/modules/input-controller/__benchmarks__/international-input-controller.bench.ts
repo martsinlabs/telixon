@@ -11,3 +11,16 @@ registerControllerBenches(
     selectionEnd: 11,
   },
 );
+
+// +1 is shared (NANPA), so country and format selection iterate regions with per-pattern regex —
+// the multi-region hot path the single-region AR suite does not exercise.
+registerControllerBenches(
+  'InternationalInputController (US, +1 NANPA)',
+  () => createInternationalInputController({ defaultCountry: 'US' }),
+  {
+    setValueInput: '+1 213 373 4253',
+    typedInput: '2133734253',
+    selectionStart: 4,
+    selectionEnd: 10,
+  },
+);

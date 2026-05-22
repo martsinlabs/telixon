@@ -17,6 +17,7 @@ export function evaluateWithTelixon(e164: string): MethodResults {
     getNumberType: phoneNumber.getNumberType(),
     getNationalNumber: phoneNumber.getNationalNumber(),
     getCallingCode: phoneNumber.getCallingCode(),
+    getCountry: phoneNumber.getCountry(),
     getE164: phoneNumber.getE164(),
     formatInternational: phoneNumber.formatInternational(),
     getURI: phoneNumber.getURI(),

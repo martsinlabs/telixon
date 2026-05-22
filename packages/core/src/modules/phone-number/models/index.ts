@@ -1,4 +1,4 @@
-import { NumberType } from '@telixon/core/engine';
+import { CountryId, NumberType } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { NumberTypeProfileRef } from '../../number-resolver/models';
 
@@ -28,6 +28,7 @@ export interface PhoneNumber {
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
   getNationalNumber(): string;
   getCallingCode(): string | null;
+  getCountry(): CountryId | null;
   getE164(): string | null;
   formatInternational(): string | null;
   getURI(): string | null;

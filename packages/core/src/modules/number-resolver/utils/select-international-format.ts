@@ -1,18 +1,7 @@
 import { PhoneNumberFormat, PhoneNumberFormatList } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { fullPattern } from './full-pattern';
 import { matchesLeadingDigits } from './matches-leading-digits';
-
-// Compiled full-pattern matchers; selection runs per keystroke, so the regex is memoized.
-const fullPatterns = new Map<string, RegExp>();
-
-function fullPattern(pattern: string): RegExp {
-  let matcher: RegExp | undefined = fullPatterns.get(pattern);
-  if (!matcher) {
-    matcher = new RegExp(`^(?:${pattern})$`);
-    fullPatterns.set(pattern, matcher);
-  }
-  return matcher;
-}
 
 // libphonenumber chooseFormattingPatternForNumber: leadingDigits prefix + full national pattern,
 // skipping formats not used internationally.

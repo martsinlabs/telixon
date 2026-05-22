@@ -156,7 +156,9 @@ export declare function getCallingCodePrimaryCountry(layer: CallingCodeLayer, st
 
 /**
  * @public
- * Returns all countries for a calling code state.
+ * Returns a calling code state's countries in libphonenumber `countryCallingCodeToRegionCodeMap`
+ * order — the main region first, then the rest in document order. Iterate this and return the first
+ * region the number validates for to resolve a region the way `getRegionCodeForNumber` does.
  */
 export declare function getCallingCodeStateCountries(layer: CallingCodeLayer, state: number): Uint8Array;
 

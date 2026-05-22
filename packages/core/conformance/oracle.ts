@@ -68,6 +68,7 @@ interface OracleUtil {
   parse(value: string, region: string | undefined): OracleNumber;
   format(number: OracleNumber, format: number): string;
   getNationalSignificantNumber(number: OracleNumber): string;
+  getRegionCodeForNumber(number: OracleNumber): string | null | undefined;
   getNumberType(number: OracleNumber): number;
   isPossibleNumber(number: OracleNumber): boolean;
   isPossibleNumberWithReason(number: OracleNumber): number;
@@ -190,6 +191,7 @@ export async function loadOracle(): Promise<Oracle> {
         getNumberType: typeId === ph.PhoneNumberType.UNKNOWN ? null : (numberTypeName[typeId] ?? null),
         getNationalNumber: util.getNationalSignificantNumber(parsed),
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
+        getCountry: util.getRegionCodeForNumber(parsed) ?? null,
         getE164: valid ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
         formatInternational: internationalFormat,
         getURI: valid ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,

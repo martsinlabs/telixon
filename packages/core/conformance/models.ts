@@ -8,6 +8,7 @@ export const COMPARED_METHODS = [
   'getNumberType',
   'getNationalNumber',
   'getCallingCode',
+  'getCountry',
   'getE164',
   'formatInternational',
   'getURI',
@@ -31,6 +32,7 @@ export interface MethodResults {
   readonly getNumberType: NumberType | null;
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
+  readonly getCountry: string | null;
   readonly getE164: string | null;
   readonly formatInternational: string | null;
   readonly getURI: string | null;

@@ -90,6 +90,7 @@ behavior matches exactly, so the allowlist is empty:
 | `getNumberType`        | 100.00% |
 | `getNationalNumber`    | 100.00% |
 | `getCallingCode`       | 100.00% |
+| `getCountry`           | 100.00% |
 | `getE164`              | 100.00% |
 | `formatInternational`  | 100.00% |
 | `getURI`               | 100.00% |

@@ -32,6 +32,13 @@ export function registerControllerBenches(
         phoneNumber.isValid();
         phoneNumber.isPossible();
         phoneNumber.isPossibleWithReason();
+        phoneNumber.getNumberType();
+        phoneNumber.getNationalNumber();
+        phoneNumber.getCallingCode();
+        phoneNumber.getCountry();
+        phoneNumber.getE164();
+        phoneNumber.formatInternational();
+        phoneNumber.getURI();
       },
       {
         setup: () => {

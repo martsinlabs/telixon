@@ -11,6 +11,7 @@ import { resolveFormatFromProfile } from '../../../number-resolver/resolve-forma
 import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
 import { pickMaskForLength } from '../../../number-resolver/utils/pick-mask-for-length';
 import { resolvePhoneNumberFormat } from '../../../number-resolver/utils/resolve-phone-number-format';
+import { resolveRegionCodeOrFallback } from '../../../number-resolver/utils/resolve-region-code-or-fallback';
 import { CaretIndex, InputControllerState } from '../../models';
 
 export function resolveNationalControllerState(
@@ -31,7 +32,7 @@ export function resolveNationalControllerState(
   if (profile) {
     const countryIndex: number = getCountryIndex(countryScopeLayer, profile.stateCountryIndex);
 
-    country = refMapping.countries.indexToKey[countryIndex]!;
+    country = resolveRegionCodeOrFallback(snapshot.callingCodeState, snapshot.nationalDigits, countryIndex);
 
     const formatRef = resolveFormatFromProfile(profile, snapshot.nationalDigits);
 
