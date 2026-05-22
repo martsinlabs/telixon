@@ -92,6 +92,7 @@ behavior matches exactly, so the allowlist is empty:
 | `getCallingCode`       | 100.00% |
 | `getE164`              | 100.00% |
 | `formatInternational`  | 100.00% |
+| `getURI`               | 100.00% |
 | `formatAsYouType`      | 100.00% |
 
 ## Scope

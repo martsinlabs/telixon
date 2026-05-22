@@ -80,7 +80,7 @@ interface PhoneNumbersNamespace {
     ValidationResult: Record<string, number>;
   };
   PhoneNumberType: Record<NumberType | 'UNKNOWN', number>;
-  PhoneNumberFormat: Record<'E164' | 'INTERNATIONAL' | 'NATIONAL', number>;
+  PhoneNumberFormat: Record<'E164' | 'INTERNATIONAL' | 'NATIONAL' | 'RFC3966', number>;
 }
 
 interface ClosureGlobal {
@@ -192,6 +192,7 @@ export async function loadOracle(): Promise<Oracle> {
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
         getE164: valid ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
         formatInternational: internationalFormat,
+        getURI: valid ? util.format(parsed, ph.PhoneNumberFormat.RFC3966) : null,
         // The controller's live value is held to Google's canonical international format.
         formatAsYouType: internationalFormat,
       };

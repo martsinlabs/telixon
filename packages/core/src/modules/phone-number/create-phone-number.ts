@@ -4,6 +4,7 @@ import { getCallingCode } from './query/get-calling-code';
 import { getE164 } from './query/get-e164';
 import { getNationalNumber } from './query/get-national-number';
 import { getNumberType } from './query/get-number-type';
+import { getURI } from './query/get-uri';
 import { isPossible } from './query/is-possible';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
 import { isValid } from './query/is-valid';
@@ -18,5 +19,6 @@ export function createPhoneNumber(resolved: ResolvedPhoneNumber): PhoneNumber {
     getCallingCode: () => getCallingCode(resolved),
     getE164: () => getE164(resolved),
     formatInternational: () => formatInternational(resolved),
+    getURI: () => getURI(resolved),
   };
 }

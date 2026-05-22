@@ -30,4 +30,5 @@ export interface PhoneNumber {
   getCallingCode(): string | null;
   getE164(): string | null;
   formatInternational(): string | null;
+  getURI(): string | null;
 }
