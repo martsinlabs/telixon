@@ -54,6 +54,8 @@ export interface Oracle {
   sampleExampleE164(regionCode: string, typeId: number): string | null;
   // The oracle's verdict for every compared method, or null when Google cannot parse the number.
   evaluate(e164: string): MethodResults | null;
+  // Google's country calling code for a region, as a string ('0' for an unknown region).
+  countryCallingCode(regionCode: string): string;
 }
 
 // Minimal shapes of the closure objects we touch. The closure load is the system boundary:
@@ -73,6 +75,7 @@ interface OracleUtil {
   isPossibleNumber(number: OracleNumber): boolean;
   isPossibleNumberWithReason(number: OracleNumber): number;
   isValidNumber(number: OracleNumber): boolean;
+  getCountryCodeForRegion(regionCode: string): number;
 }
 
 interface PhoneNumbersNamespace {
@@ -199,5 +202,6 @@ export async function loadOracle(): Promise<Oracle> {
         formatAsYouType: internationalFormat,
       };
     },
+    countryCallingCode: (regionCode) => String(util.getCountryCodeForRegion(regionCode)),
   };
 }

@@ -7,6 +7,8 @@ export type { PhoneNumber, PhoneNumberValidationResult } from './modules/phone-n
 export { createInternationalInputController } from './modules/input-controller/international-input-controller';
 export { createNationalInputController } from './modules/input-controller/national-input-controller';
 
+export { getCountryCallingCode } from './modules/country-calling-code';
+
 export { ensureReady } from './resource-provider';
 
 export { COUNTRY_IDS } from './engine';
