@@ -4,11 +4,12 @@ import {
   FormattingDirection,
   getCountryIndex,
   PhoneNumberFormat,
-  PhoneNumberFormattingContext,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
 import { resolveFormatFromProfile } from '../../../number-resolver/resolve-format-from-profile';
+import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
+import { pickMaskForLength } from '../../../number-resolver/utils/pick-mask-for-length';
 import { resolvePhoneNumberFormat } from '../../../number-resolver/utils/resolve-phone-number-format';
 import { CaretIndex, InputControllerState } from '../../models';
 
@@ -32,33 +33,30 @@ export function resolveNationalControllerState(
 
     country = refMapping.countries.indexToKey[countryIndex]!;
 
-    const formatRef = resolveFormatFromProfile(profile, snapshot.nationalDigits.length);
+    const formatRef = resolveFormatFromProfile(profile, snapshot.nationalDigits);
 
     if (formatRef) {
       const format: PhoneNumberFormat = resolvePhoneNumberFormat(formatRef);
-      const withPrefixMask: string | undefined = nationalPrefixTyped ? format.masks.nationalWithPrefix : undefined;
+      const withPrefixMasks: Record<number, string> | undefined = nationalPrefixTyped
+        ? format.masks.nationalWithPrefix
+        : undefined;
 
       const prefixRequired: boolean =
         !nationalPrefixTyped &&
         format.masks.nationalWithPrefix !== undefined &&
         format.nationalPrefixOptionalWhenFormatting !== 'true';
 
-      if (!prefixRequired) {
-        const nationalPrefix: string | undefined = withPrefixMask
+      const mask: string | undefined = prefixRequired
+        ? undefined
+        : pickMaskForLength(withPrefixMasks ?? format.masks.national, snapshot.nationalDigits.length);
+
+      if (mask !== undefined) {
+        const nationalPrefix: string | undefined = withPrefixMasks
           ? territorySpecTable[countryIndex]?.nationalPrefix
           : undefined;
 
-        const formattingContext: PhoneNumberFormattingContext = {
-          mask: withPrefixMask ?? format.masks.national,
-          nationalNumber: snapshot.nationalDigits,
-          digitPlaceholder: refMapping.digitPlaceholder,
-          nationalPrefixPlaceholder: refMapping.nationalPrefixPlaceholder,
-          ignoredDigitPlaceholder: refMapping.ignoredDigitPlaceholder,
-          ...(nationalPrefix !== undefined && { nationalPrefix }),
-        };
-
         const { formatted, caretIndex: natCaretFormatted } = formatNumberWithRawCaret(
-          formattingContext,
+          buildFormattingContext(mask, snapshot.nationalDigits, refMapping, nationalPrefix),
           rawCaretIndex,
           direction,
         );

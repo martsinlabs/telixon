@@ -168,3 +168,16 @@ describe('InternationalInputController caret across boundaries', () => {
     expect(state.selectionStart).toBeLessThanOrEqual(state.value.length);
   });
 });
+
+describe('InternationalInputController format selection', () => {
+  // FI has two formats sharing a length but distinct leadingDigits; selection must match the prefix,
+  // not just pick the first length-fit. '10' takes the 2-3-… grouping, not 3-3-… .
+  it('selects the format by leading digits', () => {
+    const controller = createInternationalInputController({
+      display: { callingCodeInInput: true, plusPrefix: true },
+    });
+    controller.setValue('+35810112345');
+
+    expect(controller.currentState.value).toBe('+358 10 112345');
+  });
+});

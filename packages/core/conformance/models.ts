@@ -1,6 +1,6 @@
 import { NumberType } from '@telixon/core';
 
-// Public query methods compared against the oracle.
+// Behaviors compared against the oracle: PhoneNumber query methods plus the controller's as-you-type output.
 export const COMPARED_METHODS = [
   'isValid',
   'isPossible',
@@ -9,6 +9,8 @@ export const COMPARED_METHODS = [
   'getNationalNumber',
   'getCallingCode',
   'getE164',
+  'formatInternational',
+  'formatAsYouType',
 ] as const;
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
@@ -29,6 +31,8 @@ export interface MethodResults {
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
   readonly getE164: string | null;
+  readonly formatInternational: string | null;
+  readonly formatAsYouType: string | null;
 }
 
 export interface Mismatch {
@@ -52,7 +56,7 @@ export interface ConformanceReport {
   readonly skipped: number;
   readonly regionsCovered: number;
   readonly regionsTotal: number;
-  readonly engineCommit: string;
-  readonly oracleVersion: string;
+  // The google/libphonenumber commit shared by the engine and the oracle.
+  readonly commit: string;
   readonly methods: readonly MethodReport[];
 }

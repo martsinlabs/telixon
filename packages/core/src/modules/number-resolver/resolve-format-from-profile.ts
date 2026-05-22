@@ -9,14 +9,16 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
 import { NumberFormatRef, NumberTypeProfileRef } from './models';
+import { matchesLeadingDigits } from './utils/matches-leading-digits';
 
 /**
  * @internal
- * Finds the first format in the profile whose length range covers `digitsLength`.
+ * Selects the profile's format for `nationalDigits`: the first length-feasible format whose
+ * leadingDigits match the digits typed so far, falling back to the first length-feasible format.
  */
 export function resolveFormatFromProfile(
   profileRef: NumberTypeProfileRef,
-  digitsLength: number,
+  nationalDigits: string,
 ): NumberFormatRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
@@ -25,18 +27,23 @@ export function resolveFormatFromProfile(
   );
   const formatsList: PhoneNumberFormatList = resourceProvider.formatsTable[callingCodeIndex]!;
   const formatMask: number = getFormatMask(resourceProvider.numberTypeProfileLayer, profileRef.numberTypeProfileId);
+  const digitsLength: number = nationalDigits.length;
 
-  let resolvedFormat: NumberFormatRef | null = null;
+  let leadingMatch: NumberFormatRef | null = null;
+  let lengthFallback: NumberFormatRef | null = null;
 
   forEachFormatIndex(formatMask, (formatIndex: number) => {
     const format: PhoneNumberFormat = formatsList[formatIndex]!;
 
     if (digitsLength === 0 || digitsLength > format.lengthRange[1]) return;
 
-    resolvedFormat = { ...profileRef, formatIndex };
+    if (!lengthFallback) lengthFallback = { ...profileRef, formatIndex };
 
-    return true;
+    if (matchesLeadingDigits(format.leadingDigits, nationalDigits)) {
+      leadingMatch = { ...profileRef, formatIndex };
+      return true;
+    }
   });
 
-  return resolvedFormat;
+  return leadingMatch ?? lengthFallback;
 }

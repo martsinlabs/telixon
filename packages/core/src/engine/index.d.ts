@@ -366,6 +366,7 @@ export declare interface PhoneNumberFormat {
     format: string;
     intlFormat?: 'NA' | string;
     leadingDigits: string;
+    leadingDigitsPatterns?: readonly string[];
     carrierCodeFormattingRule?: string;
     nationalPrefixFormattingRule?: string;
     nationalPrefixOptionalWhenFormatting?: string;
@@ -394,12 +395,17 @@ export declare interface PhoneNumberFormattingContext {
 
 /**
  * @public
- * Generated phone number masks.
+ * Generated phone number masks, keyed by national-significant-number length. Fixed-length formats
+ * have a single entry; variable-length formats have one mask per accepted length. A consumer reads
+ * `masks.<kind>[nsn.length]`, falling back to the longest entry while the number is incomplete.
  */
 export declare interface PhoneNumberMasks {
-    national: string;
-    nationalWithPrefix?: string;
-    international: string;
+    /** One placeholder mask per accepted NSN length, built from the national template. */
+    national: Record<number, string>;
+    /** As {@link PhoneNumberMasks.national}, with the national-prefix placeholder; present only when the territory has one. */
+    nationalWithPrefix?: Record<number, string>;
+    /** As {@link PhoneNumberMasks.national}, built from the international template; omitted when `intlFormat` is `NA`. */
+    international?: Record<number, string>;
 }
 
 /**

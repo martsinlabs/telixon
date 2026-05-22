@@ -1,4 +1,5 @@
 import { PhoneNumber, ResolvedPhoneNumber } from './models';
+import { formatInternational } from './query/format-international';
 import { getCallingCode } from './query/get-calling-code';
 import { getE164 } from './query/get-e164';
 import { getNationalNumber } from './query/get-national-number';
@@ -16,5 +17,6 @@ export function createPhoneNumber(resolved: ResolvedPhoneNumber): PhoneNumber {
     getNationalNumber: () => getNationalNumber(resolved),
     getCallingCode: () => getCallingCode(resolved),
     getE164: () => getE164(resolved),
+    formatInternational: () => formatInternational(resolved),
   };
 }

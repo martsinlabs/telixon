@@ -54,6 +54,14 @@ describe('InputController.isPossibleWithReason — local-only length', () => {
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE_LOCAL_ONLY');
   });
+
+  it('checks length against the calling code primary region, not the resolved region', () => {
+    // +1 length 7 is local-only for the primary region (US); CA's 7-digit UAN must not make it national.
+    const controller = createInternationalInputController({});
+    controller.setValue('+13101234');
+
+    expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE_LOCAL_ONLY');
+  });
 });
 
 describe('InputController.isPossible — boolean wrapper', () => {

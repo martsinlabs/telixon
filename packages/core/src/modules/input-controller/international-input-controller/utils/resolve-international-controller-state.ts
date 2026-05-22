@@ -5,12 +5,13 @@ import {
   getCallingCodePrimaryCountry,
   getCountryIndex,
   PhoneNumberFormat,
-  PhoneNumberFormattingContext,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
-import { resolveFormatFromProfile } from '../../../number-resolver/resolve-format-from-profile';
-import { resolvePhoneNumberFormat } from '../../../number-resolver/utils/resolve-phone-number-format';
+import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
+import { pickMaskForLength } from '../../../number-resolver/utils/pick-mask-for-length';
+import { selectInternationalFormatIndex } from '../../../number-resolver/utils/select-international-format';
 import { CaretIndex, InputControllerState } from '../../models';
 import { InternationalDisplayConfig } from '../models';
 
@@ -23,7 +24,7 @@ export function resolveInternationalControllerState(
   display: InternationalDisplayConfig = DEFAULT_DISPLAY,
   direction: FormattingDirection = 'forward',
 ): InputControllerState {
-  const { refMapping, countryScopeLayer, callingCodeLayer } = getResourceProvider();
+  const { refMapping, countryScopeLayer, callingCodeLayer, formatsTable } = getResourceProvider();
 
   const callingCodeLength: number = snapshot.callingCodeDigits.length;
   const nationalCaretIndex: number = display.callingCodeInInput ? caretIndex - callingCodeLength : caretIndex;
@@ -34,32 +35,37 @@ export function resolveInternationalControllerState(
   let formatIndex: number | null = null;
 
   if (profile) {
-    const formatRef = resolveFormatFromProfile(profile, snapshot.nationalDigits.length);
+    const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(
+      getCountryIndex(countryScopeLayer, profile.stateCountryIndex),
+    );
+    // Group progressively only while the number is still incomplete; once it reaches a terminal
+    // state, match formatInternational exactly (group only on a full pattern match).
+    const allowPartial: boolean = snapshot.terminalStates.length === 0;
+    const selectedIndex: number = selectInternationalFormatIndex(
+      callingCodeIndex,
+      snapshot.nationalDigits,
+      allowPartial,
+    );
 
-    if (formatRef) {
-      formatIndex = formatRef.formatIndex;
-      const format: PhoneNumberFormat = resolvePhoneNumberFormat(formatRef);
+    if (selectedIndex >= 0) {
+      formatIndex = selectedIndex;
+      const format: PhoneNumberFormat = formatsTable[callingCodeIndex]![selectedIndex]!;
 
-      const mask: string = display.callingCodeInInput ? format.masks.international : format.masks.national;
+      const masksByLength = display.callingCodeInInput ? format.masks.international : format.masks.national;
+      const mask: string | undefined = pickMaskForLength(masksByLength, snapshot.nationalDigits.length);
 
-      const formattingContext: PhoneNumberFormattingContext = {
-        mask,
-        nationalNumber: snapshot.nationalDigits,
-        digitPlaceholder: refMapping.digitPlaceholder,
-        nationalPrefixPlaceholder: refMapping.nationalPrefixPlaceholder,
-        ignoredDigitPlaceholder: refMapping.ignoredDigitPlaceholder,
-      };
+      if (mask !== undefined) {
+        const { formatted, caretIndex: natCaretFormatted } = formatNumber(
+          buildFormattingContext(mask, snapshot.nationalDigits, refMapping),
+          caretInCallingCode ? 0 : nationalCaretIndex,
+          direction,
+        );
 
-      const { formatted, caretIndex: natCaretFormatted } = formatNumber(
-        formattingContext,
-        caretInCallingCode ? 0 : nationalCaretIndex,
-        direction,
-      );
+        formattedNationalNumber = formatted;
 
-      formattedNationalNumber = formatted;
-
-      if (!caretInCallingCode) {
-        formattedNationalCaretIndex = natCaretFormatted;
+        if (!caretInCallingCode) {
+          formattedNationalCaretIndex = natCaretFormatted;
+        }
       }
     }
   }

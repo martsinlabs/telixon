@@ -2,15 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { buildConformanceReport } from './compare';
 import { buildCorpus } from './corpus';
 import { auditMismatches } from './known-divergences';
+import { loadOracle } from './oracle';
 import { formatConformanceReport } from './report';
 
-const report = buildConformanceReport(buildCorpus());
-const mismatches = report.methods.flatMap((method) => method.mismatches);
-const audit = auditMismatches(mismatches);
+const oracle = await loadOracle();
+const report = buildConformanceReport(oracle, buildCorpus(oracle));
+const audit = auditMismatches(report.methods.flatMap((method) => method.mismatches));
+
+// Surface the full table in the run output.
+console.log('\n' + formatConformanceReport(report));
 
 describe('conformance vs Google libphonenumber', () => {
   it('covers the region set with a fully parseable corpus', () => {
-    console.log('\n' + formatConformanceReport(report));
     expect(report.corpusSize).toBeGreaterThan(0);
     expect(report.skipped).toBe(0);
     expect(report.regionsCovered).toBeGreaterThan(200);

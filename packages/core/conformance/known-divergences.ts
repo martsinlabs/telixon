@@ -8,15 +8,7 @@ export interface KnownDivergence {
 }
 
 // Mismatches we explicitly accept. Every entry needs a reason; anything not listed fails the gate.
-export const KNOWN_DIVERGENCES: readonly KnownDivergence[] = [
-  {
-    method: 'isPossibleWithReason',
-    regionCode: 'CA',
-    e164: '+13101234',
-    reason:
-      'Metadata drift: the pinned engine treats a length-7 CA number as a national UAN length; the older oracle treats it as local-only.',
-  },
-];
+export const KNOWN_DIVERGENCES: readonly KnownDivergence[] = [];
 
 function matches(divergence: KnownDivergence, mismatch: Mismatch): boolean {
   return (

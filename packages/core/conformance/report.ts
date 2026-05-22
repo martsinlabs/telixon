@@ -7,11 +7,14 @@ function percent(rate: number): string {
   return `${(rate * 100).toFixed(2)}%`;
 }
 
-function formatMethod(method: MethodReport): string[] {
+function formatMethodLines(method: MethodReport): string[] {
   const summary = `  ${method.method.padEnd(NAME_WIDTH)}${percent(method.matchRate).padStart(7)}  (${method.matched}/${method.total})`;
   const shown = method.mismatches
     .slice(0, MAX_SHOWN_PER_METHOD)
-    .map((m) => `      ${m.regionCode} ${m.e164}  expected=${m.expected}  actual=${m.actual}`);
+    .map(
+      (mismatch) =>
+        `      ${mismatch.regionCode} ${mismatch.e164}  expected=${mismatch.expected}  actual=${mismatch.actual}`,
+    );
   const overflow = method.mismatches.length - MAX_SHOWN_PER_METHOD;
   if (overflow > 0) shown.push(`      … and ${overflow} more`);
   return [summary, ...shown];
@@ -21,9 +24,9 @@ function formatMethod(method: MethodReport): string[] {
 export function formatConformanceReport(report: ConformanceReport): string {
   return [
     'Telixon conformance vs Google libphonenumber',
-    `engine ${report.engineCommit.slice(0, 7)} · google-libphonenumber@${report.oracleVersion}`,
+    `oracle and engine pinned to google/libphonenumber@${report.commit.slice(0, 7)} · no metadata drift`,
     `${report.corpusSize} numbers · ${report.regionsCovered}/${report.regionsTotal} regions · ${report.skipped} skipped`,
     '',
-    ...report.methods.flatMap(formatMethod),
+    ...report.methods.flatMap(formatMethodLines),
   ].join('\n');
 }

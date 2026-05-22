@@ -51,6 +51,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Google's source is fetched once per engine commit, then cached.
+      - uses: actions/cache@v4
+        with:
+          path: packages/core/conformance/.cache
+          key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
+
       - run: pnpm typecheck:conformance
 
       - run: pnpm conformance

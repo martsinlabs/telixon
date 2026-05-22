@@ -15,7 +15,17 @@ Full report with sample mismatches:
 npx vitest run --config vitest.conformance.config.ts --disableConsoleIntercept
 ```
 
-Excluded from `pnpm test`, so the unit suite stays fast and version-independent.
+Excluded from `pnpm test`, so the unit suite stays fast and offline.
+
+## Version-matched oracle
+
+Google publishes no npm package — its JS port lives as Closure-coupled source in the repo. The oracle
+fetches that source at the **same commit the engine was built from** (`src/engine/PROVENANCE.json`)
+and runs it on `google-closure-library`. Sources are cached under `.cache/<commit>/`, so only the
+first run needs network.
+
+Because the oracle and the engine share one commit, there is **no metadata version drift**: any
+mismatch is a real engine difference, never a stale reference.
 
 ## How it works
 
@@ -25,30 +35,29 @@ corpus ──▶ for each number ──▶ oracle  (Google's answer)
                                   └──▶ compare ──▶ report ──▶ gate
 ```
 
-| File                   | Role                                                           |
-| ---------------------- | -------------------------------------------------------------- |
-| `corpus.ts`            | builds the corpus: one Google example number per region × type |
-| `oracle.ts`            | Google libphonenumber adapter — example numbers + verdicts     |
-| `subject.ts`           | runs Telixon over a number                                     |
-| `compare.ts`           | diffs the two sides, aggregates per-method match rates         |
-| `report.ts`            | formats the report                                             |
-| `known-divergences.ts` | the allowlist of accepted mismatches + audit                   |
-| `conformance.test.ts`  | the gate                                                       |
-| `models.ts`            | shared types                                                   |
+| File                   | Role                                                                     |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `oracle.ts`            | loads Google's source at the engine's commit; example numbers + verdicts |
+| `corpus.ts`            | builds the corpus: one Google example number per region × type           |
+| `subject.ts`           | runs Telixon over a number                                               |
+| `compare.ts`           | diffs the two sides, aggregates per-method match rates                   |
+| `report.ts`            | formats the report                                                       |
+| `known-divergences.ts` | the allowlist of accepted mismatches + audit                             |
+| `conformance.test.ts`  | the gate                                                                 |
+| `models.ts`            | shared types                                                             |
 
 ## Reading the report
 
 ```
-engine 1caffa8 · google-libphonenumber@3.2.44
-1128 numbers · 245/245 regions · 0 skipped
+oracle and engine pinned to google/libphonenumber@2cf88cb · no metadata drift
+1132 numbers · 245/245 regions · 0 skipped
 
-  isValid               100.00%  (1128/1128)
-  isPossibleWithReason   99.91%  (1127/1128)
-      CA +13101234  expected=IS_POSSIBLE_LOCAL_ONLY  actual=IS_POSSIBLE
+  isValid               100.00%  (1132/1132)
+  isPossibleWithReason  100.00%  (1132/1132)
 ```
 
-The header shows both metadata versions and coverage (`skipped` = numbers the oracle could not
-parse). One line per method: match rate and `(matched / total)`. Indented lines are mismatches —
+The header shows the shared commit and coverage (`skipped` = numbers the oracle could not parse). One
+line per method: match rate and `(matched / total)`. Any mismatch prints an indented line —
 `expected` is Google, `actual` is Telixon.
 
 ## Gate
@@ -61,31 +70,33 @@ mismatches in `known-divergences.ts` (each with a reason). It fails on:
 
 It also checks coverage: a non-empty corpus, zero unparseable numbers, and most regions sampled.
 
-## Version drift
+## As-you-type
 
-The engine is built from a pinned libphonenumber commit (`src/engine/PROVENANCE.json`); the oracle is
-the latest `google-libphonenumber` on npm. When the two snapshots differ, a mismatch reflects that
-drift rather than an engine defect — such cases live in the allowlist with a `reason`.
+`formatAsYouType` compares the international controller's live value (typed through the controller)
+against Google's canonical international format. The controller and `formatInternational` share one
+format selector and derive their grouping from the same format template, so a complete number renders
+identically — while typing, grouping is applied progressively until the number is complete.
 
 ## Baseline
 
-Engine `1caffa8` vs `google-libphonenumber@3.2.44`, 1128 numbers:
+Engine and oracle at `google/libphonenumber@2cf88cb`, 1132 numbers, 245/245 regions — every compared
+behavior matches exactly, so the allowlist is empty:
 
-| Method                 | Match   |
+| Behavior               | Match   |
 | ---------------------- | ------- |
 | `isValid`              | 100.00% |
 | `isPossible`           | 100.00% |
-| `getNationalNumber`    | 100.00% |
+| `isPossibleWithReason` | 100.00% |
 | `getNumberType`        | 100.00% |
-| `isPossibleWithReason` | 99.91%  |
-
-The single `isPossibleWithReason` miss (CA) is allowlisted version drift, not a logic gap: the pinned
-metadata treats a length-7 CA number as a national UAN length (`IS_POSSIBLE`); the older oracle treats
-it as local-only (`IS_POSSIBLE_LOCAL_ONLY`).
+| `getNationalNumber`    | 100.00% |
+| `getCallingCode`       | 100.00% |
+| `getE164`              | 100.00% |
+| `formatInternational`  | 100.00% |
+| `formatAsYouType`      | 100.00% |
 
 ## Scope
 
 Positive corpus (valid example numbers, one per region × type) over the international path. Planned:
-more numbers per type (generator), the national path, negative cases, and format conformance.
+more numbers per type (generator), the national path, and negative cases.
 
 [lpn]: https://github.com/google/libphonenumber
