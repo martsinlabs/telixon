@@ -4,7 +4,7 @@
   "private": true,
   "description": "",
   "keywords": [],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "type": "module",
   "main": "index.js",

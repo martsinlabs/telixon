@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "keywords": [],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "sideEffects": false,
   "type": "module",

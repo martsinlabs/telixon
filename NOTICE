@@ -1,0 +1,7 @@
+Telixon
+Copyright 2026 Martsin Labs
+
+This product includes phone numbering metadata and rules derived from
+Google's libphonenumber (https://github.com/google/libphonenumber),
+licensed under the Apache License, Version 2.0. The exact upstream commit
+is pinned in packages/core/src/engine/PROVENANCE.json.
