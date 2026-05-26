@@ -1,0 +1,117 @@
+# Contributing
+
+How to set up, develop, and contribute. For the system architecture, see
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Prerequisites
+
+- Node, version pinned in [.nvmrc](.nvmrc) (run `nvm use`).
+- pnpm 10 (`corepack enable`).
+- git.
+
+## Setup
+
+```
+git clone https://github.com/martsinlabs/telixon.git
+cd telixon
+pnpm install --frozen-lockfile
+```
+
+## Project layout
+
+A pnpm monorepo. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full picture.
+
+```
+packages/core      @telixon/core    engine and phone-number logic
+packages/web-sdk   @telixon/web-sdk headless DOM adapter
+apps/sandbox       internal dev workbench
+```
+
+## Development
+
+Run from the repo root:
+
+| Command            | Does                                                                         |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `pnpm test`        | unit tests (Vitest), offline                                                 |
+| `pnpm lint`        | ESLint                                                                       |
+| `pnpm format`      | Prettier (write)                                                             |
+| `pnpm typecheck`   | TypeScript, no emit, all packages                                            |
+| `pnpm bench`       | benchmarks                                                                   |
+| `pnpm conformance` | parity gate vs Google libphonenumber (fetches Google source once per commit) |
+| `pnpm build`       | build all packages                                                           |
+
+## Submitting changes
+
+1. Branch off `main`.
+2. Make your change.
+3. Run and pass, in order: `pnpm test`, `pnpm lint`, `pnpm format`. Fix the root cause and re-run. Skip
+   only for pure documentation changes.
+4. Commit with a short, one-line subject: `type(scope): summary` (for example
+   `feat(core): add parsePhoneNumber`). Keep each commit focused.
+5. Push to your fork and open a pull request against `main`. Run `pnpm typecheck`; for engine or query
+   changes, also run `pnpm conformance`.
+6. Keep the PR small and single-purpose.
+
+Telixon has a single maintainer who reviews and merges.
+
+## Engineering standards
+
+These are the canonical engineering standards for Telixon. They are non-negotiable.
+
+### Functions
+
+- One responsibility per function. No "and" in what it does.
+- Pure by default; side effects only at explicit I/O boundaries.
+- No boolean flag parameters; no optional params that change fundamental behavior. Use separate
+  functions.
+- Never mutate inputs; always return new values.
+
+### Types
+
+- Branded types for domain primitives (phone number, country code, calling code).
+- Discriminated unions over optional fields for variants.
+- `unknown` + type guards at all system boundaries (binary parsing, user input).
+- No `as` casts, no type widening. Fix the root cause.
+- Types live close to usage; move to `models/` only when shared across modules.
+
+### Error handling
+
+- Pure functions never throw; return `null` or a typed `{ ok: true; value } | { ok: false; error }`
+  result where failure is meaningful.
+- Throw only at unrecoverable system boundaries (corrupt binary data).
+- Never swallow errors silently.
+
+### Module organization
+
+- One primary concept per file.
+- Each module is self-contained: own `models/`, `utils/`, `index.ts`.
+- `index.ts` is a re-export barrel only. No logic.
+- Never import a module's internals. Only its `index.ts`.
+
+### Naming
+
+- Public exports must be self-documenting. No abbreviations, no ambiguity.
+- Internal names can be shorter but must stay unambiguous in context.
+
+### Public API
+
+- Exports are a contract. Add deliberately; removal is breaking.
+- Never expose internal types through the public API; define explicit public-facing types.
+- Callers must not need to understand internals to use a function correctly.
+
+### Performance
+
+- No unnecessary allocations or copies in hot paths.
+- Every dependency must be justified by measurable need.
+- Bundle size is a hard constraint, not a soft preference.
+
+### Hard rules
+
+- Pure functions or closure factories by default. Class only when a runtime-selectable interface
+  implementation is the right shape: a stateful polymorphic contract (e.g. `InputController` and
+  its variants) or an I/O adapter (e.g. resource loaders).
+- No `any`.
+- No default exports.
+- No mutations.
+- No silent failures.

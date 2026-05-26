@@ -1,5 +1,6 @@
 import { REGION_IDS, getCallingCodeForRegion } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
+import { exportArtifacts } from './artifacts';
 import { formatAsYouTypeMeasurement, internationalProbe, measureAsYouType, nationalProbe } from './as-you-type';
 import { buildConformanceReport } from './compare';
 import { buildCorpus } from './corpus';
@@ -19,6 +20,8 @@ const aytNational = measureAsYouType(oracle, corpus, nationalProbe);
 console.log('\n' + formatConformanceReport(report));
 console.log('\n' + formatAsYouTypeMeasurement('International', aytInternational));
 console.log('\n' + formatAsYouTypeMeasurement('National', aytNational));
+
+exportArtifacts(report, audit);
 
 describe('conformance vs Google libphonenumber', () => {
   it('covers the region set with a fully parseable corpus', () => {

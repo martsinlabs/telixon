@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Telixon conformance · {{shortCommit}}</title>
+    <style>
+      body {
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+      }
+      .meta {
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        padding: 0.4rem 0.6rem;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+      th:last-child,
+      td:last-child {
+        text-align: right;
+      }
+      .ok {
+        color: #1a7f37;
+        font-weight: 600;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      footer {
+        margin-top: 2rem;
+        color: #777;
+        font-size: 0.85rem;
+      }
+      a {
+        color: #0969da;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Telixon conformance vs Google libphonenumber</h1>
+    <div class="meta">
+      Engine and oracle pinned to
+      <a href="https://github.com/google/libphonenumber/commit/{{commit}}">google/libphonenumber@{{shortCommit}}</a
+      >.<br />
+      {{corpusSize}} numbers · {{regionsCovered}}/{{regionsTotal}} regions · {{skipped}} skipped.<br />
+      Allowlist: {{allowlist}}.<br />
+      Generated {{runAt}}.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Match</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{methodRows}}
+      </tbody>
+    </table>
+
+    <footer>
+      Reproduce locally: <code>pnpm conformance</code>.<br />
+      Source:
+      <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/conformance">conformance harness</a>.
+    </footer>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 # Conformance
 
-Proves Telixon's public query methods match [Google libphonenumber][lpn] — the reference
-implementation — across every supported region.
+Proves Telixon's public query methods match [Google libphonenumber][lpn], the reference
+implementation, across every supported region.
 
 ## Run
 
@@ -19,7 +19,7 @@ Excluded from `pnpm test`, so the unit suite stays fast and offline.
 
 ## Version-matched oracle
 
-Google publishes no npm package — its JS port lives as Closure-coupled source in the repo. The oracle
+Google publishes no npm package. Its JS port lives as Closure-coupled source in the repo. The oracle
 fetches that source at the **same commit the engine was built from** (`src/engine/PROVENANCE.json`)
 and runs it on `google-closure-library`. Sources are cached under `.cache/<commit>/`, so only the
 first run needs network.
@@ -49,16 +49,16 @@ corpus ──▶ for each number ──▶ oracle  (Google's answer)
 ## Reading the report
 
 ```
-oracle and engine pinned to google/libphonenumber@2cf88cb · no metadata drift
-1132 numbers · 245/245 regions · 0 skipped
+oracle and engine pinned to google/libphonenumber@<commit> · no metadata drift
+<N> numbers · <covered>/<total> regions · <skipped> skipped
 
-  isValid               100.00%  (1132/1132)
-  isPossibleWithReason  100.00%  (1132/1132)
+  <method>  <rate>  (<matched>/<total>)
 ```
 
 The header shows the shared commit and coverage (`skipped` = numbers the oracle could not parse). One
-line per method: match rate and `(matched / total)`. Any mismatch prints an indented line —
-`expected` is Google, `actual` is Telixon.
+line per method: match rate and `(matched / total)`. Any mismatch prints an indented line:
+`expected` is Google, `actual` is Telixon. Live numbers are on the
+[dashboard](https://martsinlabs.github.io/telixon/parity.html).
 
 ## Gate
 
@@ -75,30 +75,15 @@ It also checks coverage: a non-empty corpus, zero unparseable numbers, and most 
 `formatAsYouType` compares the international controller's live value (typed through the controller)
 against Google's canonical international format. The controller and `formatInternational` share one
 format selector and derive their grouping from the same format template, so a complete number renders
-identically — while typing, grouping is applied progressively until the number is complete.
+identically. While typing, grouping is applied progressively until the number is complete.
 
 ## Baseline
 
-Engine and oracle at `google/libphonenumber@2cf88cb`, 1132 numbers, 245/245 regions — every compared
-behavior matches exactly, so the allowlist is empty:
-
-| Behavior               | Match   |
-| ---------------------- | ------- |
-| `isValid`              | 100.00% |
-| `isPossible`           | 100.00% |
-| `isPossibleWithReason` | 100.00% |
-| `getNumberType`        | 100.00% |
-| `getNationalNumber`    | 100.00% |
-| `getCallingCode`       | 100.00% |
-| `getCountry`           | 100.00% |
-| `getE164`              | 100.00% |
-| `formatInternational`  | 100.00% |
-| `getURI`               | 100.00% |
-| `formatAsYouType`      | 100.00% |
+Latest: [live dashboard](https://martsinlabs.github.io/telixon/parity.html).
+Reproduce locally: `pnpm conformance`.
 
 ## Scope
 
-Positive corpus (valid example numbers, one per region × type) over the international path. Planned:
-more numbers per type (generator), the national path, and negative cases.
+Positive corpus (valid example numbers, one per region × type) over the international path.
 
 [lpn]: https://github.com/google/libphonenumber

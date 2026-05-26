@@ -60,3 +60,36 @@ jobs:
       - run: pnpm typecheck:conformance
 
       - run: pnpm conformance
+
+      # Parity artifacts produced by the conformance run (parity.json, parity-badge.json, parity.html).
+      # Picked up by the pages job for deployment.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: parity-artifacts
+          path: packages/core/conformance/dist
+          if-no-files-found: error
+
+  pages:
+    needs: conformance
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: parity-artifacts
+          path: parity-site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: parity-site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
