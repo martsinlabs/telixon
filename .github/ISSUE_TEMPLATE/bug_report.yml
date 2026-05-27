@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a defect in Telixon.
+title: 'bug: '
+labels: ['bug']
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence describing the defect.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal code, input, and steps to trigger the defect.
+      render: ts
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Telixon version
+      description: '`@telixon/core` and any other Telixon packages with their versions.'
+      placeholder: '@telixon/core@0.0.0'
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, browser, OS, or other relevant runtime details.
+      placeholder: Node 22.5.0 / Chrome 130 / macOS 15
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, or anything else that helps diagnose.

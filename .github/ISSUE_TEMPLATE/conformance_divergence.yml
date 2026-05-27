@@ -1,0 +1,63 @@
+name: Conformance divergence
+description: Report a behavior mismatch between Telixon and Google libphonenumber.
+title: 'conformance: '
+labels: ['conformance']
+body:
+  - type: input
+    id: number
+    attributes:
+      label: Phone number
+      description: The exact input, including any leading + and spacing.
+      placeholder: '+14155552671'
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region
+      description: ISO 3166-1 alpha-2 region code (e.g. `US`, `GB`, `UA`).
+      placeholder: US
+    validations:
+      required: true
+  - type: dropdown
+    id: method
+    attributes:
+      label: Method
+      description: Which public method produced the divergent result?
+      options:
+        - isValid
+        - isPossible
+        - isPossibleWithReason
+        - getNumberType
+        - getNationalNumber
+        - getCallingCode
+        - getCountry
+        - getE164
+        - formatInternational
+        - formatNational
+        - getURI
+        - formatAsYouType
+    validations:
+      required: true
+  - type: input
+    id: telixon_output
+    attributes:
+      label: Telixon output
+    validations:
+      required: true
+  - type: input
+    id: google_output
+    attributes:
+      label: Google libphonenumber output
+    validations:
+      required: true
+  - type: textarea
+    id: how_verified
+    attributes:
+      label: How was Google's output verified?
+      description: Local conformance run, the public dashboard, an online lookup, or other.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything that helps localize the divergence (commit, version, related numbers).
