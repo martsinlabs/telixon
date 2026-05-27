@@ -58,7 +58,7 @@ oracle and engine pinned to google/libphonenumber@<commit> · no metadata drift
 The header shows the shared commit and coverage (`skipped` = numbers the oracle could not parse). One
 line per method: match rate and `(matched / total)`. Any mismatch prints an indented line:
 `expected` is Google, `actual` is Telixon. Live numbers are on the
-[dashboard](https://martsinlabs.github.io/telixon/parity.html).
+[dashboard](https://telixon.dev/parity.html).
 
 ## Gate
 
@@ -79,7 +79,7 @@ identically. While typing, grouping is applied progressively until the number is
 
 ## Baseline
 
-Latest: [live dashboard](https://martsinlabs.github.io/telixon/parity.html).
+Latest: [live dashboard](https://telixon.dev/parity.html).
 Reproduce locally: `pnpm conformance`.
 
 ## Scope

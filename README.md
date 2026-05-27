@@ -3,7 +3,7 @@
 Phone-number processing for JavaScript and TypeScript with reference-grade accuracy.
 
 [![ci](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml/badge.svg)](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml)
-[![conformance](https://img.shields.io/endpoint?url=https://martsinlabs.github.io/telixon/parity-badge.json)](https://martsinlabs.github.io/telixon/parity.html)
+[![conformance](https://img.shields.io/endpoint?url=https://telixon.dev/parity-badge.json)](https://telixon.dev/parity.html)
 [![reference: google/libphonenumber](https://img.shields.io/badge/reference-google%2Flibphonenumber-181717?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHBhdGggZmlsbD0iI0VBNDMzNSIgZD0iTTI0IDkuNWMzLjU0IDAgNi43MSAxLjIyIDkuMjEgMy42bDYuODUtNi44NUMzNS45IDIuMzggMzAuNDcgMCAyNCAwIDE0LjYyIDAgNi41MSA1LjM4IDIuNTYgMTMuMjJsNy45OCA2LjE5QzEyLjQzIDEzLjcyIDE3Ljc0IDkuNSAyNCA5LjV6Ii8+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTQ2Ljk4IDI0LjU1YzAtMS41Ny0uMTUtMy4wOS0uMzgtNC41NUgyNHY5LjAyaDEyLjk0Yy0uNTggMi45Ni0yLjI2IDUuNDgtNC43OCA3LjE4bDcuNzMgNmM0LjUxLTQuMTggNy4wOS0xMC4zNiA3LjA5LTE3LjY1eiIvPjxwYXRoIGZpbGw9IiNGQkJDMDUiIGQ9Ik0xMC41MyAyOC41OWMtLjQ4LTEuNDUtLjc2LTIuOTktLjc2LTQuNTlzLjI3LTMuMTQuNzYtNC41OWwtNy45OC02LjE5Qy45MiAxNi40NiAwIDIwLjEyIDAgMjRjMCAzLjg4LjkyIDcuNTQgMi41NiAxMC43OGw3Ljk3LTYuMTl6Ii8+PHBhdGggZmlsbD0iIzM0QTg1MyIgZD0iTTI0IDQ4YzYuNDggMCAxMS45My0yLjEzIDE1Ljg5LTUuODFsLTcuNzMtNmMtMi4xNSAxLjQ1LTQuOTIgMi4zLTguMTYgMi4zLTYuMjYgMC0xMS41Ny00LjIyLTEzLjQ3LTkuOTFsLTcuOTggNi4xOUM2LjUxIDQyLjYyIDE0LjYyIDQ4IDI0IDQ4eiIvPjwvc3ZnPg==)](https://github.com/google/libphonenumber)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
@@ -26,7 +26,7 @@ request and fails on any divergence.
 pnpm conformance
 ```
 
-Live report: [martsinlabs.github.io/telixon/parity.html](https://martsinlabs.github.io/telixon/parity.html). Methodology: [conformance/README.md](packages/core/conformance/README.md).
+Live report: [telixon.dev/parity.html](https://telixon.dev/parity.html). Methodology: [conformance/README.md](packages/core/conformance/README.md).
 
 Beyond parity:
 
