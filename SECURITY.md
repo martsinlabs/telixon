@@ -6,6 +6,8 @@ This document is the private channel for reporting vulnerabilities in Telixon.
 
 Use the GitHub Security Advisory form:
 [github.com/martsinlabs/telixon/security/advisories/new](https://github.com/martsinlabs/telixon/security/advisories/new).
+Alternatively, email `support@telixon.dev`. The Advisory form is preferred because it keeps the
+report trackable inside GitHub.
 
 Do not file a public issue. Do not post details on social media or blogs before a fix is released.
 
