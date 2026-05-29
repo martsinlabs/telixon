@@ -204,6 +204,10 @@ deliberate: types are regions, ergonomic names are country. Do not "fix" one to 
 
 ## Hard rules
 
-Pure functions or closure factories by default; classes only for runtime-selectable interface implementations: a stateful polymorphic contract (such as `InputController`) or an I/O adapter (such as the resource loaders). No `any`. No default exports. No input
-mutation; always return new values. No silent failures. The full engineering standards and their
-rationale are defined in [CONTRIBUTING.md](CONTRIBUTING.md).
+Pure functions or closure factories by default; classes only for one of four documented patterns:
+a polymorphic contract (such as `InputController`), an I/O adapter (such as the resource loaders),
+a cached interface implementation (such as `PhoneNumberView`), or a state machine (such as
+`NumberResolver`). No `any`. No default exports. No input mutations; always return new values.
+Module-level and per-instance memoization caches are permitted when the cached function stays
+referentially transparent. No silent failures. The full engineering standards and their rationale
+are defined in [CONTRIBUTING.md](CONTRIBUTING.md).

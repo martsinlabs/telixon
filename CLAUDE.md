@@ -36,7 +36,7 @@ Build: `tsup`. Engine binaries copied post-build via `cpy`.
 
 The canonical engineering standards live in [CONTRIBUTING.md](CONTRIBUTING.md) ("Engineering standards"). Follow them exactly.
 
-Non-negotiable hard rules: pure functions or closure factories by default. Classes only for runtime-selectable interface implementations (a stateful polymorphic contract or an I/O adapter); no `any`, no default exports, no mutations, no silent failures.
+Non-negotiable hard rules: pure functions or closure factories by default. A class is allowed only for one of four documented patterns (polymorphic contract, I/O adapter, cached interface implementation, state machine: see CONTRIBUTING.md). No `any`, no default exports, no input mutations, no silent failures. Module-level and per-instance memoization caches are permitted as internal optimizations when the cached function stays referentially transparent.
 
 ## Pre-commit verification
 

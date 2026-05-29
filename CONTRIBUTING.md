@@ -112,10 +112,21 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
 
 ### Hard rules
 
-- Pure functions or closure factories by default. Class only when a runtime-selectable interface
-  implementation is the right shape: a stateful polymorphic contract (e.g. `InputController` and
-  its variants) or an I/O adapter (e.g. resource loaders).
+- Pure functions or closure factories by default. A class is allowed only when one of the
+  following patterns applies, and its rationale must be obvious from context:
+  - **Polymorphic contract.** Multiple implementations of one interface are selected at runtime
+    (e.g. `InputController` and its `International` / `National` variants).
+  - **I/O adapter.** A runtime boundary is bridged behind an interface (e.g. resource loaders).
+  - **Cached interface implementation.** The class exists solely to memoize underlying pure
+    functions on a per-instance basis (e.g. `PhoneNumberView` for `PhoneNumber`). Same input must
+    produce the same output across calls; the class adds caching, not behavior.
+  - **State machine.** The contract is a sequence of state transitions reached through an
+    imperative API (e.g. `NumberResolver.advance(...)`, `.reset()`, `.snapshot`). The class wraps
+    a mutation sequence that has no equivalent pure form.
+- **No input mutations.** Function arguments are immutable; always return new values. Module-level
+  and per-instance memoization caches are permitted as internal optimizations, provided the cached
+  function stays referentially transparent (same key always returns the same value) and inputs are
+  never written to.
 - No `any`.
 - No default exports.
-- No mutations.
 - No silent failures.
