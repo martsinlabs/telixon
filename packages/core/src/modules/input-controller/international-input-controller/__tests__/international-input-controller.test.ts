@@ -11,7 +11,7 @@ describe('InternationalInputController initial state', () => {
   });
 
   // When the calling code is complete, the controller appends a trailing space separator
-  // (resolve-international-controller-state.ts L82) — pinned here so accidental removal trips this test.
+  // (resolve-international-controller-state.ts L82): pinned here so accidental removal trips this test.
   it('seeds calling code from defaultCountry with trailing space separator', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
     const state = controller.currentState;
@@ -131,7 +131,7 @@ describe('InternationalInputController country resolution', () => {
     const controller = createInternationalInputController();
     const state = controller.setCountry('GB');
 
-    // No digits are added by setCountry alone — value stays empty.
+    // No digits are added by setCountry alone: value stays empty.
     expect(state.value).toBe('');
   });
 });
@@ -160,7 +160,7 @@ describe('InternationalInputController caret across boundaries', () => {
       defaultCountry: 'US',
       display: { callingCodeInInput: true, plusPrefix: true },
     });
-    // Value is "+1 ". Place caret right after "+" (position 1) — inside calling code.
+    // Value is "+1 ". Place caret right after "+" (position 1): inside calling code.
     const state = controller.insert('+1 ', '', 1, 1);
 
     expect(state.value).toBe('+1 ');

@@ -89,7 +89,7 @@ class NationalInputController extends InputController {
 
     // normalizedDigits drive the resolver/validation; displayDigits drive the as-you-type formatting
     // (they drop digit-adding transforms, so no untyped digit ever surfaces mid-typing). The caret stays
-    // in raw-typed space — formatNumberWithRawCaret maps it through the mask to the formatted position.
+    // in raw-typed space: formatNumberWithRawCaret maps it through the mask to the formatted position.
     let normalizedDigits: string = rawString;
     let displayDigits: string = rawString;
     if (rawString.length > 0 && territorySpec) {

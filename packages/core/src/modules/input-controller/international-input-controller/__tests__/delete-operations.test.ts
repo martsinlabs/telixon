@@ -5,7 +5,7 @@ describe('InternationalInputController.deleteBackward', () => {
   it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
     // Initial value: '1 '. Caret at 2 (end). Char at index 1 is the calling-code separator.
-    // The separator is structurally re-added on resolve, so backspace cannot remove it —
+    // The separator is structurally re-added on resolve, so backspace cannot remove it
     // caret snaps back to the position right after the calling-code digit instead.
     const state = controller.deleteBackward('1 ', 2, 2);
 

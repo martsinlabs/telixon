@@ -25,7 +25,7 @@ function makeState(value: string, country: RegionId | null = null, selectionStar
   };
 }
 
-describe('InputStateHistory.push — de-duplication', () => {
+describe('InputStateHistory.push: de-duplication', () => {
   it('replaces the current entry in place when value and country are unchanged', () => {
     const history = new InputStateHistory(makeState('123'));
     history.push(makeState('123', null, 3));
@@ -51,7 +51,7 @@ describe('InputStateHistory.push — de-duplication', () => {
   });
 });
 
-describe('InputStateHistory.push — maxSize overflow', () => {
+describe('InputStateHistory.push: maxSize overflow', () => {
   it('shifts the oldest entry off when capacity is exceeded', () => {
     const history = new InputStateHistory(makeState('a'), 3);
     history.push(makeState('b'));
@@ -73,7 +73,7 @@ describe('InputStateHistory.push — maxSize overflow', () => {
   });
 });
 
-describe('InputStateHistory — invalid maxSize fallback', () => {
+describe('InputStateHistory: invalid maxSize fallback', () => {
   // The constructor falls back to DEFAULT_MAX_HISTORY_SIZE (150) for non-finite or <1 values.
   it.each([
     { name: 'zero', maxSize: 0 },
@@ -83,7 +83,7 @@ describe('InputStateHistory — invalid maxSize fallback', () => {
   ])('uses the default when maxSize is $name', ({ maxSize }) => {
     const history = new InputStateHistory(makeState('seed'), maxSize);
 
-    // Push 200 distinct entries — if the fallback is the 150 default, the oldest 50 should be dropped.
+    // Push 200 distinct entries: if the fallback is the 150 default, the oldest 50 should be dropped.
     for (let i = 0; i < 200; i++) {
       history.push(makeState(`v${i}`));
     }

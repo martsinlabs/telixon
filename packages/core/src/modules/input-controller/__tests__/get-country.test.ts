@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
 
-describe('PhoneNumber.getCountry — national', () => {
+describe('PhoneNumber.getCountry: national', () => {
   it('returns the configured country for a valid number', () => {
     const controller = createNationalInputController({ country: 'US' });
     controller.setValue('2125551234');
@@ -18,7 +18,7 @@ describe('PhoneNumber.getCountry — national', () => {
   });
 });
 
-describe('PhoneNumber.getCountry — international', () => {
+describe('PhoneNumber.getCountry: international', () => {
   it('returns null before anything resolves', () => {
     const controller = createInternationalInputController({});
 

@@ -1,0 +1,85 @@
+import { createInternationalInputController, ensureReady, type InputController } from '@telixon/core';
+import { bench, describe } from 'vitest';
+import { CORPUS } from './corpus';
+
+await ensureReady();
+
+const controller: InputController = createInternationalInputController({ initialValue: '' });
+
+function typeFullNumber(numberString: string): { value: string; selectionEnd: number } {
+  controller.setValue('');
+  let value: string = '';
+  let selectionEnd: number = 0;
+  for (let characterIndex = 0; characterIndex < numberString.length; characterIndex++) {
+    const state = controller.insert(value, numberString[characterIndex]!, selectionEnd, selectionEnd);
+    value = state.value;
+    selectionEnd = state.selectionEnd;
+  }
+  return { value, selectionEnd };
+}
+
+describe('input-controller: type-through full number (corpus pass)', () => {
+  bench('insert per keystroke', () => {
+    for (const entry of CORPUS) {
+      typeFullNumber(entry.e164);
+    }
+  });
+});
+
+describe('input-controller: type-through + full PhoneNumber query suite per keystroke (corpus pass)', () => {
+  bench('insert + 7 query methods per keystroke', () => {
+    for (const entry of CORPUS) {
+      controller.setValue('');
+      let value: string = '';
+      let selectionEnd: number = 0;
+      for (let characterIndex = 0; characterIndex < entry.e164.length; characterIndex++) {
+        const state = controller.insert(value, entry.e164[characterIndex]!, selectionEnd, selectionEnd);
+        value = state.value;
+        selectionEnd = state.selectionEnd;
+        const phoneNumber = controller.getPhoneNumber();
+        phoneNumber.isValid();
+        phoneNumber.isPossible();
+        phoneNumber.getNumberType();
+        phoneNumber.getCountry();
+        phoneNumber.getNationalNumber();
+        phoneNumber.getCallingCode();
+        phoneNumber.formatInternational();
+      }
+    }
+  });
+});
+
+describe('input-controller: backspace at caret after full type-through (corpus pass)', () => {
+  bench('deleteBackward per keystroke', () => {
+    for (const entry of CORPUS) {
+      const typed = typeFullNumber(entry.e164);
+      let value: string = typed.value;
+      let selectionEnd: number = typed.selectionEnd;
+      while (selectionEnd > 0) {
+        const state = controller.deleteBackward(value, selectionEnd, selectionEnd);
+        value = state.value;
+        selectionEnd = state.selectionEnd;
+      }
+    }
+  });
+});
+
+describe('input-controller: type-through + undo + redo (corpus pass)', () => {
+  bench('history cycle per number', () => {
+    for (const entry of CORPUS) {
+      typeFullNumber(entry.e164);
+      controller.undo();
+      controller.redo();
+    }
+  });
+});
+
+describe('input-controller: full undo back to empty + redo to full (corpus pass)', () => {
+  bench('undo every keystroke, then redo every keystroke', () => {
+    for (const entry of CORPUS) {
+      typeFullNumber(entry.e164);
+      while (controller.canUndo) controller.undo();
+      while (controller.canRedo) controller.redo();
+    }
+  });
+});

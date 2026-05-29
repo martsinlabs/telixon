@@ -35,16 +35,20 @@ corpus ──▶ for each number ──▶ oracle  (Google's answer)
                                   └──▶ compare ──▶ report ──▶ gate
 ```
 
-| File                   | Role                                                                     |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `oracle.ts`            | loads Google's source at the engine's commit; example numbers + verdicts |
-| `corpus.ts`            | builds the corpus: one Google example number per region × type           |
-| `subject.ts`           | runs Telixon over a number                                               |
-| `compare.ts`           | diffs the two sides, aggregates per-method match rates                   |
-| `report.ts`            | formats the report                                                       |
-| `known-divergences.ts` | the allowlist of accepted mismatches + audit                             |
-| `conformance.test.ts`  | the gate                                                                 |
-| `models.ts`            | shared types                                                             |
+The oracle and corpus live in `../oracle/` (shared with the bench so both consume the exact same
+Google source).
+
+| File                   | Role                                                       |
+| ---------------------- | ---------------------------------------------------------- |
+| `subject.ts`           | runs Telixon over a number                                 |
+| `compare.ts`           | diffs the two sides, aggregates per-method match rates     |
+| `report.ts`            | formats the report                                         |
+| `known-divergences.ts` | the allowlist of accepted mismatches + audit               |
+| `conformance.test.ts`  | the gate                                                   |
+| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …) |
+| `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`   |
+| `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google            |
+| `parity.template.html` | HTML template for the dashboard                            |
 
 ## Reading the report
 

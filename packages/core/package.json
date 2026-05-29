@@ -22,7 +22,10 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "google-closure-library": "^20230802.0.0"
+    "@types/google-libphonenumber": "^7.4.30",
+    "google-closure-library": "^20230802.0.0",
+    "google-libphonenumber": "^3.2.44",
+    "libphonenumber-js": "^1.13.3"
   },
   "packageManager": "pnpm@10.16.1"
 }

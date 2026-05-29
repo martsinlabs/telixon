@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
 
-describe('InputController.isValid — national', () => {
+describe('InputController.isValid: national', () => {
   it('returns false for empty input', () => {
     const controller = createNationalInputController({ country: 'US' });
 
@@ -37,14 +37,14 @@ describe('InputController.isValid — national', () => {
     expect(controller.getPhoneNumber().isValid()).toBe(false);
   });
 
-  it('counts normalized national digits, not raw — national prefix is stripped before length check', () => {
+  it('counts normalized national digits, not raw: national prefix is stripped before length check', () => {
     const controller = createNationalInputController({ country: 'AR' });
     controller.setValue('01112345678');
 
     expect(controller.getPhoneNumber().isValid()).toBe(true);
   });
 
-  it('handles AR mobile with national prefix + 15 mobile indicator — normalization transforms 0AAA15NNNN to 9AAANNNN', () => {
+  it('handles AR mobile with national prefix + 15 mobile indicator: normalization transforms 0AAA15NNNN to 9AAANNNN', () => {
     const controller = createNationalInputController({ country: 'AR' });
     controller.setValue('0111523456789');
 
@@ -60,7 +60,7 @@ describe('InputController.isValid — national', () => {
     expect(controller.getPhoneNumber().isValid()).toBe(false);
   });
 
-  it('returns false when only GENERAL_DESC matches — number-type filter excludes the concrete type', () => {
+  it('returns false when only GENERAL_DESC matches: number-type filter excludes the concrete type', () => {
     const controller = createNationalInputController({ country: 'DE' });
     controller.setNumberTypeFilter(['MOBILE']);
     controller.setValue('03012345678');
@@ -69,7 +69,7 @@ describe('InputController.isValid — national', () => {
   });
 });
 
-describe('InputController.isValid — international', () => {
+describe('InputController.isValid: international', () => {
   it('returns false for empty input', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
 

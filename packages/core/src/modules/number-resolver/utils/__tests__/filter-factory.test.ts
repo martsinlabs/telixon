@@ -40,7 +40,7 @@ describe('createCountryFilter', () => {
     const filter = createCountryFilter(['US']);
     const beforeCount = countBits(filter);
 
-    // @ts-expect-error 'ZZ' is not a CLDR region — runtime safeguard test
+    // @ts-expect-error 'ZZ' is not a CLDR region: runtime safeguard test
     const filterWithUnknown = createCountryFilter(['US', 'ZZ']);
 
     expect(countBits(filterWithUnknown)).toBe(beforeCount);
@@ -110,7 +110,7 @@ describe('createNumberTypeFilter', () => {
   });
 
   it('silently skips a type that is not in the metadata vocabulary', () => {
-    // @ts-expect-error 'GIBBERISH' is not a NumberType — runtime safeguard test
+    // @ts-expect-error 'GIBBERISH' is not a NumberType: runtime safeguard test
     const filter = createNumberTypeFilter(['MOBILE', 'GIBBERISH']);
 
     expect(filter[metadataTypeIndex('MOBILE')]).toBe(1);

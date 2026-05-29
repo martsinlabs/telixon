@@ -19,9 +19,9 @@ function matches(divergence: KnownDivergence, mismatch: Mismatch): boolean {
 }
 
 export interface DivergenceAudit {
-  // Mismatches absent from the allowlist — must be empty for the gate to pass.
+  // Mismatches absent from the allowlist: must be empty for the gate to pass.
   readonly unexpected: readonly Mismatch[];
-  // Allowlist entries no longer observed — must be empty so the list cannot rot.
+  // Allowlist entries no longer observed: must be empty so the list cannot rot.
   readonly stale: readonly KnownDivergence[];
 }
 

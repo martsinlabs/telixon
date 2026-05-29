@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
 
-describe('PhoneNumber.getNumberType — national', () => {
+describe('PhoneNumber.getNumberType: national', () => {
   it('returns null for empty input', () => {
     const controller = createNationalInputController({ country: 'US' });
 
@@ -59,7 +59,7 @@ describe('PhoneNumber.getNumberType — national', () => {
   });
 });
 
-describe('PhoneNumber.getNumberType — respects active number-type filter', () => {
+describe('PhoneNumber.getNumberType: respects active number-type filter', () => {
   it('narrows FIXED_LINE_OR_MOBILE to MOBILE when only MOBILE is allowed', () => {
     const controller = createNationalInputController({ country: 'US' });
     controller.setNumberTypeFilter(['MOBILE']);
@@ -77,7 +77,7 @@ describe('PhoneNumber.getNumberType — respects active number-type filter', () 
   });
 });
 
-describe('PhoneNumber.getNumberType — international', () => {
+describe('PhoneNumber.getNumberType: international', () => {
   it('returns null before a full number resolves', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
     controller.setValue('1212');
@@ -93,7 +93,7 @@ describe('PhoneNumber.getNumberType — international', () => {
   });
 });
 
-describe('PhoneNumber.getNumberType — returns FIXED_LINE_OR_MOBILE for numbers valid as fixed line and mobile', () => {
+describe('PhoneNumber.getNumberType: returns FIXED_LINE_OR_MOBILE for numbers valid as fixed line and mobile', () => {
   it.each([
     ['+917410410123', 'IN'],
     ['+18765230123', 'JM'],
@@ -107,7 +107,7 @@ describe('PhoneNumber.getNumberType — returns FIXED_LINE_OR_MOBILE for numbers
   });
 });
 
-describe('PhoneNumber.getNumberType — classifies service and special-rate numbers', () => {
+describe('PhoneNumber.getNumberType: classifies service and special-rate numbers', () => {
   it.each([
     ['+9513331234', 'VOIP'],
     ['+508800012345', 'TOLL_FREE'],
@@ -120,7 +120,7 @@ describe('PhoneNumber.getNumberType — classifies service and special-rate numb
   });
 });
 
-describe('PhoneNumber.getNumberType — after undo', () => {
+describe('PhoneNumber.getNumberType: after undo', () => {
   it('returns the type of the restored state', () => {
     const controller = createNationalInputController({ country: 'US' });
     controller.setValue('2125551234');

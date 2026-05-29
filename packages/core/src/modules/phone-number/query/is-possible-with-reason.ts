@@ -14,7 +14,7 @@ export function isPossibleWithReason(resolved: ResolvedPhoneNumber): PhoneNumber
   const length: number = nationalDigits.length;
   const nationalMask: number = getAllowedLengthMask(countryIndex, countryFilter, numberTypeFilter);
 
-  // Lengths valid only locally (never nationally) report as locally possible — libphonenumber testNumberLength.
+  // Lengths valid only locally (never nationally) report as locally possible: libphonenumber testNumberLength.
   const localOnlyMask: number =
     getAllowedLocalOnlyLengthMask(countryIndex, countryFilter, numberTypeFilter) & ~nationalMask;
   if (containsLength(localOnlyMask, length)) return 'IS_POSSIBLE_LOCAL_ONLY';

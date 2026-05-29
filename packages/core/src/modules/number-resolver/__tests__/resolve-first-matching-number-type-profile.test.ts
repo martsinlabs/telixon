@@ -112,11 +112,11 @@ describe('resolveFirstMatchingNumberTypeProfile', () => {
   });
 });
 
-// Priority chain — non-strict.
+// Priority chain: non-strict.
 // Steps mirror the JSDoc on resolveFirstMatchingNumberTypeProfile.
 describe('priority chain: non-strict', () => {
   // Step 1: anchored concrete exact wins before any other candidate.
-  describe('Step 1 — anchored concrete exact', () => {
+  describe('Step 1: anchored concrete exact', () => {
     it('+1 4165551234 with preferred=US resolves to CA (416 anchors CA, 10-digit exact)', () => {
       const profile = resolveProfile(createResolver('1', '4165551234'), 'US');
 
@@ -127,7 +127,7 @@ describe('priority chain: non-strict', () => {
   });
 
   // Step 2: any exact (preferred concrete -> fallback concrete -> preferred general -> fallback general).
-  describe('Step 2 — any exact match', () => {
+  describe('Step 2: any exact match', () => {
     it('+1 2684621234 with preferred=US returns AG fixedLine (fallback concrete exact, US has no 268 area)', () => {
       const profile = resolveProfile(createResolver('1', '2684621234'), 'US');
 
@@ -146,7 +146,7 @@ describe('priority chain: non-strict', () => {
   });
 
   // Step 3: preferred concrete partial wins before fallback chain.
-  describe('Step 3 — preferred concrete partial', () => {
+  describe('Step 3: preferred concrete partial', () => {
     it('+44 7 with preferred=GB returns GB partial (only one digit, no exact, preferred matches partial)', () => {
       const profile = resolveProfile(createResolver('44', '7'), 'GB');
 
@@ -156,7 +156,7 @@ describe('priority chain: non-strict', () => {
   });
 
   // Step 4: anchored country stays alive after preferred has nothing.
-  describe('Step 4 — anchored partial', () => {
+  describe('Step 4: anchored partial', () => {
     it('+1 416 with off-calling-code preferred=GB returns CA via anchor', () => {
       const profile = resolveProfile(createResolver('1', '416'), 'GB');
 
@@ -180,7 +180,7 @@ describe('priority chain: non-strict', () => {
       );
 
       // Whatever the resolver returns must come from the terminal-prefix history,
-      // not from a live DFA state — and CA's UAN was the only concrete anchor we saw.
+      // not from a live DFA state: and CA's UAN was the only concrete anchor we saw.
       if (profile !== null) {
         expect(['CA', 'US']).toContain(getProfileCountry(profile));
       }
@@ -211,7 +211,7 @@ describe('priority chain: strict', () => {
   });
 });
 
-// Filters mutate isCountryExcluded / isNumberTypeAllowed — they must short-circuit candidates.
+// Filters mutate isCountryExcluded / isNumberTypeAllowed: they must short-circuit candidates.
 describe('filters', () => {
   it('countryFilter excluding CA does not return CA even when 416 normally anchors it', () => {
     const resolver = new NumberResolver();

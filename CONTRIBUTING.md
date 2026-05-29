@@ -31,15 +31,19 @@ apps/sandbox       internal dev workbench
 
 Run from the repo root:
 
-| Command            | Does                                                                         |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `pnpm test`        | unit tests (Vitest), offline                                                 |
-| `pnpm lint`        | ESLint                                                                       |
-| `pnpm format`      | Prettier (write)                                                             |
-| `pnpm typecheck`   | TypeScript, no emit, all packages                                            |
-| `pnpm bench`       | benchmarks                                                                   |
-| `pnpm conformance` | parity gate vs Google libphonenumber (fetches Google source once per commit) |
-| `pnpm build`       | build all packages                                                           |
+| Command                      | Does                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `pnpm test`                  | unit tests (Vitest), offline                                                 |
+| `pnpm lint`                  | ESLint                                                                       |
+| `pnpm lint:fix`              | ESLint with autofix                                                          |
+| `pnpm format`                | Prettier (write)                                                             |
+| `pnpm format:check`          | Prettier (check only; used by CI)                                            |
+| `pnpm typecheck`             | TypeScript, no emit, all packages                                            |
+| `pnpm typecheck:conformance` | TypeScript for the conformance harness                                       |
+| `pnpm bench`                 | benchmarks, console output                                                   |
+| `pnpm bench:report`          | bench + writes `bench.json`, `bench-badge.json`, `benchmark.html`            |
+| `pnpm conformance`           | parity gate vs Google libphonenumber (fetches Google source once per commit) |
+| `pnpm build`                 | build all packages                                                           |
 
 ## Submitting changes
 

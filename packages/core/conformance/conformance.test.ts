@@ -1,11 +1,10 @@
 import { REGION_IDS, getCallingCodeForRegion } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
+import { buildCorpus, loadOracle } from '../oracle';
 import { exportArtifacts } from './artifacts';
 import { formatAsYouTypeMeasurement, internationalProbe, measureAsYouType, nationalProbe } from './as-you-type';
 import { buildConformanceReport } from './compare';
-import { buildCorpus } from './corpus';
 import { auditMismatches } from './known-divergences';
-import { loadOracle } from './oracle';
 import { formatConformanceReport } from './report';
 import { evaluateWithTelixon } from './subject';
 

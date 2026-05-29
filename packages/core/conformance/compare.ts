@@ -1,6 +1,6 @@
 import { REGION_IDS } from '@telixon/core';
-import { COMPARED_METHODS, ConformanceReport, CorpusEntry, MethodName, MethodReport, Mismatch } from './models';
-import { Oracle } from './oracle';
+import { CorpusEntry, Oracle } from '../oracle';
+import { COMPARED_METHODS, ConformanceReport, MethodName, MethodReport, Mismatch } from './models';
 import { evaluateWithTelixon } from './subject';
 
 // Both sides return string | boolean | null; render to one comparable string.

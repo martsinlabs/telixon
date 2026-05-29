@@ -5,9 +5,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import provenance from '../src/engine/PROVENANCE.json';
-import { MethodResults } from './models';
+import { Oracle, SampledType } from './types';
 
-// Google publishes no npm package — its JS port lives as Closure-coupled source in the repo. We fetch
+// Google publishes no npm package: its JS port lives as Closure-coupled source in the repo. We fetch
 // those sources at the engine's commit and run them on google-closure-library. Pinning the oracle to
 // the engine's commit removes metadata version drift: any mismatch is then a real engine bug.
 const SOURCE_FILES = [
@@ -45,28 +45,6 @@ const SAMPLED_TYPE_NAMES: readonly NumberType[] = [
   'UAN',
   'VOICEMAIL',
 ];
-
-export interface SampledType {
-  readonly name: NumberType;
-  readonly id: number;
-}
-
-export interface Oracle {
-  // The google/libphonenumber commit the oracle is loaded at (identical to the engine's commit).
-  readonly commit: string;
-  readonly sampledTypes: readonly SampledType[];
-  supportedRegions(): readonly string[];
-  // Google's example number for a region and type as E.164, or null when none exists.
-  sampleExampleE164(regionCode: string, typeId: number): string | null;
-  // The oracle's verdict for every compared method, or null when Google cannot parse the number.
-  evaluate(e164: string): MethodResults | null;
-  // Google's country calling code for a region, as a string ('0' for an unknown region).
-  countryCallingCode(regionCode: string): string;
-  // Google's AsYouTypeFormatter snapshot after each input character of `input` (one entry per character).
-  asYouType(regionCode: string, input: string): readonly string[];
-  // The national-format digits a user types for `e164` (national prefix + NSN), or null if unparseable.
-  nationalInputDigits(e164: string): string | null;
-}
 
 // Minimal shapes of the closure objects we touch. The closure load is the system boundary:
 // untyped globals are narrowed into these once, here.
@@ -122,7 +100,7 @@ async function ensureSources(commit: string): Promise<string> {
     if (existsSync(target)) continue;
     const url = `${SOURCE_BASE_URL}/${commit}/javascript/i18n/phonenumbers/${file}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch ${url} → HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Failed to fetch ${url}: HTTP ${response.status}`);
     writeFileSync(target, await response.text());
   }
   return dir;

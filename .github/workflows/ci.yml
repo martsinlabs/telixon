@@ -51,10 +51,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Google's source is fetched once per engine commit, then cached.
+      # Google's source is fetched once per engine commit, then cached. Oracle is the single source
+      # of truth for both conformance and bench, so both jobs share this cache key.
       - uses: actions/cache@v4
         with:
-          path: packages/core/conformance/.cache
+          path: packages/core/oracle/.cache
           key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
 
       - run: pnpm typecheck:conformance
@@ -69,8 +70,38 @@ jobs:
           path: packages/core/conformance/dist
           if-no-files-found: error
 
+  bench:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Same Google source cache as conformance.
+      - uses: actions/cache@v4
+        with:
+          path: packages/core/oracle/.cache
+          key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
+
+      - run: pnpm bench:report
+
+      # Bench artifacts (bench.json, bench-badge.json, benchmark.html) for the dashboard.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-artifacts
+          path: packages/core/bench/dist
+          if-no-files-found: error
+
   pages:
-    needs: conformance
+    needs: [conformance, bench]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -80,16 +111,26 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Merge parity + bench artifacts at one root. Both publish flat files (parity.html,
+      # benchmark.html, *-badge.json) and the dashboard URLs are /parity.html and /benchmark.html.
       - uses: actions/download-artifact@v4
         with:
           name: parity-artifacts
-          path: parity-site
+          path: site
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: bench-artifacts
+          path: site
+
+      # bench-raw.json is the intermediate vitest dump; not part of the public surface.
+      - run: rm -f site/bench-raw.json
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: parity-site
+          path: site
 
       - id: deployment
         uses: actions/deploy-pages@v4

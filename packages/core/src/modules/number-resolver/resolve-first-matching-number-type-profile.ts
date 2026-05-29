@@ -962,3 +962,8 @@ export function resolveFirstMatchingNumberTypeProfile(
     hasTerminals,
   );
 }
+
+export function __clearProfileCaches(): void {
+  TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.clear();
+  RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.clear();
+}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
 
-describe('PhoneNumber.getCallingCode — national', () => {
+describe('PhoneNumber.getCallingCode: national', () => {
   it("returns the bound country's calling code, even when empty", () => {
     const controller = createNationalInputController({ country: 'US' });
 
@@ -16,7 +16,7 @@ describe('PhoneNumber.getCallingCode — national', () => {
   });
 });
 
-describe('PhoneNumber.getCallingCode — international', () => {
+describe('PhoneNumber.getCallingCode: international', () => {
   it('returns null before a calling code resolves', () => {
     const controller = createInternationalInputController({});
 

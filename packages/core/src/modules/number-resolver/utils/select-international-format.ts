@@ -15,7 +15,7 @@ function matchesComplete(format: PhoneNumberFormat, nationalDigits: string): boo
 
 // As-you-type fallback before the number is complete: leadingDigits prefix while still shorter than
 // the format's max. At max length without a complete match the number is unformattable, so we leave
-// it ungrouped — matching formatInternational rather than over-grouping it.
+// it ungrouped, matching formatInternational rather than over-grouping it.
 function matchesPartial(format: PhoneNumberFormat, nationalDigits: string): boolean {
   if (format.intlFormat === 'NA') return false;
   if (nationalDigits.length === 0 || nationalDigits.length >= format.lengthRange[1]) return false;
@@ -80,4 +80,9 @@ export function selectInternationalFormatIndex(
 
   if (completeIndex !== -1) return completeIndex;
   return allowPartial ? partialIndex : -1;
+}
+
+export function __clearFormatIndexCache(): void {
+  FORMAT_INDEX_CACHE.clear();
+  formatIndexCacheEntryCount = 0;
 }

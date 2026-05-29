@@ -11,7 +11,7 @@ function advanceAll(resolver: NumberResolver, digits: string): void {
   for (const digit of digitsOf(digits)) resolver.advance(digit);
 }
 
-describe('NumberResolver — initial state', () => {
+describe('NumberResolver: initial state', () => {
   it('starts at state 0 with empty digits and no terminal', () => {
     const resolver = new NumberResolver();
 
@@ -40,7 +40,7 @@ describe('NumberResolver — initial state', () => {
   });
 });
 
-describe('NumberResolver — advance', () => {
+describe('NumberResolver: advance', () => {
   it('accumulates calling-code digits during prefix walk', () => {
     const resolver = new NumberResolver();
     resolver.advance(1);
@@ -64,14 +64,14 @@ describe('NumberResolver — advance', () => {
     resolver.setCallingCode('1');
     const deadStateId = getResourceProvider().graphLayer.deadStateId;
 
-    // 26 digits — well past any real national length, must hit deadState.
+    // 26 digits, well past any real national length, must hit deadState.
     advanceAll(resolver, '99999999999999999999999999');
 
     expect(resolver.state).toBe(deadStateId);
     expect(resolver.getNationalNumber().length).toBe(26);
   });
 
-  it('deadState is sticky — subsequent digits do not revive it', () => {
+  it('deadState is sticky, subsequent digits do not revive it', () => {
     const resolver = new NumberResolver();
     resolver.setCallingCode('1');
     const deadStateId = getResourceProvider().graphLayer.deadStateId;
@@ -94,7 +94,7 @@ describe('NumberResolver — advance', () => {
   });
 });
 
-describe('NumberResolver — setCallingCode / reset', () => {
+describe('NumberResolver: setCallingCode / reset', () => {
   it('setCallingCode resets prior state and replays the new code', () => {
     const resolver = new NumberResolver();
     resolver.setCallingCode('1');
@@ -123,7 +123,7 @@ describe('NumberResolver — setCallingCode / reset', () => {
   });
 });
 
-describe('NumberResolver — filters', () => {
+describe('NumberResolver: filters', () => {
   it('preserves filters across reset (filters are configuration, not state)', () => {
     const resolver = new NumberResolver();
     const countryFilter = createCountryFilter(['US']);

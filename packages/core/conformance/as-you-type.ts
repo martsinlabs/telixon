@@ -1,6 +1,5 @@
 import { REGION_IDS, RegionId } from '@telixon/core';
-import { CorpusEntry } from './models';
-import { Oracle } from './oracle';
+import { CorpusEntry, Oracle } from '../oracle';
 import { asYouTypeNationalWithTelixon, asYouTypeWithTelixon } from './subject';
 
 export interface AsYouTypeDivergence {
@@ -18,7 +17,7 @@ export interface AsYouTypeMeasurement {
   readonly fullyMatchingIgnoringTrailing: number;
   readonly totalKeystrokes: number;
   readonly matchingKeystrokes: number;
-  // As matchingKeystrokes, ignoring the trailing-separator preview — the real (non-intentional) delta.
+  // As matchingKeystrokes, ignoring the trailing-separator preview: the real (non-intentional) delta.
   readonly matchingKeystrokesIgnoringTrailing: number;
   // Divergences that remain after ignoring the trailing-separator preview (the meaningful ones).
   readonly samples: readonly AsYouTypeDivergence[];
@@ -151,10 +150,10 @@ export function formatAsYouTypeMeasurement(label: string, measurement: AsYouType
     `  numbers fully matching (ignoring trailing): ${fullyMatchingIgnoringTrailing}/${totalNumbers} (${percent(fullyMatchingIgnoringTrailing, totalNumbers)})`,
   ];
   if (samples.length > 0) {
-    lines.push(`  first ${samples.length} divergences beyond trailing preview (typed → google | telixon):`);
+    lines.push(`  first ${samples.length} divergences beyond trailing preview (typed -> google | telixon):`);
     for (const sample of samples) {
       lines.push(
-        `    ${sample.typed.padEnd(16)} → ${JSON.stringify(sample.google)} | ${JSON.stringify(sample.telixon)}`,
+        `    ${sample.typed.padEnd(16)} -> ${JSON.stringify(sample.google)} | ${JSON.stringify(sample.telixon)}`,
       );
     }
   }

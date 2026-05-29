@@ -1,6 +1,5 @@
 import { REGION_IDS } from '@telixon/core';
-import { CorpusEntry } from './models';
-import { Oracle } from './oracle';
+import { CorpusEntry, Oracle } from './types';
 
 const TELIXON_REGIONS: ReadonlySet<string> = new Set<string>(REGION_IDS);
 

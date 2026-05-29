@@ -1,0 +1,269 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import provenance from '../src/engine/PROVENANCE.json';
+
+// ── Types ────────────────────────────────────────────────
+
+interface RawBenchmark {
+  readonly name: string;
+  readonly rank: number;
+  readonly hz: number;
+  readonly mean: number;
+  readonly median: number;
+  readonly p99: number;
+  readonly rme: number;
+  readonly sampleCount: number;
+}
+
+interface RawGroup {
+  readonly fullName: string;
+  readonly benchmarks: readonly RawBenchmark[];
+}
+
+interface RawFile {
+  readonly filepath: string;
+  readonly groups: readonly RawGroup[];
+}
+
+interface RawReport {
+  readonly files: readonly RawFile[];
+}
+
+const TELIXON = 'telixon';
+const LIBPHONENUMBER_JS = 'libphonenumber-js';
+const GOOGLE_LIBPHONENUMBER = 'google-libphonenumber';
+type Adapter = typeof TELIXON | typeof LIBPHONENUMBER_JS | typeof GOOGLE_LIBPHONENUMBER;
+const ADAPTERS: readonly Adapter[] = [TELIXON, LIBPHONENUMBER_JS, GOOGLE_LIBPHONENUMBER];
+
+interface AdapterResult {
+  readonly hz: number;
+  readonly mean: number;
+  readonly p99: number;
+  readonly rme: number;
+}
+
+interface HotpathRow {
+  readonly label: string;
+  readonly results: Record<Adapter, AdapterResult | null>;
+}
+
+interface InputControllerRow {
+  readonly label: string;
+  readonly hz: number;
+  readonly mean: number;
+  readonly p99: number;
+  readonly rme: number;
+}
+
+export interface CompetitorVersions {
+  readonly libphonenumberJs: string;
+  readonly googleLibphonenumber: string;
+}
+
+interface BenchData {
+  readonly runAt: string;
+  readonly commit: string;
+  readonly corpusSize: number;
+  readonly competitors: CompetitorVersions;
+  readonly parse: readonly HotpathRow[];
+  readonly strictCold: readonly HotpathRow[];
+  readonly cold: readonly HotpathRow[];
+  readonly warm: readonly HotpathRow[];
+  readonly inputController: readonly InputControllerRow[];
+  readonly headline: {
+    readonly competitor: Adapter;
+    readonly medianStrictColdRatio: number;
+  };
+}
+
+interface ShieldsBadge {
+  readonly schemaVersion: 1;
+  readonly label: string;
+  readonly message: string;
+  readonly color: string;
+}
+
+// ── Paths ────────────────────────────────────────────────
+
+const BENCH_DIR = dirname(fileURLToPath(import.meta.url));
+const ARTIFACT_DIR = join(BENCH_DIR, 'dist');
+const TEMPLATE_PATH = join(BENCH_DIR, 'benchmark.template.html');
+const HOTPATH_FILE_SUFFIX = '/bench/hotpath.bench.ts';
+const INPUT_CONTROLLER_FILE_SUFFIX = '/bench/input-controller.bench.ts';
+
+// ── Public entry ─────────────────────────────────────────
+
+export function exportBenchArtifacts(rawPath: string, corpusSize: number, competitors: CompetitorVersions): void {
+  const raw: RawReport = JSON.parse(readFileSync(rawPath, 'utf8')) as RawReport;
+  const data = buildBenchData(raw, corpusSize, competitors);
+  mkdirSync(ARTIFACT_DIR, { recursive: true });
+  writeFileSync(join(ARTIFACT_DIR, 'bench.json'), JSON.stringify(data, null, 2) + '\n');
+  writeFileSync(join(ARTIFACT_DIR, 'bench-badge.json'), JSON.stringify(buildBadge(), null, 2) + '\n');
+  writeFileSync(join(ARTIFACT_DIR, 'benchmark.html'), renderHtml(data));
+}
+
+// ── Builders ─────────────────────────────────────────────
+
+function buildBenchData(raw: RawReport, corpusSize: number, competitors: CompetitorVersions): BenchData {
+  const hotpathFile = raw.files.find((file) => file.filepath.endsWith(HOTPATH_FILE_SUFFIX));
+  const inputControllerFile = raw.files.find((file) => file.filepath.endsWith(INPUT_CONTROLLER_FILE_SUFFIX));
+  if (!hotpathFile) throw new Error(`hotpath bench results missing from ${HOTPATH_FILE_SUFFIX}`);
+
+  const parse: HotpathRow[] = [];
+  const strictCold: HotpathRow[] = [];
+  const cold: HotpathRow[] = [];
+  const warm: HotpathRow[] = [];
+
+  for (const group of hotpathFile.groups) {
+    const shortName: string = stripFilePrefix(group.fullName);
+    const row: HotpathRow = {
+      label: shortName,
+      results: toAdapterResults(group.benchmarks),
+    };
+    if (shortName === 'parsePhoneNumber (corpus pass)') parse.push(row);
+    else if (shortName.endsWith('(strict cold)')) strictCold.push(row);
+    else if (shortName.endsWith('(cold)')) cold.push(row);
+    else if (shortName.endsWith('(warm, pre-parsed)')) warm.push(row);
+  }
+
+  const inputController: InputControllerRow[] = [];
+  if (inputControllerFile) {
+    for (const group of inputControllerFile.groups) {
+      const benchmark = group.benchmarks[0];
+      if (!benchmark) continue;
+      inputController.push({
+        label: stripFilePrefix(group.fullName).replace(/^input-controller: /, ''),
+        hz: benchmark.hz,
+        mean: benchmark.mean,
+        p99: benchmark.p99,
+        rme: benchmark.rme,
+      });
+    }
+  }
+
+  return {
+    runAt: new Date().toISOString(),
+    commit: provenance.source.commit,
+    corpusSize,
+    competitors,
+    parse,
+    strictCold,
+    cold,
+    warm,
+    inputController,
+    headline: computeHeadline(strictCold),
+  };
+}
+
+function stripFilePrefix(fullName: string): string {
+  const splitter = ' > ';
+  const idx = fullName.indexOf(splitter);
+  return idx === -1 ? fullName : fullName.slice(idx + splitter.length);
+}
+
+function toAdapterResults(benchmarks: readonly RawBenchmark[]): Record<Adapter, AdapterResult | null> {
+  const out: Record<Adapter, AdapterResult | null> = {
+    telixon: null,
+    'libphonenumber-js': null,
+    'google-libphonenumber': null,
+  };
+  for (const benchmark of benchmarks) {
+    if (!isAdapter(benchmark.name)) continue;
+    out[benchmark.name] = {
+      hz: benchmark.hz,
+      mean: benchmark.mean,
+      p99: benchmark.p99,
+      rme: benchmark.rme,
+    };
+  }
+  return out;
+}
+
+function isAdapter(name: string): name is Adapter {
+  return (ADAPTERS as readonly string[]).includes(name);
+}
+
+// Median strict-cold ratio is the most conservative claim; libphonenumber-js is the npm-share anchor.
+function computeHeadline(strictCold: readonly HotpathRow[]): BenchData['headline'] {
+  const ratios: number[] = [];
+  for (const row of strictCold) {
+    const telixon = row.results.telixon;
+    const competitor = row.results[LIBPHONENUMBER_JS];
+    if (telixon && competitor) ratios.push(telixon.hz / competitor.hz);
+  }
+  ratios.sort((a, b) => a - b);
+  const medianStrictColdRatio = ratios.length === 0 ? 0 : (ratios[Math.floor(ratios.length / 2)] ?? 0);
+  return { competitor: LIBPHONENUMBER_JS, medianStrictColdRatio };
+}
+
+function buildBadge(): ShieldsBadge {
+  return {
+    schemaVersion: 1,
+    label: 'benchmarks',
+    message: 'live',
+    color: 'blue',
+  };
+}
+
+// ── HTML rendering ───────────────────────────────────────
+
+function renderHtml(data: BenchData): string {
+  const template: string = readFileSync(TEMPLATE_PATH, 'utf8');
+  const tokens: Record<string, string> = {
+    '{{commit}}': data.commit,
+    '{{shortCommit}}': data.commit.slice(0, 7),
+    '{{corpusSize}}': String(data.corpusSize),
+    '{{libphonenumberJsVersion}}': data.competitors.libphonenumberJs,
+    '{{googleLibphonenumberVersion}}': data.competitors.googleLibphonenumber,
+    '{{runAt}}': data.runAt,
+    '{{parseRows}}': data.parse.map((row) => renderHotpathRow(row, /*method=*/ false)).join('\n        '),
+    '{{strictColdRows}}': data.strictCold.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
+    '{{coldRows}}': data.cold.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
+    '{{warmRows}}': data.warm.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
+    '{{inputControllerRows}}': data.inputController.map(renderInputControllerRow).join('\n        '),
+  };
+  return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), template);
+}
+
+function renderHotpathRow(row: HotpathRow, isMethodRow: boolean): string {
+  const label: string = isMethodRow ? extractMethodLabel(row.label) : row.label;
+  const telixon = row.results.telixon;
+  const libphonenumberJs = row.results[LIBPHONENUMBER_JS];
+  const google = row.results[GOOGLE_LIBPHONENUMBER];
+  const telixonHz: string = telixon ? formatHz(telixon.hz) : '-';
+  const libphonenumberJsHz: string = libphonenumberJs ? formatHz(libphonenumberJs.hz) : '-';
+  const googleHz: string = google ? formatHz(google.hz) : '-';
+  const vsLibphonenumberJs: string = telixon && libphonenumberJs ? renderRatio(telixon.hz / libphonenumberJs.hz) : '-';
+  const vsGoogle: string = telixon && google ? renderRatio(telixon.hz / google.hz) : '-';
+  return `<tr><td><code>${escapeHtml(label)}</code></td><td>${telixonHz}</td><td>${libphonenumberJsHz}</td><td>${googleHz}</td><td>${vsLibphonenumberJs}</td><td>${vsGoogle}</td></tr>`;
+}
+
+function renderInputControllerRow(row: InputControllerRow): string {
+  return `<tr><td>${escapeHtml(row.label)}</td><td>${formatHz(row.hz)}</td><td>${row.mean.toFixed(2)}</td><td>${row.p99.toFixed(2)}</td><td>±${row.rme.toFixed(2)}%</td></tr>`;
+}
+
+// Extracts the bare method name from describe titles like "parse + X (strict cold)" or "X (warm, pre-parsed)".
+function extractMethodLabel(describe: string): string {
+  const parseMatch = describe.match(/^parse \+ (\S+) \((?:strict )?cold\)$/);
+  if (parseMatch?.[1]) return parseMatch[1];
+  const warmMatch = describe.match(/^(\S+) \(warm, pre-parsed\)$/);
+  if (warmMatch?.[1]) return warmMatch[1];
+  return describe;
+}
+
+function formatHz(hz: number): string {
+  if (hz >= 1_000_000) return `${(hz / 1_000_000).toFixed(2)}M`;
+  if (hz >= 1_000) return `${(hz / 1_000).toFixed(1)}k`;
+  return hz.toFixed(0);
+}
+
+function renderRatio(ratio: number): string {
+  if (ratio >= 1.05) return `<span class="win">${ratio.toFixed(2)}×</span>`;
+  if (ratio <= 0.95) return `<span class="loss">${ratio.toFixed(2)}×</span>`;
+  return `${ratio.toFixed(2)}×`;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}

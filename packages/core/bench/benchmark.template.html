@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Telixon benchmark · {{shortCommit}}</title>
+    <style>
+      body {
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 2rem;
+        margin-bottom: 0.25rem;
+      }
+      .meta,
+      .section-note {
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.92rem;
+      }
+      th,
+      td {
+        padding: 0.4rem 0.6rem;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      thead th {
+        font-weight: 600;
+        border-bottom: 2px solid #ddd;
+      }
+      .win {
+        color: #1a7f37;
+        font-weight: 600;
+      }
+      .loss {
+        color: #b21d1d;
+        font-weight: 600;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      footer {
+        margin-top: 2rem;
+        color: #777;
+        font-size: 0.85rem;
+      }
+      a {
+        color: #0969da;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Telixon benchmark vs libphonenumber-js, google-libphonenumber</h1>
+    <div class="meta">
+      Engine compiled from Google's libphonenumber source at
+      <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
+        >github.com/google/libphonenumber@{{shortCommit}}</a
+      >.<br />
+      Corpus: {{corpusSize}} numbers, built from the same oracle as conformance.<br />
+      Compared against the npm packages
+      <a href="https://www.npmjs.com/package/libphonenumber-js/v/{{libphonenumberJsVersion}}"
+        >libphonenumber-js@{{libphonenumberJsVersion}}</a
+      >
+      and
+      <a href="https://www.npmjs.com/package/google-libphonenumber/v/{{googleLibphonenumberVersion}}"
+        >google-libphonenumber@{{googleLibphonenumberVersion}}</a
+      >
+      (a community wrapper around Google's libphonenumber JS source).<br />
+      Generated {{runAt}}.
+    </div>
+
+    <h2>Parse</h2>
+    <div class="section-note">Parse cost only.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Telixon (ops/s)</th>
+          <th>libphonenumber-js (ops/s)</th>
+          <th>google-libphonenumber (ops/s)</th>
+          <th>vs libphonenumber-js</th>
+          <th>vs google-libphonenumber</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{parseRows}}
+      </tbody>
+    </table>
+
+    <h2>Strict cold</h2>
+    <div class="section-note">Parse + one method call. Telixon module caches cleared per iteration.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Telixon (ops/s)</th>
+          <th>libphonenumber-js (ops/s)</th>
+          <th>google-libphonenumber (ops/s)</th>
+          <th>vs libphonenumber-js</th>
+          <th>vs google-libphonenumber</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{strictColdRows}}
+      </tbody>
+    </table>
+
+    <h2>Cold</h2>
+    <div class="section-note">Parse + one method call. Caches retained across iterations.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Telixon (ops/s)</th>
+          <th>libphonenumber-js (ops/s)</th>
+          <th>google-libphonenumber (ops/s)</th>
+          <th>vs libphonenumber-js</th>
+          <th>vs google-libphonenumber</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{coldRows}}
+      </tbody>
+    </table>
+
+    <h2>Warm</h2>
+    <div class="section-note">
+      Pre-parsed value, method called repeatedly. Where libphonenumber-js stores the value as a direct property after
+      parse (<code>nationalNumber</code>, <code>countryCallingCode</code>, <code>number</code>, <code>country</code>), a
+      property read is 1-4% faster than Telixon's cached method call.
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Telixon (ops/s)</th>
+          <th>libphonenumber-js (ops/s)</th>
+          <th>google-libphonenumber (ops/s)</th>
+          <th>vs libphonenumber-js</th>
+          <th>vs google-libphonenumber</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{warmRows}}
+      </tbody>
+    </table>
+
+    <h2>Input controller</h2>
+    <div class="section-note">Telixon only. Competitor formatters have no comparable API.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>ops/s</th>
+          <th>mean (ms)</th>
+          <th>p99 (ms)</th>
+          <th>±rme</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{inputControllerRows}}
+      </tbody>
+    </table>
+
+    <footer>
+      Reproduce locally: <code>pnpm bench</code>.<br />
+      Source:
+      <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/bench">benchmark harness</a>.
+    </footer>
+  </body>
+</html>

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
 
-describe('InputController.isPossibleWithReason — national', () => {
+describe('InputController.isPossibleWithReason: national', () => {
   it('returns TOO_SHORT for empty input', () => {
     const controller = createNationalInputController({ country: 'US' });
 
@@ -23,7 +23,7 @@ describe('InputController.isPossibleWithReason — national', () => {
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE');
   });
 
-  it('returns IS_POSSIBLE for length-only match — pattern is ignored (bogus area code)', () => {
+  it('returns IS_POSSIBLE for length-only match: pattern is ignored (bogus area code)', () => {
     const controller = createNationalInputController({ country: 'US' });
     controller.setValue('0001234567');
 
@@ -47,7 +47,7 @@ describe('InputController.isPossibleWithReason — national', () => {
   });
 });
 
-describe('InputController.isPossibleWithReason — local-only length', () => {
+describe('InputController.isPossibleWithReason: local-only length', () => {
   it('returns IS_POSSIBLE_LOCAL_ONLY for a local-only number', () => {
     const controller = createInternationalInputController({});
     controller.setValue('+43123');
@@ -64,7 +64,7 @@ describe('InputController.isPossibleWithReason — local-only length', () => {
   });
 });
 
-describe('InputController.isPossible — boolean wrapper', () => {
+describe('InputController.isPossible: boolean wrapper', () => {
   it('returns true for possible numbers, including local-only', () => {
     const controller = createNationalInputController({ country: 'US' });
 
@@ -86,7 +86,7 @@ describe('InputController.isPossible — boolean wrapper', () => {
   });
 });
 
-describe('InputController.isPossibleWithReason — international', () => {
+describe('InputController.isPossibleWithReason: international', () => {
   it('returns INVALID_COUNTRY_CODE before any calling code resolves', () => {
     const controller = createInternationalInputController({});
 

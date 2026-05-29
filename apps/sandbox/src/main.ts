@@ -55,7 +55,7 @@ applyInitialValueBtn.addEventListener('click', () => attach(resolveMode(), initi
 applyCountryBtn.addEventListener('click', () => {
   const raw = countryEl.value.toUpperCase();
   if (!isCountryId(raw)) {
-    record(`setCountry skipped — invalid country "${raw}"`);
+    record(`setCountry skipped: invalid country "${raw}"`);
     return;
   }
   const ctrl = getCurrent();
@@ -126,7 +126,7 @@ clearFiltersBtn.addEventListener('click', () => {
 reattachBtn.addEventListener('click', () => {
   try {
     mount(resolveMode(), initialValueEl.value);
-    record('duplicate attach — unexpectedly succeeded');
+    record('duplicate attach: unexpectedly succeeded');
   } catch (err) {
     record(err instanceof Error ? err.message : 'Unknown error');
   }

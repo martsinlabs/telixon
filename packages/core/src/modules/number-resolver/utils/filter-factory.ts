@@ -51,7 +51,7 @@ export function createNumberTypeFilter(numberTypes: NumberType[]): BinaryFilter 
     }
   }
 
-  // GENERAL_DESC must always pass — structural fallback for non-matching types.
+  // GENERAL_DESC must always pass: structural fallback for non-matching types.
   const generalDescIdx: number | undefined = keyToIndex['GENERAL_DESC'];
   if (generalDescIdx !== undefined) {
     filter[generalDescIdx] = 1;

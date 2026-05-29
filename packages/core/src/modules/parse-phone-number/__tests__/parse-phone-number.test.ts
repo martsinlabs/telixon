@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parsePhoneNumber } from '../parse-phone-number';
 
-describe('parsePhoneNumber — international', () => {
+describe('parsePhoneNumber: international', () => {
   it('parses a formatted +E.164 number', () => {
     const phone = parsePhoneNumber('+1 (212) 555-1234');
 
@@ -35,7 +35,7 @@ describe('parsePhoneNumber — international', () => {
   });
 });
 
-describe('parsePhoneNumber — national', () => {
+describe('parsePhoneNumber: national', () => {
   it('reads a national number for the default country', () => {
     const phone = parsePhoneNumber('(212) 555-1234', { defaultCountry: 'US' });
 
@@ -53,7 +53,7 @@ describe('parsePhoneNumber — national', () => {
   });
 });
 
-describe('parsePhoneNumber — unresolvable input', () => {
+describe('parsePhoneNumber: unresolvable input', () => {
   it('returns an empty PhoneNumber for a blank string', () => {
     const phone = parsePhoneNumber('');
 

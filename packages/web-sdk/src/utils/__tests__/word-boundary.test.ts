@@ -14,13 +14,13 @@ describe('findPreviousWordBoundary', () => {
 
   it('walks back to the start of the digit group containing the caret', () => {
     const value: string = '+1 (212) 555-1234';
-    // Caret between "55" and "5-1234" (position 11 — inside "555").
+    // Caret between "55" and "5-1234" (position 11: inside "555").
     expect(findPreviousWordBoundary(value, 11)).toBe(9);
   });
 
   it('consumes the trailing non-digit run together with the preceding digit group', () => {
     const value: string = '+1 (212) 555-1234';
-    // Caret right after ")" (position 8) — swallow ") "-style run plus the "212" group.
+    // Caret right after ")" (position 8): swallow ") "-style run plus the "212" group.
     expect(findPreviousWordBoundary(value, 8)).toBe(4);
   });
 
@@ -46,13 +46,13 @@ describe('findNextWordBoundary', () => {
 
   it('walks forward to the end of the current digit group', () => {
     const value: string = '+1 (212) 555-1234';
-    // Caret inside "212" (position 5) — boundary at end of "212" (position 7).
+    // Caret inside "212" (position 5): boundary at end of "212" (position 7).
     expect(findNextWordBoundary(value, 5)).toBe(7);
   });
 
   it('consumes the leading non-digit run together with the following digit group', () => {
     const value: string = '+1 (212) 555-1234';
-    // Caret at position 0 — swallow "+" plus the "1" group.
+    // Caret at position 0: swallow "+" plus the "1" group.
     expect(findNextWordBoundary(value, 0)).toBe(2);
   });
 

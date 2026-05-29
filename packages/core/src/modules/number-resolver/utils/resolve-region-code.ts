@@ -7,7 +7,7 @@ const GENERAL_DESC = 'GENERAL_DESC';
 
 // libphonenumber getRegionCodeForNumberFromRegionList: a non-main region matches by its leadingDigits
 // prefix; the main region (no leadingDigits) matches when a specific type pattern fully matches.
-// GENERAL_DESC is excluded — its pattern is broad and would attribute foreign numbers to the main region.
+// GENERAL_DESC is excluded: its pattern is broad and would attribute foreign numbers to the main region.
 function matchesRegion(territory: TerritorySpec, nationalDigits: string): boolean {
   if (territory.leadingDigits) {
     return matchesLeadingDigits(territory.leadingDigits, nationalDigits);
@@ -66,4 +66,9 @@ export function resolveRegionCode(callingCodeState: number, nationalDigits: stri
   cacheForState.set(nationalDigits, resolvedRegion);
 
   return resolvedRegion;
+}
+
+export function __clearRegionCodeCache(): void {
+  REGION_CODE_CACHE.clear();
+  regionCodeCacheEntryCount = 0;
 }
