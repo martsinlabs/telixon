@@ -4,6 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Telixon benchmark · {{shortCommit}}</title>
+    <meta name="description" content="{{ogDescription}}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Telixon" />
+    <meta property="og:title" content="{{ogTitle}}" />
+    <meta property="og:description" content="{{ogDescription}}" />
+    <meta property="og:url" content="https://telixon.dev/benchmark.html" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ogTitle}}" />
+    <meta name="twitter:description" content="{{ogDescription}}" />
+    <link rel="canonical" href="https://telixon.dev/benchmark.html" />
     <style>
       body {
         font:
@@ -33,6 +44,16 @@
         border-collapse: collapse;
         width: 100%;
         font-size: 0.92rem;
+        margin-bottom: 1rem;
+      }
+      .section-note p {
+        margin: 0;
+      }
+      .section-note p + p {
+        margin-top: 0.75rem;
+      }
+      .section-note strong {
+        color: #222;
       }
       th,
       td {
@@ -80,7 +101,8 @@
       <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
         >github.com/google/libphonenumber@{{shortCommit}}</a
       >.<br />
-      Corpus: {{corpusSize}} numbers, built from the same oracle as conformance.<br />
+      Corpus: {{corpusSize}} phone numbers, one Google example per region per type (same dataset as the conformance
+      gate).<br />
       Compared against the npm packages
       <a href="https://www.npmjs.com/package/libphonenumber-js/v/{{libphonenumberJsVersion}}"
         >libphonenumber-js@{{libphonenumberJsVersion}}</a
@@ -93,7 +115,7 @@
       Generated {{runAt}}.
     </div>
 
-    <h2>Parse</h2>
+    <h2 id="parse">Parse</h2>
     <div class="section-note">Parse cost only.</div>
     <table>
       <thead>
@@ -111,7 +133,7 @@
       </tbody>
     </table>
 
-    <h2>Strict cold</h2>
+    <h2 id="strict-cold">Strict cold</h2>
     <div class="section-note">Parse + one method call. Telixon module caches cleared per iteration.</div>
     <table>
       <thead>
@@ -129,7 +151,7 @@
       </tbody>
     </table>
 
-    <h2>Cold</h2>
+    <h2 id="cold">Cold</h2>
     <div class="section-note">Parse + one method call. Caches retained across iterations.</div>
     <table>
       <thead>
@@ -147,7 +169,7 @@
       </tbody>
     </table>
 
-    <h2>Warm</h2>
+    <h2 id="warm">Warm</h2>
     <div class="section-note">
       Pre-parsed value, method called repeatedly. Where libphonenumber-js stores the value as a direct property after
       parse (<code>nationalNumber</code>, <code>countryCallingCode</code>, <code>number</code>, <code>country</code>), a
@@ -169,8 +191,12 @@
       </tbody>
     </table>
 
-    <h2>Input controller</h2>
-    <div class="section-note">Telixon only. Competitor formatters have no comparable API.</div>
+    <h2 id="input-controller">Input controller</h2>
+    <div class="section-note">
+      Telixon only (competitor formatters lack a comparable API). Each iteration types every character of every corpus
+      phone number ({{corpusSize}} numbers total). Costs are per iteration, not per keystroke; see
+      <a href="#keystroke-latency">per-keystroke latency</a> for that distribution.
+    </div>
     <table>
       <thead>
         <tr>
@@ -185,6 +211,37 @@
         {{inputControllerRows}}
       </tbody>
     </table>
+
+    <h2 id="keystroke-latency">Per-keystroke latency</h2>
+    <div class="section-note">
+      <p>
+        Latency of a single <code>controller.insert(...)</code> call, and optionally the full
+        <code>PhoneNumber</code> query suite that follows it on each keystroke. Sampled per individual keystroke via
+        <code>process.hrtime.bigint()</code> after warmup.
+      </p>
+      <p>
+        At 60Hz the browser renders a new frame every <strong>16.67 ms</strong>. A keystroke that consumes a significant
+        fraction of that budget will drop a frame and cause visible UI lag.
+      </p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>samples</th>
+          <th>mean</th>
+          <th>p50</th>
+          <th>p95</th>
+          <th>p99</th>
+          <th>p99.9</th>
+          <th>max</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{keystrokeLatencyRows}}
+      </tbody>
+    </table>
+    <div class="section-note">{{keystrokeLatencyVerdict}}</div>
 
     <footer>
       Reproduce locally: <code>pnpm bench</code>.<br />

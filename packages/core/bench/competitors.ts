@@ -1,8 +1,7 @@
 import { ensureReady, parsePhoneNumber as telixonParse, type PhoneNumber as TelixonPhoneNumber } from '@telixon/core';
 import { type RegionId } from '@telixon/core/engine';
 import googleLibphonenumber from 'google-libphonenumber';
-import {
-  parsePhoneNumberWithError as libphonenumberJsParse,
+import libphonenumberJsParse, {
   validatePhoneNumberLength,
   type CountryCode,
   type PhoneNumber as LibphonenumberJsPhoneNumber,

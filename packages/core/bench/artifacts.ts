@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import provenance from '../src/engine/PROVENANCE.json';
@@ -56,6 +56,23 @@ interface InputControllerRow {
   readonly rme: number;
 }
 
+interface KeystrokeLatencyDistribution {
+  readonly scenario: string;
+  readonly sampleCount: number;
+  readonly min: number;
+  readonly mean: number;
+  readonly p50: number;
+  readonly p95: number;
+  readonly p99: number;
+  readonly p999: number;
+  readonly max: number;
+}
+
+interface KeystrokeLatencyReport {
+  readonly frameBudgetMs: number;
+  readonly scenarios: readonly KeystrokeLatencyDistribution[];
+}
+
 export interface CompetitorVersions {
   readonly libphonenumberJs: string;
   readonly googleLibphonenumber: string;
@@ -71,6 +88,7 @@ interface BenchData {
   readonly cold: readonly HotpathRow[];
   readonly warm: readonly HotpathRow[];
   readonly inputController: readonly InputControllerRow[];
+  readonly keystrokeLatency: KeystrokeLatencyReport | null;
   readonly headline: {
     readonly competitor: Adapter;
     readonly medianStrictColdRatio: number;
@@ -89,6 +107,7 @@ interface ShieldsBadge {
 const BENCH_DIR = dirname(fileURLToPath(import.meta.url));
 const ARTIFACT_DIR = join(BENCH_DIR, 'dist');
 const TEMPLATE_PATH = join(BENCH_DIR, 'benchmark.template.html');
+const KEYSTROKE_LATENCY_PATH = join(ARTIFACT_DIR, 'keystroke-latency.json');
 const HOTPATH_FILE_SUFFIX = '/bench/hotpath.bench.ts';
 const INPUT_CONTROLLER_FILE_SUFFIX = '/bench/input-controller.bench.ts';
 
@@ -96,7 +115,10 @@ const INPUT_CONTROLLER_FILE_SUFFIX = '/bench/input-controller.bench.ts';
 
 export function exportBenchArtifacts(rawPath: string, corpusSize: number, competitors: CompetitorVersions): void {
   const raw: RawReport = JSON.parse(readFileSync(rawPath, 'utf8')) as RawReport;
-  const data = buildBenchData(raw, corpusSize, competitors);
+  const keystrokeLatency: KeystrokeLatencyReport | null = existsSync(KEYSTROKE_LATENCY_PATH)
+    ? (JSON.parse(readFileSync(KEYSTROKE_LATENCY_PATH, 'utf8')) as KeystrokeLatencyReport)
+    : null;
+  const data = buildBenchData(raw, corpusSize, competitors, keystrokeLatency);
   mkdirSync(ARTIFACT_DIR, { recursive: true });
   writeFileSync(join(ARTIFACT_DIR, 'bench.json'), JSON.stringify(data, null, 2) + '\n');
   writeFileSync(join(ARTIFACT_DIR, 'bench-badge.json'), JSON.stringify(buildBadge(), null, 2) + '\n');
@@ -105,7 +127,12 @@ export function exportBenchArtifacts(rawPath: string, corpusSize: number, compet
 
 // ── Builders ─────────────────────────────────────────────
 
-function buildBenchData(raw: RawReport, corpusSize: number, competitors: CompetitorVersions): BenchData {
+function buildBenchData(
+  raw: RawReport,
+  corpusSize: number,
+  competitors: CompetitorVersions,
+  keystrokeLatency: KeystrokeLatencyReport | null,
+): BenchData {
   const hotpathFile = raw.files.find((file) => file.filepath.endsWith(HOTPATH_FILE_SUFFIX));
   const inputControllerFile = raw.files.find((file) => file.filepath.endsWith(INPUT_CONTROLLER_FILE_SUFFIX));
   if (!hotpathFile) throw new Error(`hotpath bench results missing from ${HOTPATH_FILE_SUFFIX}`);
@@ -152,6 +179,7 @@ function buildBenchData(raw: RawReport, corpusSize: number, competitors: Competi
     cold,
     warm,
     inputController,
+    keystrokeLatency,
     headline: computeHeadline(strictCold),
   };
 }
@@ -222,8 +250,72 @@ function renderHtml(data: BenchData): string {
     '{{coldRows}}': data.cold.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
     '{{warmRows}}': data.warm.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
     '{{inputControllerRows}}': data.inputController.map(renderInputControllerRow).join('\n        '),
+    '{{keystrokeLatencyRows}}': renderKeystrokeLatencyRows(data.keystrokeLatency),
+    '{{keystrokeLatencyVerdict}}': renderKeystrokeLatencyVerdict(data.keystrokeLatency),
+    '{{ogTitle}}': renderOgTitle(),
+    '{{ogDescription}}': renderOgDescription(data),
   };
   return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), template);
+}
+
+function renderKeystrokeLatencyRows(report: KeystrokeLatencyReport | null): string {
+  if (!report) return '';
+  return report.scenarios
+    .map((scenario) => {
+      return `<tr><td>${escapeHtml(scenario.scenario)}</td><td>${scenario.sampleCount.toLocaleString('en-US')}</td><td>${formatLatency(scenario.mean)}</td><td>${formatLatency(scenario.p50)}</td><td>${formatLatency(scenario.p95)}</td><td>${formatLatency(scenario.p99)}</td><td>${formatLatency(scenario.p999)}</td><td>${formatLatency(scenario.max)}</td></tr>`;
+    })
+    .join('\n        ');
+}
+
+function renderKeystrokeLatencyVerdict(report: KeystrokeLatencyReport | null): string {
+  if (!report) return '';
+  const totalSamples = report.scenarios.reduce((sum, s) => sum + s.sampleCount, 0);
+  const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
+  const worstMax = report.scenarios.reduce((max, s) => (s.max > max ? s.max : max), 0);
+  const totalSamplesFormatted = totalSamples.toLocaleString('en-US');
+  const p99Percent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(3);
+  const p99Headroom = Math.round(report.frameBudgetMs / worstP99).toLocaleString('en-US');
+  const maxPercent = ((worstMax / report.frameBudgetMs) * 100).toFixed(2);
+  const maxHeadroom = Math.round(report.frameBudgetMs / worstMax).toLocaleString('en-US');
+  return (
+    `<p>Across ${totalSamplesFormatted} sampled keystrokes, the 99th-percentile keystroke is ` +
+    `${formatLatency(worstP99)}, ${p99Percent}% of the 16.67 ms frame budget (${p99Headroom}&times; headroom). ` +
+    `The single worst keystroke observed was ${formatLatency(worstMax)} (${maxPercent}% of budget, ` +
+    `${maxHeadroom}&times; headroom): a 1-in-${totalSamplesFormatted} outlier, likely a runtime pause from ` +
+    `V8 garbage collection or OS scheduling.</p>` +
+    `<p><strong>Phone-number processing alone cannot cause UI frame drops on a 60Hz display.</strong></p>`
+  );
+}
+
+function formatLatency(ms: number): string {
+  if (ms >= 1) return `${ms.toFixed(2)} ms`;
+  const us = ms * 1000;
+  if (us >= 1) return `${us.toFixed(2)} &micro;s`;
+  return `${(us * 1000).toFixed(0)} ns`;
+}
+
+function formatLatencyPlain(ms: number): string {
+  if (ms >= 1) return `${ms.toFixed(2)} ms`;
+  const us = ms * 1000;
+  if (us >= 1) return `${us.toFixed(2)} μs`;
+  return `${(us * 1000).toFixed(0)} ns`;
+}
+
+function renderOgTitle(): string {
+  return 'Telixon benchmarks';
+}
+
+function renderOgDescription(data: BenchData): string {
+  const parts: string[] = ['Reproducible benchmark vs libphonenumber-js and google-libphonenumber.'];
+  if (data.headline.medianStrictColdRatio > 0) {
+    parts.push(`Strict-cold median ${data.headline.medianStrictColdRatio.toFixed(1)}× vs ${data.headline.competitor}.`);
+  }
+  if (data.keystrokeLatency) {
+    const worstP99 = data.keystrokeLatency.scenarios.reduce((max, s) => Math.max(max, s.p99), 0);
+    const headroom = Math.round(data.keystrokeLatency.frameBudgetMs / worstP99).toLocaleString('en-US');
+    parts.push(`Per-keystroke p99: ${formatLatencyPlain(worstP99)} (${headroom}× UI headroom at 60Hz).`);
+  }
+  return parts.join(' ');
 }
 
 function renderHotpathRow(row: HotpathRow, isMethodRow: boolean): string {

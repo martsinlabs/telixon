@@ -10,7 +10,7 @@
   "main": "index.js",
   "scripts": {
     "bench": "vitest bench --run",
-    "bench:report": "vitest bench --run --outputJson=packages/core/bench/dist/bench-raw.json && tsx packages/core/bench/emit-artifacts.ts packages/core/bench/dist/bench-raw.json",
+    "bench:report": "vitest bench --run --outputJson=packages/core/bench/dist/bench-raw.json && tsx packages/core/bench/measure-keystroke-latency.ts && tsx packages/core/bench/emit-artifacts.ts packages/core/bench/dist/bench-raw.json",
     "bench:watch": "vitest bench",
     "build": "pnpm --filter \"./packages/*\" run build",
     "conformance": "vitest run --config vitest.conformance.config.ts",
