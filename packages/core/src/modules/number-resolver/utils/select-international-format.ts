@@ -7,6 +7,8 @@ import { matchesLeadingDigits } from './matches-leading-digits';
 // skipping formats not used internationally.
 function matchesComplete(format: PhoneNumberFormat, nationalDigits: string): boolean {
   if (format.intlFormat === 'NA') return false;
+  const digitsLength: number = nationalDigits.length;
+  if (digitsLength < format.lengthRange[0] || digitsLength > format.lengthRange[1]) return false;
   if (format.leadingDigits && !matchesLeadingDigits(format.leadingDigits, nationalDigits)) return false;
   return fullPattern(format.pattern).test(nationalDigits);
 }
@@ -20,6 +22,14 @@ function matchesPartial(format: PhoneNumberFormat, nationalDigits: string): bool
   return matchesLeadingDigits(format.leadingDigits, nationalDigits);
 }
 
+interface FormatIndexCacheEntry {
+  complete: number;
+  partial: number;
+}
+const FORMAT_INDEX_CACHE_MAX_ENTRIES: number = 50_000;
+const FORMAT_INDEX_CACHE = new Map<number, Map<string, FormatIndexCacheEntry>>();
+let formatIndexCacheEntryCount: number = 0;
+
 // Index of the international format for `nationalDigits` within the calling code's list, or -1.
 // Prefers a complete pattern match (identical to formatInternational). The partial match is only for
 // numbers still being typed (allowPartial); a complete number with no full match stays ungrouped.
@@ -28,13 +38,46 @@ export function selectInternationalFormatIndex(
   nationalDigits: string,
   allowPartial: boolean,
 ): number {
+  const cachedForCallingCode = FORMAT_INDEX_CACHE.get(callingCodeIndex);
+  if (cachedForCallingCode !== undefined) {
+    const cachedEntry = cachedForCallingCode.get(nationalDigits);
+    if (cachedEntry !== undefined) {
+      return allowPartial && cachedEntry.complete === -1 ? cachedEntry.partial : cachedEntry.complete;
+    }
+  }
+
   const formats: PhoneNumberFormatList = getResourceProvider().formatsTable[callingCodeIndex]!;
-  for (let index = 0; index < formats.length; index += 1) {
-    if (matchesComplete(formats[index]!, nationalDigits)) return index;
+
+  let completeIndex = -1;
+  for (let formatIndex = 0; formatIndex < formats.length; formatIndex += 1) {
+    if (matchesComplete(formats[formatIndex]!, nationalDigits)) {
+      completeIndex = formatIndex;
+      break;
+    }
   }
-  if (!allowPartial) return -1;
-  for (let index = 0; index < formats.length; index += 1) {
-    if (matchesPartial(formats[index]!, nationalDigits)) return index;
+
+  let partialIndex = -1;
+  if (completeIndex === -1) {
+    for (let formatIndex = 0; formatIndex < formats.length; formatIndex += 1) {
+      if (matchesPartial(formats[formatIndex]!, nationalDigits)) {
+        partialIndex = formatIndex;
+        break;
+      }
+    }
   }
-  return -1;
+
+  if (formatIndexCacheEntryCount >= FORMAT_INDEX_CACHE_MAX_ENTRIES) {
+    FORMAT_INDEX_CACHE.clear();
+    formatIndexCacheEntryCount = 0;
+  }
+  let cacheForCallingCode = FORMAT_INDEX_CACHE.get(callingCodeIndex);
+  if (cacheForCallingCode === undefined) {
+    cacheForCallingCode = new Map();
+    FORMAT_INDEX_CACHE.set(callingCodeIndex, cacheForCallingCode);
+  }
+  if (!cacheForCallingCode.has(nationalDigits)) formatIndexCacheEntryCount++;
+  cacheForCallingCode.set(nationalDigits, { complete: completeIndex, partial: partialIndex });
+
+  if (completeIndex !== -1) return completeIndex;
+  return allowPartial ? partialIndex : -1;
 }

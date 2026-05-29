@@ -2,7 +2,7 @@ import { BinaryFilter } from '@telixon/core/models';
 
 export interface NumberResolverSnapshot {
   readonly state: number;
-  readonly terminalStates: number[];
+  readonly terminalStates: readonly number[];
   readonly callingCodeDigits: string;
   readonly nationalDigits: string;
   readonly callingCodeCompleted: boolean;

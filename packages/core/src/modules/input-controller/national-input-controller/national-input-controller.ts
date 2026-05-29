@@ -105,7 +105,7 @@ class NationalInputController extends InputController {
     }
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex();
+    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(snapshot);
 
     const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
       snapshot,

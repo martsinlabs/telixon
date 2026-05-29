@@ -254,6 +254,13 @@ function resolveExactInTerminalStates(
 }
 
 // Resolves an exact terminal-prefix match for one specific country.
+interface PerTerminalStateExactResult {
+  readonly concrete: NumberTypeProfileRef | null;
+  readonly general: NumberTypeProfileRef | null;
+}
+
+const RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE = new Map<number, Map<number, PerTerminalStateExactResult>>();
+
 function resolveCountryExactInTerminalStates(
   resourceProvider: ResourceProvider,
   snapshot: NumberResolverSnapshot,
@@ -261,42 +268,72 @@ function resolveCountryExactInTerminalStates(
   terminalStateCount: number,
   countryIndexToResolve: number,
 ): NumberTypeProfileRef | null {
-  let generalProfile: NumberTypeProfileRef | null = null;
+  const filtersActive: boolean = snapshot.countryFilter !== null || snapshot.numberTypeFilter !== null;
 
-  for (let i = terminalStateCount - 1; i >= 0; i--) {
-    const terminalState = snapshot.terminalStates[i]!;
-    let concreteProfile: NumberTypeProfileRef | null = null;
+  let overallGeneralProfile: NumberTypeProfileRef | null = null;
 
-    forEachStateRegionWithTerminalPrefix(
-      resourceProvider.countryScopeLayer,
-      terminalState,
-      (stateCountryIndex, countryIndex) => {
-        if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
+  for (let terminalIndex = terminalStateCount - 1; terminalIndex >= 0; terminalIndex--) {
+    const terminalState = snapshot.terminalStates[terminalIndex]!;
+    const compositeKey = (countryIndexToResolve << 8) | digitsLength;
 
-        const profile = resolveFirstCountryProfileExact(
-          resourceProvider,
-          snapshot,
-          digitsLength,
-          stateCountryIndex,
-          countryIndex,
-          getTerminalPrefixNumberTypeMask,
-        );
-        if (!profile) return;
+    let perStateResult: PerTerminalStateExactResult | undefined;
 
-        if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
-          if (!generalProfile) generalProfile = profile;
-          return;
+    if (!filtersActive) {
+      const cachedForState = RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.get(terminalState);
+      if (cachedForState !== undefined) {
+        perStateResult = cachedForState.get(compositeKey);
+      }
+    }
+
+    if (perStateResult === undefined) {
+      let perStateConcrete: NumberTypeProfileRef | null = null;
+      let perStateGeneral: NumberTypeProfileRef | null = null;
+
+      forEachStateRegionWithTerminalPrefix(
+        resourceProvider.countryScopeLayer,
+        terminalState,
+        (stateCountryIndex, countryIndex) => {
+          if (isCountryExcluded(snapshot, countryIndex) || countryIndex !== countryIndexToResolve) return;
+
+          const profile = resolveFirstCountryProfileExact(
+            resourceProvider,
+            snapshot,
+            digitsLength,
+            stateCountryIndex,
+            countryIndex,
+            getTerminalPrefixNumberTypeMask,
+          );
+          if (!profile) return;
+
+          if (isGeneralDescNumberType(resourceProvider, countryIndex, profile.numberTypeIndex)) {
+            if (!perStateGeneral) perStateGeneral = profile;
+            return;
+          }
+
+          perStateConcrete = profile;
+          return true;
+        },
+      );
+
+      perStateResult = { concrete: perStateConcrete, general: perStateGeneral };
+
+      if (!filtersActive) {
+        let cachedForState = RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.get(terminalState);
+        if (cachedForState === undefined) {
+          cachedForState = new Map();
+          RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.set(terminalState, cachedForState);
         }
+        cachedForState.set(compositeKey, perStateResult);
+      }
+    }
 
-        concreteProfile = profile;
-        return true;
-      },
-    );
-
-    if (concreteProfile) return concreteProfile;
+    if (perStateResult.concrete !== null) return perStateResult.concrete;
+    if (perStateResult.general !== null && overallGeneralProfile === null) {
+      overallGeneralProfile = perStateResult.general;
+    }
   }
 
-  return generalProfile;
+  return overallGeneralProfile;
 }
 
 // Resolves any non-preferred country from the current DFA state.
@@ -383,6 +420,8 @@ function resolveFallbackInTerminalStates(
   return generalProfile;
 }
 
+const TERMINAL_STATE_UNIQUE_CONCRETE_CACHE = new Map<number, Map<number, NumberTypeProfileRef | null>>();
+
 // Finds a uniquely concrete terminal-prefix country at the current digit position.
 function resolveUniqueConcreteProfileInTerminalStates(
   resourceProvider: ResourceProvider,
@@ -390,8 +429,24 @@ function resolveUniqueConcreteProfileInTerminalStates(
   digitsLength: number,
   terminalStateCount: number,
 ): NumberTypeProfileRef | null {
-  for (let i = terminalStateCount - 1; i >= 0; i--) {
-    const terminalState = snapshot.terminalStates[i]!;
+  const filtersActive: boolean = snapshot.countryFilter !== null || snapshot.numberTypeFilter !== null;
+
+  for (let terminalIndex = terminalStateCount - 1; terminalIndex >= 0; terminalIndex--) {
+    const terminalState = snapshot.terminalStates[terminalIndex]!;
+
+    if (!filtersActive) {
+      const cachedForState = TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.get(terminalState);
+
+      if (cachedForState !== undefined) {
+        const cachedForLength = cachedForState.get(digitsLength);
+
+        if (cachedForLength !== undefined) {
+          if (cachedForLength !== null) return cachedForLength;
+          continue;
+        }
+      }
+    }
+
     let uniqueProfile: NumberTypeProfileRef | null = null;
     let uniqueCountryIndex = -1;
     let hasMultipleCountries = false;
@@ -426,7 +481,18 @@ function resolveUniqueConcreteProfileInTerminalStates(
       },
     );
 
-    if (uniqueProfile !== null && !hasMultipleCountries) return uniqueProfile;
+    const result: NumberTypeProfileRef | null = uniqueProfile !== null && !hasMultipleCountries ? uniqueProfile : null;
+
+    if (!filtersActive) {
+      let cachedForState = TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.get(terminalState);
+      if (cachedForState === undefined) {
+        cachedForState = new Map();
+        TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.set(terminalState, cachedForState);
+      }
+      cachedForState.set(digitsLength, result);
+    }
+
+    if (result !== null) return result;
   }
 
   return null;
@@ -745,31 +811,30 @@ export function resolveLatestConcreteCountryIndex(
   nationalStates: readonly number[],
   terminalStateEnds: readonly number[],
 ): number {
-  if (snapshot.nationalDigits.length === 0) return -1;
+  const totalDigits = snapshot.nationalDigits.length;
+  if (totalDigits === 0) return -1;
 
   const resourceProvider = getResourceProvider();
   const deadStateId = resourceProvider.graphLayer.deadStateId;
-  const finalDigitsLength = snapshot.nationalDigits.length;
-  let latestCountryIndex = -1;
 
-  for (let i = 0; i < snapshot.nationalDigits.length; i++) {
-    const state = nationalStates[i]!;
+  for (let digitPosition = totalDigits - 1; digitPosition >= 0; digitPosition--) {
+    const state = nationalStates[digitPosition]!;
     const profile = resolveAnchorProfileAtPosition(
       resourceProvider,
       snapshot,
       state,
-      i + 1,
-      terminalStateEnds[i]!,
+      digitPosition + 1,
+      terminalStateEnds[digitPosition]!,
       state !== deadStateId,
     );
 
     if (profile === null) continue;
-    if (!canProfileReachLength(resourceProvider, profile, finalDigitsLength)) continue;
+    if (!canProfileReachLength(resourceProvider, profile, totalDigits)) continue;
 
-    latestCountryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
+    return getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
   }
 
-  return latestCountryIndex;
+  return -1;
 }
 
 /**

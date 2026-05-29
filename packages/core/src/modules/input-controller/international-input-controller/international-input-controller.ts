@@ -82,7 +82,7 @@ class InternationalInputController extends InputController {
     const caretIndex: number = resolveInput(value, change, (digit: number) => numberResolver.advance(digit));
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex();
+    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(snapshot);
 
     const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
       snapshot,
