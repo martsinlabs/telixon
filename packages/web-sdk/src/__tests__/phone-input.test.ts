@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
 import { getExampleNumber } from './__fixtures__/example-numbers';
 
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_TOLL_FREE = getExampleNumber('US', 'TOLL_FREE');
+
 function attachInput(type: string = 'text'): { input: HTMLInputElement; cleanup: () => void } {
   const input = document.createElement('input');
   input.type = type;
@@ -89,12 +92,12 @@ describe('PhoneInput beforeinput: deleteSoftLineBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
 
     dispatchBeforeInput(input, 'deleteSoftLineBackward');
 
-    expect(digits(input.value)).toBe('5551234');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -104,12 +107,12 @@ describe('PhoneInput beforeinput: deleteSoftLineBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
 
     dispatchBeforeInput(input, 'deleteSoftLineBackward');
 
-    expect(digits(input.value)).toBe('5551234');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -121,7 +124,7 @@ describe('PhoneInput beforeinput: insert with empty data', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     const before = input.value;
     input.setSelectionRange(5, 5);
 
@@ -137,7 +140,7 @@ describe('PhoneInput beforeinput: insert with empty data', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     const before = input.value;
     input.setSelectionRange(2, 6);
 
@@ -155,7 +158,7 @@ describe('PhoneInput beforeinput: composition inputTypes', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     const before = input.value;
 
     dispatchBeforeInput(input, 'insertCompositionText', { data: 'こ' });
@@ -170,7 +173,7 @@ describe('PhoneInput beforeinput: composition inputTypes', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     const before = input.value;
 
     dispatchBeforeInput(input, 'insertFromComposition', { data: 'こんにちは' });
@@ -187,12 +190,12 @@ describe('PhoneInput beforeinput: deleteHardLineBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
 
     dispatchBeforeInput(input, 'deleteHardLineBackward');
 
-    expect(digits(input.value)).toBe('5551234');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -202,12 +205,12 @@ describe('PhoneInput beforeinput: deleteHardLineBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
 
     dispatchBeforeInput(input, 'deleteHardLineBackward');
 
-    expect(digits(input.value)).toBe('5551234');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -219,7 +222,7 @@ describe('PhoneInput beforeinput: deleteEntireSoftLine', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
 
     dispatchBeforeInput(input, 'deleteEntireSoftLine');
@@ -234,7 +237,7 @@ describe('PhoneInput beforeinput: deleteEntireSoftLine', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('4155551234');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
 
     dispatchBeforeInput(input, 'deleteEntireSoftLine');
@@ -251,12 +254,12 @@ describe('PhoneInput beforeinput: insertText', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('555123456');
+    phone.setValue(US_MOBILE.slice(0, -1));
     input.setSelectionRange(input.value.length, input.value.length);
 
-    dispatchBeforeInput(input, 'insertText', { data: '7' });
+    dispatchBeforeInput(input, 'insertText', { data: US_MOBILE.slice(-1) });
 
-    expect(digits(input.value)).toBe('5551234567');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -266,7 +269,7 @@ describe('PhoneInput beforeinput: insertText', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     const before = input.value;
     input.setSelectionRange(input.value.length, input.value.length);
 
@@ -282,12 +285,12 @@ describe('PhoneInput beforeinput: insertText', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
 
     dispatchBeforeInput(input, 'insertText', { data: '0' });
 
-    expect(digits(input.value)).toBe('01234567');
+    expect(digits(input.value)).toBe(`0${US_MOBILE.slice(3)}`);
 
     phone.destroy();
     cleanup();
@@ -301,9 +304,11 @@ describe('PhoneInput beforeinput: insertFromPaste', () => {
 
     input.setSelectionRange(0, 0);
 
-    dispatchBeforeInput(input, 'insertFromPaste', { data: '(415) 555-1234' });
+    dispatchBeforeInput(input, 'insertFromPaste', {
+      data: `(${US_MOBILE.slice(0, 3)}) ${US_MOBILE.slice(3, 6)}-${US_MOBILE.slice(6)}`,
+    });
 
-    expect(digits(input.value)).toBe('4155551234');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -315,12 +320,12 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(input.value.length, input.value.length);
 
     dispatchBeforeInput(input, 'deleteContentBackward');
 
-    expect(digits(input.value)).toBe('555123456');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(0, -1));
 
     phone.destroy();
     cleanup();
@@ -330,12 +335,12 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
 
     dispatchBeforeInput(input, 'deleteContentBackward');
 
-    expect(digits(input.value)).toBe('1234567');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -345,7 +350,7 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     const before = input.value;
     input.setSelectionRange(0, 0);
 
@@ -363,12 +368,12 @@ describe('PhoneInput beforeinput: deleteContentForward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 1);
 
     dispatchBeforeInput(input, 'deleteContentForward');
 
-    expect(digits(input.value)).toBe('551234567');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(1));
 
     phone.destroy();
     cleanup();
@@ -378,12 +383,12 @@ describe('PhoneInput beforeinput: deleteContentForward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
 
     dispatchBeforeInput(input, 'deleteContentForward');
 
-    expect(digits(input.value)).toBe('1234567');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(3));
 
     phone.destroy();
     cleanup();
@@ -395,12 +400,12 @@ describe('PhoneInput beforeinput: deleteWordBackward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(input.value.length, input.value.length);
 
     dispatchBeforeInput(input, 'deleteWordBackward');
 
-    expect(digits(input.value)).toBe('555123');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(0, 6));
 
     phone.destroy();
     cleanup();
@@ -412,12 +417,12 @@ describe('PhoneInput beforeinput: deleteWordForward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
 
     dispatchBeforeInput(input, 'deleteWordForward');
 
-    expect(digits(input.value)).toBe('5554567');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(0, 3) + US_MOBILE.slice(6));
 
     phone.destroy();
     cleanup();
@@ -429,12 +434,12 @@ describe('PhoneInput beforeinput: deleteSoftLineForward', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
 
     dispatchBeforeInput(input, 'deleteSoftLineForward');
 
-    expect(digits(input.value)).toBe('555');
+    expect(digits(input.value)).toBe(US_MOBILE.slice(0, 3));
 
     phone.destroy();
     cleanup();
@@ -446,12 +451,12 @@ describe('PhoneInput beforeinput: history', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
-    phone.setValue('1234567890');
+    phone.setValue(US_MOBILE);
+    phone.setValue(US_TOLL_FREE);
 
     dispatchBeforeInput(input, 'historyUndo');
 
-    expect(digits(input.value)).toBe('5551234567');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -476,12 +481,12 @@ describe('PhoneInput beforeinput: history', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     phone.undo();
 
     dispatchBeforeInput(input, 'historyRedo');
 
-    expect(digits(input.value)).toBe('5551234567');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -493,7 +498,7 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
 
     dispatchKeyDown(input, 'z', { ctrlKey: true });
 
@@ -507,12 +512,12 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     phone.undo();
 
     dispatchKeyDown(input, 'z', { ctrlKey: true, shiftKey: true });
 
-    expect(digits(input.value)).toBe('5551234567');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -522,12 +527,12 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     phone.undo();
 
     dispatchKeyDown(input, 'y', { ctrlKey: true });
 
-    expect(digits(input.value)).toBe('5551234567');
+    expect(digits(input.value)).toBe(US_MOBILE);
 
     phone.destroy();
     cleanup();
@@ -539,7 +544,7 @@ describe('PhoneInput beforeinput: blocked and unknown inputTypes', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     const before = input.value;
 
     dispatchBeforeInput(input, 'formatBold');
@@ -554,7 +559,7 @@ describe('PhoneInput beforeinput: blocked and unknown inputTypes', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     const before = input.value;
 
     dispatchBeforeInput(input, 'someUnknownInputType');
@@ -571,7 +576,7 @@ describe('PhoneInput beforeinput: composition guard', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
 
-    phone.setValue('5551234567');
+    phone.setValue(US_MOBILE);
     const before = input.value;
 
     dispatchBeforeInput(input, 'insertText', { data: '0', isComposing: true });
@@ -686,7 +691,7 @@ describe('PhoneInput filters: re-resolution', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'international' });
 
-    phone.setValue(`+1${getExampleNumber('US', 'MOBILE')}`);
+    phone.setValue(`+1${US_MOBILE}`);
     expect(phone.getState().country).toBe('US');
 
     phone.setCountryFilter(['GB']);
