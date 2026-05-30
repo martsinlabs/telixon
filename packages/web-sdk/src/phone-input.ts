@@ -2,6 +2,7 @@ import { InputController, NumberType, PhoneNumber, RegionId } from '@telixon/cor
 import {
   isBackwardDeleteInputType,
   isBlockedInputType,
+  isCompositionInputType,
   isForwardDeleteInputType,
   isInsertInputType,
   isWordBackwardDeleteInputType,
@@ -9,7 +10,7 @@ import {
 } from './constants/before-input-types';
 import type { PhoneInput, PhoneInputListener, PhoneInputOptions, PhoneInputState } from './models';
 import { applyInputState } from './utils/apply-input-state';
-import { assertTextInputType } from './utils/assert-text-input-type';
+import { assertSupportedInputType } from './utils/assert-supported-input-type';
 import { resolveInsertText } from './utils/before-input';
 import { buildController } from './utils/build-controller';
 import { deriveState } from './utils/derive-state';
@@ -25,7 +26,7 @@ function assertInputIsAvailable(input: HTMLInputElement): void {
 
 export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const { input } = options;
-  assertTextInputType(input);
+  assertSupportedInputType(input);
   assertInputIsAvailable(input);
   ATTACHED_INPUTS.add(input);
 
@@ -77,8 +78,10 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     event.preventDefault();
 
     if (isInsertInputType(inputType)) {
+      const insertText: string = resolveInsertText(event);
+      if (insertText === '') return;
       commit(() => {
-        inputController.insert(value, resolveInsertText(event), selectionStart, selectionEnd);
+        inputController.insert(value, insertText, selectionStart, selectionEnd);
       });
       return;
     }
@@ -116,22 +119,23 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     }
 
     switch (inputType) {
-      case 'deleteSoftLineBackward': {
+      case 'deleteSoftLineBackward':
+      case 'deleteHardLineBackward': {
         commit(() => {
-          inputController.deleteBackward(value, 0, selectionStart);
+          inputController.deleteBackward(value, 0, selectionEnd);
         });
         return;
       }
 
       case 'deleteSoftLineForward':
-      case 'deleteHardLineForward':
-      case 'deleteEntireSoftLine': {
+      case 'deleteHardLineForward': {
         commit(() => {
           inputController.deleteForward(value, selectionEnd, value.length);
         });
         return;
       }
 
+      case 'deleteEntireSoftLine':
       case 'deleteEntireHardLine': {
         commit(() => {
           inputController.deleteBackward(value, 0, value.length);
@@ -148,7 +152,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
         return;
 
       default:
-        if (isBlockedInputType(inputType)) {
+        if (isBlockedInputType(inputType) || isCompositionInputType(inputType)) {
           return;
         }
 
