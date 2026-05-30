@@ -49,9 +49,9 @@ export abstract class InputController {
 
   abstract redo(): InputState;
 
-  abstract setCountryFilter(countries: RegionId[] | null): void;
+  abstract setCountryFilter(countries: readonly RegionId[] | null): void;
 
-  abstract setNumberTypeFilter(numberTypes: NumberType[] | null): void;
+  abstract setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
 
   abstract seal(): void;
 

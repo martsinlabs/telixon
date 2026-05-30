@@ -34,9 +34,14 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const listeners: Set<PhoneInputListener> = new Set();
 
   let isDestroyed: boolean = false;
+  let currentCountryFilter: readonly RegionId[] | null = options.countryFilter ?? null;
+  let currentNumberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
+
+  if (currentCountryFilter !== null) inputController.setCountryFilter(currentCountryFilter);
+  if (currentNumberTypeFilter !== null) inputController.setNumberTypeFilter(currentNumberTypeFilter);
 
   function getControllerState(): PhoneInputState {
-    return deriveState(inputController.currentState);
+    return deriveState(inputController.currentState, currentCountryFilter, currentNumberTypeFilter);
   }
 
   function emit(state: PhoneInputState): void {
@@ -222,12 +227,16 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       return inputController.getPhoneNumber();
     },
 
-    setCountryFilter(countries: RegionId[] | null): void {
+    setCountryFilter(countries: readonly RegionId[] | null): void {
+      currentCountryFilter = countries;
       inputController.setCountryFilter(countries);
+      notify(getControllerState());
     },
 
-    setNumberTypeFilter(numberTypes: NumberType[] | null): void {
+    setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void {
+      currentNumberTypeFilter = numberTypes;
       inputController.setNumberTypeFilter(numberTypes);
+      notify(getControllerState());
     },
 
     destroy(): void {

@@ -9,6 +9,8 @@ import type {
 type PhoneInputBaseOptions = {
   input: PhoneInputElement;
   initialValue?: string;
+  countryFilter?: readonly RegionId[] | null;
+  numberTypeFilter?: readonly NumberType[] | null;
 };
 
 export type PhoneInputElement = HTMLInputElement;
@@ -18,6 +20,8 @@ export type PhoneInputState = {
   country: RegionId | null;
   selectionStart: number;
   selectionEnd: number;
+  countryFilter: readonly RegionId[] | null;
+  numberTypeFilter: readonly NumberType[] | null;
 };
 
 export type NationalPhoneInputOptions = { mode: 'national' } & PhoneInputBaseOptions & NationalInputControllerConfig;
@@ -42,7 +46,7 @@ export type PhoneInput = {
   redo(): void;
   seal(): void;
   getPhoneNumber(): PhoneNumber;
-  setCountryFilter(countries: RegionId[] | null): void;
-  setNumberTypeFilter(numberTypes: NumberType[] | null): void;
+  setCountryFilter(countries: readonly RegionId[] | null): void;
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
   destroy(): void;
 };

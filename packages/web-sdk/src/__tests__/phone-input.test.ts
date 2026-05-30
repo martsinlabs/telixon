@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
+import { getExampleNumber } from './__fixtures__/example-numbers';
 
 function attachInput(type: string = 'text'): { input: HTMLInputElement; cleanup: () => void } {
   const input = document.createElement('input');
@@ -576,6 +577,121 @@ describe('PhoneInput beforeinput: composition guard', () => {
     dispatchBeforeInput(input, 'insertText', { data: '0', isComposing: true });
 
     expect(input.value).toBe(before);
+
+    phone.destroy();
+    cleanup();
+  });
+});
+
+describe('PhoneInput filters: initial application', () => {
+  it('reflects the initial countryFilter in the first emitted state', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({
+      input,
+      mode: 'national',
+      country: 'US',
+      countryFilter: ['US', 'CA'],
+    });
+
+    expect(phone.getState().countryFilter).toEqual(['US', 'CA']);
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('reflects the initial numberTypeFilter in the first emitted state', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({
+      input,
+      mode: 'national',
+      country: 'US',
+      numberTypeFilter: ['MOBILE'],
+    });
+
+    expect(phone.getState().numberTypeFilter).toEqual(['MOBILE']);
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('defaults both filters to null when not provided', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+
+    expect(phone.getState().countryFilter).toBe(null);
+    expect(phone.getState().numberTypeFilter).toBe(null);
+
+    phone.destroy();
+    cleanup();
+  });
+});
+
+describe('PhoneInput filters: runtime setters', () => {
+  it('emits a new state with the updated countryFilter on setCountryFilter', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+
+    let lastState = phone.getState();
+    const unsubscribe = phone.subscribe((state) => {
+      lastState = state;
+    });
+
+    phone.setCountryFilter(['US']);
+
+    expect(lastState.countryFilter).toEqual(['US']);
+
+    unsubscribe();
+    phone.destroy();
+    cleanup();
+  });
+
+  it('emits a new state with the updated numberTypeFilter on setNumberTypeFilter', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+
+    let lastState = phone.getState();
+    const unsubscribe = phone.subscribe((state) => {
+      lastState = state;
+    });
+
+    phone.setNumberTypeFilter(['MOBILE']);
+
+    expect(lastState.numberTypeFilter).toEqual(['MOBILE']);
+
+    unsubscribe();
+    phone.destroy();
+    cleanup();
+  });
+
+  it('restores unfiltered state when a filter is set to null', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({
+      input,
+      mode: 'national',
+      country: 'US',
+      numberTypeFilter: ['FIXED_LINE'],
+    });
+
+    phone.setNumberTypeFilter(null);
+
+    expect(phone.getState().numberTypeFilter).toBe(null);
+
+    phone.destroy();
+    cleanup();
+  });
+});
+
+describe('PhoneInput filters: re-resolution', () => {
+  it('drops the resolved country when setCountryFilter excludes it', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'international' });
+
+    phone.setValue(`+1${getExampleNumber('US', 'MOBILE')}`);
+    expect(phone.getState().country).toBe('US');
+
+    phone.setCountryFilter(['GB']);
+
+    expect(phone.getState().country).not.toBe('US');
 
     phone.destroy();
     cleanup();

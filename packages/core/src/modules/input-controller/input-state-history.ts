@@ -44,6 +44,10 @@ export class InputStateHistory<State extends InputControllerState = InputControl
     };
   }
 
+  replaceCurrent(state: State): void {
+    this.stack[this.index] = state;
+  }
+
   undo(): State {
     if (this.index === 0) {
       return this.stack[0]!;

@@ -12,7 +12,7 @@ function resolveMetadataTypes(type: NumberType): readonly string[] {
   return NUMBER_TYPE_ALIASES[type] ?? [type];
 }
 
-export function createCountryFilter(countryIds: RegionId[]): BinaryFilter {
+export function createCountryFilter(countryIds: readonly RegionId[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.regions.indexToKey.length);
@@ -30,7 +30,7 @@ export function createCountryFilter(countryIds: RegionId[]): BinaryFilter {
   return filter;
 }
 
-export function createNumberTypeFilter(numberTypes: NumberType[]): BinaryFilter {
+export function createNumberTypeFilter(numberTypes: readonly NumberType[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.numberTypes.length);

@@ -245,12 +245,24 @@ class InternationalInputController extends InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountryFilter(countries: RegionId[] | null): void {
+  setCountryFilter(countries: readonly RegionId[] | null): void {
     this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
+    this.#recomputeState();
   }
 
-  setNumberTypeFilter(numberTypes: NumberType[] | null): void {
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void {
     this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
+    this.#recomputeState();
+  }
+
+  #recomputeState(): void {
+    const { value, selectionStart, selectionEnd } = this.#history.current;
+    const nextState: InputControllerState = this.#resolveState(value, {
+      insertText: '',
+      selectionStart,
+      selectionEnd,
+    });
+    this.#history.replaceCurrent(nextState);
   }
 
   getPhoneNumber(): PhoneNumber {
