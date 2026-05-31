@@ -63,7 +63,7 @@ export type PhoneInputListener = (state: PhoneInputState) => void;
  * Headless phone input controller bound to a DOM `<input>`.
  *
  * Subscribe to receive state changes; call mutators to drive the controller. The initial state is
- * applied to the DOM at construction but not emitted to subscribers — call `getState()` after
+ * applied to the DOM at construction but not emitted to subscribers. Call `getState()` after
  * `subscribe` to read the bootstrap value. Call `destroy` to detach all listeners.
  */
 export type PhoneInput = {

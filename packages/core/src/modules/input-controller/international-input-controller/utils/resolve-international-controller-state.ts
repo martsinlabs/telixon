@@ -48,7 +48,7 @@ export function resolveInternationalControllerState(
       formatIndex = selectedIndex;
       const format: PhoneNumberFormat = formatsTable[callingCodeIndex]![selectedIndex]!;
 
-      const masksByLength = display.callingCodeInInput ? format.masks.international : format.masks.national;
+      const masksByLength = format.masks.international ?? format.masks.national;
       const mask: string | undefined = pickMaskForLength(masksByLength, snapshot.nationalDigits.length);
 
       if (mask !== undefined) {

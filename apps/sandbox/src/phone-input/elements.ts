@@ -1,0 +1,23 @@
+import { mustGet } from '../shared/must-get';
+
+export const modeEl = mustGet('#mode', HTMLSelectElement);
+export const countryEl = mustGet('#country', HTMLInputElement);
+export const initialValueEl = mustGet('#initial-value', HTMLInputElement);
+export const phoneInputEl = mustGet('#phone-input', HTMLInputElement);
+export const applyInitialValueBtn = mustGet('#apply-initial-value', HTMLButtonElement);
+export const applyCountryBtn = mustGet('#apply-country', HTMLButtonElement);
+export const setValueBtn = mustGet('#set-value', HTMLButtonElement);
+export const clearValueBtn = mustGet('#clear-value', HTMLButtonElement);
+export const countryFilterEl = mustGet('#country-filter', HTMLInputElement);
+export const numberTypeFilterEl = mustGet('#number-type-filter', HTMLDivElement);
+export const applyFiltersBtn = mustGet('#apply-filters', HTMLButtonElement);
+export const clearFiltersBtn = mustGet('#clear-filters', HTMLButtonElement);
+export const strictEl = mustGet('#strict', HTMLInputElement);
+export const undoBtn = mustGet('#undo', HTMLButtonElement);
+export const redoBtn = mustGet('#redo', HTMLButtonElement);
+export const sealBtn = mustGet('#seal', HTMLButtonElement);
+export const reattachBtn = mustGet('#reattach', HTMLButtonElement);
+export const stateEl = mustGet('#state', HTMLPreElement);
+export const phoneNumberEl = mustGet('#phone-number', HTMLPreElement);
+export const eventsEl = mustGet('#events', HTMLPreElement);
+export const warningEl = mustGet('#warning', HTMLParagraphElement);

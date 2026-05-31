@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telixon Sandbox · Variations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header">
+        <div class="header-inner">
+          <span class="logo">Telixon</span>
+          <span class="badge">Variations</span>
+          <div id="nav-mount"></div>
+        </div>
+      </header>
+
+      <main class="main main--single">
+        <div class="form-shell form-shell--wide">
+          <section class="card">
+            <h2 class="variation-title">National</h2>
+            <p class="hint">
+              <code>mode: 'national'</code>. Country is chosen via the selector and stays fixed. The input holds only
+              the national digits, formatted with the country's national mask (e.g. <code>(415) 555-0123</code>).
+            </p>
+            <div data-mount="national"></div>
+            <div class="variation-meta">
+              <span class="variation-label">Resolved:</span>
+              <span class="variation-chip" data-info="national">n/a</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="variation-title">International with plus</h2>
+            <p class="hint">
+              <code>display: { callingCodeInInput: true, plusPrefix: true }</code>. The user types the leading
+              <code>+</code>, calling code, then national digits (e.g. <code>+1 415-555-0123</code>). Country resolves
+              live from the calling code; no separate selector is shown.
+            </p>
+            <div data-mount="international-plus"></div>
+            <div class="variation-meta">
+              <span class="variation-label">Resolved:</span>
+              <span class="variation-chip" data-info="international-plus">n/a</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="variation-title">International without plus</h2>
+            <p class="hint">
+              <code>display: { callingCodeInInput: true, plusPrefix: false }</code>. Same as above but the input value
+              starts with the calling code digits directly, no leading <code>+</code> (e.g.
+              <code>1 415-555-0123</code>).
+            </p>
+            <div data-mount="international-no-plus"></div>
+            <div class="variation-meta">
+              <span class="variation-label">Resolved:</span>
+              <span class="variation-chip" data-info="international-no-plus">n/a</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="variation-title">International split</h2>
+            <p class="hint">
+              <code>display: { callingCodeInInput: false }</code>. The calling code is rendered <em>outside</em> the
+              input (in the selector); the input holds the national digits formatted with the international body mask
+              (e.g. <code>415-555-0123</code>, no parens). International resolution path applies.
+            </p>
+            <div data-mount="international-split"></div>
+            <div class="variation-meta">
+              <span class="variation-label">Resolved:</span>
+              <span class="variation-chip" data-info="international-split">n/a</span>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/pages/variations.ts"></script>
+  </body>
+</html>

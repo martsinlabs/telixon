@@ -86,6 +86,17 @@ describe('InternationalInputController formatting modes', () => {
     expect(state.value.startsWith('+')).toBe(false);
   });
 
+  it('uses international-style format (no parens) in split mode', () => {
+    const controller = createInternationalInputController({
+      defaultCountry: 'US',
+      display: { callingCodeInInput: false },
+    });
+    const state = controller.setValue('2125551234');
+
+    expect(state.value).toBe('212-555-1234');
+    expect(state.value).not.toContain('(');
+  });
+
   it('formats GB mobile with calling code in input', () => {
     const controller = createInternationalInputController();
     const state = controller.setValue('447700900123');

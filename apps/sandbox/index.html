@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Telixon: Sandbox</title>
+    <title>Telixon Sandbox</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,127 +18,55 @@
         <div class="header-inner">
           <span class="logo">Telixon</span>
           <span class="badge">Sandbox</span>
+          <div id="nav-mount"></div>
         </div>
       </header>
 
-      <main class="main">
-        <div class="col col--controls">
-          <section class="card">
-            <h2 class="card-title">Configuration</h2>
+      <main class="main main--single">
+        <section class="card index-intro">
+          <h1 class="index-title">Sandbox</h1>
+          <p class="index-lede">
+            A multi-page validation harness for <code>@telixon/web-sdk</code>. Each page exercises one primitive in real
+            browser conditions that headless tests cannot reach: native IME, mobile keypads, paste, undo, selection
+            edits, and cross-browser <code>beforeinput</code> semantics.
+          </p>
+        </section>
 
-            <div class="field-group">
-              <div class="field">
-                <label class="label" for="mode">Mode</label>
-                <select class="control" id="mode">
-                  <option value="national">National</option>
-                  <option value="international">International</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label class="label" for="country">Country</label>
-                <input class="control" id="country" type="text" value="US" autocomplete="off" spellcheck="false" />
-              </div>
-
-              <div class="field">
-                <label class="label" for="initial-value">Initial Value</label>
-                <input
-                  class="control"
-                  id="initial-value"
-                  type="text"
-                  value="2025550147"
-                  autocomplete="off"
-                  spellcheck="false"
-                />
-              </div>
-            </div>
-
-            <label class="toggle" for="strict">
-              <input id="strict" type="checkbox" />
-              Strict mode
-            </label>
-
-            <div class="actions">
-              <button class="btn btn--primary" id="apply-initial-value" type="button">Reattach</button>
-              <button class="btn" id="apply-country" type="button">Apply Country</button>
-              <button class="btn" id="set-value" type="button">Set Value</button>
-              <button class="btn" id="clear-value" type="button">Clear</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h2 class="card-title">Filters</h2>
-
-            <div class="field-group">
-              <div class="field">
-                <label class="label" for="country-filter">Countries</label>
-                <input
-                  class="control"
-                  id="country-filter"
-                  type="text"
-                  placeholder="US, CA …"
-                  autocomplete="off"
-                  spellcheck="false"
-                />
-              </div>
-
-              <div class="field">
-                <label class="label" for="number-type-filter">Number Types</label>
-                <div id="number-type-filter"></div>
-              </div>
-            </div>
-
-            <div class="actions">
-              <button class="btn btn--primary" id="apply-filters" type="button">Apply</button>
-              <button class="btn" id="clear-filters" type="button">Clear Filters</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h2 class="card-title">Phone Input</h2>
-
-            <div class="field">
-              <input
-                class="control control--phone"
-                id="phone-input"
-                type="text"
-                inputmode="tel"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="Type a phone number…"
-              />
-            </div>
-
-            <div class="actions">
-              <button class="btn btn--primary" id="undo" type="button">Undo</button>
-              <button class="btn btn--primary" id="redo" type="button">Redo</button>
-              <button class="btn" id="seal" type="button">Seal</button>
-              <button class="btn" id="reattach" type="button">Test Duplicate Attach</button>
-            </div>
-
-            <p class="hint" id="warning"></p>
-          </section>
-        </div>
-
-        <div class="col col--output">
-          <section class="card card--output">
-            <h2 class="card-title">State</h2>
-            <pre class="output" id="state"></pre>
-          </section>
-
-          <section class="card card--output">
-            <h2 class="card-title">PhoneNumber</h2>
-            <pre class="output" id="phone-number"></pre>
-          </section>
-
-          <section class="card card--output">
-            <h2 class="card-title">Event Log</h2>
-            <pre class="output" id="events"></pre>
-          </section>
-        </div>
+        <section class="card">
+          <h2 class="card-title">Demos</h2>
+          <ul class="demo-list">
+            <li class="demo-item">
+              <a class="demo-link" href="/phone-input.html">
+                <span class="demo-name">PhoneInput</span>
+                <span class="demo-desc">
+                  Bind a phone-formatted controller to an <code>&lt;input&gt;</code>. Mode toggle, country, initial
+                  value, filters, undo/redo, seal, duplicate-attach guard, live state and PhoneNumber readouts.
+                </span>
+              </a>
+            </li>
+            <li class="demo-item">
+              <a class="demo-link" href="/country-list.html">
+                <span class="demo-name">CountryList</span>
+                <span class="demo-desc">
+                  Headless country picker pipeline. Search, locale switch, country and number-type filters, sort
+                  options, prioritization, custom data factory, force refresh.
+                </span>
+              </a>
+            </li>
+            <li class="demo-item">
+              <a class="demo-link" href="/variations.html">
+                <span class="demo-name">Variations</span>
+                <span class="demo-desc">
+                  Four display modes side by side showing how the <code>display</code> config shapes the input value:
+                  national, international with plus, international without plus, and international split.
+                </span>
+              </a>
+            </li>
+          </ul>
+        </section>
       </main>
     </div>
 
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/pages/index.ts"></script>
   </body>
 </html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telixon Sandbox · PhoneInput</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header">
+        <div class="header-inner">
+          <span class="logo">Telixon</span>
+          <span class="badge">PhoneInput</span>
+          <div id="nav-mount"></div>
+        </div>
+      </header>
+
+      <main class="main">
+        <div class="col col--controls">
+          <section class="card">
+            <h2 class="card-title">Configuration</h2>
+
+            <div class="field-group">
+              <div class="field">
+                <label class="label" for="mode">Mode</label>
+                <select class="control" id="mode">
+                  <option value="national">National</option>
+                  <option value="international">International</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label class="label" for="country">Country</label>
+                <input class="control" id="country" type="text" value="US" autocomplete="off" spellcheck="false" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="initial-value">Initial Value</label>
+                <input
+                  class="control"
+                  id="initial-value"
+                  type="text"
+                  value="2025550147"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+
+            <label class="toggle" for="strict">
+              <input id="strict" type="checkbox" />
+              Strict mode
+            </label>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="apply-initial-value" type="button">Reattach</button>
+              <button class="btn" id="apply-country" type="button">Apply Country</button>
+              <button class="btn" id="set-value" type="button">Set Value</button>
+              <button class="btn" id="clear-value" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Filters</h2>
+
+            <div class="field-group">
+              <div class="field">
+                <label class="label" for="country-filter">Countries</label>
+                <input
+                  class="control"
+                  id="country-filter"
+                  type="text"
+                  placeholder="US, CA …"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
+              <div class="field">
+                <label class="label" for="number-type-filter">Number Types</label>
+                <div id="number-type-filter"></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="apply-filters" type="button">Apply</button>
+              <button class="btn" id="clear-filters" type="button">Clear Filters</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Phone Input</h2>
+
+            <div class="field">
+              <input
+                class="control control--phone"
+                id="phone-input"
+                type="text"
+                inputmode="tel"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Type a phone number…"
+              />
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="undo" type="button">Undo</button>
+              <button class="btn btn--primary" id="redo" type="button">Redo</button>
+              <button class="btn" id="seal" type="button">Seal</button>
+              <button class="btn" id="reattach" type="button">Test Duplicate Attach</button>
+            </div>
+
+            <p class="hint" id="warning"></p>
+          </section>
+        </div>
+
+        <div class="col col--output">
+          <section class="card card--output">
+            <h2 class="card-title">State</h2>
+            <pre class="output" id="state"></pre>
+          </section>
+
+          <section class="card card--output">
+            <h2 class="card-title">PhoneNumber</h2>
+            <pre class="output" id="phone-number"></pre>
+          </section>
+
+          <section class="card card--output">
+            <h2 class="card-title">Event Log</h2>
+            <pre class="output" id="events"></pre>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/pages/phone-input.ts"></script>
+  </body>
+</html>

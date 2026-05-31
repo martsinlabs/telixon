@@ -1,7 +1,7 @@
-import { ensureReady, type NumberType, type RegionId } from '@telixon/core';
-import './style.css';
+import { type NumberType, type RegionId } from '@telixon/core';
+import '../style.css';
 
-import { createChipFilter } from './chip-filter';
+import { attach, getCurrent, mount, type Mode } from '../phone-input/controller';
 import {
   applyCountryBtn,
   applyFiltersBtn,
@@ -21,10 +21,14 @@ import {
   strictEl,
   undoBtn,
   warningEl,
-} from './elements';
-import { isCountryId } from './guards';
-import { attach, getCurrent, mount, type Mode } from './sandbox';
-import { record, sync } from './view';
+} from '../phone-input/elements';
+import { record, sync } from '../phone-input/view';
+import { bootstrapResources } from '../shared/bootstrap';
+import { createChipFilter } from '../shared/chip-filter';
+import { isCountryId } from '../shared/guards';
+import { renderNav } from '../shared/nav';
+
+renderNav('phone-input');
 
 const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, {
   options: [
@@ -133,16 +137,14 @@ reattachBtn.addEventListener('click', () => {
 });
 
 async function bootstrap(): Promise<void> {
-  try {
-    await ensureReady();
-    attach(resolveMode());
-    record('resources ready');
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
+  const ok = await bootstrapResources((msg) => {
     stateEl.textContent = msg;
     warningEl.textContent = msg;
     record(msg);
-  }
+  });
+  if (!ok) return;
+  attach(resolveMode());
+  record('resources ready');
 }
 
 function resolveMode(): Mode {

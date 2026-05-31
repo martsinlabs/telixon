@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telixon Sandbox · CountryList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header">
+        <div class="header-inner">
+          <span class="logo">Telixon</span>
+          <span class="badge">CountryList</span>
+          <div id="nav-mount"></div>
+        </div>
+      </header>
+
+      <main class="main main--compact">
+        <div class="col col--controls">
+          <section class="card">
+            <h2 class="card-title">Configuration</h2>
+
+            <div class="field-group">
+              <div class="field">
+                <label class="label" for="locale">Locale</label>
+                <select class="control" id="locale">
+                  <option value="en">en</option>
+                  <option value="fr">fr</option>
+                  <option value="de">de</option>
+                  <option value="es">es</option>
+                  <option value="ja">ja</option>
+                  <option value="uk">uk</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label class="label" for="sort">Sort</label>
+                <select class="control" id="sort">
+                  <option value="alphabetical">Alphabetical</option>
+                  <option value="callingCode">Calling code</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label class="label" for="prioritize">Prioritize</label>
+                <input
+                  class="control"
+                  id="prioritize"
+                  type="text"
+                  placeholder="US, UA, GB …"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="apply-config" type="button">Apply</button>
+              <button class="btn" id="refresh" type="button">Refresh</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Filters</h2>
+
+            <div class="field-group">
+              <div class="field">
+                <label class="label" for="country-filter">Countries</label>
+                <input
+                  class="control"
+                  id="country-filter"
+                  type="text"
+                  placeholder="US, CA …"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
+              <div class="field">
+                <label class="label" for="number-type-filter">Number Types</label>
+                <div id="number-type-filter"></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--primary" id="apply-filters" type="button">Apply</button>
+              <button class="btn" id="clear-filters" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Search</h2>
+
+            <div class="field">
+              <input
+                class="control"
+                id="search"
+                type="text"
+                placeholder="Type to filter the list…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+
+            <p class="hint">
+              Default matcher: substring across display name, ISO code, and calling code. Diacritics stripped; a leading
+              <code>+</code> matches calling codes.
+            </p>
+          </section>
+        </div>
+
+        <div class="col col--output">
+          <section class="card card--output">
+            <h2 class="card-title">Options (<span id="count">0</span>)</h2>
+            <ul class="option-list" id="options"></ul>
+          </section>
+
+          <section class="card card--output">
+            <h2 class="card-title">State</h2>
+            <pre class="output" id="state"></pre>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/pages/country-list.ts"></script>
+  </body>
+</html>

@@ -70,4 +70,14 @@ export default defineConfig({
     alias: CORE_ALIASES,
   },
   plugins: [createEngineAssetsPlugin()],
+  build: {
+    rollupOptions: {
+      input: {
+        index: resolve(import.meta.dirname, 'index.html'),
+        'phone-input': resolve(import.meta.dirname, 'phone-input.html'),
+        'country-list': resolve(import.meta.dirname, 'country-list.html'),
+        variations: resolve(import.meta.dirname, 'variations.html'),
+      },
+    },
+  },
 });

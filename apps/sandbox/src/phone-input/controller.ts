@@ -1,7 +1,7 @@
 import type { RegionId } from '@telixon/core';
 import { createPhoneInput, PhoneInput } from '@telixon/web-sdk';
+import { isCountryId } from '../shared/guards';
 import { countryEl, initialValueEl, phoneInputEl, strictEl } from './elements';
-import { isCountryId } from './guards';
 import type { Controller, Mode } from './types';
 import { record, sync } from './view';
 

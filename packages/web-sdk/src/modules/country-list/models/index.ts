@@ -95,7 +95,7 @@ export type CountryListListener<T> = (state: CountryListState<T>) => void;
  *
  * The naming distinction is intentional: action verbs (`search`, `localize`) name user-driven
  * interactions; `set*` names declarative config mutations. No initial emit is fired on
- * construction — call `getState()` after `subscribe` to read the bootstrap value.
+ * construction. Call `getState()` after `subscribe` to read the bootstrap value.
  */
 export type CountryList<T = undefined> = {
   /** Subscribe to state changes. Returns an unsubscribe function. */
