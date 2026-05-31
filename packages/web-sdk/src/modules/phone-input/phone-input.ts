@@ -1,8 +1,7 @@
 import { InputController, NumberType, PhoneNumber, RegionId } from '@telixon/core';
+import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import {
   isBackwardDeleteInputType,
-  isBlockedInputType,
-  isCompositionInputType,
   isForwardDeleteInputType,
   isInsertInputType,
   isWordBackwardDeleteInputType,
@@ -24,6 +23,15 @@ function assertInputIsAvailable(input: HTMLInputElement): void {
   throw new Error('@telixon/web-sdk cannot attach multiple phone inputs to the same DOM input element.');
 }
 
+/**
+ * Attach a headless phone input controller to a DOM `<input>` element.
+ *
+ * Wires DOM events (`beforeinput`, `compositionend`, undo/redo keyboard shortcuts) to a Telixon
+ * input controller and synchronizes the input value, caret, and resolved phone metadata.
+ *
+ * Throws if the element is not `type="text"` or `type="tel"`, or if another PhoneInput is already
+ * attached to the same element. Call {@link PhoneInput.destroy} to release.
+ */
 export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const { input } = options;
   assertSupportedInputType(input);
@@ -40,7 +48,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   if (currentCountryFilter !== null) inputController.setCountryFilter(currentCountryFilter);
   if (currentNumberTypeFilter !== null) inputController.setNumberTypeFilter(currentNumberTypeFilter);
 
-  function getControllerState(): PhoneInputState {
+  function buildState(): PhoneInputState {
     return deriveState(inputController.currentState, currentCountryFilter, currentNumberTypeFilter);
   }
 
@@ -57,7 +65,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
   function commit(change: () => void): void {
     change();
-    notify(getControllerState());
+    notify(buildState());
   }
 
   function handleCompositionEnd(event: CompositionEvent): void {
@@ -157,10 +165,6 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
         return;
 
       default:
-        if (isBlockedInputType(inputType) || isCompositionInputType(inputType)) {
-          return;
-        }
-
         return;
     }
   }
@@ -184,10 +188,10 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   input.addEventListener('compositionend', handleCompositionEnd);
   input.addEventListener('beforeinput', handleBeforeInput);
   input.addEventListener('keydown', handleKeyDown);
-  notify(getControllerState());
+  notify(buildState());
 
   return {
-    getState: getControllerState,
+    getState: buildState,
 
     canUndo(): boolean {
       return inputController.canUndo;
@@ -220,7 +224,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
     seal(): void {
       inputController.seal();
-      notify(getControllerState());
+      notify(buildState());
     },
 
     getPhoneNumber(): PhoneNumber {
@@ -228,15 +232,17 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     },
 
     setCountryFilter(countries: readonly RegionId[] | null): void {
+      if (readonlyArraysEqual(countries, currentCountryFilter)) return;
       currentCountryFilter = countries;
       inputController.setCountryFilter(countries);
-      notify(getControllerState());
+      notify(buildState());
     },
 
     setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void {
+      if (readonlyArraysEqual(numberTypes, currentNumberTypeFilter)) return;
       currentNumberTypeFilter = numberTypes;
       inputController.setNumberTypeFilter(numberTypes);
-      notify(getControllerState());
+      notify(buildState());
     },
 
     destroy(): void {

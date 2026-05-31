@@ -1,11 +1,2 @@
-export type {
-  InternationalPhoneInputOptions,
-  NationalPhoneInputOptions,
-  PhoneInput,
-  PhoneInputElement,
-  PhoneInputListener,
-  PhoneInputOptions,
-  PhoneInputState,
-} from './models';
-
-export { createPhoneInput } from './phone-input';
+export * from './modules/country-list';
+export * from './modules/phone-input';
