@@ -1,8 +1,26 @@
 {
   "name": "@telixon/core",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Phone number parser, formatter, and validator built on Google libphonenumber metadata.",
+  "keywords": [
+    "phone",
+    "phone-number",
+    "phone-validation",
+    "phone-formatter",
+    "phone-parser",
+    "libphonenumber",
+    "international",
+    "e164"
+  ],
+  "homepage": "https://telixon.dev",
+  "bugs": {
+    "url": "https://github.com/martsinlabs/telixon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martsinlabs/telixon.git",
+    "directory": "packages/core"
+  },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "sideEffects": false,

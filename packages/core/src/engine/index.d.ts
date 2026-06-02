@@ -349,6 +349,19 @@ export declare function parseRegionScopeBinary(buffer: ArrayBuffer): RegionScope
 
 /**
  * @public
+ * Formatted example per variant. Absent when the variant's mask is unavailable.
+ */
+export declare interface PhoneNumberExamplePlaceholders {
+    /** National, no prefix (e.g. `(201) 555-0123`). */
+    national?: string;
+    /** National with prefix (e.g. `1 (201) 555-0123`). */
+    nationalWithPrefix?: string;
+    /** International, no calling code (e.g. `201-555-0123`). */
+    international?: string;
+}
+
+/**
+ * @public
  * Phone number format schema.
  */
 export declare interface PhoneNumberFormat {
@@ -407,6 +420,7 @@ export declare interface PhoneNumberType {
     possibleLengths?: PossibleLengths;
     nationalNumberPattern: string;
     exampleNumber?: number;
+    placeholders?: PhoneNumberExamplePlaceholders;
 }
 
 /**

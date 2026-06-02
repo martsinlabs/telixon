@@ -1,8 +1,25 @@
 {
   "name": "@telixon/web-sdk",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Headless DOM adapter for @telixon/core: PhoneInput and CountryList state machines for the web.",
+  "keywords": [
+    "phone-input",
+    "phone-number",
+    "country-picker",
+    "phone-validation",
+    "phone-formatter",
+    "intl-phone",
+    "headless"
+  ],
+  "homepage": "https://telixon.dev",
+  "bugs": {
+    "url": "https://github.com/martsinlabs/telixon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martsinlabs/telixon.git",
+    "directory": "packages/web-sdk"
+  },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "sideEffects": false,
