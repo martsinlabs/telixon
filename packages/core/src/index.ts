@@ -12,6 +12,9 @@ export type { ParsePhoneNumberOptions } from './modules/parse-phone-number';
 
 export { getCallingCodeForRegion } from './modules/calling-code-for-region';
 
+export { getPlaceholders } from './modules/placeholders';
+export type { Placeholders } from './modules/placeholders';
+
 export { ensureReady } from './resource-provider';
 
 export { REGION_IDS } from './engine';
