@@ -5,6 +5,7 @@ export function deriveState(
   inputState: InputState,
   countryFilter: readonly RegionId[] | null,
   numberTypeFilter: readonly NumberType[] | null,
+  placeholder: string | null,
 ): PhoneInputState {
   return {
     value: inputState.value,
@@ -13,5 +14,6 @@ export function deriveState(
     selectionEnd: inputState.selectionEnd,
     countryFilter,
     numberTypeFilter,
+    placeholder,
   };
 }

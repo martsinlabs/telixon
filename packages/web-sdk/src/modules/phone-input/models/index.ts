@@ -11,6 +11,7 @@ type PhoneInputBaseOptions = {
   initialValue?: string;
   countryFilter?: readonly RegionId[] | null;
   numberTypeFilter?: readonly NumberType[] | null;
+  placeholderNumberType?: NumberType;
 };
 
 /**
@@ -25,6 +26,7 @@ export type PhoneInputElement = HTMLInputElement;
  * - `country`: ISO region code resolved from the digits, or `null` when unresolved.
  * - `selectionStart` / `selectionEnd`: caret range within `value` after the last operation.
  * - `countryFilter` / `numberTypeFilter`: active filter values (`null` = no restriction).
+ * - `placeholder`: example for resolved country + display config, or `null` when unresolved.
  */
 export type PhoneInputState = {
   value: string;
@@ -33,6 +35,7 @@ export type PhoneInputState = {
   selectionEnd: number;
   countryFilter: readonly RegionId[] | null;
   numberTypeFilter: readonly NumberType[] | null;
+  placeholder: string | null;
 };
 
 /**

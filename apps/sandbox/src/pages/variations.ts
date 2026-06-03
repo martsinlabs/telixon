@@ -14,31 +14,24 @@ async function bootstrap(): Promise<void> {
   const ok = await bootstrapResources(reportFatal);
   if (!ok) return;
 
-  mountAndWire('national', {
-    mode: 'national',
-    country: 'US',
-    placeholder: '(555) 123-4567',
-  });
+  mountAndWire('national', { mode: 'national', country: 'US' });
 
   mountAndWire('international-plus', {
     mode: 'international',
     display: 'plus',
     defaultCountry: 'US',
-    placeholder: '+1 555 123 4567',
   });
 
   mountAndWire('international-no-plus', {
     mode: 'international',
     display: 'no-plus',
     defaultCountry: 'US',
-    placeholder: '1 555 123 4567',
   });
 
   mountAndWire('international-split', {
     mode: 'international',
     display: 'split',
     defaultCountry: 'US',
-    placeholder: '(555) 123-4567',
   });
 }
 

@@ -1,16 +1,8 @@
-import { MetadataNumberType, NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionId } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
-
-const NUMBER_TYPE_ALIASES: Partial<Record<NumberType, readonly MetadataNumberType[]>> = {
-  FIXED_LINE_OR_MOBILE: ['FIXED_LINE', 'MOBILE'],
-  UNKNOWN: [],
-};
-
-function resolveMetadataTypes(type: NumberType): readonly string[] {
-  return NUMBER_TYPE_ALIASES[type] ?? [type];
-}
+import { resolveMetadataTypes } from './resolve-metadata-types';
 
 export function createCountryFilter(countryIds: readonly RegionId[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();

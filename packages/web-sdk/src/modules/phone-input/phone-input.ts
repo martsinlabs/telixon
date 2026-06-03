@@ -13,6 +13,7 @@ import { assertSupportedInputType } from './utils/assert-supported-input-type';
 import { resolveInsertText } from './utils/before-input';
 import { buildController } from './utils/build-controller';
 import { deriveState } from './utils/derive-state';
+import { buildPlaceholderConfig, resolvePlaceholder, type PlaceholderConfig } from './utils/resolve-placeholder';
 import { findNextWordBoundary, findPreviousWordBoundary } from './utils/word-boundary';
 
 const ATTACHED_INPUTS: WeakSet<HTMLInputElement> = new WeakSet();
@@ -39,17 +40,34 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   ATTACHED_INPUTS.add(input);
 
   const inputController: InputController = buildController(options);
+  const placeholderConfig: PlaceholderConfig = buildPlaceholderConfig(options);
   const listeners: Set<PhoneInputListener> = new Set();
 
   let isDestroyed: boolean = false;
   let currentCountryFilter: readonly RegionId[] | null = options.countryFilter ?? null;
   let currentNumberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
 
+  let cachedPlaceholderCountry: RegionId | null = inputController.currentState.country;
+  let cachedPlaceholder: string | null = resolvePlaceholder(cachedPlaceholderCountry, placeholderConfig);
+
   if (currentCountryFilter !== null) inputController.setCountryFilter(currentCountryFilter);
   if (currentNumberTypeFilter !== null) inputController.setNumberTypeFilter(currentNumberTypeFilter);
 
+  function currentPlaceholder(country: RegionId | null): string | null {
+    if (country === cachedPlaceholderCountry) return cachedPlaceholder;
+    cachedPlaceholderCountry = country;
+    cachedPlaceholder = resolvePlaceholder(country, placeholderConfig);
+    return cachedPlaceholder;
+  }
+
   function buildState(): PhoneInputState {
-    return deriveState(inputController.currentState, currentCountryFilter, currentNumberTypeFilter);
+    const inputState = inputController.currentState;
+    return deriveState(
+      inputState,
+      currentCountryFilter,
+      currentNumberTypeFilter,
+      currentPlaceholder(inputState.country),
+    );
   }
 
   function emit(state: PhoneInputState): void {

@@ -23,7 +23,6 @@ export type NationalPhoneFieldOptions = {
   initialValue?: string;
   showSelector?: boolean;
   countryFilter?: readonly RegionId[];
-  placeholder?: string;
 };
 
 /**
@@ -39,7 +38,6 @@ export type InternationalEmbeddedOptions = {
   display: 'plus' | 'no-plus';
   defaultCountry?: RegionId;
   initialValue?: string;
-  placeholder?: string;
 };
 
 /**
@@ -55,7 +53,6 @@ export type InternationalSplitOptions = {
   showSelector?: boolean;
   countryFilter?: readonly RegionId[];
   initialValue?: string;
-  placeholder?: string;
 };
 
 export type PhoneFieldOptions = NationalPhoneFieldOptions | InternationalEmbeddedOptions | InternationalSplitOptions;
@@ -91,12 +88,14 @@ export type PhoneFieldHandle = {
 export function createPhoneField(options: PhoneFieldOptions): PhoneFieldHandle {
   const showSelector: boolean = resolveShowSelector(options);
 
-  const dom: PhoneFieldDom = buildPhoneFieldDom({
-    withSelector: showSelector,
-    ...(options.placeholder !== undefined && { placeholder: options.placeholder }),
-  });
+  const dom: PhoneFieldDom = buildPhoneFieldDom({ withSelector: showSelector });
 
   const phone: PhoneInput = buildPhoneController(options, dom.input);
+
+  dom.input.placeholder = phone.getState().placeholder ?? '';
+  const unsubscribePlaceholder: () => void = phone.subscribe((state: PhoneInputState) => {
+    dom.input.placeholder = state.placeholder ?? '';
+  });
 
   let selectorCleanup: (() => void) | null = null;
 
@@ -119,6 +118,7 @@ export function createPhoneField(options: PhoneFieldOptions): PhoneFieldHandle {
     getState: () => phone.getState(),
     subscribe: (listener: PhoneInputListener) => phone.subscribe(listener),
     destroy: () => {
+      unsubscribePlaceholder();
       selectorCleanup?.();
       phone.destroy();
       dom.root.remove();

@@ -9,7 +9,7 @@ export type PhoneFieldDom = {
   options: HTMLUListElement | null;
 };
 
-export function buildPhoneFieldDom(opts: { withSelector: boolean; placeholder?: string }): PhoneFieldDom {
+export function buildPhoneFieldDom(opts: { withSelector: boolean }): PhoneFieldDom {
   const root: HTMLDivElement = document.createElement('div');
   root.className = 'phone-field';
 
@@ -48,7 +48,6 @@ export function buildPhoneFieldDom(opts: { withSelector: boolean; placeholder?: 
   input.inputMode = 'tel';
   input.autocomplete = 'tel';
   input.spellcheck = false;
-  input.placeholder = opts.placeholder ?? '';
   root.appendChild(input);
 
   if (opts.withSelector) {

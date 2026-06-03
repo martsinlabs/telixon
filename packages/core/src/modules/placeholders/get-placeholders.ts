@@ -1,42 +1,11 @@
-import { MetadataNumberType, NumberType, PhoneNumberExamplePlaceholders, RegionId } from '@telixon/core/engine';
+import { NumberType, PhoneNumberExamplePlaceholders, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 
-/**
- * @public
- * Per-region, per-type placeholder variants emitted by `@telixon/forge`.
- *
- * Mirrors the engine artifact shape: every variant is optional because the underlying mask
- * for it may not exist in a given region (e.g. `nationalWithPrefix` is absent in regions
- * without a national prefix).
- *
- * - `national`: national-style formatting, no prefix (e.g. `(201) 555-0123`).
- * - `nationalWithPrefix`: national-style formatting with the national prefix digit
- *   (e.g. `1 (201) 555-0123`).
- * - `international`: international body, no leading calling code (e.g. `201-555-0123`).
- */
+/** Per-region, per-type placeholder variants emitted by `@telixon/forge`. All fields optional. */
 export type Placeholders = PhoneNumberExamplePlaceholders;
 
-const NUMBER_TYPE_ALIASES: Partial<Record<NumberType, readonly MetadataNumberType[]>> = {
-  FIXED_LINE_OR_MOBILE: ['FIXED_LINE', 'MOBILE'],
-  UNKNOWN: [],
-};
-
-function resolveMetadataTypes(type: NumberType): readonly MetadataNumberType[] {
-  return NUMBER_TYPE_ALIASES[type] ?? [type as MetadataNumberType];
-}
-
-/**
- * @public
- * Returns the precomputed placeholder variants for a `(region, type)` tuple. Reads
- * directly from the engine artifact; no runtime formatting is performed.
- *
- * Applies the same number type aliasing as `createNumberTypeFilter`: `FIXED_LINE_OR_MOBILE`
- * tries `FIXED_LINE` first and falls back to `MOBILE`; `UNKNOWN` matches nothing.
- *
- * Returns `null` when no example number is recorded for the requested `(region, type)`
- * tuple, or when the region itself is not in the engine reference mapping. Requires
- * ready resources (`await ensureReady()`).
- */
+/** Returns placeholder variants for `(region, type)`, or `null` if unrecorded. Requires ready resources. */
 export function getPlaceholders(region: RegionId, type: NumberType): Placeholders | null {
   const { refMapping, territorySpecTable } = getResourceProvider();
 
