@@ -37,5 +37,8 @@
   "dependencies": {
     "@telixon/core": "workspace:*"
   },
+  "devDependencies": {
+    "@telixon/testing": "workspace:*"
+  },
   "packageManager": "pnpm@10.16.1"
 }

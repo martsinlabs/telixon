@@ -66,6 +66,9 @@ importers:
 
   packages/core:
     devDependencies:
+      '@telixon/testing':
+        specifier: workspace:*
+        version: link:../testing
       '@types/google-libphonenumber':
         specifier: ^7.4.30
         version: 7.4.30
@@ -79,11 +82,21 @@ importers:
         specifier: ^1.13.3
         version: 1.13.3
 
+  packages/testing:
+    dependencies:
+      '@telixon/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/web-sdk:
     dependencies:
       '@telixon/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@telixon/testing':
+        specifier: workspace:*
+        version: link:../testing
 
 packages:
 

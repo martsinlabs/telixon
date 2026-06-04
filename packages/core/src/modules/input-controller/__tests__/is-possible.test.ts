@@ -1,6 +1,9 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
 
 describe('InputController.isPossibleWithReason: national', () => {
   it('returns TOO_SHORT for empty input', () => {
@@ -18,7 +21,7 @@ describe('InputController.isPossibleWithReason: national', () => {
 
   it('returns IS_POSSIBLE at a valid length', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE');
   });
@@ -71,7 +74,7 @@ describe('InputController.isPossible: boolean wrapper', () => {
     controller.setValue('21255');
     expect(controller.getPhoneNumber().isPossible()).toBe(false);
 
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
     expect(controller.getPhoneNumber().isPossible()).toBe(true);
 
     controller.setValue('0001234567');
@@ -102,7 +105,7 @@ describe('InputController.isPossibleWithReason: international', () => {
 
   it('returns IS_POSSIBLE for a full international number', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    controller.setValue('12125551234');
+    controller.setValue('1' + US_MOBILE);
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE');
   });

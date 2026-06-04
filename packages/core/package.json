@@ -40,6 +40,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@telixon/testing": "workspace:*",
     "@types/google-libphonenumber": "^7.4.30",
     "google-closure-library": "^20230802.0.0",
     "google-libphonenumber": "^3.2.44",

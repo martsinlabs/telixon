@@ -1,6 +1,7 @@
 import type { MetadataNumberType, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 
+/** Returns the engine-emitted example number for `(region, type)`. Throws when the tuple is unknown. */
 export function getExampleNumber(region: RegionId, type: MetadataNumberType): string {
   const provider = getResourceProvider();
 
@@ -19,7 +20,7 @@ export function getExampleNumber(region: RegionId, type: MetadataNumberType): st
     throw new Error(`getExampleNumber: unknown number type "${type}"`);
   }
 
-  const phoneType = territory.numberTypes.find((t) => t.type === typeIndex);
+  const phoneType = territory.numberTypes.find((entry) => entry.type === typeIndex);
   if (phoneType?.exampleNumber === undefined) {
     throw new Error(`getExampleNumber: no example number for region="${region}" type="${type}"`);
   }

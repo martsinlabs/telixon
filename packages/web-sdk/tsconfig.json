@@ -6,7 +6,9 @@
     "rootDir": "../../",
     "paths": {
       "@telixon/core": ["../core/src/index.ts"],
-      "@telixon/core/*": ["../core/src/*"]
+      "@telixon/core/*": ["../core/src/*"],
+      "@telixon/testing": ["../testing/src/index.ts"],
+      "@telixon/testing/*": ["../testing/src/*"]
     }
   },
   "include": ["src"]
