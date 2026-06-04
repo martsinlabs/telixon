@@ -1,4 +1,4 @@
-import type { InputState, NumberType, RegionId } from '@telixon/core';
+import type { InputState, NumberType, RegionId, ValidationError } from '@telixon/core';
 import type { PhoneInputState } from '../models';
 
 export function deriveState(
@@ -6,6 +6,7 @@ export function deriveState(
   countryFilter: readonly RegionId[] | null,
   numberTypeFilter: readonly NumberType[] | null,
   placeholder: string | null,
+  validationError: ValidationError | null,
 ): PhoneInputState {
   return {
     value: inputState.value,
@@ -15,5 +16,6 @@ export function deriveState(
     countryFilter,
     numberTypeFilter,
     placeholder,
+    validationError,
   };
 }

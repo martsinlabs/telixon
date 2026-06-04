@@ -77,6 +77,7 @@ export function resolveNationalControllerState(
         snapshot,
         profileRef: profile,
         formatIndex: formatRef.formatIndex,
+        nationalPrefixPresent: nationalPrefixTyped,
       };
     }
   } else if (defaultCountryIndex !== -1) {
@@ -91,5 +92,6 @@ export function resolveNationalControllerState(
     snapshot,
     profileRef: profile,
     formatIndex: null,
+    nationalPrefixPresent: nationalPrefixTyped,
   };
 }

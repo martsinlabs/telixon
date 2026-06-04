@@ -15,6 +15,7 @@ export interface InputControllerState extends InputState {
   snapshot: NumberResolverSnapshot;
   profileRef: NumberTypeProfileRef | null;
   formatIndex: number | null;
+  nationalPrefixPresent: boolean;
 }
 
 export interface InputChange {

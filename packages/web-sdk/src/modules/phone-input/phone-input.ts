@@ -62,11 +62,13 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
   function buildState(): PhoneInputState {
     const inputState = inputController.currentState;
+
     return deriveState(
       inputState,
       currentCountryFilter,
       currentNumberTypeFilter,
       currentPlaceholder(inputState.country),
+      inputController.getPhoneNumber().getValidationError(),
     );
   }
 

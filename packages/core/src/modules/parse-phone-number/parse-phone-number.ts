@@ -28,6 +28,7 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   const readAsNational: boolean = !hasLeadingPlus && defaultCountryIndex !== -1;
 
   const resolver: NumberResolver = cachedResolver ?? (cachedResolver = new NumberResolver());
+  let nationalPrefixPresent: boolean = false;
 
   if (readAsNational) {
     let nationalDigits = '';
@@ -45,6 +46,8 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
       nationalDigits.length > 0
         ? normalizeNationalNumber(nationalDigits, territorySpec).normalizedDigits
         : nationalDigits;
+
+    nationalPrefixPresent = !!territorySpec.nationalPrefix && nationalDigits.startsWith(territorySpec.nationalPrefix);
 
     for (let digitIndex = 0; digitIndex < normalizedDigits.length; digitIndex++) {
       resolver.advance(normalizedDigits.charCodeAt(digitIndex) - 48);
@@ -66,5 +69,5 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
     resolver.resolveLatestConcreteCountryIndex(snapshot),
   );
 
-  return createPhoneNumber(toResolvedPhoneNumber(snapshot, profile, defaultCountryIndex));
+  return createPhoneNumber(toResolvedPhoneNumber(snapshot, profile, defaultCountryIndex, nationalPrefixPresent));
 }

@@ -1,10 +1,6 @@
 import { containsLength, getMaxLength } from '@telixon/core/engine';
 import { PhoneNumberValidationResult } from '../models';
-
-function getMinLength(mask: number): number {
-  if (mask === 0) return 0;
-  return Math.log2(mask & -mask);
-}
+import { getMinLength } from './length-utils';
 
 export function validationResultFromLength(mask: number, length: number): PhoneNumberValidationResult {
   if (containsLength(mask, length)) return 'IS_POSSIBLE';

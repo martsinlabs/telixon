@@ -4,6 +4,7 @@ import type {
   NumberType,
   PhoneNumber,
   RegionId,
+  ValidationError,
 } from '@telixon/core';
 
 type PhoneInputBaseOptions = {
@@ -27,6 +28,7 @@ export type PhoneInputElement = HTMLInputElement;
  * - `selectionStart` / `selectionEnd`: caret range within `value` after the last operation.
  * - `countryFilter` / `numberTypeFilter`: active filter values (`null` = no restriction).
  * - `placeholder`: example for resolved country + display config, or `null` when unresolved.
+ * - `validationError`: structured outcome from `PhoneNumber.getValidationError()`, or `null` when none apply.
  */
 export type PhoneInputState = {
   value: string;
@@ -36,6 +38,7 @@ export type PhoneInputState = {
   countryFilter: readonly RegionId[] | null;
   numberTypeFilter: readonly NumberType[] | null;
   placeholder: string | null;
+  validationError: ValidationError | null;
 };
 
 /**

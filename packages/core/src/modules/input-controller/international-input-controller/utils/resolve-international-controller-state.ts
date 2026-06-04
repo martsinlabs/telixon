@@ -99,5 +99,6 @@ export function resolveInternationalControllerState(
     snapshot,
     profileRef: profile,
     formatIndex,
+    nationalPrefixPresent: false,
   };
 }

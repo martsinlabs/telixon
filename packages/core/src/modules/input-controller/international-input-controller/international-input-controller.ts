@@ -266,9 +266,11 @@ class InternationalInputController extends InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
-    const { snapshot, profileRef } = this.#history.current;
+    const { snapshot, profileRef, nationalPrefixPresent } = this.#history.current;
 
-    return createPhoneNumber(toResolvedPhoneNumber(snapshot, profileRef, this.#defaultCountryIndex));
+    return createPhoneNumber(
+      toResolvedPhoneNumber(snapshot, profileRef, this.#defaultCountryIndex, nationalPrefixPresent),
+    );
   }
 
   seal(): void {

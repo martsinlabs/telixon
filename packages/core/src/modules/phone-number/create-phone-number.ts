@@ -1,5 +1,5 @@
 import { NumberType, RegionId } from '@telixon/core/engine';
-import { PhoneNumber, PhoneNumberValidationResult, ResolvedPhoneNumber } from './models';
+import { PhoneNumber, PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from './models';
 import { formatInternational } from './query/format-international';
 import { formatNational } from './query/format-national';
 import { getCallingCode } from './query/get-calling-code';
@@ -8,6 +8,7 @@ import { getE164 } from './query/get-e164';
 import { getNationalNumber } from './query/get-national-number';
 import { getNumberType } from './query/get-number-type';
 import { getURI } from './query/get-uri';
+import { getValidationError } from './query/get-validation-error';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
 import { isValid } from './query/is-valid';
 
@@ -28,10 +29,18 @@ class PhoneNumberView implements PhoneNumber {
 
   private cachedValidationResult: PhoneNumberValidationResult | undefined = undefined;
 
+  private cachedValidationError: ValidationError | null | undefined = undefined;
+
+  private cachedIsValid: boolean | undefined = undefined;
+
   constructor(private readonly resolved: ResolvedPhoneNumber) {}
 
   isValid(): boolean {
-    return isValid(this.resolved);
+    if (this.cachedIsValid === undefined) {
+      this.cachedIsValid = isValid(this.resolved);
+    }
+
+    return this.cachedIsValid;
   }
 
   isPossible(): boolean {
@@ -46,6 +55,14 @@ class PhoneNumberView implements PhoneNumber {
     }
 
     return this.cachedValidationResult;
+  }
+
+  getValidationError(): ValidationError | null {
+    if (this.cachedValidationError === undefined) {
+      this.cachedValidationError = getValidationError(this.resolved, this.isPossibleWithReason(), this.isValid());
+    }
+
+    return this.cachedValidationError;
   }
 
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null {

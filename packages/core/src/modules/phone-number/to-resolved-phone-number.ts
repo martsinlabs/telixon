@@ -6,6 +6,7 @@ export function toResolvedPhoneNumber(
   snapshot: NumberResolverSnapshot,
   profileRef: NumberTypeProfileRef | null,
   defaultCountryIndex: number,
+  nationalPrefixPresent: boolean,
 ): ResolvedPhoneNumber {
   return {
     nationalDigits: snapshot.nationalDigits,
@@ -16,5 +17,6 @@ export function toResolvedPhoneNumber(
     countryFilter: snapshot.countryFilter,
     numberTypeFilter: snapshot.numberTypeFilter,
     terminalStates: snapshot.terminalStates,
+    nationalPrefixPresent,
   };
 }
