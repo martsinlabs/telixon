@@ -1,6 +1,11 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
+const US_MOBILE_NATIONAL = '(201) 555-0123';
 
 describe('PhoneNumber.getNationalNumber: national', () => {
   it('returns empty string for empty input', () => {
@@ -18,9 +23,9 @@ describe('PhoneNumber.getNationalNumber: national', () => {
 
   it('returns digits only, stripping formatting characters', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('(212) 555-1234');
+    controller.setValue(US_MOBILE_NATIONAL);
 
-    expect(controller.getPhoneNumber().getNationalNumber()).toBe('2125551234');
+    expect(controller.getPhoneNumber().getNationalNumber()).toBe(US_MOBILE);
   });
 
   it('strips the national prefix (AR 0 prefix)', () => {
@@ -41,8 +46,8 @@ describe('PhoneNumber.getNationalNumber: national', () => {
 describe('PhoneNumber.getNationalNumber: international', () => {
   it('returns the national part without the calling code', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    controller.setValue('12125551234');
+    controller.setValue(US_MOBILE_INTL);
 
-    expect(controller.getPhoneNumber().getNationalNumber()).toBe('2125551234');
+    expect(controller.getPhoneNumber().getNationalNumber()).toBe(US_MOBILE);
   });
 });

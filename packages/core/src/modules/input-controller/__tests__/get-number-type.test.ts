@@ -1,6 +1,14 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
+const US_TOLL_FREE = getExampleNumber('US', 'TOLL_FREE');
+const US_PREMIUM_RATE = getExampleNumber('US', 'PREMIUM_RATE');
+const GB_MOBILE_WITH_PREFIX = '0' + getExampleNumber('GB', 'MOBILE');
+const DE_FIXED_WITH_PREFIX = '0' + getExampleNumber('DE', 'FIXED_LINE');
 
 describe('PhoneNumber.getNumberType: national', () => {
   it('returns null for empty input', () => {
@@ -18,35 +26,35 @@ describe('PhoneNumber.getNumberType: national', () => {
 
   it('collapses FIXED_LINE + MOBILE into FIXED_LINE_OR_MOBILE for a US geographic number', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
   });
 
   it('returns TOLL_FREE for a US 800 number', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('8005550123');
+    controller.setValue(US_TOLL_FREE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('TOLL_FREE');
   });
 
   it('returns MOBILE for a GB mobile number', () => {
     const controller = createNationalInputController({ country: 'GB' });
-    controller.setValue('07911123456');
+    controller.setValue(GB_MOBILE_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('MOBILE');
   });
 
   it('returns FIXED_LINE for a DE geographic number', () => {
     const controller = createNationalInputController({ country: 'DE' });
-    controller.setValue('03012345678');
+    controller.setValue(DE_FIXED_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE');
   });
 
   it('returns PREMIUM_RATE for a US 900 number', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('9005550123');
+    controller.setValue(US_PREMIUM_RATE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('PREMIUM_RATE');
   });
@@ -63,7 +71,7 @@ describe('PhoneNumber.getNumberType: respects active number-type filter', () => 
   it('narrows FIXED_LINE_OR_MOBILE to MOBILE when only MOBILE is allowed', () => {
     const controller = createNationalInputController({ country: 'US' });
     controller.setNumberTypeFilter(['MOBILE']);
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('MOBILE');
   });
@@ -71,7 +79,7 @@ describe('PhoneNumber.getNumberType: respects active number-type filter', () => 
   it('returns null for a landline when only MOBILE is allowed', () => {
     const controller = createNationalInputController({ country: 'DE' });
     controller.setNumberTypeFilter(['MOBILE']);
-    controller.setValue('03012345678');
+    controller.setValue(DE_FIXED_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getNumberType()).toBeNull();
   });
@@ -87,7 +95,7 @@ describe('PhoneNumber.getNumberType: international', () => {
 
   it('resolves a full international US number to FIXED_LINE_OR_MOBILE', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    controller.setValue('12125551234');
+    controller.setValue(US_MOBILE_INTL);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
   });
@@ -123,7 +131,7 @@ describe('PhoneNumber.getNumberType: classifies service and special-rate numbers
 describe('PhoneNumber.getNumberType: after undo', () => {
   it('returns the type of the restored state', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
     controller.setValue('');
     controller.undo();
 

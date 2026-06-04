@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
-import { getExampleNumber } from '@telixon/testing';
 
 const US_MOBILE = getExampleNumber('US', 'MOBILE');
 const US_TOLL_FREE = getExampleNumber('US', 'TOLL_FREE');

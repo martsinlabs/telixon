@@ -1,6 +1,9 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
+
+const GB_FIXED_E164 = '+44' + getExampleNumber('GB', 'FIXED_LINE');
 
 describe('PhoneNumber.getCallingCode: national', () => {
   it("returns the bound country's calling code, even when empty", () => {
@@ -25,7 +28,7 @@ describe('PhoneNumber.getCallingCode: international', () => {
 
   it('resolves the calling code from the typed digits', () => {
     const controller = createInternationalInputController({});
-    controller.setValue('+442012345678');
+    controller.setValue(GB_FIXED_E164);
 
     expect(controller.getPhoneNumber().getCallingCode()).toBe('44');
   });

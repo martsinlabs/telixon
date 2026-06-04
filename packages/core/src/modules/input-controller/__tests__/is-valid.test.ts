@@ -1,6 +1,11 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
+const DE_FIXED_WITH_PREFIX = '0' + getExampleNumber('DE', 'FIXED_LINE');
 
 describe('InputController.isValid: national', () => {
   it('returns false for empty input', () => {
@@ -18,7 +23,7 @@ describe('InputController.isValid: national', () => {
 
   it('returns true at a valid US 10-digit number', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().isValid()).toBe(true);
   });
@@ -53,7 +58,7 @@ describe('InputController.isValid: national', () => {
 
   it('reflects undo state', () => {
     const controller = createNationalInputController({ country: 'US' });
-    controller.setValue('2125551234');
+    controller.setValue(US_MOBILE);
     expect(controller.getPhoneNumber().isValid()).toBe(true);
 
     controller.undo();
@@ -63,7 +68,7 @@ describe('InputController.isValid: national', () => {
   it('returns false when only GENERAL_DESC matches: number-type filter excludes the concrete type', () => {
     const controller = createNationalInputController({ country: 'DE' });
     controller.setNumberTypeFilter(['MOBILE']);
-    controller.setValue('03012345678');
+    controller.setValue(DE_FIXED_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().isValid()).toBe(false);
   });
@@ -85,7 +90,7 @@ describe('InputController.isValid: international', () => {
 
   it('returns true for a full international number', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    controller.setValue('12125551234');
+    controller.setValue(US_MOBILE_INTL);
 
     expect(controller.getPhoneNumber().isValid()).toBe(true);
   });

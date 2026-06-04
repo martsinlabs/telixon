@@ -1,29 +1,38 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { parsePhoneNumber } from '../parse-phone-number';
 
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
+const US_MOBILE_E164 = '+1' + US_MOBILE;
+const US_MOBILE_NATIONAL = '(201) 555-0123';
+const GB_FIXED = getExampleNumber('GB', 'FIXED_LINE');
+const GB_FIXED_E164 = '+44' + GB_FIXED;
+const GB_FIXED_NATIONAL = '0121 234 5678';
+
 describe('parsePhoneNumber: international', () => {
   it('parses a formatted +E.164 number', () => {
-    const phone = parsePhoneNumber('+1 (212) 555-1234');
+    const phone = parsePhoneNumber('+1 ' + US_MOBILE_NATIONAL);
 
     expect(phone.isValid()).toBe(true);
     expect(phone.getCountry()).toBe('US');
     expect(phone.getCallingCode()).toBe('1');
-    expect(phone.getNationalNumber()).toBe('2125551234');
-    expect(phone.getE164()).toBe('+12125551234');
+    expect(phone.getNationalNumber()).toBe(US_MOBILE);
+    expect(phone.getE164()).toBe(US_MOBILE_E164);
   });
 
   it('infers the calling code when the + is missing', () => {
-    const phone = parsePhoneNumber('12125551234');
+    const phone = parsePhoneNumber(US_MOBILE_INTL);
 
     expect(phone.getCountry()).toBe('US');
-    expect(phone.getE164()).toBe('+12125551234');
+    expect(phone.getE164()).toBe(US_MOBILE_E164);
   });
 
   it('takes the calling code from the + prefix over defaultCountry', () => {
-    const phone = parsePhoneNumber('+442079460958', { defaultCountry: 'US' });
+    const phone = parsePhoneNumber(GB_FIXED_E164, { defaultCountry: 'US' });
 
     expect(phone.getCountry()).toBe('GB');
-    expect(phone.getE164()).toBe('+442079460958');
+    expect(phone.getE164()).toBe(GB_FIXED_E164);
   });
 
   it('formats a possible-but-invalid number instead of failing', () => {
@@ -37,19 +46,19 @@ describe('parsePhoneNumber: international', () => {
 
 describe('parsePhoneNumber: national', () => {
   it('reads a national number for the default country', () => {
-    const phone = parsePhoneNumber('(212) 555-1234', { defaultCountry: 'US' });
+    const phone = parsePhoneNumber(US_MOBILE_NATIONAL, { defaultCountry: 'US' });
 
     expect(phone.getCountry()).toBe('US');
-    expect(phone.getNationalNumber()).toBe('2125551234');
-    expect(phone.getE164()).toBe('+12125551234');
+    expect(phone.getNationalNumber()).toBe(US_MOBILE);
+    expect(phone.getE164()).toBe(US_MOBILE_E164);
   });
 
   it('strips the national prefix using the default country', () => {
-    const phone = parsePhoneNumber('020 7946 0958', { defaultCountry: 'GB' });
+    const phone = parsePhoneNumber(GB_FIXED_NATIONAL, { defaultCountry: 'GB' });
 
     expect(phone.getCountry()).toBe('GB');
-    expect(phone.getNationalNumber()).toBe('2079460958');
-    expect(phone.getE164()).toBe('+442079460958');
+    expect(phone.getNationalNumber()).toBe(GB_FIXED);
+    expect(phone.getE164()).toBe(GB_FIXED_E164);
   });
 });
 

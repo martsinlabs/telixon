@@ -1,5 +1,9 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '..';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
 
 describe('InternationalInputController.deleteBackward', () => {
   it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
@@ -29,11 +33,11 @@ describe('InternationalInputController.deleteBackward', () => {
 
   it('deletes the last digit from a full US number with calling code shown', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    const seeded = controller.setValue('12125551234');
+    const seeded = controller.setValue(US_MOBILE_INTL);
 
     const state = controller.deleteBackward(seeded.value, seeded.value.length, seeded.value.length);
 
-    expect(state.value.replace(/\D/g, '')).toBe('1212555123');
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL.slice(0, -1));
   });
 
   it('does not jump the caret over the "+" prefix when backspacing right after it', () => {
@@ -55,11 +59,11 @@ describe('InternationalInputController.deleteBackward', () => {
       defaultCountry: 'US',
       display: { callingCodeInInput: false },
     });
-    const seeded = controller.setValue('2125551234');
+    const seeded = controller.setValue(US_MOBILE);
 
     const state = controller.deleteBackward(seeded.value, seeded.value.length, seeded.value.length);
 
-    expect(state.value.replace(/\D/g, '')).toBe('212555123');
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE.slice(0, -1));
     // Calling code never appears in the value with this display mode.
     expect(state.value.startsWith('1')).toBe(false);
   });
@@ -68,13 +72,14 @@ describe('InternationalInputController.deleteBackward', () => {
 describe('InternationalInputController.deleteForward', () => {
   it('removes the first digit of national number from a full US value', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    const seeded = controller.setValue('12125551234');
+    const seeded = controller.setValue(US_MOBILE_INTL);
 
     // Skip past the calling code segment "1 " to land on the first national digit.
-    const callingSegmentLength = seeded.value.indexOf('2');
+    const firstNationalDigit: string = US_MOBILE.charAt(0);
+    const callingSegmentLength = seeded.value.indexOf(firstNationalDigit);
     const state = controller.deleteForward(seeded.value, callingSegmentLength, callingSegmentLength);
 
-    // First national digit '2' is dropped; remaining digits are 1 + 125551234.
-    expect(state.value.replace(/\D/g, '')).toBe('1125551234');
+    // First national digit is dropped; remaining digits are calling code + NSN without first digit.
+    expect(state.value.replace(/\D/g, '')).toBe('1' + US_MOBILE.slice(1));
   });
 });

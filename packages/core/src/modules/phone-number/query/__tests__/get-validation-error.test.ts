@@ -1,10 +1,15 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../../../input-controller/international-input-controller';
 import { parsePhoneNumber } from '../../../parse-phone-number';
 
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const AE_MOBILE = getExampleNumber('AE', 'MOBILE');
+const AE_MOBILE_WITH_PREFIX = '0' + AE_MOBILE;
+
 describe('PhoneNumber.getValidationError', () => {
   it('returns null for a fully valid number', () => {
-    expect(parsePhoneNumber('+1 212 555 1234').getValidationError()).toBeNull();
+    expect(parsePhoneNumber('+1 ' + US_MOBILE).getValidationError()).toBeNull();
   });
 
   it('returns EMPTY when no digits and no country context are available', () => {
@@ -37,16 +42,16 @@ describe('PhoneNumber.getValidationError', () => {
   });
 
   it('returns NATIONAL_PREFIX_MISSING when a required prefix is absent', () => {
-    const error = parsePhoneNumber('501234567', { defaultCountry: 'AE' }).getValidationError();
+    const error = parsePhoneNumber(AE_MOBILE, { defaultCountry: 'AE' }).getValidationError();
     expect(error).toEqual({ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' });
   });
 
   it('does not emit NATIONAL_PREFIX_MISSING when the national prefix was typed', () => {
-    expect(parsePhoneNumber('0501234567', { defaultCountry: 'AE' }).getValidationError()).toBeNull();
+    expect(parsePhoneNumber(AE_MOBILE_WITH_PREFIX, { defaultCountry: 'AE' }).getValidationError()).toBeNull();
   });
 
   it('does not emit NATIONAL_PREFIX_MISSING when the format allows the prefix to be optional', () => {
-    expect(parsePhoneNumber('2015550123', { defaultCountry: 'US' }).getValidationError()).toBeNull();
+    expect(parsePhoneNumber(US_MOBILE, { defaultCountry: 'US' }).getValidationError()).toBeNull();
   });
 
   it('precedence: EMPTY wins over INVALID_COUNTRY_CODE when both apply', () => {

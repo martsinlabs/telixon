@@ -1,5 +1,11 @@
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '..';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const US_MOBILE_INTL = '1' + US_MOBILE;
+const US_MOBILE_INTL_BODY = '201-555-0123';
+const GB_MOBILE_E164_DIGITS = '44' + getExampleNumber('GB', 'MOBILE');
 
 describe('InternationalInputController initial state', () => {
   it('defaults to empty value with null country when nothing configured', () => {
@@ -43,11 +49,11 @@ describe('InternationalInputController initial state', () => {
   it('uses initialValue when provided', () => {
     const controller = createInternationalInputController({
       defaultCountry: 'US',
-      initialValue: '12125551234',
+      initialValue: US_MOBILE_INTL,
     });
 
     const digitsOnly = controller.currentState.value.replace(/\D/g, '');
-    expect(digitsOnly).toBe('12125551234');
+    expect(digitsOnly).toBe(US_MOBILE_INTL);
     expect(controller.currentState.country).toBe('US');
   });
 });
@@ -55,10 +61,10 @@ describe('InternationalInputController initial state', () => {
 describe('InternationalInputController formatting modes', () => {
   it('formats a full US number with calling code prefix', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    const state = controller.setValue('12125551234');
+    const state = controller.setValue(US_MOBILE_INTL);
 
     expect(state.country).toBe('US');
-    expect(state.value.replace(/\D/g, '')).toBe('12125551234');
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
     expect(state.value.startsWith('1')).toBe(true);
     expect(state.value.startsWith('+')).toBe(false);
   });
@@ -68,10 +74,10 @@ describe('InternationalInputController formatting modes', () => {
       defaultCountry: 'US',
       display: { callingCodeInInput: true, plusPrefix: true },
     });
-    const state = controller.setValue('12125551234');
+    const state = controller.setValue(US_MOBILE_INTL);
 
     expect(state.value.startsWith('+1')).toBe(true);
-    expect(state.value.replace(/\D/g, '')).toBe('12125551234');
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
   });
 
   it('omits calling code from value when callingCodeInInput is false', () => {
@@ -79,10 +85,10 @@ describe('InternationalInputController formatting modes', () => {
       defaultCountry: 'US',
       display: { callingCodeInInput: false },
     });
-    const state = controller.setValue('2125551234');
+    const state = controller.setValue(US_MOBILE);
 
     expect(state.country).toBe('US');
-    expect(state.value.replace(/\D/g, '')).toBe('2125551234');
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE);
     expect(state.value.startsWith('+')).toBe(false);
   });
 
@@ -91,18 +97,18 @@ describe('InternationalInputController formatting modes', () => {
       defaultCountry: 'US',
       display: { callingCodeInInput: false },
     });
-    const state = controller.setValue('2125551234');
+    const state = controller.setValue(US_MOBILE);
 
-    expect(state.value).toBe('212-555-1234');
+    expect(state.value).toBe(US_MOBILE_INTL_BODY);
     expect(state.value).not.toContain('(');
   });
 
   it('formats GB mobile with calling code in input', () => {
     const controller = createInternationalInputController();
-    const state = controller.setValue('447700900123');
+    const state = controller.setValue(GB_MOBILE_E164_DIGITS);
 
     expect(state.country).toBe('GB');
-    expect(state.value.replace(/\D/g, '')).toBe('447700900123');
+    expect(state.value.replace(/\D/g, '')).toBe(GB_MOBILE_E164_DIGITS);
   });
 });
 

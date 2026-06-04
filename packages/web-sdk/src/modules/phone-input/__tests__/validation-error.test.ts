@@ -1,7 +1,12 @@
 // @vitest-environment happy-dom
 
+import { getExampleNumber } from '@telixon/testing';
 import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
+
+const US_MOBILE = getExampleNumber('US', 'MOBILE');
+const AE_MOBILE = getExampleNumber('AE', 'MOBILE');
+const AE_MOBILE_WITH_PREFIX = '0' + AE_MOBILE;
 
 function attachInput(): { input: HTMLInputElement; cleanup: () => void } {
   const input = document.createElement('input');
@@ -15,7 +20,7 @@ describe('PhoneInput validationError', () => {
     const { input, cleanup } = attachInput();
 
     const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
-    phone.setValue('2125551234');
+    phone.setValue(US_MOBILE);
     expect(phone.getState().validationError).toBeNull();
 
     phone.destroy();
@@ -37,7 +42,7 @@ describe('PhoneInput validationError', () => {
     const { input, cleanup } = attachInput();
 
     const phone = createPhoneInput({ input, mode: 'national', country: 'AE' });
-    phone.setValue('501234567');
+    phone.setValue(AE_MOBILE);
     expect(phone.getState().validationError).toEqual({
       kind: 'NATIONAL_PREFIX_MISSING',
       expectedPrefix: '0',
@@ -51,7 +56,7 @@ describe('PhoneInput validationError', () => {
     const { input, cleanup } = attachInput();
 
     const phone = createPhoneInput({ input, mode: 'national', country: 'AE' });
-    phone.setValue('0501234567');
+    phone.setValue(AE_MOBILE_WITH_PREFIX);
     expect(phone.getState().validationError).toBeNull();
 
     phone.destroy();
@@ -65,8 +70,8 @@ describe('PhoneInput validationError', () => {
     const seen: Array<unknown> = [];
     phone.subscribe((state) => seen.push(state.validationError?.kind ?? null));
 
-    phone.setValue('501234567');
-    phone.setValue('0501234567');
+    phone.setValue(AE_MOBILE);
+    phone.setValue(AE_MOBILE_WITH_PREFIX);
 
     expect(seen).toContain('NATIONAL_PREFIX_MISSING');
     expect(seen[seen.length - 1]).toBeNull();
