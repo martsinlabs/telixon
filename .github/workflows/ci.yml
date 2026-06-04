@@ -70,6 +70,28 @@ jobs:
           path: packages/core/conformance/dist
           if-no-files-found: error
 
+  codspeed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Walltime-stable benchmark measurement: CodSpeed runs vitest bench under instrumentation
+      # and posts per-PR regression deltas. Threshold and base reference are managed in the CodSpeed
+      # GitHub App settings.
+      - uses: CodSpeedHQ/action@v3
+        with:
+          run: pnpm bench
+          token: ${{ secrets.CODSPEED_TOKEN }}
+
   bench:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

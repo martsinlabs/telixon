@@ -23,6 +23,7 @@
     "typecheck:conformance": "tsc --noEmit -p packages/core/conformance/tsconfig.json"
   },
   "devDependencies": {
+    "@codspeed/vitest-plugin": "^5.5.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.5.0",
     "cpy-cli": "^7.0.0",
