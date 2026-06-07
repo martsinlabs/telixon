@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
+import { gunzipSync } from 'node:zlib';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { gunzipSync } from 'node:zlib';
 import { ResourceLoader } from './models';
 
 const __filename = fileURLToPath(import.meta.url);
