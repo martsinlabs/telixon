@@ -51,6 +51,7 @@
   "scripts": {
     "build": "tsup && pnpm run copy:engine",
     "copy:engine": "cpy \"src/engine/**/*\" dist/engine",
+    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

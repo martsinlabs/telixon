@@ -37,12 +37,11 @@ jobs:
 
       - run: pnpm build
 
-      # Validate published type entry points resolve correctly across modern
-      # moduleResolution modes (node16, bundler). Catches subtle ESM-only export-map
-      # drift. cjs-resolves-to-esm + no-resolution ignored: pre-1.0 lib targets
-      # node16+/bundler resolution exclusively; node10 mode (pre-2019) is unsupported.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
+      # Validate published type entry points resolve correctly across moduleResolution modes
+      # (node10, node16, bundler). cjs-resolves-to-esm ignored: ESM-only package, CJS callers
+      # must use dynamic import.
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm
 
       - run: pnpm size
 

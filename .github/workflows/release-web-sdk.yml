@@ -36,7 +36,7 @@ jobs:
       - run: pnpm build
 
       # Re-validate published type entry points against the actual release commit.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm
 
       # Fail fast: pnpm publish would rewrite `workspace:*` to the local core version,
       # but consumers cannot install web-sdk if that core version is not on npm yet.
@@ -49,7 +49,7 @@ jobs:
           fi
 
       - name: Publish @telixon/web-sdk
-        run: pnpm publish --access public --provenance --no-git-checks
+        run: node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
         working-directory: packages/web-sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

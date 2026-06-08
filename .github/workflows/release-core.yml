@@ -44,10 +44,10 @@ jobs:
       - run: pnpm build
 
       # Re-validate published type entry points against the actual release commit.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm
 
       - name: Publish @telixon/core
-        run: pnpm publish --access public --provenance --no-git-checks
+        run: node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
         working-directory: packages/core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
