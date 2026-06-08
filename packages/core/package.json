@@ -1,6 +1,6 @@
 {
   "name": "@telixon/core",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Phone number parser, formatter, and validator built on Google libphonenumber metadata.",
   "keywords": [
     "phone",
@@ -23,17 +23,37 @@
   },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "sideEffects": false,
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.node.js",
+  "types": "./dist/index.node.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "node": "./index.node.js",
-      "browser": "./index.browser.js",
-      "default": "./index.node.js"
+      "types": "./dist/index.node.d.ts",
+      "node": "./dist/index.node.js",
+      "browser": "./dist/index.browser.js",
+      "default": "./dist/index.node.js"
+    },
+    "./engine": {
+      "types": "./dist/engine/index.d.ts",
+      "default": "./dist/engine/index.js"
+    },
+    "./resource-provider": {
+      "types": "./dist/resource-provider.d.ts",
+      "default": "./dist/resource-provider.js"
     }
   },
-  "main": "index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup && pnpm run copy:engine",
     "copy:engine": "cpy \"src/engine/**/*\" dist/engine",

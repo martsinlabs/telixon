@@ -1,6 +1,6 @@
 {
   "name": "@telixon/web-sdk",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Headless DOM adapter for @telixon/core: PhoneInput and CountryList state machines for the web.",
   "keywords": [
     "phone-input",
@@ -22,13 +22,26 @@
   },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "sideEffects": false,
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "default": "./index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",

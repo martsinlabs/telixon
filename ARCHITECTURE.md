@@ -12,7 +12,7 @@ self-contained.
 
 ## Goals
 
-Telixon is a reference-grade phone-number library. Four priorities drive every decision, in order:
+Telixon is a phone-number library verified against Google libphonenumber, the reference implementation. Four priorities drive every decision, in order:
 
 1. **Performance.** The input path runs on every keystroke. Allocation and indirection in hot paths
    are defects, not style choices.
@@ -47,7 +47,7 @@ telixon/
   ARCHITECTURE.md  this document
 ```
 
-Planned packages (not yet present): `angular`, `react`, `vue`, `components`.
+Planned packages (not yet present): `components`, `angular`, `react`, `vue`.
 The layer model below is designed so they slot in without reshaping existing packages.
 
 ## Layer stack
@@ -62,7 +62,7 @@ Each layer adds one concern and depends only on layers beneath it.
 | 3     | `core/src/resource-*`         | How metadata reaches the engine (node / browser)   | layer 1    | present |
 | 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`   | core       | present |
 | 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state     | web-sdk    | planned |
-| 6     | `components` (Stencil)        | Optional drop-in `<tel-input>`; the only renderer  | web-sdk    | planned |
+| 6     | `components`                  | Optional drop-in `<tel-input>`; the only renderer  | web-sdk    | planned |
 | 7     | user code                     | All markup, styles, country-selector wiring        | a binding  | n/a     |
 
 The split keeps the engine free of DOM, reactivity, and framework weight, and lets a caller enter at
@@ -72,7 +72,7 @@ the level matching their need:
 - **`@telixon/web-sdk`**: bring your own UI, roughly ten lines.
 - **`@telixon/core`**: bypass the SDK.
 
-Stencil renders UI, so it belongs only in the planned `components` layer; `web-sdk` stays UI-free.
+UI rendering belongs only in the planned `components` layer; `web-sdk` stays UI-free.
 
 ## Data flow
 

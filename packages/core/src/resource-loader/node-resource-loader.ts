@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { gunzipSync } from 'node:zlib';
 import { dirname, join } from 'path';
@@ -7,8 +8,10 @@ import { ResourceLoader } from './models';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const resolvedBasePath: string = existsSync(join(__dirname, 'engine')) ? __dirname : join(__dirname, '..');
+
 export class NodeResourceLoader implements ResourceLoader {
-  private basePath = join(__dirname, '..');
+  private basePath = resolvedBasePath;
 
   async load(path: string): Promise<ArrayBuffer> {
     const fullPath: string = join(this.basePath, `${path}.gz`);

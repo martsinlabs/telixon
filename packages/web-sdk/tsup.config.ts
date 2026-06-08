@@ -8,6 +8,8 @@ export default defineConfig({
   dts: true,
   clean: true,
   splitting: false,
-  sourcemap: false,
+  sourcemap: true,
+  treeshake: true,
+  target: 'es2020',
   external: ['@telixon/core'],
 });

@@ -17,5 +17,7 @@ export type { Placeholders } from './modules/placeholders';
 
 export { ensureReady } from './resource-provider';
 
+export { TelixonNotReadyError } from './errors';
+
 export { REGION_IDS } from './engine';
 export type { NumberType, RegionId } from './engine';
