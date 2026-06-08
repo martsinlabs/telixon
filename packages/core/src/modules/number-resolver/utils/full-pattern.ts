@@ -9,3 +9,7 @@ export function fullPattern(pattern: string): RegExp {
   }
   return matcher;
 }
+
+export function __clearFullPatternCache(): void {
+  fullPatterns.clear();
+}

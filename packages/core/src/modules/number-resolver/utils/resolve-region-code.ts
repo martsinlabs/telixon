@@ -21,7 +21,7 @@ function matchesRegion(territory: TerritorySpec, nationalDigits: string): boolea
   return false;
 }
 
-const REGION_CODE_CACHE_MAX_ENTRIES: number = 50_000;
+const REGION_CODE_CACHE_MAX_ENTRIES: number = 100_000;
 const REGION_CODE_CACHE = new Map<number, Map<string, RegionId | null>>();
 let regionCodeCacheEntryCount: number = 0;
 

@@ -11,3 +11,7 @@ export function matchesLeadingDigits(leadingDigits: string, nationalDigits: stri
   }
   return matcher.test(nationalDigits);
 }
+
+export function __clearPrefixMatcherCache(): void {
+  prefixMatchers.clear();
+}

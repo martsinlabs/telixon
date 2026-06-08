@@ -26,7 +26,7 @@ interface FormatIndexCacheEntry {
   complete: number;
   partial: number;
 }
-const FORMAT_INDEX_CACHE_MAX_ENTRIES: number = 50_000;
+const FORMAT_INDEX_CACHE_MAX_ENTRIES: number = 100_000;
 const FORMAT_INDEX_CACHE = new Map<number, Map<string, FormatIndexCacheEntry>>();
 let formatIndexCacheEntryCount: number = 0;
 

@@ -28,6 +28,9 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   const readAsNational: boolean = !hasLeadingPlus && defaultCountryIndex !== -1;
 
   const resolver: NumberResolver = cachedResolver ?? (cachedResolver = new NumberResolver());
+  resolver.setCountryFilter(null);
+  resolver.setNumberTypeFilter(null);
+  resolver.setStrict(false);
   let nationalPrefixPresent: boolean = false;
 
   if (readAsNational) {

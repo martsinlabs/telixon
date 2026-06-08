@@ -285,7 +285,9 @@ interface PerTerminalStateExactResult {
   readonly general: NumberTypeProfileRef | null;
 }
 
+const RESOLVE_COUNTRY_EXACT_CACHE_MAX_ENTRIES: number = 100_000;
 const RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE = new Map<number, Map<number, PerTerminalStateExactResult>>();
+let resolveCountryExactCacheEntryCount: number = 0;
 
 function resolveCountryExactInTerminalStates(
   resourceProvider: ResourceProvider,
@@ -344,11 +346,16 @@ function resolveCountryExactInTerminalStates(
       perStateResult = { concrete: perStateConcrete, general: perStateGeneral };
 
       if (!filtersActive) {
+        if (resolveCountryExactCacheEntryCount >= RESOLVE_COUNTRY_EXACT_CACHE_MAX_ENTRIES) {
+          RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.clear();
+          resolveCountryExactCacheEntryCount = 0;
+        }
         let cachedForState = RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.get(terminalState);
         if (cachedForState === undefined) {
           cachedForState = new Map();
           RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.set(terminalState, cachedForState);
         }
+        if (!cachedForState.has(compositeKey)) resolveCountryExactCacheEntryCount++;
         cachedForState.set(compositeKey, perStateResult);
       }
     }
@@ -446,7 +453,9 @@ function resolveFallbackInTerminalStates(
   return generalProfile;
 }
 
+const TERMINAL_STATE_UNIQUE_CONCRETE_CACHE_MAX_ENTRIES: number = 100_000;
 const TERMINAL_STATE_UNIQUE_CONCRETE_CACHE = new Map<number, Map<number, NumberTypeProfileRef | null>>();
+let terminalStateUniqueConcreteCacheEntryCount: number = 0;
 
 // Finds a uniquely concrete terminal-prefix country at the current digit position.
 function resolveUniqueConcreteProfileInTerminalStates(
@@ -510,11 +519,16 @@ function resolveUniqueConcreteProfileInTerminalStates(
     const result: NumberTypeProfileRef | null = uniqueProfile !== null && !hasMultipleCountries ? uniqueProfile : null;
 
     if (!filtersActive) {
+      if (terminalStateUniqueConcreteCacheEntryCount >= TERMINAL_STATE_UNIQUE_CONCRETE_CACHE_MAX_ENTRIES) {
+        TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.clear();
+        terminalStateUniqueConcreteCacheEntryCount = 0;
+      }
       let cachedForState = TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.get(terminalState);
       if (cachedForState === undefined) {
         cachedForState = new Map();
         TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.set(terminalState, cachedForState);
       }
+      if (!cachedForState.has(digitsLength)) terminalStateUniqueConcreteCacheEntryCount++;
       cachedForState.set(digitsLength, result);
     }
 
@@ -991,6 +1005,8 @@ export function resolveFirstMatchingNumberTypeProfile(
 
 export function __clearProfileCaches(): void {
   TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.clear();
+  terminalStateUniqueConcreteCacheEntryCount = 0;
   RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.clear();
+  resolveCountryExactCacheEntryCount = 0;
   cachedGeneralDescTypeId = -1;
 }
