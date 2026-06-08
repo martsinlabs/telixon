@@ -16,13 +16,20 @@ import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from './models';
 import { isNumberTypeAllowed } from './utils/is-number-type-allowed';
 
+// Lazy-cached: refMapping is immutable after ensureReady.
+let cachedGeneralDescTypeId: number = -1;
+
 function isGeneralDescNumberType(
   resourceProvider: ResourceProvider,
   countryIndex: number,
   numberTypeIndex: number,
 ): boolean {
-  const generalDescTypeId = resourceProvider.refMapping.numberTypes.length - 1;
-  return resourceProvider.territorySpecTable[countryIndex]!.numberTypes[numberTypeIndex]!.type === generalDescTypeId;
+  if (cachedGeneralDescTypeId === -1) {
+    cachedGeneralDescTypeId = resourceProvider.refMapping.numberTypes.length - 1;
+  }
+  return (
+    resourceProvider.territorySpecTable[countryIndex]!.numberTypes[numberTypeIndex]!.type === cachedGeneralDescTypeId
+  );
 }
 
 function isGeneralDescProfile(resourceProvider: ResourceProvider, profile: NumberTypeProfileRef): boolean {
@@ -44,6 +51,17 @@ function canProfileReachLength(
   return digitsLength <= getMaxLength(lengthMask);
 }
 
+// Defer object allocation until the return point; keeps forEach closures non-allocating.
+const SENTINEL_NOT_FOUND: number = -1;
+
+function makeProfileRef(
+  stateCountryIndex: number,
+  numberTypeIndex: number,
+  numberTypeProfileId: number,
+): NumberTypeProfileRef {
+  return { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
+}
+
 // Resolves the first profile for one country whose length mask contains the current digit length.
 function resolveFirstCountryProfileExact(
   resourceProvider: ResourceProvider,
@@ -58,7 +76,8 @@ function resolveFirstCountryProfileExact(
   const numberTypeFilter = snapshot.numberTypeFilter;
   const profileLayer = resourceProvider.numberTypeProfileLayer;
 
-  let resolved: NumberTypeProfileRef | null = null;
+  let foundNumberTypeIndex: number = SENTINEL_NOT_FOUND;
+  let foundProfileId: number = 0;
 
   forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
     if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) return;
@@ -73,11 +92,14 @@ function resolveFirstCountryProfileExact(
 
     if (!containsLength(lengthMask, digitsLength)) return;
 
-    resolved = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
+    foundNumberTypeIndex = numberTypeIndex;
+    foundProfileId = numberTypeProfileId;
     return true;
   });
 
-  return resolved;
+  return foundNumberTypeIndex === SENTINEL_NOT_FOUND
+    ? null
+    : makeProfileRef(stateCountryIndex, foundNumberTypeIndex, foundProfileId);
 }
 
 // Resolves the first profile for one country that can still grow to a valid length.
@@ -94,7 +116,8 @@ function resolveFirstCountryProfilePartial(
   const numberTypeFilter = snapshot.numberTypeFilter;
   const profileLayer = resourceProvider.numberTypeProfileLayer;
 
-  let resolved: NumberTypeProfileRef | null = null;
+  let foundNumberTypeIndex: number = SENTINEL_NOT_FOUND;
+  let foundProfileId: number = 0;
 
   forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
     if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) return;
@@ -109,11 +132,14 @@ function resolveFirstCountryProfilePartial(
 
     if (digitsLength > getMaxLength(lengthMask)) return;
 
-    resolved = { stateCountryIndex, numberTypeIndex, numberTypeProfileId };
+    foundNumberTypeIndex = numberTypeIndex;
+    foundProfileId = numberTypeProfileId;
     return true;
   });
 
-  return resolved;
+  return foundNumberTypeIndex === SENTINEL_NOT_FOUND
+    ? null
+    : makeProfileRef(stateCountryIndex, foundNumberTypeIndex, foundProfileId);
 }
 
 function isConcreteProfile(
@@ -966,4 +992,5 @@ export function resolveFirstMatchingNumberTypeProfile(
 export function __clearProfileCaches(): void {
   TERMINAL_STATE_UNIQUE_CONCRETE_CACHE.clear();
   RESOLVE_COUNTRY_EXACT_PER_STATE_CACHE.clear();
+  cachedGeneralDescTypeId = -1;
 }
