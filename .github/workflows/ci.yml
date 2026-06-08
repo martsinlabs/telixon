@@ -37,11 +37,14 @@ jobs:
 
       - run: pnpm build
 
-      # Validate published type entry points resolve correctly across moduleResolution modes
-      # (node10, node16, bundler). cjs-resolves-to-esm ignored: ESM-only package, CJS callers
-      # must use dynamic import.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm
+      # Validate published type entry points resolve correctly across modern
+      # moduleResolution modes (node16, bundler). cjs-resolves-to-esm ignored:
+      # ESM-only package, CJS callers must use dynamic import. no-resolution
+      # ignored: node10 resolver (pre-2019) does not read `exports` map, so
+      # subpaths like @telixon/core/engine cannot resolve in that mode by
+      # design; this lib targets node16+/bundler resolution.
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
 
       - run: pnpm size
 
