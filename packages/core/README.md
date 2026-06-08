@@ -19,10 +19,10 @@ import { ensureReady, parsePhoneNumber } from '@telixon/core';
 await ensureReady();
 
 const number = parsePhoneNumber('+14155552671');
-number.isValid();              // true
-number.getCountry();           // "US"
-number.getE164();              // "+14155552671"
-number.formatInternational();  // "+1 415-555-2671"
+number.isValid(); // true
+number.getCountry(); // "US"
+number.getE164(); // "+14155552671"
+number.formatInternational(); // "+1 415-555-2671"
 ```
 
 ## Initialization

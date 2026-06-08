@@ -1,13 +1,17 @@
-name: Release
+name: Release @telixon/core
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'core@v*'
 
 permissions:
   contents: read
   id-token: write
+
+concurrency:
+  group: release-core-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -29,16 +33,21 @@ jobs:
 
       - run: pnpm test
 
+      # Same Google source cache as ci.yml conformance job. Reused if hit.
+      - uses: actions/cache@v4
+        with:
+          path: packages/core/oracle/.cache
+          key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
+
+      - run: pnpm conformance
+
       - run: pnpm build
+
+      # Re-validate published type entry points against the actual release commit.
+      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
 
       - name: Publish @telixon/core
         run: pnpm publish --access public --provenance --no-git-checks
         working-directory: packages/core
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @telixon/web-sdk
-        run: pnpm publish --access public --provenance --no-git-checks
-        working-directory: packages/web-sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

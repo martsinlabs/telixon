@@ -22,27 +22,21 @@
   },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "engines": {
-    "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit"
@@ -53,5 +47,11 @@
   "devDependencies": {
     "@telixon/testing": "workspace:*"
   },
-  "packageManager": "pnpm@10.16.1"
+  "packageManager": "pnpm@10.16.1",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

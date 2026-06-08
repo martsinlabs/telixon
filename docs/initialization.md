@@ -37,23 +37,23 @@ What determines the time:
 
 Measured on a high single-thread CPU, Node v24.5.0, local install (median of 15 fresh process runs for the cold total; 30-sample averages for components):
 
-| Step | Time |
-|---|---|
-| File read 8 files (parallel, warm OS cache) | 0.14 ms |
-| Gunzip 8 files (320 KB compressed, 1.9 MB raw) | 1.48 ms |
-| `JSON.parse` 3 metadata files | 1.07 ms |
-| Binary struct parse 5 DFA files (graph.bin alone = 0.54 ms) | 0.93 ms |
-| Residual (first-time module-state init, Maps, indexes) | ~4.3 ms |
-| **`ensureReady()` cold (median; range 7.60-8.19 ms)** | **7.89 ms** |
-| Subsequent calls in same process | 42 ns |
+| Step                                                        | Time        |
+| ----------------------------------------------------------- | ----------- |
+| File read 8 files (parallel, warm OS cache)                 | 0.14 ms     |
+| Gunzip 8 files (320 KB compressed, 1.9 MB raw)              | 1.48 ms     |
+| `JSON.parse` 3 metadata files                               | 1.07 ms     |
+| Binary struct parse 5 DFA files (graph.bin alone = 0.54 ms) | 0.93 ms     |
+| Residual (first-time module-state init, Maps, indexes)      | ~4.3 ms     |
+| **`ensureReady()` cold (median; range 7.60-8.19 ms)**       | **7.89 ms** |
+| Subsequent calls in same process                            | 42 ns       |
 
 The total scales roughly linearly with single-thread CPU performance. As an estimate, not a direct measurement:
 
 | Single-thread CPU class | Estimated cold |
-|---|---|
-| High performance | 5-15 ms |
-| Mid performance | 20-40 ms |
-| Low performance | 60-120 ms |
+| ----------------------- | -------------- |
+| High performance        | 5-15 ms        |
+| Mid performance         | 20-40 ms       |
+| Low performance         | 60-120 ms      |
 
 The browser case adds network fetch on the first visit. Engine ships at ~340 KB gzipped on the wire. A CDN with `Cache-Control: immutable` removes the fetch from every repeat visit.
 
