@@ -19,6 +19,20 @@ export default [
     },
   },
   {
+    files: ['scripts/**/*.{mjs,js}', '**/*.config.{mjs,js}'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        global: 'readonly',
+      },
+    },
+  },
+  {
     ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/engine/**', '**/.cache/**'],
   },
   prettier,
