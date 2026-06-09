@@ -18,15 +18,40 @@ export declare function containsLength(mask: number, length: number): boolean;
 
 /**
  * @public
- * Engine layout manifest.
+ * Single source of truth for the compiled `dist/engine` artifact.
+ *
+ * `DFA.FILES` / `METADATA.FILES` are logical names; no uncompressed file ships. Each is delivered two ways:
+ * - RAW:      `RAW.FOLDER/<dfa|metadata>/<file><COMPRESSION.EXT>`         — fetch / Node / CDN.
+ * - EMBEDDED: `EMBEDDED.FOLDER/<dfa|metadata>/<file><EMBEDDED.MODULE_EXT>` — import(); base64 default export.
+ *
+ * Both hold the same `COMPRESSION`-compressed bytes. Read = get bytes -> decompress -> `parse*Binary` (DFA) / `JSON.parse` (metadata).
  */
 export declare const ENGINE_LAYOUT: {
+    /** Folder under `dist/`. */
     readonly ROOT: "engine";
+    /** Bundled package entry points. */
     readonly ENTRY: {
         readonly JS: "index.js";
         readonly DTS: "index.d.ts";
     };
+    /** Source commit, SHAs, coverage counts. */
     readonly PROVENANCE: "PROVENANCE.json";
+    /** Artifact compression; `ENCODING` is the codec to decode with, `EXT` the suffix. */
+    readonly COMPRESSION: {
+        readonly ENCODING: "gzip";
+        readonly EXT: ".gz";
+    };
+    /** RAW channel: the compressed artifact files. */
+    readonly RAW: {
+        readonly FOLDER: "raw";
+    };
+    /** EMBEDDED channel: per-artifact ESM module, `PAYLOAD`-encoded compressed bytes as default export. */
+    readonly EMBEDDED: {
+        readonly FOLDER: "embedded";
+        readonly MODULE_EXT: ".js";
+        readonly PAYLOAD: "base64";
+    };
+    /** DFA layers (binary). */
     readonly DFA: {
         readonly FOLDER: "dfa";
         readonly FILES: {
@@ -37,6 +62,7 @@ export declare const ENGINE_LAYOUT: {
             readonly NUMBER_TYPE_PROFILE: "number-type-profile.bin";
         };
     };
+    /** Number metadata (JSON). */
     readonly METADATA: {
         readonly FOLDER: "metadata";
         readonly FILES: {
@@ -214,9 +240,11 @@ export declare function getTerminalPrefixNumberTypeMask(scope: NumberTypeScopeLa
  * Graph layer structure.
  */
 export declare interface GraphLayer {
-    stateTransitionIndex: Uint32Array;
+    /** Per-state index of its 10-wide transition block in `transitionTable` (offset = `index * 10`). */
+    stateBlockIndex: Uint16Array;
     transitionTable: Uint32Array;
     deadStateId: number;
+    /** Bitset (LSB-first) over states: bit set when the state has a terminal prefix. */
     stateHasTerminal: Uint8Array;
 }
 
@@ -349,19 +377,6 @@ export declare function parseRegionScopeBinary(buffer: ArrayBuffer): RegionScope
 
 /**
  * @public
- * Formatted example per variant. Absent when the variant's mask is unavailable.
- */
-export declare interface PhoneNumberExamplePlaceholders {
-    /** National, no prefix (e.g. `(201) 555-0123`). */
-    national?: string;
-    /** National with prefix (e.g. `1 (201) 555-0123`). */
-    nationalWithPrefix?: string;
-    /** International, no calling code (e.g. `201-555-0123`). */
-    international?: string;
-}
-
-/**
- * @public
  * Phone number format schema.
  */
 export declare interface PhoneNumberFormat {
@@ -418,9 +433,9 @@ export declare interface PhoneNumberMasks {
 export declare interface PhoneNumberType {
     type: NumberTypeIndex;
     possibleLengths?: PossibleLengths;
-    nationalNumberPattern: string;
+    /** Validation regex. Build-time input baked into the DFA; omitted from the shipped artifact. */
+    nationalNumberPattern?: string;
     exampleNumber?: number;
-    placeholders?: PhoneNumberExamplePlaceholders;
 }
 
 /**
@@ -487,6 +502,7 @@ export declare interface RegionScopeLayer {
     stateOffset: Uint32Array;
     stateLength: Uint8Array;
     regionPool: Uint8Array;
+    /** Bitset (LSB-first) over the region pool: bit set when that state-region has a terminal prefix. */
     regionHasTerminal: Uint8Array;
 }
 

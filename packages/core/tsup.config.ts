@@ -1,4 +1,15 @@
-import { defineConfig } from 'tsup';
+import { defineConfig, type Options } from 'tsup';
+
+type EsbuildPlugin = NonNullable<Options['esbuildPlugins']>[number];
+
+// Keep the shipped EMBEDDED channel modules external so the host bundler code-splits the real
+// engine/embedded/*.js files; esbuild can't mark relative paths external via the `external` glob.
+const externalEmbedded: EsbuildPlugin = {
+  name: 'external-embedded-engine',
+  setup(build) {
+    build.onResolve({ filter: /\/engine\/embedded\// }, (args) => ({ path: args.path, external: true }));
+  },
+};
 
 export default defineConfig({
   entry: {
@@ -12,4 +23,5 @@ export default defineConfig({
   sourcemap: true,
   treeshake: true,
   target: 'node18',
+  esbuildPlugins: [externalEmbedded],
 });
