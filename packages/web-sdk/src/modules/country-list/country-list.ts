@@ -1,4 +1,5 @@
 import type { NumberType, RegionId } from '@telixon/core';
+import { countrySupportsNumberType } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import type {
   CountryDataFactory,
@@ -11,7 +12,6 @@ import type {
   CountrySearchFn,
 } from './models';
 import { computeBaseOptions } from './utils/base';
-import { regionSupportsAnyNumberType } from './utils/filter';
 import { defaultSearch } from './utils/search';
 import { resolveCountryListComparator } from './utils/sort';
 
@@ -56,7 +56,7 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
       filtered = [];
       for (const option of baseSet) {
         if (hasCountryFilter && !countryFilter!.includes(option.country)) continue;
-        if (hasNumberTypeFilter && !regionSupportsAnyNumberType(option.country, numberTypeFilter!)) continue;
+        if (hasNumberTypeFilter && !countrySupportsNumberType(option.country, numberTypeFilter!)) continue;
         if (hasQuery && !searchFn(searchQuery, option)) continue;
         filtered.push(option);
       }

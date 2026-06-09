@@ -1,3 +1,4 @@
 node_modules
 dist
 packages/core/oracle/.cache
+.DS_Store

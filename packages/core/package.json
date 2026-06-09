@@ -35,10 +35,6 @@
     "./engine": {
       "types": "./dist/engine/index.d.ts",
       "default": "./dist/engine/index.js"
-    },
-    "./resource-provider": {
-      "types": "./dist/resource-provider.d.ts",
-      "default": "./dist/resource-provider.js"
     }
   },
   "main": "./dist/index.node.js",
