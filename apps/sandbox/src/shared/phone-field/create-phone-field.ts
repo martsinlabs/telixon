@@ -28,8 +28,8 @@ export type NationalPhoneFieldOptions = {
 /**
  * International-mode phone field with the calling code embedded in the input value.
  *
- * - `display: 'plus'`: input starts with `+` (e.g. `+1 415-555-0123`).
- * - `display: 'no-plus'`: input starts with the calling code digits (e.g. `1 415-555-0123`).
+ * - `display: 'plus'`: input starts with `+` (e.g. `+1 201-555-0123`).
+ * - `display: 'no-plus'`: input starts with the calling code digits (e.g. `1 201-555-0123`).
  *
  * No separate selector is rendered; the country is resolved live from the typed calling code.
  */
@@ -43,7 +43,7 @@ export type InternationalEmbeddedOptions = {
 /**
  * International-mode phone field with the calling code rendered outside the input (in the selector).
  * The input holds the national digits formatted with the international body mask
- * (e.g. `415-555-0123`, no parens). `defaultCountry` is required because there is no calling code in
+ * (e.g. `201-555-0123`, no parens). `defaultCountry` is required because there is no calling code in
  * the input to resolve from.
  */
 export type InternationalSplitOptions = {

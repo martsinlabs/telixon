@@ -6,60 +6,45 @@
 import { ensureReady, parsePhoneNumber } from '@telixon/core';
 
 await ensureReady();
-parsePhoneNumber('+14155552671');
+parsePhoneNumber('+12015550123');
 ```
 
-## The point: timing control
+## Timing control
 
-The library does not auto-load on first API call. The consumer decides exactly when the engine becomes ready.
+The library does not auto-load on the first API call. The consumer decides when the engine becomes ready, so the load cost can be paid at a moment that does not compete with a user interaction.
 
-This matters because even a cheap operation, when fired at the wrong moment, is felt. An SPA route transition that triggers `parsePhoneNumber` for the first time should not also pay the engine load cost: the combination produces a small but visible stall during navigation.
-
-Explicit `ensureReady()` lets the consumer pre-warm at any moment convenient for their UX:
+`ensureReady()` lets the consumer pre-warm whenever it suits their UX:
 
 - Before the route that needs phone parsing mounts.
-- During a previous idle window (route prefetch, `IntersectionObserver`, `requestIdleCallback`).
-- At app boot, if the engine is needed everywhere.
-- In a service worker or background thread that hands off to the main thread.
+- During an earlier idle window (route prefetch, `IntersectionObserver`, `requestIdleCallback`).
+- At application boot, if the engine is needed everywhere.
+- In a worker that hands the result to the main thread.
 
-Putting that choice in consumer hands is the design intent. The cost itself is small.
+## How the engine loads
+
+The engine ships in two channels; the resource loader for the environment picks one:
+
+- **Node** reads the gzipped artifact files from disk (`engine/raw`) and gunzips them.
+- **Browser** imports the embedded artifact modules (`engine/embedded`), which the host bundler code-splits into lazy chunks served from the application's own origin. The base64 payload is decoded and gunzipped in the browser.
+
+Either way, loading is read or fetch, decompress, and parse structured data, with no computation on top.
 
 ## Cost
 
-The engine artifact is precompiled at build time. DFA tables ship as compact binary structs. Region, format, and number-type metadata ship as gzipped JSON. Loading is read + decompress + parse structured data, with no computation on top.
+Measured on a high single-thread CPU, Node v24.5.0, local install:
 
-What determines the time:
+| Step                            | Time               |
+| ------------------------------- | ------------------ |
+| `ensureReady()` cold            | ~8 ms              |
+| Subsequent calls (same process) | negligible (~2 ns) |
 
-- **Single-thread CPU performance.** Gunzip and the binary/JSON parsers are single-threaded compute.
-- **Memory throughput.** Moving and structuring ~1.9 MB of decompressed data into resident lookup tables.
-- **File I/O latency.** Negligible when the OS file cache is warm; a few ms on a cold disk read.
-- **Network throughput (browser only).** Fetch on the first visit; cached `immutable` on subsequent visits.
+The artifact is ~88 KB gzipped on the wire (the browser embedded chunks gzip to ~89 KB). The cold cost scales with single-thread CPU performance, since gunzip and the binary and JSON parsers are single-threaded; on a low-performance CPU it is in the tens of milliseconds. Every API is synchronous after `ensureReady()` resolves, and repeat calls return the already-resolved result.
 
-Measured on a high single-thread CPU, Node v24.5.0, local install (median of 15 fresh process runs for the cold total; 30-sample averages for components):
-
-| Step                                                        | Time        |
-| ----------------------------------------------------------- | ----------- |
-| File read 8 files (parallel, warm OS cache)                 | 0.14 ms     |
-| Gunzip 8 files (320 KB compressed, 1.9 MB raw)              | 1.48 ms     |
-| `JSON.parse` 3 metadata files                               | 1.07 ms     |
-| Binary struct parse 5 DFA files (graph.bin alone = 0.54 ms) | 0.93 ms     |
-| Residual (first-time module-state init, Maps, indexes)      | ~4.3 ms     |
-| **`ensureReady()` cold (median; range 7.60-8.19 ms)**       | **7.89 ms** |
-| Subsequent calls in same process                            | 42 ns       |
-
-The total scales roughly linearly with single-thread CPU performance. As an estimate, not a direct measurement:
-
-| Single-thread CPU class | Estimated cold |
-| ----------------------- | -------------- |
-| High performance        | 5-15 ms        |
-| Mid performance         | 20-40 ms       |
-| Low performance         | 60-120 ms      |
-
-The browser case adds network fetch on the first visit. Engine ships at ~340 KB gzipped on the wire. A CDN with `Cache-Control: immutable` removes the fetch from every repeat visit.
+In the browser, the first visit also downloads the engine chunks once; they are content-hashed, so repeat visits load them from cache.
 
 ## Patterns
 
-### Eager at app start
+### Eager at application start
 
 ```ts
 import { ensureReady } from '@telixon/core';
@@ -81,7 +66,7 @@ export async function loader() {
 ### Pre-warm in background, await later
 
 ```ts
-// at app start, fire and forget
+// at application start, fire and forget
 void ensureReady();
 
 // later, where the phone input actually mounts
@@ -96,7 +81,7 @@ const server = createServer(/* ... */);
 server.listen(3000);
 ```
 
-## Forgetting to call it
+## Calling an API before ready
 
 Any API used before `ensureReady()` resolves throws `TelixonNotReadyError`. The error is exported for `instanceof` checks and recovery:
 
@@ -118,4 +103,4 @@ The error message includes a fix snippet and a link to this page (`https://githu
 
 ## Summary
 
-One explicit `await ensureReady()` buys full control over when the engine load cost is paid. The cost is small (single-digit ms on a high single-thread CPU, up to ~120 ms on a low-performance CPU). Every other API is synchronous after it resolves, and the warm path is effectively free.
+One explicit `await ensureReady()` gives the consumer control over when the engine load cost is paid. The cost is single-digit milliseconds on a high single-thread CPU. Every other API is synchronous after it resolves, and repeat calls return the already-resolved result.

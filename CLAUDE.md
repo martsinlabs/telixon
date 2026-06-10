@@ -18,7 +18,7 @@ packages/
 
 ### Core package
 
-- `src/engine/`: binary DFA compiled from Google's libphonenumber metadata (`.bin` files + JSON metadata)
+- `src/engine/`: generated DFA artifact compiled from Google's libphonenumber metadata; accessor (`index.js`/`index.d.ts`) plus `raw/` (gzip, for Node) and `embedded/` (base64 ESM, for the browser) channels
 - `src/modules/`: feature modules (`number-resolver`, `input-controller`, …)
 - `src/models/`: shared types
 - `src/utils/`: pure, reusable utilities

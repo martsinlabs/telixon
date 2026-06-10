@@ -1,3 +1,5 @@
+import { decodeBase64 } from '../utils/decode-base64';
+import { gunzip } from '../utils/gunzip';
 import { WEB_EMBEDDED_ARTIFACTS } from '../web-embedded-artifacts';
 import { ResourceLoader } from './models';
 
@@ -8,9 +10,7 @@ export class WebResourceLoader implements ResourceLoader {
     if (!artifact) throw new Error(`No embedded engine artifact for ${path}`);
 
     const { default: base64 } = await artifact();
-    // fetch on a data URL decodes base64 natively (off the main thread), then stream straight into gunzip.
-    const response: Response = await fetch(`data:application/octet-stream;base64,${base64}`);
-    const stream: ReadableStream<Uint8Array> = response.body!.pipeThrough(new DecompressionStream('gzip'));
-    return new Response(stream).arrayBuffer();
+    const raw: Uint8Array = await gunzip(decodeBase64(base64));
+    return raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength) as ArrayBuffer;
   }
 }

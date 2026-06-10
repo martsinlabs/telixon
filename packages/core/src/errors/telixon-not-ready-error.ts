@@ -10,7 +10,7 @@ export class TelixonNotReadyError extends Error {
         '',
         "  import { ensureReady, parsePhoneNumber } from '@telixon/core';",
         '  await ensureReady();',
-        "  parsePhoneNumber('+14155552671');",
+        "  parsePhoneNumber('+12015550123');",
         '',
         'Docs: https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md',
       ].join('\n'),

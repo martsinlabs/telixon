@@ -123,14 +123,21 @@ hash, and coverage. Nothing is derived by hand; the file is what lets accuracy b
 Metadata loads **eagerly** and as a **single indivisible artifact**. Because the automaton is unified,
 a single region cannot be loaded in isolation; there is no per-region lazy loading by design.
 
-The bundle-size story is therefore code-and-data separation, not "ship fewer regions":
+The artifact ships in two channels, and the resource loader for the environment selects one:
+
+- **`raw`**: the gzipped artifact files. The Node loader reads them from the filesystem and gunzips
+  them.
+- **`embedded`**: one base64 ESM module per artifact. The browser loader imports them; the host bundler
+  code-splits them into lazy chunks served from the application's own origin, and the loader decodes and
+  gunzips the payload.
+
+The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The metadata is heavy but lives **outside the JS bundle**, fetched once at runtime through the
-  resource loader (node reads the filesystem; the browser fetches), then cached. It is amenable to CDN
-  delivery and precompression.
+- The engine artifact loads once at runtime, out of the initial bundle (~88 KB gzipped). On Node it is
+  filesystem data; in the browser it is lazy, content-hashed chunks, cached after first load.
 
-`ensureReady()` resolves once the loader has the metadata available; `index.node.ts` and
+`ensureReady()` resolves once the loader has the artifact available; `index.node.ts` and
 `index.browser.ts` register the correct loader at the edge and re-export the shared `index.ts`, so the
 rest of the engine stays environment-agnostic.
 
@@ -163,8 +170,8 @@ matches every compared behavior exactly, so the allowlist is empty. See
 
 The per-keystroke path is hot. The standing rule: avoid allocation, regex, and indirection in hot
 paths; prefer charCode parsing and early exits. Outside hot paths, allocation is fine where it improves
-clarity. This is a discipline applied in review and backed by the benchmark suite (`pnpm bench`);
-automated regression tracking in CI is planned. It is not a formal zoning map.
+clarity. This is a discipline applied in review and backed by the benchmark suite (`pnpm bench`), with
+continuous performance regression tracking in CI via CodSpeed. It is not a formal zoning map.
 
 ### Bundle size
 
