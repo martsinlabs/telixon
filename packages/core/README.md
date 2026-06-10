@@ -29,8 +29,8 @@ number.formatInternational(); // "+1 201-555-0123"
 
 `ensureReady()` loads and parses the engine artifact once. Call it before any other API. Subsequent calls return the already-resolved result.
 
-- Node reads the gzipped artifact from disk; the browser imports the embedded artifact modules, which the bundler code-splits into lazy chunks. The artifact is ~88 KB gzipped.
-- Cold load is ~8 ms on a high single-thread CPU; warm calls are negligible.
+- Node reads the gzipped artifact from disk; the browser imports the embedded artifact modules, which the bundler code-splits into lazy chunks. The artifact is ~95 KB gzipped, decompressing to ~1 MB of metadata.
+- Cold load is ~7 ms on a high single-thread CPU; warm calls are negligible.
 
 Calling any API before `ensureReady()` throws `TelixonNotReadyError` with a fix snippet. Full rationale: [Initialization docs](https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md).
 
@@ -38,8 +38,8 @@ Calling any API before `ensureReady()` throws `TelixonNotReadyError` with a fix 
 
 - **Conformance-verified.** Every public query method matches Google libphonenumber at the pinned commit recorded in [PROVENANCE.json](./dist/engine/PROVENANCE.json). The conformance gate runs in CI on every push.
 - **Sync hot path.** After `ensureReady()` resolves, all public APIs are synchronous. No Promise allocation per call.
-- **DFA-based validation.** Validity and number typing walk a deterministic automaton instead of running regexes. Formatting selects among the metadata's compiled, cached format patterns.
-- **Small initial bundle, lazy engine.** `sideEffects: false`; the engine artifact loads once at runtime (Node from disk, browser as code-split chunks), so it stays out of the initial bundle.
+- **Deterministic finite-state engine.** Validation, number typing, region resolution, and format selection are linear-time walks over automata compiled from the metadata, not regex passes — deterministic and backtracking-free.
+- **Lazy engine, out of the bundle.** The metadata is runtime data, not part of your JS bundle, so it never affects initial load or code size. Nothing loads on import or first call; you schedule the one-time load with `ensureReady()` (idle, prefetch, or a worker), keeping its decode-and-parse cost off the interaction path. `sideEffects: false`.
 
 ## What's in this package
 

@@ -100,17 +100,26 @@ is `index.js` + `index.d.ts` (the accessor API) plus binary layers, compiled fro
 libphonenumber metadata by a separate tool. Never hand-edit it; changes come from recompiling and
 bumping provenance.
 
-**The DFA is one unified global automaton, not per-region data.** Resolving a number is a walk over the
-automaton rather than a regex pass, which is what makes per-keystroke resolution cheap. The binary
-layers:
+**It is a family of deterministic finite-state automata, not per-region data.** Google publishes its
+metadata as regular expressions; the compiler turns them into automata. At the core is a recognition
+DFA: a number's digits drive deterministic state transitions, and the state reached decides validity
+and number type. Region disambiguation and format selection run on dedicated finite-state transducers,
+automata that emit a value (a region, a format index) at the end of the walk instead of a yes/no.
+Resolving a number is therefore a linear-time table walk, deterministic and backtracking-free, which is
+what makes per-keystroke resolution cheap. The recognition automaton is global and unified: one number
+is matched against every region at once, with no per-region data to load. The only regular expression
+left at runtime is the per-territory national-prefix rewrite, a bounded capture-group transform applied
+once per parse. The binary layers:
 
 ```
 dfa/graph.bin                 the state graph (largest layer)
 dfa/calling-codes.bin         calling-code dispatch
 dfa/country-scope.bin         region scoping
-dfa/number-type-profile.bin   per-type length and format profiles
 dfa/number-type-scope.bin     number-type scoping
-metadata/formats.json         formatting templates
+dfa/number-type-profile.bin   per-type length and format profiles
+dfa/format-select.bin         regex-free format selection
+dfa/region-select.bin         regex-free region disambiguation
+metadata/formats.json         formatting templates and masks
 metadata/territories.json     territory data
 metadata/reference-mapping.json
 ```
@@ -134,8 +143,9 @@ The artifact ships in two channels, and the resource loader for the environment 
 The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The engine artifact loads once at runtime, out of the initial bundle (~88 KB gzipped). On Node it is
-  filesystem data; in the browser it is lazy, content-hashed chunks, cached after first load.
+- The engine artifact loads once at runtime, out of the initial bundle (~95 KB gzipped, ~1 MB
+  decompressed). On Node it is filesystem data; in the browser it is lazy, content-hashed chunks,
+  cached after first load.
 
 `ensureReady()` resolves once the loader has the artifact available; `index.node.ts` and
 `index.browser.ts` register the correct loader at the edge and re-export the shared `index.ts`, so the

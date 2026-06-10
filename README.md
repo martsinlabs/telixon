@@ -22,6 +22,17 @@ divergence.
 Live report: [telixon.dev/parity.html](https://telixon.dev/parity.html). Methodology:
 [conformance/README.md](packages/core/conformance/README.md).
 
+## Engine
+
+The engine compiles Google's libphonenumber metadata, which Google publishes as regular expressions,
+into deterministic finite-state automata. Validity and number typing are decided by a recognition DFA;
+region disambiguation and format selection run on finite-state transducers. Every query is a
+linear-time, backtracking-free walk over these tables, which is what keeps per-keystroke resolution
+cheap.
+
+The metadata is runtime data, loaded once and lazily — it is never part of your JS bundle and does not
+affect initial load. Details: [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Packages
 
 | Package               | Status  | Role                                  |

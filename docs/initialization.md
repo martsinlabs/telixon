@@ -2,6 +2,8 @@
 
 `@telixon/core` loads its engine artifact (precompiled DFA tables and Google libphonenumber metadata) once before use. `ensureReady()` is the explicit entry point.
 
+The artifact is runtime data, **not part of your JS bundle**: it never affects initial load or the library's code size. Nothing loads on import or on the first API call — you trigger the one-time load with `ensureReady()` and schedule it (an idle window, a route prefetch, or a worker), so its decode-and-parse cost stays off the interaction path rather than blocking rendering or input.
+
 ```ts
 import { ensureReady, parsePhoneNumber } from '@telixon/core';
 
@@ -35,10 +37,10 @@ Measured on a high single-thread CPU, Node v24.5.0, local install:
 
 | Step                            | Time               |
 | ------------------------------- | ------------------ |
-| `ensureReady()` cold            | ~8 ms              |
+| `ensureReady()` cold            | ~7 ms              |
 | Subsequent calls (same process) | negligible (~2 ns) |
 
-The artifact is ~88 KB gzipped on the wire (the browser embedded chunks gzip to ~89 KB). The cold cost scales with single-thread CPU performance, since gunzip and the binary and JSON parsers are single-threaded; on a low-performance CPU it is in the tens of milliseconds. Every API is synchronous after `ensureReady()` resolves, and repeat calls return the already-resolved result.
+The artifact is ~95 KB gzipped on the wire (both channels; the browser embedded chunks re-gzip to ~95 KB), decompressing to ~1 MB of metadata. The cold cost scales with single-thread CPU performance, since gunzip and the binary and JSON parsers are single-threaded; on a low-performance CPU it is in the tens of milliseconds. Every API is synchronous after `ensureReady()` resolves, and repeat calls return the already-resolved result.
 
 In the browser, the first visit also downloads the engine chunks once; they are content-hashed, so repeat visits load them from cache.
 

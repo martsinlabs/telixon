@@ -31,10 +31,6 @@
       "node": "./dist/index.node.js",
       "browser": "./dist/index.browser.js",
       "default": "./dist/index.node.js"
-    },
-    "./engine": {
-      "types": "./dist/engine/index.d.ts",
-      "default": "./dist/engine/index.js"
     }
   },
   "main": "./dist/index.node.js",
@@ -46,7 +42,7 @@
   ],
   "scripts": {
     "build": "tsup && pnpm run copy:engine",
-    "copy:engine": "cpy \"src/engine/**/*\" \"!**/.DS_Store\" dist/engine",
+    "copy:engine": "cpy \"src/engine/**/*\" \"!**/.DS_Store\" \"!src/engine/index.js\" \"!src/engine/index.d.ts\" dist/engine",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
