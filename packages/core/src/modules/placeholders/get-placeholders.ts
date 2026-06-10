@@ -28,7 +28,13 @@ export function getPlaceholders(region: RegionId, type: NumberType): Placeholder
     for (const phoneNumberType of spec.numberTypes) {
       if (phoneNumberType.type !== typeIndex || phoneNumberType.exampleNumber === undefined) continue;
 
-      const placeholders: Placeholders | null = buildExamplePlaceholders(phoneNumberType, spec, formats, refMapping);
+      const placeholders: Placeholders | null = buildExamplePlaceholders(
+        phoneNumberType,
+        spec,
+        formats,
+        refMapping,
+        callingCodeIndex,
+      );
       if (placeholders) return placeholders;
     }
   }

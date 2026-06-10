@@ -1,20 +1,14 @@
-import {
-  forEachFormatIndex,
-  getFormatMask,
-  getRegionIndex,
-  PhoneNumberFormat,
-  PhoneNumberFormatList,
-} from '@telixon/core/engine';
+import { getFormatMask, getRegionIndex, selectPartialFormat } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
 import { NumberFormatRef, NumberTypeProfileRef } from './models';
-import { matchesLeadingDigits } from './utils/matches-leading-digits';
 
 /**
  * @internal
- * Selects the profile's format for `nationalDigits`: the first length-feasible format whose
- * leadingDigits match the digits typed so far, falling back to the first length-feasible format.
+ * Selects the profile's format for `nationalDigits` (national as-you-type): the first length-feasible
+ * format in the profile mask whose leadingDigits match the digits typed so far, falling back to the
+ * first length-feasible format. Resolved by the format-select DFA layer (no regex).
  */
 export function resolveFormatFromProfile(
   profileRef: NumberTypeProfileRef,
@@ -25,25 +19,15 @@ export function resolveFormatFromProfile(
   const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(
     getRegionIndex(resourceProvider.countryScopeLayer, profileRef.stateCountryIndex),
   );
-  const formatsList: PhoneNumberFormatList = resourceProvider.formatsTable[callingCodeIndex]!;
   const formatMask: number = getFormatMask(resourceProvider.numberTypeProfileLayer, profileRef.numberTypeProfileId);
-  const digitsLength: number = nationalDigits.length;
 
-  let leadingMatch: NumberFormatRef | null = null;
-  let lengthFallback: NumberFormatRef | null = null;
+  const formatIndex: number = selectPartialFormat(
+    resourceProvider.formatSelectLayer,
+    callingCodeIndex,
+    nationalDigits,
+    formatMask,
+  ).national;
+  if (formatIndex === -1) return null;
 
-  forEachFormatIndex(formatMask, (formatIndex: number) => {
-    const format: PhoneNumberFormat = formatsList[formatIndex]!;
-
-    if (digitsLength === 0 || digitsLength > format.lengthRange[1]) return;
-
-    if (!lengthFallback) lengthFallback = { ...profileRef, formatIndex };
-
-    if (matchesLeadingDigits(format.leadingDigits, nationalDigits)) {
-      leadingMatch = { ...profileRef, formatIndex };
-      return true;
-    }
-  });
-
-  return leadingMatch ?? lengthFallback;
+  return { ...profileRef, formatIndex };
 }

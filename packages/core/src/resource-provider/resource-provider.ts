@@ -1,11 +1,13 @@
 import {
   CallingCodeLayer,
+  FormatSelectLayer,
   FormatsTable,
   GraphLayer,
   NumberTypeProfileLayer,
   NumberTypeScopeLayer,
   ReferenceMapping,
   RegionScopeLayer,
+  RegionSelectLayer,
   TerritorySpecTable,
 } from '../engine';
 import { ResourceLoader } from '../resource-loader/models';
@@ -14,11 +16,13 @@ import { ResourceProvider } from './models';
 import {
   resolveCallingCodeLayer,
   resolveCountryScopeLayer,
+  resolveFormatSelectLayer,
   resolveFormatsTable,
   resolveGraphLayer,
   resolveNumberTypeProfileLayer,
   resolveNumberTypeScopeLayer,
   resolveRefMapping,
+  resolveRegionSelectLayer,
   resolveTerritorySpecTable,
 } from './resource-resolver';
 
@@ -36,6 +40,8 @@ class DefaultResourceProvider extends ResourceProvider {
   countryScopeLayer!: RegionScopeLayer;
   numberTypeScopeLayer!: NumberTypeScopeLayer;
   numberTypeProfileLayer!: NumberTypeProfileLayer;
+  formatSelectLayer!: FormatSelectLayer;
+  regionSelectLayer!: RegionSelectLayer;
 
   async ensureReady(): Promise<void> {
     if (this.ready) return;
@@ -61,6 +67,8 @@ class DefaultResourceProvider extends ResourceProvider {
       countryScopeLayer,
       numberTypeScopeLayer,
       numberTypeProfileLayer,
+      formatSelectLayer,
+      regionSelectLayer,
     ] = await Promise.all([
       resolveRefMapping(this.loader),
       resolveFormatsTable(this.loader),
@@ -70,6 +78,8 @@ class DefaultResourceProvider extends ResourceProvider {
       resolveCountryScopeLayer(this.loader),
       resolveNumberTypeScopeLayer(this.loader),
       resolveNumberTypeProfileLayer(this.loader),
+      resolveFormatSelectLayer(this.loader),
+      resolveRegionSelectLayer(this.loader),
     ]);
 
     this.refMapping = refMapping;
@@ -80,6 +90,8 @@ class DefaultResourceProvider extends ResourceProvider {
     this.countryScopeLayer = countryScopeLayer;
     this.numberTypeScopeLayer = numberTypeScopeLayer;
     this.numberTypeProfileLayer = numberTypeProfileLayer;
+    this.formatSelectLayer = formatSelectLayer;
+    this.regionSelectLayer = regionSelectLayer;
 
     this.ready = true;
   }

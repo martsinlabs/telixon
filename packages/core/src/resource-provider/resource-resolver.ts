@@ -1,17 +1,21 @@
 import {
   CallingCodeLayer,
   ENGINE_LAYOUT,
+  FormatSelectLayer,
   FormatsTable,
   GraphLayer,
   NumberTypeProfileLayer,
   NumberTypeScopeLayer,
   parseCallingCodeBinary,
+  parseFormatSelectBinary,
   parseGraphBinary,
   parseNumberTypeProfileBinary,
   parseNumberTypeScopeBinary,
   parseRegionScopeBinary,
+  parseRegionSelectBinary,
   ReferenceMapping,
   RegionScopeLayer,
+  RegionSelectLayer,
   TerritorySpecTable,
 } from '../engine';
 import { ResourceLoader } from '../resource-loader/models';
@@ -25,6 +29,8 @@ const CALLING_CODES_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.
 const COUNTRY_SCOPE_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.DFA.FILES.COUNTRY_SCOPE}`;
 const NUMBER_TYPE_SCOPE_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.DFA.FILES.NUMBER_TYPE_SCOPE}`;
 const NUMBER_TYPE_PROFILE_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.DFA.FILES.NUMBER_TYPE_PROFILE}`;
+const FORMAT_SELECT_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.DFA.FILES.FORMAT_SELECT}`;
+const REGION_SELECT_PATH: string = `${ENGINE_LAYOUT.DFA.FOLDER}/${ENGINE_LAYOUT.DFA.FILES.REGION_SELECT}`;
 
 function parseJson<T>(buffer: ArrayBuffer): T {
   const text: string = new TextDecoder().decode(buffer);
@@ -69,4 +75,14 @@ export async function resolveNumberTypeScopeLayer(loader: ResourceLoader): Promi
 export async function resolveNumberTypeProfileLayer(loader: ResourceLoader): Promise<NumberTypeProfileLayer> {
   const buffer: ArrayBuffer = await loader.load(NUMBER_TYPE_PROFILE_PATH);
   return parseNumberTypeProfileBinary(buffer);
+}
+
+export async function resolveFormatSelectLayer(loader: ResourceLoader): Promise<FormatSelectLayer> {
+  const buffer: ArrayBuffer = await loader.load(FORMAT_SELECT_PATH);
+  return parseFormatSelectBinary(buffer);
+}
+
+export async function resolveRegionSelectLayer(loader: ResourceLoader): Promise<RegionSelectLayer> {
+  const buffer: ArrayBuffer = await loader.load(REGION_SELECT_PATH);
+  return parseRegionSelectBinary(buffer);
 }

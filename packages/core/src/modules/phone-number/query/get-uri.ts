@@ -6,5 +6,11 @@ import { formatInternational } from './format-international';
 export function getURI(resolved: ResolvedPhoneNumber): string | null {
   const international: string | null = formatInternational(resolved);
   if (international === null) return null;
-  return `tel:${international.replace(/[^\d+]/g, '-')}`;
+
+  let uri = 'tel:';
+  for (let index = 0; index < international.length; index++) {
+    const code: number = international.charCodeAt(index);
+    uri += code === 43 /* + */ || (code >= 48 && code <= 57) /* 0-9 */ ? international[index] : '-';
+  }
+  return uri;
 }

@@ -11,10 +11,10 @@ import {
   GraphLayer,
   hasTerminalPrefix,
   RegionId,
+  regionLeadingDigitsSatisfied,
   TerritorySpec,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { matchesLeadingDigits } from './matches-leading-digits';
 
 const GENERAL_DESC = 'GENERAL_DESC';
 
@@ -83,7 +83,10 @@ function matchesRegion(
   terminalStates: readonly number[],
 ): boolean {
   if (territory.leadingDigits) {
-    return matchesLeadingDigits(territory.leadingDigits, nationalDigits);
+    const { regionSelectLayer, refMapping } = getResourceProvider();
+    const callingCodeIndex: number | undefined = refMapping.callingCodes.keyToIndex[Number(territory.countryCode)];
+    if (callingCodeIndex === undefined) return false;
+    return regionLeadingDigitsSatisfied(regionSelectLayer, callingCodeIndex, countryIndex, nationalDigits);
   }
   return mainRegionMatches(countryIndex, territory, nationalDigits.length, terminalStates);
 }

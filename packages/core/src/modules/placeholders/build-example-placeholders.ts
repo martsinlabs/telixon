@@ -5,10 +5,10 @@ import {
   PhoneNumberFormattingContext,
   PhoneNumberType,
   ReferenceMapping,
+  selectCompleteFormat,
   TerritorySpec,
 } from '@telixon/core/engine';
-import { fullPattern } from '../number-resolver/utils/full-pattern';
-import { matchesLeadingDigits } from '../number-resolver/utils/matches-leading-digits';
+import { getResourceProvider } from '@telixon/core/resource-provider';
 
 /** Example placeholder variants for one number type, all optional. */
 export interface Placeholders {
@@ -17,16 +17,17 @@ export interface Placeholders {
   international?: string;
 }
 
-// First format whose leadingDigits prefix and pattern (anchored, full) match the NSN. International
-// selection skips formats with `intlFormat === 'NA'`.
-function chooseFormat(formats: PhoneNumberFormatList, international: boolean, nsn: string): PhoneNumberFormat | null {
-  for (const format of formats) {
-    if (international && format.intlFormat === 'NA') continue;
-    if (!matchesLeadingDigits(format.leadingDigits, nsn)) continue;
-    if (!fullPattern(format.pattern).test(nsn)) continue;
-    return format;
-  }
-  return null;
+// Format the NSN selects, via the format-select DFA layer (no regex). International selection skips
+// formats with `intlFormat === 'NA'`.
+function chooseFormat(
+  formats: PhoneNumberFormatList,
+  international: boolean,
+  nsn: string,
+  callingCodeIndex: number,
+): PhoneNumberFormat | null {
+  const selected = selectCompleteFormat(getResourceProvider().formatSelectLayer, callingCodeIndex, nsn);
+  const index: number = international ? selected.international : selected.national;
+  return index === -1 ? null : formats[index]!;
 }
 
 // Fills a placeholder mask with the example NSN via the engine's formatter.
@@ -49,13 +50,14 @@ export function buildExamplePlaceholders(
   territory: TerritorySpec,
   formats: PhoneNumberFormatList,
   ref: ReferenceMapping,
+  callingCodeIndex: number,
 ): Placeholders | null {
   if (numberType.exampleNumber === undefined) return null;
   const nsn: string = String(numberType.exampleNumber);
   const length: number = nsn.length;
   const placeholders: Placeholders = {};
 
-  const national: PhoneNumberFormat | null = chooseFormat(formats, false, nsn);
+  const national: PhoneNumberFormat | null = chooseFormat(formats, false, nsn, callingCodeIndex);
   if (national) {
     const nationalMask: string | undefined = national.masks.national[length];
     if (nationalMask !== undefined) placeholders.national = fill(nationalMask, nsn, ref);
@@ -66,7 +68,7 @@ export function buildExamplePlaceholders(
   }
 
   const hasInternational: boolean = formats.some((format) => format.intlFormat !== 'NA');
-  const international: PhoneNumberFormat | null = chooseFormat(formats, hasInternational, nsn);
+  const international: PhoneNumberFormat | null = chooseFormat(formats, hasInternational, nsn, callingCodeIndex);
   if (international) {
     const mask: string | undefined =
       international.masks.international?.[length] ?? international.masks.national[length];

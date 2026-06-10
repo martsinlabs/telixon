@@ -21,10 +21,10 @@ export declare function containsLength(mask: number, length: number): boolean;
  * Single source of truth for the compiled `dist/engine` artifact.
  *
  * `DFA.FILES` / `METADATA.FILES` are logical names; no uncompressed file ships. Each is delivered two ways:
- * - RAW:      `RAW.FOLDER/<dfa|metadata>/<file><COMPRESSION.EXT>`         — fetch / Node / CDN.
- * - EMBEDDED: `EMBEDDED.FOLDER/<dfa|metadata>/<file><EMBEDDED.MODULE_EXT>` — import(); base64 default export.
+ * - RAW: the file under `RAW.FOLDER` then `dfa` or `metadata`, suffixed with `COMPRESSION.EXT` (fetch / Node / CDN).
+ * - EMBEDDED: the same under `EMBEDDED.FOLDER` with `EMBEDDED.MODULE_EXT` (import(); base64 default export).
  *
- * Both hold the same `COMPRESSION`-compressed bytes. Read = get bytes -> decompress -> `parse*Binary` (DFA) / `JSON.parse` (metadata).
+ * Both hold the same `COMPRESSION`-compressed bytes. Read = get bytes, decompress, then `parse*Binary` (DFA) or `JSON.parse` (metadata).
  */
 export declare const ENGINE_LAYOUT: {
     /** Folder under `dist/`. */
@@ -60,6 +60,8 @@ export declare const ENGINE_LAYOUT: {
             readonly COUNTRY_SCOPE: "country-scope.bin";
             readonly NUMBER_TYPE_SCOPE: "number-type-scope.bin";
             readonly NUMBER_TYPE_PROFILE: "number-type-profile.bin";
+            readonly FORMAT_SELECT: "format-select.bin";
+            readonly REGION_SELECT: "region-select.bin";
         };
     };
     /** Number metadata (JSON). */
@@ -93,8 +95,7 @@ export declare function forEachNumberTypeIndex(mask: number, callback: (typeInde
 
 /**
  * @public
- * Iterates over all region indices associated with a calling code state.
- * Stops iteration if the callback returns true.
+ * Iterates region indices of a calling code state; the callback returns true to stop.
  */
 export declare function forEachRegionInCallingCodeState(layer: CallingCodeLayer, state: number, callback: (regionIndex: number) => StopIteration): void;
 
@@ -109,6 +110,15 @@ export declare function forEachStateRegion(scope: RegionScopeLayer, state: numbe
  * Iterates over regions of a state that have a terminal prefix.
  */
 export declare function forEachStateRegionWithTerminalPrefix(scope: RegionScopeLayer, state: number, callback: (stateRegionIndex: number, regionIndex: number) => StopIteration): void;
+
+/**
+ * @public
+ * Per-format flags packed into `formatFlags`.
+ */
+export declare const FormatFlag: {
+    readonly InternationalNotAvailable: 1;
+    readonly EmptyLeadingDigits: 2;
+};
 
 /**
  * @public
@@ -127,6 +137,26 @@ export declare function formatNumberWithRawCaret(context: PhoneNumberFormattingC
 
 /**
  * @public
+ * Format-selection layer: per calling code, picks the format index in `formatsTable[callingCode]`
+ * for a national number without regex — leadingDigits via a trie, full-pattern via a length mask.
+ * Calling code C owns formats `[callingCodeFormatStart[C], callingCodeFormatStart[C + 1])`; a trie
+ * node's children are `childNode[nodeChildOffset[N] .. nodeChildOffset[N + 1])`.
+ */
+export declare interface FormatSelectLayer {
+    callingCodeFormatStart: Uint32Array;
+    formatLengthMask: Uint32Array;
+    formatRangeLow: Uint8Array;
+    formatRangeHigh: Uint8Array;
+    formatFlags: Uint8Array;
+    callingCodeTrieRoot: Uint32Array;
+    nodeSatisfiedMask: Uint32Array;
+    nodeChildDigits: Uint16Array;
+    nodeChildOffset: Uint16Array;
+    childNode: Uint16Array;
+}
+
+/**
+ * @public
  * Table of phone number formats.
  */
 export declare type FormatsTable = PhoneNumberFormatList[];
@@ -142,8 +172,7 @@ export declare interface FormattedWithCaret {
 
 /**
  * @public
- * Input direction. `backward` strips trailing formatting characters
- * after the last digit; `forward` retains them.
+ * Formatting direction: `backward` strips trailing formatting after the last digit, `forward` keeps it.
  */
 export declare type FormattingDirection = 'forward' | 'backward';
 
@@ -155,9 +184,7 @@ export declare function getCallingCodePrimaryRegion(layer: CallingCodeLayer, sta
 
 /**
  * @public
- * Returns a calling code state's regions in libphonenumber `countryCallingCodeToRegionCodeMap`
- * order — the main region first, then the rest in document order. Iterate this and return the first
- * region the number validates for to resolve a region the way `getRegionCodeForNumber` does.
+ * Returns a calling code state's regions in libphonenumber resolution order (main region first).
  */
 export declare function getCallingCodeStateRegions(layer: CallingCodeLayer, state: number): Uint8Array;
 
@@ -205,8 +232,7 @@ export declare function getNumberTypeMask(scope: NumberTypeScopeLayer, stateRegi
 
 /**
  * @public
- * Computes profile id for a number type using bit position within typeMask
- * and state-region base offset.
+ * Returns the profile id for a number type at a state-region.
  */
 export declare function getNumberTypeProfileId(profile: NumberTypeProfileLayer, stateRegionIndex: number, typeMask: number, typeIndex: number): number;
 
@@ -230,8 +256,7 @@ export declare function getStateRegionsWithTerminalPrefix(scope: RegionScopeLaye
 
 /**
  * @public
- * Returns terminal-prefix number type mask
- * for the given state-region index.
+ * Returns the terminal-prefix number type mask for a state-region.
  */
 export declare function getTerminalPrefixNumberTypeMask(scope: NumberTypeScopeLayer, stateRegionIndex: number): number;
 
@@ -280,20 +305,13 @@ export declare function isCallingCodeStateValid(layer: CallingCodeLayer, state: 
 
 /**
  * @public
- * Subset of {@link NumberType} that maps 1:1 to XML metadata elements.
- * Drops runtime-only `FIXED_LINE_OR_MOBILE`/`UNKNOWN`, adds catch-all
- * `GENERAL_DESC`. Used as keys in `ReferenceMapping.numberTypes` and as
- * bit positions in the DFA number-type bitmask.
+ * Subset of {@link NumberType} mapping 1:1 to XML metadata elements (drops runtime-only types, adds `GENERAL_DESC`).
  */
 export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBILE' | 'UNKNOWN'> | 'GENERAL_DESC';
 
 /**
  * @public
- * Result of {@link normalizeNationalNumber}.
- *
- * `normalizedDigits` / `caretIndex` are the parse- and validation-time form (prefix strip +
- * `nationalPrefixTransformRule`). `displayDigits` / `displayCaretIndex` are the as-you-type form,
- * which drops digit-adding transforms so no untyped digits ever surface mid-typing.
+ * Result of {@link normalizeNationalNumber}: a parse/validation view and an as-you-type display view.
  */
 export declare interface NormalizedNationalNumber {
     normalizedDigits: string;
@@ -304,18 +322,13 @@ export declare interface NormalizedNationalNumber {
 
 /**
  * @public
- * Normalizes national digits and remaps the caret position accordingly.
- *
- * Returns two views of the input: `normalizedDigits` for parsing/validation, and `displayDigits`
- * for as-you-type formatting (see {@link NormalizedNationalNumber}).
+ * Normalizes national digits and remaps the caret, returning parse and display views.
  */
 export declare function normalizeNationalNumber(digits: string, territory: TerritorySpec, caretIndex?: number): NormalizedNationalNumber;
 
 /**
  * @public
- * Phone number type per libphonenumber `PhoneNumberType`. Adds runtime-only
- * `FIXED_LINE_OR_MOBILE` (ambiguous region) and `UNKNOWN` (no pattern match).
- * For the metadata-category subset, see {@link MetadataNumberType}.
+ * Phone number type per libphonenumber `PhoneNumberType`, plus runtime-only `FIXED_LINE_OR_MOBILE` and `UNKNOWN`.
  */
 export declare type NumberType = 'FIXED_LINE' | 'MOBILE' | 'FIXED_LINE_OR_MOBILE' | 'TOLL_FREE' | 'PREMIUM_RATE' | 'SHARED_COST' | 'VOIP' | 'PERSONAL_NUMBER' | 'PAGER' | 'UAN' | 'VOICEMAIL' | 'UNKNOWN';
 
@@ -330,19 +343,21 @@ export declare type NumberTypeIndex = number;
  * Number type profile layer structure.
  */
 export declare interface NumberTypeProfileLayer {
-    baseOffset: Uint32Array;
-    profileIndexPool: Uint16Array;
+    index: Uint16Array;
+    listOffset: Uint32Array;
+    listData: Uint16Array;
     formatMaskPool: Uint32Array;
     lengthMaskPool: Uint32Array;
 }
 
 /**
  * @public
- * Number type scope layer structure.
+ * Number type scope layer: per state-region masks palettized via `index` into the palette pools.
  */
 export declare interface NumberTypeScopeLayer {
-    numberTypeMask: Uint16Array;
-    terminalTypeMask: Uint16Array;
+    index: Uint16Array;
+    paletteNumber: Uint16Array;
+    paletteTerminal: Uint16Array;
 }
 
 /**
@@ -350,6 +365,12 @@ export declare interface NumberTypeScopeLayer {
  * Parse calling code binary buffer.
  */
 export declare function parseCallingCodeBinary(buffer: ArrayBuffer): CallingCodeLayer;
+
+/**
+ * @public
+ * Parse format-select binary buffer.
+ */
+export declare function parseFormatSelectBinary(buffer: ArrayBuffer): FormatSelectLayer;
 
 /**
  * @public
@@ -374,6 +395,12 @@ export declare function parseNumberTypeScopeBinary(buffer: ArrayBuffer): NumberT
  * Parse region scope binary buffer.
  */
 export declare function parseRegionScopeBinary(buffer: ArrayBuffer): RegionScopeLayer;
+
+/**
+ * @public
+ * Parse region-select binary buffer.
+ */
+export declare function parseRegionSelectBinary(buffer: ArrayBuffer): RegionSelectLayer;
 
 /**
  * @public
@@ -413,9 +440,7 @@ export declare interface PhoneNumberFormattingContext {
 
 /**
  * @public
- * Generated phone number masks, keyed by national-significant-number length. Fixed-length formats
- * have a single entry; variable-length formats have one mask per accepted length. A consumer reads
- * `masks.<kind>[nsn.length]`, falling back to the longest entry while the number is incomplete.
+ * Placeholder masks keyed by national-significant-number length (one entry per accepted length).
  */
 export declare interface PhoneNumberMasks {
     /** One placeholder mask per accepted NSN length, built from the national template. */
@@ -480,19 +505,23 @@ export declare type ReferenceMapping = {
 
 /**
  * @public
- * CLDR two-letter region codes recognized by the engine. Source of truth for
- * {@link RegionId}; cross-checked against raw XML by `raw-metadata-validator`.
- * Excludes the non-geographical `'001'` (filtered by the raw loader).
+ * CLDR two-letter region codes recognized by the engine; source of truth for {@link RegionId}.
  */
 export declare const REGION_IDS: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
 
 /**
  * @public
- * Territory identifier per CLDR two-letter region code.
- * Derived from {@link REGION_IDS} so the literal union and runtime list
- * cannot drift apart.
+ * Territory identifier per CLDR two-letter region code; derived from {@link REGION_IDS}.
  */
 export declare type RegionId = (typeof REGION_IDS)[number];
+
+/**
+ * @public
+ * Regex-free `matchesLeadingDigits`: true when the territory's leadingDigits prefix-matches the
+ * national digits. Returns false when the region has no leadingDigits for this calling code.
+ * `callingCodeIndex` must be valid and `nationalDigits` ASCII digits with no prefix.
+ */
+export declare function regionLeadingDigitsSatisfied(layer: RegionSelectLayer, callingCodeIndex: number, regionIndex: number, nationalDigits: string): boolean;
 
 /**
  * @public
@@ -508,10 +537,49 @@ export declare interface RegionScopeLayer {
 
 /**
  * @public
- * Signals whether iteration should stop.
- *
- * true → stop iteration
- * void → continue iteration
+ * Region-disambiguation layer: per shared calling code, tells whether a territory's `leadingDigits`
+ * prefix-matches a national number without regex (an LD-trie of satisfied-territory masks). Calling
+ * code C owns slots `[callingCodeSlotStart[C], callingCodeSlotStart[C + 1])`; a trie node's children
+ * are `childNode[nodeChildOffset[N] .. nodeChildOffset[N + 1])`.
+ */
+export declare interface RegionSelectLayer {
+    callingCodeSlotStart: Uint32Array;
+    slotRegion: Uint16Array;
+    callingCodeTrieRoot: Uint32Array;
+    nodeSatisfiedMask: Uint32Array;
+    nodeChildDigits: Uint16Array;
+    nodeChildOffset: Uint16Array;
+    childNode: Uint16Array;
+}
+
+/**
+ * @public
+ * Regex-free format selection for a complete national number: the first format (array order) whose
+ * leadingDigits is satisfied and whose pattern matches the full length. `callingCode` must be a
+ * valid index and `nationalDigits` ASCII digits with no prefix.
+ */
+export declare function selectCompleteFormat(layer: FormatSelectLayer, callingCode: number, nationalDigits: string): SelectedFormat;
+
+/**
+ * @public
+ * Chosen national and international format indices into `formatsTable[callingCode]` (`-1` = none).
+ */
+export declare interface SelectedFormat {
+    national: number;
+    international: number;
+}
+
+/**
+ * @public
+ * Regex-free format selection while typing. The national choice is scoped by `profileFormatMask`
+ * (from `getFormatMask`); both choices use the upper length bound only. `callingCode` must be a
+ * valid index and `nationalDigits` ASCII digits with no prefix.
+ */
+export declare function selectPartialFormat(layer: FormatSelectLayer, callingCode: number, nationalDigits: string, profileFormatMask: number): SelectedFormat;
+
+/**
+ * @public
+ * Iteration control: `true` stops, `void` continues.
  */
 export declare type StopIteration = true | void;
 
@@ -544,10 +612,7 @@ export declare type TerritorySpecTable = readonly TerritorySpec[];
 
 /**
  * @public
- * Map metadata number types to public {@link NumberType} per libphonenumber
- * `getNumberType` semantics: drops `GENERAL_DESC`, collapses
- * `FIXED_LINE`+`MOBILE` into `FIXED_LINE_OR_MOBILE`, returns `['UNKNOWN']`
- * if empty.
+ * Maps metadata number types to public {@link NumberType} per libphonenumber `getNumberType` semantics.
  */
 export declare function toNumberTypes(metadataTypes: readonly MetadataNumberType[]): NumberType[];
 
