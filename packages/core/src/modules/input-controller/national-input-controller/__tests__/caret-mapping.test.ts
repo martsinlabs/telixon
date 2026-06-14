@@ -58,4 +58,41 @@ describe('national controller caret mapping', () => {
       expect(state.selectionStart).toBe(state.value.length);
     });
   });
+
+  describe('US (parens grouping, the caret skips "(" ") " and "-")', () => {
+    const RAW = '2015550123';
+    const FORMATTED = '(201) 555-0123';
+
+    it.each([
+      { name: 'before the area code', rawCaret: 0, formattedCaret: 0 },
+      { name: 'inside area code "(2|01"', rawCaret: 1, formattedCaret: 2 },
+      { name: 'inside area code "(20|1"', rawCaret: 2, formattedCaret: 3 },
+      { name: 'after area code, jumps past ") "', rawCaret: 3, formattedCaret: 6 },
+      { name: 'after exchange digit 1', rawCaret: 4, formattedCaret: 7 },
+      { name: 'after exchange digit 2', rawCaret: 5, formattedCaret: 8 },
+      { name: 'after exchange, jumps past "-"', rawCaret: 6, formattedCaret: 10 },
+      { name: 'after subscriber digit 1', rawCaret: 7, formattedCaret: 11 },
+      { name: 'after subscriber digit 2', rawCaret: 8, formattedCaret: 12 },
+      { name: 'after subscriber digit 3', rawCaret: 9, formattedCaret: 13 },
+      { name: 'end of input', rawCaret: 10, formattedCaret: 14 },
+    ])('$name: raw $rawCaret -> formatted $formattedCaret', ({ rawCaret, formattedCaret }) => {
+      const state = placeCaretInRaw('US', RAW, rawCaret);
+
+      expect(state.value).toBe(FORMATTED);
+      expect(state.selectionStart).toBe(formattedCaret);
+      expect(state.selectionEnd).toBe(formattedCaret);
+    });
+
+    it('places caret at end after sequential typing', () => {
+      const controller = createNationalInputController({ country: 'US' });
+      let state: InputState = controller.currentState;
+
+      for (let i = 0; i < RAW.length; i++) {
+        state = controller.insert(state.value, RAW[i]!, state.selectionStart, state.selectionEnd);
+      }
+
+      expect(state.value).toBe(FORMATTED);
+      expect(state.selectionStart).toBe(FORMATTED.length);
+    });
+  });
 });
