@@ -1,5 +1,6 @@
-// PhoneNumber query behaviors compared per number against the oracle. As-you-type formatting is a
-// per-keystroke axis (see as-you-type.ts), not a per-number method.
+import { CorpusCaseKind } from './corpus';
+
+// PhoneNumber query behaviors compared per number against the oracle (as-you-type is a per-keystroke axis, see as-you-type.ts, not a per-number method).
 export const COMPARED_METHODS = [
   'isValid',
   'isPossible',
@@ -16,10 +17,15 @@ export const COMPARED_METHODS = [
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
 
+// Where a mismatch came from: a corpus case kind, or the per-prefix possibility sweep.
+export type MismatchKind = CorpusCaseKind | 'possibility-prefix';
+
 export interface Mismatch {
   readonly method: MethodName;
+  readonly kind: MismatchKind;
   readonly regionCode: string;
-  readonly e164: string;
+  // The exact input string both sides parsed.
+  readonly input: string;
   readonly expected: string;
   readonly actual: string;
 }
@@ -32,12 +38,30 @@ export interface MethodReport {
   readonly mismatches: readonly Mismatch[];
 }
 
+// Cases per corpus kind, preserving the corpus build order.
+export interface KindBreakdown {
+  readonly kind: CorpusCaseKind;
+  readonly cases: number;
+}
+
+// Mutation-family cases Google rejects at parse; Telixon never throws, so agreement means it judges the same input not possible.
+export interface RejectionReport {
+  readonly total: number;
+  readonly agreed: number;
+  readonly mismatches: readonly Mismatch[];
+}
+
 export interface ConformanceReport {
   readonly corpusSize: number;
+  // Cases with verdicts on both sides (every compared method ran on each of these).
+  readonly compared: number;
+  // Example or display-variant cases Google could not parse: must stay zero.
   readonly skipped: number;
   readonly regionsCovered: number;
   readonly regionsTotal: number;
   // The google/libphonenumber commit shared by the engine and the oracle.
   readonly commit: string;
+  readonly composition: readonly KindBreakdown[];
   readonly methods: readonly MethodReport[];
+  readonly rejection: RejectionReport;
 }

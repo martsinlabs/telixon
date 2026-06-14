@@ -74,6 +74,54 @@
         color: #1a7f37;
         font-weight: 600;
       }
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+      .stat-card {
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 0.9rem 1rem;
+      }
+      .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1a7f37;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat-label {
+        font-weight: 600;
+        margin-top: 0.1rem;
+      }
+      .stat-sub {
+        color: #555;
+        font-size: 0.85rem;
+        margin-top: 0.15rem;
+      }
+      .frame-bar {
+        position: relative;
+        height: 28px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fafafa;
+        margin: 0.75rem 0 0.25rem;
+        overflow: hidden;
+      }
+      .frame-bar-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        min-width: 2px;
+        background: #1a7f37;
+      }
+      .frame-bar-caption {
+        color: #555;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
       .loss {
         color: #b21d1d;
         font-weight: 600;
@@ -101,8 +149,8 @@
       <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
         >github.com/google/libphonenumber@{{shortCommit}}</a
       >.<br />
-      Corpus: {{corpusSize}} phone numbers, one Google example per region per type (same dataset as the conformance
-      gate).<br />
+      Corpus: {{corpusSize}} phone numbers, one Google example per region per type (the example set the conformance
+      corpus is derived from).<br />
       Compared against the npm packages
       <a href="https://www.npmjs.com/package/libphonenumber-js/v/{{libphonenumberJsVersion}}"
         >libphonenumber-js@{{libphonenumberJsVersion}}</a
@@ -193,9 +241,10 @@
 
     <h2 id="input-controller">Input controller</h2>
     <div class="section-note">
-      Telixon only (competitor formatters lack a comparable API). Each iteration types every character of every corpus
-      phone number ({{corpusSize}} numbers total). Costs are per iteration, not per keystroke; see
-      <a href="#keystroke-latency">per-keystroke latency</a> for that distribution.
+      Telixon only: competitor formatters have no comparable API (no caret, no deletion, no undo, no per-keystroke
+      queries). One iteration is a <strong>full corpus pass</strong>: every digit of all {{corpusSize}} corpus numbers,
+      typed end to end through the controller. Read the mean column as "what typing the entire corpus costs"; single
+      keystrokes are profiled in <a href="#keystroke-latency">the next section</a>.
     </div>
     <table>
       <thead>
@@ -214,16 +263,13 @@
 
     <h2 id="keystroke-latency">Per-keystroke latency</h2>
     <div class="section-note">
-      <p>
-        Latency of a single <code>controller.insert(...)</code> call, and optionally the full
-        <code>PhoneNumber</code> query suite that follows it on each keystroke. Sampled per individual keystroke via
-        <code>process.hrtime.bigint()</code> after warmup.
-      </p>
-      <p>
-        At 60Hz the browser renders a new frame every <strong>16.67 ms</strong>. A keystroke that consumes a significant
-        fraction of that budget will drop a frame and cause visible UI lag.
-      </p>
+      The number that decides whether an input feels instant: the cost of one keystroke, sampled individually (<code
+        >process.hrtime.bigint()</code
+      >
+      after warmup). The browser budget for a whole 60 Hz frame, with everything else an app does in it, is
+      <strong>16.67 ms</strong>.
     </div>
+    {{keystrokeHero}}
     <table>
       <thead>
         <tr>
@@ -234,7 +280,6 @@
           <th>p95</th>
           <th>p99</th>
           <th>p99.9</th>
-          <th>max</th>
         </tr>
       </thead>
       <tbody>

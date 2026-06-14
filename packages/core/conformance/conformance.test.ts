@@ -1,32 +1,58 @@
-import { REGION_IDS, getCallingCodeForRegion } from '@telixon/core';
+import { getCallingCodeForRegion, REGION_IDS } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
 import { buildCorpus, loadOracle } from '../oracle';
 import { exportArtifacts } from './artifacts';
 import { formatAsYouTypeMeasurement, internationalProbe, measureAsYouType, nationalProbe } from './as-you-type';
 import { buildConformanceReport } from './compare';
+import { buildConformanceCorpus, CorpusCaseKind } from './corpus';
 import { auditMismatches } from './known-divergences';
-import { formatConformanceReport } from './report';
+import { sweepPossibilityPrefixes } from './prefix-sweep';
+import { formatConformanceReport, formatPrefixSweepReport } from './report';
 import { evaluateWithTelixon } from './subject';
 
 const oracle = await loadOracle();
-const corpus = buildCorpus(oracle);
+const examples = buildCorpus(oracle);
+const corpus = buildConformanceCorpus(oracle, examples);
 const report = buildConformanceReport(oracle, corpus);
-const audit = auditMismatches(report.methods.flatMap((method) => method.mismatches));
-const aytInternational = measureAsYouType(oracle, corpus, internationalProbe);
-const aytNational = measureAsYouType(oracle, corpus, nationalProbe);
+const prefixSweep = sweepPossibilityPrefixes(oracle, examples);
+const audit = auditMismatches([
+  ...report.methods.flatMap((method) => method.mismatches),
+  ...report.rejection.mismatches,
+  ...prefixSweep.mismatches,
+]);
+const aytInternational = measureAsYouType(oracle, examples, internationalProbe);
+const aytNational = measureAsYouType(oracle, examples, nationalProbe);
 
-// Surface the full table and both as-you-type measurements in the run output.
+// Surface the full table, the prefix sweep, and both as-you-type measurements in the run output.
 console.log('\n' + formatConformanceReport(report));
+console.log('\n' + formatPrefixSweepReport(prefixSweep));
 console.log('\n' + formatAsYouTypeMeasurement('International', aytInternational));
 console.log('\n' + formatAsYouTypeMeasurement('National', aytNational));
 
-exportArtifacts(report, audit);
+exportArtifacts(report, prefixSweep, audit);
+
+const EXPECTED_KINDS: readonly CorpusCaseKind[] = [
+  'example',
+  'international-display',
+  'national-display',
+  'rfc3966-uri',
+  'whitespace-padded',
+  'truncated',
+  'extended',
+  'first-national-digit-mutated',
+  'unassigned-calling-code',
+];
 
 describe('conformance vs Google libphonenumber', () => {
-  it('covers the region set with a fully parseable corpus', () => {
+  it('covers the region set with a fully parseable example corpus', () => {
     expect(report.corpusSize).toBeGreaterThan(0);
     expect(report.skipped).toBe(0);
-    expect(report.regionsCovered).toBeGreaterThan(200);
+    expect(report.regionsCovered).toBe(report.regionsTotal);
+  });
+
+  it('exercises every corpus case kind', () => {
+    const populatedKinds = report.composition.filter(({ cases }) => cases > 0).map(({ kind }) => kind);
+    expect([...populatedKinds].sort()).toEqual([...EXPECTED_KINDS].sort());
   });
 
   it('matches the oracle except for the known-divergence allowlist', () => {
@@ -35,6 +61,13 @@ describe('conformance vs Google libphonenumber', () => {
 
   it('keeps the known-divergence allowlist free of stale entries', () => {
     expect(audit.stale).toEqual([]);
+  });
+});
+
+describe('possibility prefix sweep vs Google', () => {
+  it('compares a non-trivial prefix set', () => {
+    expect(prefixSweep.totalPrefixes).toBeGreaterThan(1000);
+    expect(prefixSweep.compared).toBeGreaterThan(0);
   });
 });
 

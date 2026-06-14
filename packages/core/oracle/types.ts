@@ -1,7 +1,6 @@
 import { NumberType } from '@telixon/core';
 
-// Types we sample one Google example per region for. UNKNOWN has no example numbers, and
-// FIXED_LINE_OR_MOBILE only echoes a fixed-line/mobile example, so neither is sampled.
+// Types we sample one Google example per region for (UNKNOWN has no examples; FIXED_LINE_OR_MOBILE only echoes a fixed-line/mobile example, so neither is sampled).
 export interface SampledType {
   readonly name: NumberType;
   readonly id: number;
@@ -36,8 +35,8 @@ export interface Oracle {
   supportedRegions(): readonly string[];
   // Google's example number for a region and type as E.164, or null when none exists.
   sampleExampleE164(regionCode: string, typeId: number): string | null;
-  // The oracle's verdict for every compared method, or null when Google cannot parse the number.
-  evaluate(e164: string): MethodResults | null;
+  // The oracle's verdict for every compared method, or null when Google rejects the input; `regionCode` reads national form (no '+'), like Telixon's defaultCountry.
+  evaluate(input: string, regionCode?: string): MethodResults | null;
   // Google's country calling code for a region, as a string ('0' for an unknown region).
   countryCallingCode(regionCode: string): string;
   // Google's AsYouTypeFormatter snapshot after each input character of `input` (one entry per character).

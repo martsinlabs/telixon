@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DivergenceAudit } from './known-divergences';
 import { ConformanceReport } from './models';
+import { PrefixSweepReport } from './prefix-sweep';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -12,11 +13,31 @@ interface ParityMethod {
   readonly matchRate: number;
 }
 
+interface ParityKind {
+  readonly kind: string;
+  readonly cases: number;
+}
+
 interface ParityCorpus {
   readonly size: number;
+  readonly compared: number;
   readonly skipped: number;
   readonly regionsCovered: number;
   readonly regionsTotal: number;
+  readonly byKind: readonly ParityKind[];
+}
+
+interface ParityRejection {
+  readonly total: number;
+  readonly agreed: number;
+}
+
+interface ParityPrefixSweep {
+  readonly totalPrefixes: number;
+  readonly compared: number;
+  readonly matched: number;
+  readonly rejectedByGoogle: number;
+  readonly rejectionAgreed: number;
 }
 
 interface ParityOverall {
@@ -36,6 +57,8 @@ interface ParityData {
   readonly corpus: ParityCorpus;
   readonly overall: ParityOverall;
   readonly methods: readonly ParityMethod[];
+  readonly rejection: ParityRejection;
+  readonly prefixSweep: ParityPrefixSweep;
   readonly allowlist: ParityAllowlist;
 }
 
@@ -48,8 +71,7 @@ interface ShieldsBadge {
 
 // ── Paths and template ───────────────────────────────────
 
-// Resolved against process.cwd() so the output location is identical in local runs and CI.
-// `pnpm conformance` is always invoked from the repo root.
+// Resolved against process.cwd() so the output location is identical in local runs and CI (`pnpm conformance` always runs from the repo root).
 const CONFORMANCE_DIR = resolve('packages/core/conformance');
 const ARTIFACT_DIR = join(CONFORMANCE_DIR, 'dist');
 const TEMPLATE = readFileSync(join(CONFORMANCE_DIR, 'parity.template.html'), 'utf8');
@@ -58,11 +80,9 @@ const METHOD_ROW_INDENT = '\n        ';
 
 // ── Public entry (I/O boundary) ──────────────────────────
 
-// Writes parity.json, parity-badge.json, parity.html into packages/core/conformance/dist/.
-// Called from conformance.test.ts after the report is built; runs even if assertions fail so the
-// dashboard always reflects current state.
-export function exportArtifacts(report: ConformanceReport, audit: DivergenceAudit): void {
-  const data = buildParityData(report, audit);
+// Writes parity.json, parity-badge.json, parity.html into conformance/dist/; runs even if assertions fail so the dashboard always reflects current state.
+export function exportArtifacts(report: ConformanceReport, sweep: PrefixSweepReport, audit: DivergenceAudit): void {
+  const data = buildParityData(report, sweep, audit);
   mkdirSync(ARTIFACT_DIR, { recursive: true });
   writeFileSync(join(ARTIFACT_DIR, 'parity.json'), JSON.stringify(data, null, 2));
   writeFileSync(join(ARTIFACT_DIR, 'parity-badge.json'), JSON.stringify(buildBadge(data), null, 2));
@@ -71,32 +91,45 @@ export function exportArtifacts(report: ConformanceReport, audit: DivergenceAudi
 
 // ── Pure builders ────────────────────────────────────────
 
-function buildParityData(report: ConformanceReport, audit: DivergenceAudit): ParityData {
+function buildParityData(report: ConformanceReport, sweep: PrefixSweepReport, audit: DivergenceAudit): ParityData {
   return {
     runAt: new Date().toISOString(),
     commit: report.commit,
     corpus: {
       size: report.corpusSize,
+      compared: report.compared,
       skipped: report.skipped,
       regionsCovered: report.regionsCovered,
       regionsTotal: report.regionsTotal,
+      byKind: report.composition.map(({ kind, cases }) => ({ kind, cases })),
     },
-    overall: sumOverall(report),
+    overall: sumOverall(report, sweep),
     methods: report.methods.map((m) => ({
       method: m.method,
       total: m.total,
       matched: m.matched,
       matchRate: m.matchRate,
     })),
+    rejection: { total: report.rejection.total, agreed: report.rejection.agreed },
+    prefixSweep: {
+      totalPrefixes: sweep.totalPrefixes,
+      compared: sweep.compared,
+      matched: sweep.matched,
+      rejectedByGoogle: sweep.rejectedByGoogle,
+      rejectionAgreed: sweep.rejectionAgreed,
+    },
     allowlist: { unexpected: audit.unexpected.length, stale: audit.stale.length },
   };
 }
 
-function sumOverall(report: ConformanceReport): ParityOverall {
-  const { matched, total } = report.methods.reduce(
+// One headline number across every gated comparison: method checks, Google-rejected agreements, and the per-prefix possibility sweep.
+function sumOverall(report: ConformanceReport, sweep: PrefixSweepReport): ParityOverall {
+  const methodTotals = report.methods.reduce(
     (acc, m) => ({ matched: acc.matched + m.matched, total: acc.total + m.total }),
     { matched: 0, total: 0 },
   );
+  const matched = methodTotals.matched + report.rejection.agreed + sweep.matched + sweep.rejectionAgreed;
+  const total = methodTotals.total + report.rejection.total + sweep.compared + sweep.rejectedByGoogle;
   return { matched, total, matchRate: total === 0 ? 1 : matched / total };
 }
 
@@ -122,11 +155,23 @@ function renderHtml(data: ParityData): string {
     '{{regionsCovered}}': String(data.corpus.regionsCovered),
     '{{regionsTotal}}': String(data.corpus.regionsTotal),
     '{{skipped}}': String(data.corpus.skipped),
+    '{{corpusByKind}}': renderCorpusByKind(data.corpus.byKind),
+    '{{rejection}}': `${data.rejection.agreed}/${data.rejection.total}`,
+    '{{prefixSweep}}': renderPrefixSweep(data.prefixSweep),
     '{{allowlist}}': renderAllowlist(data.allowlist),
     '{{runAt}}': data.runAt,
     '{{methodRows}}': data.methods.map(renderMethodRow).join(METHOD_ROW_INDENT),
   };
   return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), TEMPLATE);
+}
+
+function renderCorpusByKind(byKind: readonly ParityKind[]): string {
+  return byKind.map(({ kind, cases }) => `${kind}&nbsp;${cases}`).join(' · ');
+}
+
+function renderPrefixSweep(sweep: ParityPrefixSweep): string {
+  const rate = sweep.compared === 0 ? 1 : sweep.matched / sweep.compared;
+  return `${(rate * 100).toFixed(2)}% (${sweep.matched}/${sweep.compared}) · google-rejected agreed ${sweep.rejectionAgreed}/${sweep.rejectedByGoogle}`;
 }
 
 function renderAllowlist(allowlist: ParityAllowlist): string {

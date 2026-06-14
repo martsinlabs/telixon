@@ -7,9 +7,7 @@ import vm from 'node:vm';
 import provenance from '../src/engine/PROVENANCE.json';
 import { Oracle, SampledType } from './types';
 
-// Google publishes no npm package: its JS port lives as Closure-coupled source in the repo. We fetch
-// those sources at the engine's commit and run them on google-closure-library. Pinning the oracle to
-// the engine's commit removes metadata version drift: any mismatch is then a real engine bug.
+// Google publishes no npm package: its JS port lives as Closure-coupled source. We fetch it at the engine's commit and run it on google-closure-library, so any mismatch is a real engine bug.
 const SOURCE_FILES = [
   'phonemetadata.pb.js',
   'phonenumber.pb.js',
@@ -31,8 +29,7 @@ const CLOSURE_DEPENDENCIES = [
 const CACHE_DIR = join(dirname(fileURLToPath(import.meta.url)), '.cache');
 const SOURCE_BASE_URL = 'https://raw.githubusercontent.com/google/libphonenumber';
 
-// Types we sample one Google example per region for. UNKNOWN has no example numbers, and
-// FIXED_LINE_OR_MOBILE only echoes a fixed-line/mobile example, so neither is sampled.
+// Types we sample one Google example per region for (UNKNOWN has no examples; FIXED_LINE_OR_MOBILE only echoes a fixed-line/mobile example, so neither is sampled).
 const SAMPLED_TYPE_NAMES: readonly NumberType[] = [
   'FIXED_LINE',
   'MOBILE',
@@ -46,8 +43,7 @@ const SAMPLED_TYPE_NAMES: readonly NumberType[] = [
   'VOICEMAIL',
 ];
 
-// Minimal shapes of the closure objects we touch. The closure load is the system boundary:
-// untyped globals are narrowed into these once, here.
+// Minimal shapes of the closure objects we touch: the closure load is the system boundary, untyped globals narrowed here once.
 interface OracleNumber {
   getCountryCodeOrDefault(): number;
 }
@@ -170,10 +166,10 @@ export async function loadOracle(): Promise<Oracle> {
         return null;
       }
     },
-    evaluate: (e164) => {
+    evaluate: (input, regionCode) => {
       let parsed: OracleNumber;
       try {
-        parsed = util.parse(e164, undefined);
+        parsed = util.parse(input, regionCode);
       } catch {
         return null;
       }

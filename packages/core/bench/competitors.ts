@@ -1,4 +1,8 @@
-import { ensureReady, parsePhoneNumber as telixonParse, type PhoneNumber as TelixonPhoneNumber } from '@telixon/core';
+import {
+  ensureEngineReady,
+  parsePhoneNumber as telixonParse,
+  type PhoneNumber as TelixonPhoneNumber,
+} from '@telixon/core';
 import { type RegionId } from '@telixon/core/engine';
 import googleLibphonenumber from 'google-libphonenumber';
 import libphonenumberJsParse, {
@@ -23,7 +27,7 @@ export interface PhoneLibraryAdapter {
   getURI: (parsed: unknown) => string;
 }
 
-export const telixonReady: Promise<void> = ensureReady();
+export const telixonReady: Promise<void> = ensureEngineReady();
 
 // ── Telixon ──────────────────────────────────────────────
 

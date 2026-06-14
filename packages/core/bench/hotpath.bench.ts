@@ -1,9 +1,12 @@
-import { bench, describe } from 'vitest';
+import { afterAll, bench, describe } from 'vitest';
 import { clearGlobalCaches } from '../src/modules/number-resolver/__internal__/clear-global-caches';
 import { ADAPTERS, type PhoneLibraryAdapter, telixonReady } from './competitors';
+import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
 
 await telixonReady;
+
+afterAll(flushSink);
 
 const QUERY_METHODS = [
   'isValid',
@@ -21,7 +24,7 @@ const QUERY_METHODS = [
 type QueryMethod = (typeof QUERY_METHODS)[number];
 
 function call(adapter: PhoneLibraryAdapter, method: QueryMethod, parsed: unknown): void {
-  (adapter[method] as (value: unknown) => unknown)(parsed);
+  consume((adapter[method] as (value: unknown) => unknown)(parsed));
 }
 
 function clearTelixonGlobalCachesIfTelixon(adapter: PhoneLibraryAdapter): void {
@@ -33,7 +36,7 @@ function clearTelixonGlobalCachesIfTelixon(adapter: PhoneLibraryAdapter): void {
 describe('parsePhoneNumber (corpus pass)', () => {
   for (const adapter of ADAPTERS) {
     bench(adapter.name, () => {
-      for (const entry of CORPUS) adapter.parse(entry.e164, entry.region);
+      for (const entry of CORPUS) consume(adapter.parse(entry.e164, entry.region));
     });
   }
 });

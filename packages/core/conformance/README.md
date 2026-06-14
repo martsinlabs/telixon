@@ -1,7 +1,8 @@
 # Conformance
 
 Proves Telixon's public query methods match [Google libphonenumber][lpn], the reference
-implementation, across every supported region.
+implementation, across every supported region: on valid numbers, on every display spelling of them,
+on deterministic corruptions of them, and on every digit prefix of them.
 
 ## Run
 
@@ -35,33 +36,38 @@ corpus ──▶ for each number ──▶ oracle  (Google's answer)
                                   └──▶ compare ──▶ report ──▶ gate
 ```
 
-The oracle and corpus live in `../oracle/` (shared with the bench so both consume the exact same
-Google source).
+The oracle and the example corpus live in `../oracle/` (shared with the bench so both consume the
+exact same Google source). The conformance corpus is derived from the examples in `corpus/`.
 
-| File                   | Role                                                       |
-| ---------------------- | ---------------------------------------------------------- |
-| `subject.ts`           | runs Telixon over a number                                 |
-| `compare.ts`           | diffs the two sides, aggregates per-method match rates     |
-| `report.ts`            | formats the report                                         |
-| `known-divergences.ts` | the allowlist of accepted mismatches + audit               |
-| `conformance.test.ts`  | the gate                                                   |
-| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …) |
-| `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`   |
-| `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google            |
-| `parity.template.html` | HTML template for the dashboard                            |
+| File                   | Role                                                          |
+| ---------------------- | ------------------------------------------------------------- |
+| `corpus/`              | builds the case corpus: examples, display variants, mutations |
+| `subject.ts`           | runs Telixon over an input                                    |
+| `compare.ts`           | diffs the two sides, aggregates per-method match rates        |
+| `prefix-sweep.ts`      | per-digit-prefix possibility comparison                       |
+| `report.ts`            | formats the report                                            |
+| `known-divergences.ts` | the allowlist of accepted mismatches + audit                  |
+| `conformance.test.ts`  | the gate                                                      |
+| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …)    |
+| `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`      |
+| `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google               |
+| `parity.template.html` | HTML template for the dashboard                               |
 
 ## Reading the report
 
 ```
 oracle and engine pinned to google/libphonenumber@<commit> · no metadata drift
-<N> numbers · <covered>/<total> regions · <skipped> skipped
+<N> cases · <compared> compared · <covered>/<total> regions · <skipped> skipped
+  <kind>=<count> · …
+  google-rejected mutations judged not possible: <agreed>/<total>
 
   <method>  <rate>  (<matched>/<total>)
 ```
 
-The header shows the shared commit and coverage (`skipped` = numbers the oracle could not parse). One
-line per method: match rate and `(matched / total)`. Any mismatch prints an indented line:
-`expected` is Google, `actual` is Telixon. Live numbers are on the
+The header shows the shared commit, coverage, and the corpus composition by case kind (`skipped` =
+example or display-variant inputs the oracle could not parse; must be zero). One line per method:
+match rate and `(matched / total)`. Any mismatch prints an indented line: `expected` is Google,
+`actual` is Telixon. The prefix sweep prints its own block after the table. Live numbers are on the
 [dashboard](https://telixon.dev/parity.html).
 
 ## Gate
@@ -72,22 +78,42 @@ mismatches in `known-divergences.ts` (each with a reason). It fails on:
 - any mismatch **not** in the allowlist (a real regression), and
 - any allowlist entry that **no longer** occurs (a stale entry to remove).
 
-It also checks coverage: a non-empty corpus, zero unparseable numbers, and most regions sampled.
+It also checks coverage: every case kind populated, zero skipped inputs, and most regions sampled.
+
+Mutated inputs Google refuses to parse have no method-level oracle. For those, the contract is
+agreement on rejection: Telixon, which never throws, must judge the same input not possible. A
+mutated input Telixon considers possible while Google rejects it at parse fails the gate.
 
 ## As-you-type
 
-`formatAsYouType` compares the international controller's live value (typed through the controller)
-against Google's canonical international format. The controller and `formatInternational` share one
-format selector and derive their grouping from the same format template, so a complete number renders
-identically. While typing, grouping is applied progressively until the number is complete.
+`measureAsYouType` (in `as-you-type.ts`) replays each corpus number one character at a time through
+both input controllers, international and national, and compares the live value at every keystroke
+against Google's `AsYouTypeFormatter`. The controllers and `formatInternational` / `formatNational`
+share one format selector, so a complete number renders identically; while typing, grouping is applied
+progressively. This is a measurement printed in the run, not a gate.
 
 ## Baseline
 
 Latest: [live dashboard](https://telixon.dev/parity.html).
 Reproduce locally: `pnpm conformance`.
 
-## Scope
+## Corpus
 
-Positive corpus (valid example numbers, one per region × type) over the international path.
+Every case derives deterministically from Google's example numbers (one per region per type), so
+there is no snapshot to drift and no randomness in the gate. One case is one exact input string
+parsed under identical conditions on both sides.
+
+| Family            | Kinds                                                                                                 | Contract                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `example`         | canonical E.164                                                                                       | both sides parse; all methods compared                                            |
+| `display-variant` | international display, national display (parsed with the region), RFC3966 URI, padding                | both sides parse; all methods compared                                            |
+| `mutation`        | truncated (1-3 digits), extended (1-2 digits), first national digit shifted, unassigned calling codes | all methods compared; if Google rejects at parse, Telixon must judge not possible |
+
+The comparison is differential: a mutation that happens to stay valid is still a case, because both
+sides must agree on whatever the verdict is.
+
+The prefix sweep is a fourth axis: every digit prefix of every example is parsed by both sides and
+`isPossibleWithReason` must match verbatim, prefix by prefix. This is the verdict surface the input
+controllers expose per keystroke.
 
 [lpn]: https://github.com/google/libphonenumber

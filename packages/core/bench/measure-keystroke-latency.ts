@@ -1,13 +1,14 @@
-import { createInternationalInputController, ensureReady, type InputController } from '@telixon/core';
+import { createInternationalInputController, ensureEngineReady, type InputController } from '@telixon/core';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NodeResourceLoader } from '../src/resource-loader/node-resource-loader';
+import { EmbeddedResourceLoader } from '../src/resource-loader/embedded-resource-loader';
 import { setResourceLoader } from '../src/resource-loader/resource-loader.config';
+import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
 
-setResourceLoader(new NodeResourceLoader());
-await ensureReady();
+setResourceLoader(new EmbeddedResourceLoader());
+await ensureEngineReady();
 
 const WARMUP_PASSES = 3;
 const MEASUREMENT_PASSES = 5;
@@ -21,7 +22,6 @@ interface KeystrokeLatencyDistribution {
   readonly p95: number;
   readonly p99: number;
   readonly p999: number;
-  readonly max: number;
 }
 
 interface KeystrokeLatencyReport {
@@ -34,6 +34,8 @@ function percentile(sorted: readonly number[], p: number): number {
   return sorted[idx]!;
 }
 
+// The full per-keystroke wall-clock distribution. The maximum of a sample set is omitted: it is dominated
+// by OS scheduling (not the code) and grows with sample count, so the tail is reported to the 99.9th percentile.
 function summarize(scenario: string, samples: number[]): KeystrokeLatencyDistribution {
   samples.sort((a, b) => a - b);
   const sum = samples.reduce((s, x) => s + x, 0);
@@ -46,11 +48,14 @@ function summarize(scenario: string, samples: number[]): KeystrokeLatencyDistrib
     p95: percentile(samples, 95),
     p99: percentile(samples, 99),
     p999: percentile(samples, 99.9),
-    max: samples[samples.length - 1]!,
   };
 }
 
-function typeFullNumberRaw(controller: InputController, numberString: string, samples: number[]): void {
+function typeFullNumberRaw(
+  controller: InputController,
+  numberString: string,
+  record: (latencyMs: number) => void,
+): void {
   controller.setValue('');
   let value = '';
   let selectionEnd = 0;
@@ -59,13 +64,17 @@ function typeFullNumberRaw(controller: InputController, numberString: string, sa
     const t0 = process.hrtime.bigint();
     const state = controller.insert(value, character, selectionEnd, selectionEnd);
     const t1 = process.hrtime.bigint();
-    samples.push(Number(t1 - t0) / 1_000_000);
+    record(Number(t1 - t0) / 1_000_000);
     value = state.value;
     selectionEnd = state.selectionEnd;
   }
 }
 
-function typeFullNumberWithQueries(controller: InputController, numberString: string, samples: number[]): void {
+function typeFullNumberWithQueries(
+  controller: InputController,
+  numberString: string,
+  record: (latencyMs: number) => void,
+): void {
   controller.setValue('');
   let value = '';
   let selectionEnd = 0;
@@ -74,15 +83,15 @@ function typeFullNumberWithQueries(controller: InputController, numberString: st
     const t0 = process.hrtime.bigint();
     const state = controller.insert(value, character, selectionEnd, selectionEnd);
     const phoneNumber = controller.getPhoneNumber();
-    phoneNumber.isValid();
-    phoneNumber.isPossible();
-    phoneNumber.getNumberType();
-    phoneNumber.getCountry();
-    phoneNumber.getNationalNumber();
-    phoneNumber.getCallingCode();
-    phoneNumber.formatInternational();
+    consume(phoneNumber.isValid());
+    consume(phoneNumber.isPossible());
+    consume(phoneNumber.getNumberType());
+    consume(phoneNumber.getCountry());
+    consume(phoneNumber.getNationalNumber());
+    consume(phoneNumber.getCallingCode());
+    consume(phoneNumber.formatInternational());
     const t1 = process.hrtime.bigint();
-    samples.push(Number(t1 - t0) / 1_000_000);
+    record(Number(t1 - t0) / 1_000_000);
     value = state.value;
     selectionEnd = state.selectionEnd;
   }
@@ -90,18 +99,17 @@ function typeFullNumberWithQueries(controller: InputController, numberString: st
 
 function runScenario(
   scenarioName: string,
-  typeFn: (controller: InputController, e164: string, samples: number[]) => void,
+  typeFn: (controller: InputController, e164: string, record: (latencyMs: number) => void) => void,
 ): KeystrokeLatencyDistribution {
   const controller: InputController = createInternationalInputController({ initialValue: '' });
-  const warmupSamples: number[] = [];
+  const noop = (): void => {};
   for (let pass = 0; pass < WARMUP_PASSES; pass++) {
-    for (const entry of CORPUS) typeFn(controller, entry.e164, warmupSamples);
+    for (const entry of CORPUS) typeFn(controller, entry.e164, noop);
   }
-  warmupSamples.length = 0;
 
   const samples: number[] = [];
   for (let pass = 0; pass < MEASUREMENT_PASSES; pass++) {
-    for (const entry of CORPUS) typeFn(controller, entry.e164, samples);
+    for (const entry of CORPUS) typeFn(controller, entry.e164, (latencyMs: number) => samples.push(latencyMs));
   }
   return summarize(scenarioName, samples);
 }
@@ -118,3 +126,4 @@ const outputDir = join(dirname(fileURLToPath(import.meta.url)), 'dist');
 mkdirSync(outputDir, { recursive: true });
 writeFileSync(join(outputDir, 'keystroke-latency.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`Wrote keystroke-latency.json (${report.scenarios.length} scenarios)`);
+flushSink();

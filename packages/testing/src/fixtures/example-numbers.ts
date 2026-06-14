@@ -1,29 +1,27 @@
 import type { MetadataNumberType, RegionId } from '@telixon/core/engine';
+import { getMetadataTypeCount, getMetadataTypeExample, getMetadataTypeId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 
 /** Returns the engine-emitted example number for `(region, type)`. Throws when the tuple is unknown. */
 export function getExampleNumber(region: RegionId, type: MetadataNumberType): string {
   const provider = getResourceProvider();
 
-  const countryIndex: number | undefined = provider.refMapping.regions.keyToIndex[region];
+  const countryIndex: number | undefined = provider.regionKeyToIndex[region];
   if (countryIndex === undefined) {
     throw new Error(`getExampleNumber: unknown region "${region}"`);
   }
 
-  const territory = provider.territorySpecTable[countryIndex];
-  if (territory === undefined) {
-    throw new Error(`getExampleNumber: no territory spec for region "${region}"`);
-  }
-
-  const typeIndex: number = provider.refMapping.numberTypes.indexOf(type);
-  if (typeIndex === -1) {
+  const typeId: number = provider.numberTypeNames.indexOf(type);
+  if (typeId === -1) {
     throw new Error(`getExampleNumber: unknown number type "${type}"`);
   }
 
-  const phoneType = territory.numberTypes.find((entry) => entry.type === typeIndex);
-  if (phoneType?.exampleNumber === undefined) {
-    throw new Error(`getExampleNumber: no example number for region="${region}" type="${type}"`);
+  const typeCount: number = getMetadataTypeCount(provider.engine, countryIndex);
+  for (let typePosition = 0; typePosition < typeCount; typePosition++) {
+    if (getMetadataTypeId(provider.engine, countryIndex, typePosition) !== typeId) continue;
+    const example: string | undefined = getMetadataTypeExample(provider.engine, countryIndex, typePosition);
+    if (example !== undefined) return example;
   }
 
-  return String(phoneType.exampleNumber);
+  throw new Error(`getExampleNumber: no example number for region="${region}" type="${type}"`);
 }

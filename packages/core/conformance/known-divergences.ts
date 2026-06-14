@@ -1,9 +1,10 @@
-import { MethodName, Mismatch } from './models';
+import { MethodName, Mismatch, MismatchKind } from './models';
 
 export interface KnownDivergence {
   readonly method: MethodName;
+  readonly kind: MismatchKind;
   readonly regionCode: string;
-  readonly e164: string;
+  readonly input: string;
   readonly reason: string;
 }
 
@@ -12,9 +13,7 @@ export const KNOWN_DIVERGENCES: readonly KnownDivergence[] = [];
 
 function matches(divergence: KnownDivergence, mismatch: Mismatch): boolean {
   return (
-    divergence.method === mismatch.method &&
-    divergence.regionCode === mismatch.regionCode &&
-    divergence.e164 === mismatch.e164
+    divergence.method === mismatch.method && divergence.kind === mismatch.kind && divergence.input === mismatch.input
   );
 }
 

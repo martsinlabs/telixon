@@ -1,8 +1,11 @@
-import { createInternationalInputController, ensureReady, type InputController } from '@telixon/core';
-import { bench, describe } from 'vitest';
+import { createInternationalInputController, ensureEngineReady, type InputController } from '@telixon/core';
+import { afterAll, bench, describe } from 'vitest';
+import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
 
-await ensureReady();
+await ensureEngineReady();
+
+afterAll(flushSink);
 
 const controller: InputController = createInternationalInputController({ initialValue: '' });
 
@@ -15,6 +18,7 @@ function typeFullNumber(numberString: string): { value: string; selectionEnd: nu
     value = state.value;
     selectionEnd = state.selectionEnd;
   }
+  consume(value);
   return { value, selectionEnd };
 }
 
@@ -37,13 +41,13 @@ describe('input-controller: type-through + full PhoneNumber query suite per keys
         value = state.value;
         selectionEnd = state.selectionEnd;
         const phoneNumber = controller.getPhoneNumber();
-        phoneNumber.isValid();
-        phoneNumber.isPossible();
-        phoneNumber.getNumberType();
-        phoneNumber.getCountry();
-        phoneNumber.getNationalNumber();
-        phoneNumber.getCallingCode();
-        phoneNumber.formatInternational();
+        consume(phoneNumber.isValid());
+        consume(phoneNumber.isPossible());
+        consume(phoneNumber.getNumberType());
+        consume(phoneNumber.getCountry());
+        consume(phoneNumber.getNationalNumber());
+        consume(phoneNumber.getCallingCode());
+        consume(phoneNumber.formatInternational());
       }
     }
   });

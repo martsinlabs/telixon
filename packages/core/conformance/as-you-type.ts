@@ -44,8 +44,7 @@ export const internationalProbe: AsYouTypeProbe = (oracle, entry) => ({
   telixon: asYouTypeWithTelixon(entry.e164),
 });
 
-// National: type the national digits (national prefix + NSN) into the national controller and Google's
-// formatter for the entry's region.
+// National: type the national digits (national prefix + NSN) into the national controller and Google's formatter for the entry's region.
 export const nationalProbe: AsYouTypeProbe = (oracle, entry) => {
   const country = toRegionId(entry.regionCode);
   if (!country) return null;
@@ -58,16 +57,12 @@ export const nationalProbe: AsYouTypeProbe = (oracle, entry) => {
   };
 };
 
-// Our controller deliberately previews the next group separator (e.g. "+376 712 "); Google does not.
-// Stripping trailing non-digits isolates that intentional choice from genuine grouping divergences.
+// Our controller previews the next group separator (e.g. "+376 712 "), Google does not; stripping trailing non-digits isolates that from real grouping divergences.
 function stripTrailing(value: string): string {
   return value.replace(/\D+$/, '');
 }
 
-// Replays each corpus number one character at a time through both sides via `probe`, comparing the live
-// value at every keystroke. A measurement (not a gate): it reports parity with Google's progressive
-// formatter both raw and ignoring the deliberate trailing-separator preview, with a sample of the
-// remaining (meaningful) divergences.
+// Replays each corpus number char by char through both sides, comparing every keystroke. A measurement (not a gate): parity with Google both raw and ignoring the trailing-separator preview.
 export function measureAsYouType(
   oracle: Oracle,
   corpus: readonly CorpusEntry[],

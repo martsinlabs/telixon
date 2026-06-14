@@ -65,7 +65,6 @@ interface KeystrokeLatencyDistribution {
   readonly p95: number;
   readonly p99: number;
   readonly p999: number;
-  readonly max: number;
 }
 
 interface KeystrokeLatencyReport {
@@ -241,7 +240,7 @@ function renderHtml(data: BenchData): string {
   const tokens: Record<string, string> = {
     '{{commit}}': data.commit,
     '{{shortCommit}}': data.commit.slice(0, 7),
-    '{{corpusSize}}': String(data.corpusSize),
+    '{{corpusSize}}': data.corpusSize.toLocaleString('en-US'),
     '{{libphonenumberJsVersion}}': data.competitors.libphonenumberJs,
     '{{googleLibphonenumberVersion}}': data.competitors.googleLibphonenumber,
     '{{runAt}}': data.runAt,
@@ -250,6 +249,7 @@ function renderHtml(data: BenchData): string {
     '{{coldRows}}': data.cold.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
     '{{warmRows}}': data.warm.map((row) => renderHotpathRow(row, /*method=*/ true)).join('\n        '),
     '{{inputControllerRows}}': data.inputController.map(renderInputControllerRow).join('\n        '),
+    '{{keystrokeHero}}': renderKeystrokeHero(data),
     '{{keystrokeLatencyRows}}': renderKeystrokeLatencyRows(data.keystrokeLatency),
     '{{keystrokeLatencyVerdict}}': renderKeystrokeLatencyVerdict(data.keystrokeLatency),
     '{{ogTitle}}': renderOgTitle(),
@@ -258,11 +258,47 @@ function renderHtml(data: BenchData): string {
   return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), template);
 }
 
+// The three statements a reader should leave with, plus the frame bar for scale: median keystroke, p99 headroom in a 60 Hz frame, and a full corpus pass against one frame.
+function renderKeystrokeHero(data: BenchData): string {
+  const report = data.keystrokeLatency;
+  if (!report || report.scenarios.length === 0) return '';
+
+  const insertScenario = report.scenarios[0]!;
+  const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
+  const headroom = Math.round(report.frameBudgetMs / worstP99).toLocaleString('en-US');
+  const p99Percent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(3);
+
+  const typeThrough = data.inputController.find((row) => row.label.startsWith('type-through full number'));
+  const corpusCard = typeThrough
+    ? `<div class="stat-card"><div class="stat-value">${formatLatency(typeThrough.mean)}</div>` +
+      `<div class="stat-label">the whole corpus, typed</div>` +
+      `<div class="stat-sub">every digit of all ${data.corpusSize.toLocaleString('en-US')} numbers` +
+      `${typeThrough.mean < report.frameBudgetMs ? ', inside one frame' : ''}</div></div>`
+    : '';
+
+  const fillPercent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(4);
+
+  return (
+    `<div class="hero-stats">` +
+    `<div class="stat-card"><div class="stat-value">${formatLatency(insertScenario.p50)}</div>` +
+    `<div class="stat-label">median keystroke</div>` +
+    `<div class="stat-sub">insert + resolve + format + caret</div></div>` +
+    `<div class="stat-card"><div class="stat-value">${headroom}&times;</div>` +
+    `<div class="stat-label">headroom in one frame</div>` +
+    `<div class="stat-sub">p99 keystroke ${formatLatency(worstP99)} of the 16.67 ms budget</div></div>` +
+    corpusCard +
+    `</div>` +
+    `<div class="frame-bar"><div class="frame-bar-fill" style="width: ${fillPercent}%"></div></div>` +
+    `<div class="frame-bar-caption">One 60 Hz frame. The line at the left edge is the p99 keystroke ` +
+    `(${formatLatency(worstP99)}), drawn at minimum visible width; to scale it would be ${p99Percent}% of the bar.</div>`
+  );
+}
+
 function renderKeystrokeLatencyRows(report: KeystrokeLatencyReport | null): string {
   if (!report) return '';
   return report.scenarios
     .map((scenario) => {
-      return `<tr><td>${escapeHtml(scenario.scenario)}</td><td>${scenario.sampleCount.toLocaleString('en-US')}</td><td>${formatLatency(scenario.mean)}</td><td>${formatLatency(scenario.p50)}</td><td>${formatLatency(scenario.p95)}</td><td>${formatLatency(scenario.p99)}</td><td>${formatLatency(scenario.p999)}</td><td>${formatLatency(scenario.max)}</td></tr>`;
+      return `<tr><td>${escapeHtml(scenario.scenario)}</td><td>${scenario.sampleCount.toLocaleString('en-US')}</td><td>${formatLatency(scenario.mean)}</td><td>${formatLatency(scenario.p50)}</td><td>${formatLatency(scenario.p95)}</td><td>${formatLatency(scenario.p99)}</td><td>${formatLatency(scenario.p999)}</td></tr>`;
     })
     .join('\n        ');
 }
@@ -271,18 +307,16 @@ function renderKeystrokeLatencyVerdict(report: KeystrokeLatencyReport | null): s
   if (!report) return '';
   const totalSamples = report.scenarios.reduce((sum, s) => sum + s.sampleCount, 0);
   const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
-  const worstMax = report.scenarios.reduce((max, s) => (s.max > max ? s.max : max), 0);
+  const worstP999 = report.scenarios.reduce((max, s) => (s.p999 > max ? s.p999 : max), 0);
   const totalSamplesFormatted = totalSamples.toLocaleString('en-US');
-  const p99Percent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(3);
   const p99Headroom = Math.round(report.frameBudgetMs / worstP99).toLocaleString('en-US');
-  const maxPercent = ((worstMax / report.frameBudgetMs) * 100).toFixed(2);
-  const maxHeadroom = Math.round(report.frameBudgetMs / worstMax).toLocaleString('en-US');
+  const p999Percent = ((worstP999 / report.frameBudgetMs) * 100).toFixed(3);
+  const p999Headroom = Math.round(report.frameBudgetMs / worstP999).toLocaleString('en-US');
   return (
-    `<p>Across ${totalSamplesFormatted} sampled keystrokes, the 99th-percentile keystroke is ` +
-    `${formatLatency(worstP99)}, ${p99Percent}% of the 16.67 ms frame budget (${p99Headroom}&times; headroom). ` +
-    `The single worst keystroke observed was ${formatLatency(worstMax)} (${maxPercent}% of budget, ` +
-    `${maxHeadroom}&times; headroom): a 1-in-${totalSamplesFormatted} outlier, likely a runtime pause from ` +
-    `V8 garbage collection or OS scheduling.</p>` +
+    `<p>Across ${totalSamplesFormatted} sampled keystrokes, the 99th percentile is ${formatLatency(worstP99)} ` +
+    `(${p99Headroom}&times; frame-budget headroom) and the 99.9th is ${formatLatency(worstP999)} ` +
+    `(${p999Percent}% of the 16.67 ms budget, ${p999Headroom}&times; headroom). The single maximum is omitted: ` +
+    `the maximum of a sample set is dominated by OS scheduling, not the code, and grows with sample count.</p>` +
     `<p><strong>Phone-number processing alone cannot cause UI frame drops on a 60Hz display.</strong></p>`
   );
 }

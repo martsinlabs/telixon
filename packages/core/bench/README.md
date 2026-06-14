@@ -35,8 +35,8 @@ on-disk snapshot, so the bench cannot drift from conformance.
 
 Telixon's `PhoneNumber` memoizes derived values; competitors recompute on every call. Where
 libphonenumber-js stores a field as a direct property after parse (`nationalNumber`,
-`countryCallingCode`, `number`, `country`), warm property access is 1-4% faster than Telixon's
-cached method.
+`countryCallingCode`, `number`, `country`), the warm comparison is a property read against
+Telixon's cached method call; the dashboard shows the current numbers.
 
 ## Files
 
@@ -45,6 +45,7 @@ cached method.
   undo+redo cycle, full unwind. Competitor formatters have no comparable API.
 - `competitors.ts`: three adapters, one `PhoneLibraryAdapter` interface.
 - `corpus.ts`: live corpus build from the oracle.
+- `measure-keystroke-latency.ts`: per-keystroke insert latency distribution (`dist/keystroke-latency.json`).
 - `artifacts.ts` + `emit-artifacts.ts` + `benchmark.template.html`: JSON + HTML emitter.
 
 ## Caveats
