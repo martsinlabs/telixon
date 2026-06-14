@@ -54,16 +54,16 @@ The layer model below is designed so they slot in without reshaping existing pac
 
 Each layer adds one concern and depends only on layers beneath it.
 
-| Layer | Where                         | Adds                                               | Depends on | Status  |
-| ----- | ----------------------------- | -------------------------------------------------- | ---------- | ------- |
-| 0     | `core/src/engine` (generated) | Metadata: binary DFA + JSON, provenance-pinned     | nothing    | present |
-| 1     | `core/src/engine` accessor    | Engine: typed access and walk/format primitives    | layer 0    | present |
-| 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads) | layer 1    | present |
-| 3     | `core/src/resource-*`         | How metadata reaches the engine (node / browser)   | layer 1    | present |
-| 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`   | core       | present |
-| 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state     | web-sdk    | planned |
-| 6     | `components`                  | Optional drop-in `<tel-input>`; the only renderer  | web-sdk    | planned |
-| 7     | user code                     | All markup, styles, country-selector wiring        | a binding  | n/a     |
+| Layer | Where                         | Adds                                                                  | Depends on | Status  |
+| ----- | ----------------------------- | --------------------------------------------------------------------- | ---------- | ------- |
+| 0     | `core/src/engine` (generated) | Metadata: binary engine layers, provenance-pinned                     | nothing    | present |
+| 1     | `core/src/engine` accessor    | Engine: typed access and walk/format primitives                       | layer 0    | present |
+| 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads)                    | layer 1    | present |
+| 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge) | layer 1    | present |
+| 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`                      | core       | present |
+| 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                        | web-sdk    | planned |
+| 6     | `components`                  | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
+| 7     | user code                     | All markup, styles, country-selector wiring                           | a binding  | n/a     |
 
 The split keeps the engine free of DOM, reactivity, and framework weight, and lets a caller enter at
 the level matching their need:
@@ -109,19 +109,13 @@ Resolving a number is therefore a linear-time table walk, deterministic and back
 what makes per-keystroke resolution cheap. The recognition automaton is global and unified: one number
 is matched against every region at once, with no per-region data to load. The only regular expression
 left at runtime is the per-territory national-prefix rewrite, a bounded capture-group transform applied
-once per parse. The binary layers:
+once per parse. The engine ships as four embedded modules carrying nine binary layers:
 
 ```
-dfa/graph.bin                 the state graph (largest layer)
-dfa/calling-codes.bin         calling-code dispatch
-dfa/country-scope.bin         region scoping
-dfa/number-type-scope.bin     number-type scoping
-dfa/number-type-profile.bin   per-type length and format profiles
-dfa/format-select.bin         regex-free format selection
-dfa/region-select.bin         regex-free region disambiguation
-metadata/formats.json         formatting templates and masks
-metadata/territories.json     territory data
-metadata/reference-mapping.json
+walk.bin.js      recognition DFA state graph, calling-code dispatch, region disambiguation
+verdict.bin.js   baked validity and number-type verdicts, exact-acceptance terminals
+scope.bin.js     number-type scope, per-region length masks
+metadata.bin.js  formats, masks, territory and reference data (string-table encoded), format selection
 ```
 
 **Provenance is the audit trail.** `engine/PROVENANCE.json` pins the upstream repository, commit, file
@@ -129,34 +123,40 @@ hash, and coverage. Nothing is derived by hand; the file is what lets accuracy b
 
 ## Metadata delivery
 
-Metadata loads **eagerly** and as a **single indivisible artifact**. Because the automaton is unified,
-a single region cannot be loaded in isolation; there is no per-region lazy loading by design.
+The engine loads as a **single indivisible artifact**. Because the recognition automaton is unified, a
+single region cannot be loaded in isolation; there is no per-region lazy loading by design.
 
-The artifact ships in two channels, and the resource loader for the environment selects one:
+The four modules ship as base64-of-gzip ESM (`engine/embedded/*.bin.js`); the library owns loading and
+decoding, and each environment uses the fastest path it has:
 
-- **`raw`**: the gzipped artifact files. The Node loader reads them from the filesystem and gunzips
-  them.
-- **`embedded`**: one base64 ESM module per artifact. The browser loader imports them; the host bundler
-  code-splits them into lazy chunks served from the application's own origin, and the loader decodes and
-  gunzips the payload.
+- **Node**: the modules are static imports; the first API call decodes them synchronously with native
+  `node:zlib` and proceeds.
+- **Browser**: the host bundler code-splits the modules into lazy chunks. The consumer triggers the
+  load with `ensureEngineReady()` (the library does no import-time work), decoding off the main thread
+  (`DecompressionStream`), with a pure-JS base64 + gunzip decoder as the universal floor.
+- **Edge** (`workerd`, `edge-light`, `worker`): the modules ship inside the deployed script and the
+  engine initializes synchronously in global scope, outside per-request CPU accounting.
 
 The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The engine artifact loads once at runtime, out of the initial bundle (~95 KB gzipped, ~1 MB
-  decompressed). On Node it is filesystem data; in the browser it is lazy, content-hashed chunks,
-  cached after first load.
+- The engine artifact is runtime data, out of the initial JS bundle (~120 KB gzipped across four
+  content-hashed chunks, ~0.73 MB decompressed). In Node it is local module data; in the browser it is
+  lazy chunks cached after first load.
 
-`ensureReady()` resolves once the loader has the artifact available; `index.node.ts` and
-`index.browser.ts` register the correct loader at the edge and re-export the shared `index.ts`, so the
-rest of the engine stays environment-agnostic.
+`index.node.ts`, `index.browser.ts`, and `index.edge.ts` (selected via package export conditions)
+register the correct loader and re-export the shared `index.ts`, so the rest of the engine stays
+environment-agnostic. `ensureEngineReady()` (async) and `ensureEngineReadySync()` pay the one-time
+decode-and-parse cost at a chosen moment; otherwise the first API call initializes on its own
+(synchronously in Node and on edge). `isEngineReady()` is a synchronous readiness predicate. Full
+detail: [Initialization](docs/initialization.md).
 
 ## Resolution
 
 There is one resolution core. Both entry shapes use it; neither duplicates query logic:
 
 - `parsePhoneNumber(input, options)`: one-shot, for a complete string.
-- `createInternationalInputController` / `createNationalInputController`: incremental, as-you-type.
+- `createInternationalInputController` / `createNationalInputController`: incremental, per keystroke.
 
 The `PhoneNumber` query surface (`isValid`, `isPossible`, `isPossibleWithReason`, `getNumberType`,
 `getNationalNumber`, `getCallingCode`, `getCountry`, `getE164`, `formatNational`, `formatInternational`,
@@ -170,10 +170,11 @@ in CI; the rest are enforced in review.
 ### Accuracy
 
 `packages/core/conformance` runs the public query methods against Google's libphonenumber across every
-supported region and fails CI on any divergence outside an explicit allowlist. The oracle loads
-Google's source at **the same commit the engine was compiled from**, so there is no metadata version
-drift: a mismatch is always a real engine difference, never a stale reference. The current baseline
-matches every compared behavior exactly, so the allowlist is empty. See
+supported region, on valid numbers, display spellings, deterministic corruptions, and every digit
+prefix, and fails CI on any divergence outside an explicit allowlist. The oracle loads Google's
+source at **the same commit the engine was compiled from**, so there is no metadata version drift: a
+mismatch is always a real engine difference, never a stale reference. The current baseline is on the
+[live dashboard](https://telixon.dev/parity.html). See
 [conformance/README.md](packages/core/conformance/README.md).
 
 ### Performance

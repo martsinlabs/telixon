@@ -18,13 +18,13 @@ packages/
 
 ### Core package
 
-- `src/engine/`: generated DFA artifact compiled from Google's libphonenumber metadata; accessor (`index.js`/`index.d.ts`) plus `raw/` (gzip, for Node) and `embedded/` (base64 ESM, for the browser) channels
+- `src/engine/`: generated DFA artifact compiled from Google's libphonenumber metadata; accessor (`index.js`/`index.d.ts`) plus `embedded/` (four base64-of-gzip ESM modules, nine layers). The library owns loading: fetch/import the modules, decode (native per environment, pure-JS floor), `parseEngine`/`assembleEngine`
 - `src/modules/`: feature modules (`number-resolver`, `input-controller`, …)
 - `src/models/`: shared types
 - `src/utils/`: pure, reusable utilities
 - `src/resource-provider/`: resource abstraction
-- `src/resource-loader/`: environment loaders (node / browser)
-- Entry points: `index.ts`, `index.node.ts`, `index.browser.ts`
+- `src/resource-loader/`: environment loaders (embedded for node/edge, web for browser)
+- Entry points: `index.ts`, `index.node.ts`, `index.browser.ts`, `index.edge.ts`
 
 Build: `tsup`. Engine binaries copied post-build via `cpy`.
 

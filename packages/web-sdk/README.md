@@ -13,10 +13,11 @@ npm install @telixon/core @telixon/web-sdk
 ## Quick start
 
 ```ts
-import { ensureReady } from '@telixon/core';
+import { ensureEngineReady } from '@telixon/core';
 import { createPhoneInput } from '@telixon/web-sdk';
 
-await ensureReady();
+// Load the engine before creating an input: createPhoneInput reads metadata and needs it ready.
+await ensureEngineReady();
 
 const phone = createPhoneInput({
   input: document.querySelector<HTMLInputElement>('#phone')!,
@@ -30,14 +31,14 @@ phone.subscribe((state) => {
 
 ## Highlights
 
-- **Caret-stable as-you-type formatting.** The controller resolves and reformats on every keystroke without jumping the caret.
+- **Full input controller.** Live formatting on every keystroke with a stable caret, including mid-string edits, deletions, and paste, not just appended digits.
 - **Controlled history.** Undo and redo restore the exact prior value and caret position.
 - **Headless.** No styles, no rendering. Bind to any framework or to a plain `<input>`.
 - **Framework-agnostic.** Works in React, Vue, Angular, Svelte, or vanilla JS.
 
 ## What's in this package
 
-- `createPhoneInput`: DOM-bound phone input controller (caret-stable as-you-type, history, validation surface).
+- `createPhoneInput`: DOM-bound phone input controller (live formatting with a stable caret, history, validation surface).
 - `createCountryList`: headless country list state machine (search, filtering, selection).
 
 Engine, parser, and formatter live in [`@telixon/core`](https://www.npmjs.com/package/@telixon/core).

@@ -24,6 +24,7 @@ A pnpm monorepo. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full picture.
 ```
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
+packages/testing   @telixon/testing internal test fixtures (not published)
 apps/sandbox       internal dev workbench
 ```
 

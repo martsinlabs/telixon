@@ -36,7 +36,8 @@ body:
         - formatInternational
         - formatNational
         - getURI
-        - formatAsYouType
+        - possibility prefix sweep
+        - as-you-type controller value
     validations:
       required: true
   - type: input

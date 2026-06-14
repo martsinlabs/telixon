@@ -16,7 +16,10 @@ divergence.
 - **Version-matched.** [PROVENANCE.json](packages/core/src/engine/PROVENANCE.json) pins the upstream
   commit; the oracle loads Google's source at that exact commit, so there is no metadata version
   drift.
-- **Exhaustive.** Every supported region, every public query method, including as-you-type formatting.
+- **Exhaustive.** Every supported region and every public query method, on valid numbers, their
+  display spellings (international, national, RFC3966), deterministic corruptions of them (truncated,
+  extended, digit-shifted, unassigned calling codes), and every digit prefix, plus as-you-type
+  formatting.
 - **Reproducible.** `pnpm conformance` runs the gate locally.
 
 Live report: [telixon.dev/parity.html](https://telixon.dev/parity.html). Methodology:
@@ -30,8 +33,9 @@ region disambiguation and format selection run on finite-state transducers. Ever
 linear-time, backtracking-free walk over these tables, which is what keeps per-keystroke resolution
 cheap.
 
-The metadata is runtime data, loaded once and lazily — it is never part of your JS bundle and does not
-affect initial load. Details: [ARCHITECTURE.md](ARCHITECTURE.md).
+The metadata is runtime data loaded once, out of your JS bundle, so it never affects your initial
+bundle or load (in the browser you trigger the load with `ensureEngineReady()`). Details:
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Packages
 
