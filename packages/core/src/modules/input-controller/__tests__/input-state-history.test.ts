@@ -10,8 +10,7 @@ function makeState(value: string, country: RegionId | null = null, selectionStar
     selectionStart,
     selectionEnd: selectionStart,
     snapshot: {
-      state: 0,
-      terminalStates: [],
+      endState: 0,
       callingCodeDigits: '',
       nationalDigits: '',
       callingCodeCompleted: false,

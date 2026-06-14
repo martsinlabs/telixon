@@ -1,9 +1,9 @@
-import { NumberType, RegionId } from '@telixon/core/engine';
+import { getMetadataRegionCallingCode, NumberType, RegionId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
+import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
-import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
+import { resolveProfile } from '../../number-resolver/resolve-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
@@ -54,11 +54,12 @@ class InternationalInputController extends InputController {
   }
 
   #setDefaultCountry(country: RegionId): void {
-    this.#defaultCountryIndex = getResourceProvider().refMapping.regions.keyToIndex[country] ?? -1;
+    const resourceProvider = getResourceProvider();
+    this.#defaultCountryIndex = resourceProvider.regionKeyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
       this.#defaultCountryIndex !== -1
-        ? getResourceProvider().territorySpecTable[this.#defaultCountryIndex]!.countryCode
+        ? String(getMetadataRegionCallingCode(resourceProvider.engine, this.#defaultCountryIndex))
         : null;
   }
 
@@ -82,13 +83,7 @@ class InternationalInputController extends InputController {
     const caretIndex: number = resolveInput(value, change, (digit: number) => numberResolver.advance(digit));
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(snapshot);
-
-    const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
-      snapshot,
-      this.#defaultCountryIndex,
-      anchoredCountryIndex,
-    );
+    const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultCountryIndex);
 
     return resolveInternationalControllerState(snapshot, caretIndex, profile, this.config.display, direction);
   }
@@ -266,11 +261,9 @@ class InternationalInputController extends InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
-    const { snapshot, profileRef, nationalPrefixPresent } = this.#history.current;
+    const { snapshot, nationalPrefixPresent } = this.#history.current;
 
-    return createPhoneNumber(
-      toResolvedPhoneNumber(snapshot, profileRef, this.#defaultCountryIndex, nationalPrefixPresent),
-    );
+    return createPhoneNumber(toResolvedPhoneNumber(snapshot, this.#defaultCountryIndex, nationalPrefixPresent));
   }
 
   seal(): void {
@@ -299,7 +292,7 @@ class InternationalInputController extends InputController {
 }
 
 export function createInternationalInputController(config: InternationalInputControllerConfig = {}): InputController {
-  assertResourcesReady();
+  requireEngineReady();
 
   return new InternationalInputController(config);
 }

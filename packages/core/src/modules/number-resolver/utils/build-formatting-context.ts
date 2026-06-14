@@ -1,18 +1,20 @@
-import { PhoneNumberFormattingContext, ReferenceMapping } from '@telixon/core/engine';
+import { PhoneNumberFormattingContext } from '@telixon/core/engine';
+import { MetadataPlaceholders } from '@telixon/core/resource-provider/models';
 
-// Assembles the engine formatting context from a display mask and the reference-mapping placeholders.
+// Assembles the engine formatting context from a display mask and the load-time placeholders.
 export function buildFormattingContext(
   mask: string,
   nationalNumber: string,
-  refMapping: ReferenceMapping,
+  placeholders: MetadataPlaceholders,
   nationalPrefix?: string,
 ): PhoneNumberFormattingContext {
-  return {
+  const context: PhoneNumberFormattingContext = {
     mask,
     nationalNumber,
-    digitPlaceholder: refMapping.digitPlaceholder,
-    nationalPrefixPlaceholder: refMapping.nationalPrefixPlaceholder,
-    ignoredDigitPlaceholder: refMapping.ignoredDigitPlaceholder,
-    ...(nationalPrefix !== undefined && { nationalPrefix }),
+    digitPlaceholder: placeholders.digitPlaceholder,
+    nationalPrefixPlaceholder: placeholders.nationalPrefixPlaceholder,
+    ignoredDigitPlaceholder: placeholders.ignoredDigitPlaceholder,
   };
+  if (nationalPrefix !== undefined) context.nationalPrefix = nationalPrefix;
+  return context;
 }

@@ -1,8 +1,8 @@
 import { BinaryFilter } from '@telixon/core/models';
 
 export interface NumberResolverSnapshot {
-  readonly state: number;
-  readonly terminalStates: readonly number[];
+  // Deepest non-dead state of the walk; with the national digit count it keys verdicts and exact data.
+  readonly endState: number;
   readonly callingCodeDigits: string;
   readonly nationalDigits: string;
   readonly callingCodeCompleted: boolean;
@@ -13,7 +13,9 @@ export interface NumberResolverSnapshot {
 }
 
 export interface NumberTypeProfileRef {
-  stateCountryIndex: number;
+  // Region the profile belongs to (regions.indexToKey index).
+  regionIndex: number;
+  // Priority-order position of the type within the region's numberTypes.
   numberTypeIndex: number;
   numberTypeProfileId: number;
 }

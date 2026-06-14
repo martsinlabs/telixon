@@ -1,6 +1,5 @@
 import { NumberType, RegionId } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
-import { NumberTypeProfileRef } from '../../number-resolver/models';
 
 export type PhoneNumberValidationResult =
   | 'IS_POSSIBLE'
@@ -24,11 +23,10 @@ export interface ResolvedPhoneNumber {
   readonly nationalDigits: string;
   readonly callingCode: string;
   readonly callingCodeState: number;
-  readonly profileRef: NumberTypeProfileRef | null;
+  readonly endState: number;
   readonly defaultCountryIndex: number;
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
-  readonly terminalStates: readonly number[];
   readonly nationalPrefixPresent: boolean;
 }
 

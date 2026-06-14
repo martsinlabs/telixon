@@ -1,3 +1,4 @@
+import { ENGINE_DEAD, hasExactMatch } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberResolver } from '../number-resolver';
@@ -16,7 +17,7 @@ describe('NumberResolver: initial state', () => {
     const resolver = new NumberResolver();
 
     expect(resolver.state).toBe(0);
-    expect(resolver.terminalStates).toHaveLength(0);
+    expect(hasExactMatch(getResourceProvider().engine, resolver.endState)).toBe(false);
     expect(resolver.getCallingCode()).toBe('');
     expect(resolver.getNationalNumber()).toBe('');
     expect(resolver.callingCodeCompleted).toBe(false);
@@ -28,8 +29,7 @@ describe('NumberResolver: initial state', () => {
     const resolver = new NumberResolver();
     const snap = resolver.snapshot;
 
-    expect(snap.state).toBe(0);
-    expect(snap.terminalStates).toHaveLength(0);
+    expect(snap.endState).toBe(0);
     expect(snap.callingCodeDigits).toBe('');
     expect(snap.nationalDigits).toBe('');
     expect(snap.callingCodeCompleted).toBe(false);
@@ -62,35 +62,31 @@ describe('NumberResolver: advance', () => {
   it('absorbs further digits into nationalDigits once stuck in deadState', () => {
     const resolver = new NumberResolver();
     resolver.setCallingCode('1');
-    const deadStateId = getResourceProvider().graphLayer.deadStateId;
-
-    // 26 digits, well past any real national length, must hit deadState.
+    // 26 digits, well past any real national length, must hit the dead state.
     advanceAll(resolver, '99999999999999999999999999');
 
-    expect(resolver.state).toBe(deadStateId);
+    expect(resolver.state).toBe(ENGINE_DEAD);
     expect(resolver.getNationalNumber().length).toBe(26);
   });
 
   it('deadState is sticky, subsequent digits do not revive it', () => {
     const resolver = new NumberResolver();
     resolver.setCallingCode('1');
-    const deadStateId = getResourceProvider().graphLayer.deadStateId;
-
     advanceAll(resolver, '99999999999999999999999999');
     const stateAfterFirst = resolver.state;
-    expect(stateAfterFirst).toBe(deadStateId);
+    expect(stateAfterFirst).toBe(ENGINE_DEAD);
 
     resolver.advance(0);
-    expect(resolver.state).toBe(deadStateId);
+    expect(resolver.state).toBe(ENGINE_DEAD);
   });
 
-  it('accumulates terminalStates as the walk crosses terminal-prefix states', () => {
+  it('reaches a state carrying exact acceptance as the walk crosses terminals', () => {
     const resolver = new NumberResolver();
     resolver.setCallingCode('1');
-    expect(resolver.terminalStates).toHaveLength(0);
+    expect(hasExactMatch(getResourceProvider().engine, resolver.endState)).toBe(false);
 
     advanceAll(resolver, '4165551234');
-    expect(resolver.terminalStates.length).toBeGreaterThan(0);
+    expect(hasExactMatch(getResourceProvider().engine, resolver.endState)).toBe(true);
   });
 });
 
@@ -115,7 +111,7 @@ describe('NumberResolver: setCallingCode / reset', () => {
     resolver.reset();
 
     expect(resolver.state).toBe(0);
-    expect(resolver.terminalStates).toHaveLength(0);
+    expect(hasExactMatch(getResourceProvider().engine, resolver.endState)).toBe(false);
     expect(resolver.getCallingCode()).toBe('');
     expect(resolver.getNationalNumber()).toBe('');
     expect(resolver.callingCodeCompleted).toBe(false);

@@ -1,9 +1,9 @@
 import {
   forEachNumberTypeIndex,
   forEachRegionInCallingCodeState,
-  forEachStateRegion,
-  getNumberTypeMask,
-  isCallingCodeState,
+  forEachScopeRegion,
+  getScopeNumberTypeMask,
+  isInCallingCode,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -21,8 +21,8 @@ export function stateMatchesFilters(
 
   let foundMatch: boolean = false;
 
-  if (isCallingCodeState(resourceProvider.callingCodeLayer, state)) {
-    forEachRegionInCallingCodeState(resourceProvider.callingCodeLayer, state, (countryIndex: number) => {
+  if (isInCallingCode(resourceProvider.engine, state)) {
+    forEachRegionInCallingCodeState(resourceProvider.engine, state, (countryIndex: number) => {
       if (!countryFilter || countryFilter[countryIndex]) {
         foundMatch = true;
         return true;
@@ -32,10 +32,10 @@ export function stateMatchesFilters(
     return foundMatch;
   }
 
-  forEachStateRegion(resourceProvider.countryScopeLayer, state, (stateCountryIndex: number, countryIndex: number) => {
+  forEachScopeRegion(resourceProvider.engine, state, (scopeEntryIndex: number, countryIndex: number) => {
     if (countryFilter && countryFilter[countryIndex] === 0) return;
 
-    const mask: number = getNumberTypeMask(resourceProvider.numberTypeScopeLayer, stateCountryIndex);
+    const mask: number = getScopeNumberTypeMask(resourceProvider.engine, scopeEntryIndex);
 
     forEachNumberTypeIndex(mask, (numberTypeIndex: number) => {
       if (!numberTypeFilter || isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) {

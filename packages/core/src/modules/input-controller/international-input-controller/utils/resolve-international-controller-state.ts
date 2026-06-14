@@ -1,16 +1,16 @@
 import {
   formatNumber,
   FormattingDirection,
-  getCallingCodePrimaryRegion,
-  getRegionIndex,
-  PhoneNumberFormat,
+  getMetadataFormatIndex,
+  MASK_VARIANT,
   RegionId,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
 import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
-import { pickMaskForLength } from '../../../number-resolver/utils/pick-mask-for-length';
+import { hasMaskVariant, pickFormatMask } from '../../../number-resolver/utils/format-masks';
+import { resolvePrimaryCountryIndex } from '../../../number-resolver/utils/resolve-primary-country-index';
 import { resolveRegionCodeOrFallback } from '../../../number-resolver/utils/resolve-region-code-or-fallback';
 import { selectInternationalFormatIndex } from '../../../number-resolver/utils/select-international-format';
 import { CaretIndex, InputControllerState } from '../../models';
@@ -25,7 +25,7 @@ export function resolveInternationalControllerState(
   display: InternationalDisplayConfig = DEFAULT_DISPLAY,
   direction: FormattingDirection = 'forward',
 ): InputControllerState {
-  const { refMapping, countryScopeLayer, callingCodeLayer, formatsTable } = getResourceProvider();
+  const resourceProvider = getResourceProvider();
 
   const callingCodeLength: number = snapshot.callingCodeDigits.length;
   const nationalCaretIndex: number = display.callingCodeInInput ? caretIndex - callingCodeLength : caretIndex;
@@ -37,23 +37,28 @@ export function resolveInternationalControllerState(
   let country: RegionId | null = null;
 
   if (profile) {
-    const countryIndex: number = getRegionIndex(countryScopeLayer, profile.stateCountryIndex);
+    const countryIndex: number = profile.regionIndex;
     const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
 
-    // Group as aggressively as possible: a complete pattern wins (canonical formatInternational),
-    // otherwise fall back to progressive partial grouping at every keystroke.
+    // Complete pattern wins (= formatInternational), else progressive partial grouping per keystroke.
     const selectedIndex: number = selectInternationalFormatIndex(callingCodeIndex, snapshot.nationalDigits, true);
 
     if (selectedIndex >= 0) {
       formatIndex = selectedIndex;
-      const format: PhoneNumberFormat = formatsTable[callingCodeIndex]![selectedIndex]!;
+      const globalFormatIndex: number = getMetadataFormatIndex(
+        resourceProvider.engine,
+        callingCodeIndex,
+        selectedIndex,
+      );
 
-      const masksByLength = format.masks.international ?? format.masks.national;
-      const mask: string | undefined = pickMaskForLength(masksByLength, snapshot.nationalDigits.length);
+      const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.International)
+        ? MASK_VARIANT.International
+        : MASK_VARIANT.National;
+      const mask: string | undefined = pickFormatMask(globalFormatIndex, variant, snapshot.nationalDigits.length);
 
       if (mask !== undefined) {
         const { formatted, caretIndex: natCaretFormatted } = formatNumber(
-          buildFormattingContext(mask, snapshot.nationalDigits, refMapping),
+          buildFormattingContext(mask, snapshot.nationalDigits, resourceProvider.placeholders),
           caretInCallingCode ? 0 : nationalCaretIndex,
           direction,
         );
@@ -66,11 +71,16 @@ export function resolveInternationalControllerState(
       }
     }
 
-    country = resolveRegionCodeOrFallback(snapshot.callingCodeState, snapshot.nationalDigits, countryIndex);
+    country = resolveRegionCodeOrFallback(
+      snapshot.callingCodeState,
+      snapshot.endState,
+      snapshot.nationalDigits,
+      countryIndex,
+    );
   } else if (snapshot.callingCodeState !== -1) {
-    const primaryCountryIndex: number = getCallingCodePrimaryRegion(callingCodeLayer, snapshot.callingCodeState);
+    const primaryCountryIndex: number = resolvePrimaryCountryIndex(snapshot.callingCodeState, -1);
 
-    country = refMapping.regions.indexToKey[primaryCountryIndex] ?? null;
+    country = resourceProvider.regionIds[primaryCountryIndex] ?? null;
   }
 
   let value: string;

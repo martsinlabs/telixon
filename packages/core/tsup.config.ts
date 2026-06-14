@@ -2,8 +2,7 @@ import { defineConfig, type Options } from 'tsup';
 
 type EsbuildPlugin = NonNullable<Options['esbuildPlugins']>[number];
 
-// Keep the shipped EMBEDDED channel modules external so the host bundler code-splits the real
-// engine/embedded/*.js files; esbuild can't mark relative paths external via the `external` glob.
+// Keep the shipped EMBEDDED channel modules external so the host bundler code-splits the real engine/embedded/*.js files (esbuild can't mark relative paths external via `external`).
 const externalEmbedded: EsbuildPlugin = {
   name: 'external-embedded-engine',
   setup(build) {
@@ -15,6 +14,7 @@ export default defineConfig({
   entry: {
     'index.browser': 'src/index.browser.ts',
     'index.node': 'src/index.node.ts',
+    'index.edge': 'src/index.edge.ts',
   },
   format: ['esm'],
   dts: true,

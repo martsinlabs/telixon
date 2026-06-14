@@ -4,11 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { createCountryFilter, createNumberTypeFilter } from '../filter-factory';
 
 function metadataTypeIndex(type: MetadataNumberType): number {
-  return getResourceProvider().refMapping.numberTypes.indexOf(type);
+  return getResourceProvider().numberTypeNames.indexOf(type);
 }
 
 function countryIndex(id: RegionId): number {
-  return getResourceProvider().refMapping.regions.keyToIndex[id] ?? -1;
+  return getResourceProvider().regionKeyToIndex[id] ?? -1;
 }
 
 function bitsSetAt(filter: Uint8Array, indices: readonly number[]): boolean {

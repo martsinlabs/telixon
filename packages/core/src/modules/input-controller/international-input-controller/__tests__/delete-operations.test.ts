@@ -8,9 +8,7 @@ const US_MOBILE_INTL = '1' + US_MOBILE;
 describe('InternationalInputController.deleteBackward', () => {
   it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
-    // Initial value: '1 '. Caret at 2 (end). Char at index 1 is the calling-code separator.
-    // The separator is structurally re-added on resolve, so backspace cannot remove it
-    // caret snaps back to the position right after the calling-code digit instead.
+    // '1 ' with caret at end: the separator is structurally re-added on resolve, so backspace snaps the caret after the calling-code digit.
     const state = controller.deleteBackward('1 ', 2, 2);
 
     expect(state.value).toBe('1 ');

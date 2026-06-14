@@ -1,10 +1,13 @@
-import { MetadataNumberType } from '@telixon/core/engine';
+import {
+  getGeneralDescLocalOnlyLengthMask,
+  getMetadataTypeLocalOnlyMask,
+  getRegionTypeCount,
+} from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { isNumberTypeAllowed } from './is-number-type-allowed';
 
-const GENERAL_DESC: MetadataNumberType = 'GENERAL_DESC';
-
-// Union of local-only lengths across the country's allowed concrete number types.
+// libphonenumber testNumberLength reads general-desc local-only lengths; the per-type union applies only under a number-type filter (Telixon extension).
 export function getAllowedLocalOnlyLengthMask(
   countryIndex: number,
   countryFilter: BinaryFilter | null,
@@ -14,16 +17,17 @@ export function getAllowedLocalOnlyLengthMask(
   if (countryFilter && countryFilter[countryIndex] === 0) return 0;
 
   const resourceProvider = getResourceProvider();
-  const territorySpec = resourceProvider.territorySpecTable[countryIndex];
-  if (!territorySpec) return 0;
 
+  if (!numberTypeFilter) {
+    return getGeneralDescLocalOnlyLengthMask(resourceProvider.engine, countryIndex);
+  }
+
+  // Priority order keeps generalDesc last; the union covers concrete types only.
+  const typeCount: number = getRegionTypeCount(resourceProvider.engine, countryIndex);
   let unionMask = 0;
-
-  for (const numberType of territorySpec.numberTypes) {
-    if (resourceProvider.refMapping.numberTypes[numberType.type] === GENERAL_DESC) continue;
-    if (numberTypeFilter && numberTypeFilter[numberType.type] === 0) continue;
-
-    unionMask |= numberType.possibleLengths?.localOnly ?? 0;
+  for (let typePosition = 0; typePosition < typeCount - 1; typePosition++) {
+    if (!isNumberTypeAllowed(numberTypeFilter, countryIndex, typePosition)) continue;
+    unionMask |= getMetadataTypeLocalOnlyMask(resourceProvider.engine, countryIndex, typePosition);
   }
 
   return unionMask;

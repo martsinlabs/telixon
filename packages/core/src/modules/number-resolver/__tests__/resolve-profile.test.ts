@@ -1,10 +1,17 @@
-import { getRegionIndex, MetadataNumberType, normalizeNationalNumber, RegionId } from '@telixon/core/engine';
+import {
+  getMetadataRegionCallingCode,
+  getRegionTypeId,
+  MetadataNumberType,
+  normalizeNationalNumber,
+  RegionId,
+} from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberTypeProfileRef } from '../models';
 import { NumberResolver } from '../number-resolver';
-import { resolveFirstMatchingNumberTypeProfile } from '../resolve-first-matching-number-type-profile';
+import { resolveLatestConcreteRegionIndex, resolveProfile as resolveProfileRef } from '../resolve-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../utils/filter-factory';
+import { getNationalPrefixRules } from '../utils/get-national-prefix-rules';
 
 function createResolver(callingCode: string, nationalDigits: string): NumberResolver {
   const resolver = new NumberResolver();
@@ -19,64 +26,51 @@ function createResolver(callingCode: string, nationalDigits: string): NumberReso
 
 function createNationalResolver(country: RegionId, rawNationalDigits: string): NumberResolver {
   const resourceProvider = getResourceProvider();
-  const countryIndex = resourceProvider.refMapping.regions.keyToIndex[country] ?? -1;
-  const territorySpec = resourceProvider.territorySpecTable[countryIndex]!;
-  const { normalizedDigits } = normalizeNationalNumber(rawNationalDigits, territorySpec);
+  const countryIndex = resourceProvider.regionKeyToIndex[country] ?? -1;
+  const prefixRules = getNationalPrefixRules(countryIndex)!;
+  const { normalizedDigits } = normalizeNationalNumber(rawNationalDigits, prefixRules);
 
-  return createResolver(territorySpec.countryCode, normalizedDigits);
+  return createResolver(String(getMetadataRegionCallingCode(resourceProvider.engine, countryIndex)), normalizedDigits);
 }
 
 function resolveProfile(resolver: NumberResolver, preferredCountry?: RegionId): NumberTypeProfileRef | null {
   const resourceProvider = getResourceProvider();
-  const preferredCountryIndex = preferredCountry
-    ? (resourceProvider.refMapping.regions.keyToIndex[preferredCountry] ?? -1)
-    : -1;
+  const preferredCountryIndex = preferredCountry ? (resourceProvider.regionKeyToIndex[preferredCountry] ?? -1) : -1;
 
-  return resolveFirstMatchingNumberTypeProfile(
-    resolver.snapshot,
-    preferredCountryIndex,
-    resolver.resolveLatestConcreteCountryIndex(),
-  );
+  return resolveProfileRef(resolver.snapshot, preferredCountryIndex);
 }
 
 function getProfileCountry(profile: NumberTypeProfileRef): RegionId {
-  const resourceProvider = getResourceProvider();
-  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
-
-  return resourceProvider.refMapping.regions.indexToKey[countryIndex]!;
+  return getResourceProvider().regionIds[profile.regionIndex]!;
 }
 
 function getProfileType(profile: NumberTypeProfileRef): MetadataNumberType {
   const resourceProvider = getResourceProvider();
-  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
-  const numberType = resourceProvider.territorySpecTable[countryIndex]!.numberTypes[profile.numberTypeIndex]!;
+  const typeId = getRegionTypeId(resourceProvider.engine, profile.regionIndex, profile.numberTypeIndex);
 
-  return resourceProvider.refMapping.numberTypes[numberType.type]!;
+  return resourceProvider.numberTypeNames[typeId]!;
 }
 
 function isGeneralDesc(profile: NumberTypeProfileRef): boolean {
   const resourceProvider = getResourceProvider();
-  const countryIndex = getRegionIndex(resourceProvider.countryScopeLayer, profile.stateCountryIndex);
-  const generalDescType = resourceProvider.refMapping.numberTypes.length - 1;
+  const generalDescType = resourceProvider.numberTypeNames.length - 1;
 
-  return (
-    resourceProvider.territorySpecTable[countryIndex]!.numberTypes[profile.numberTypeIndex]!.type === generalDescType
-  );
+  return getRegionTypeId(resourceProvider.engine, profile.regionIndex, profile.numberTypeIndex) === generalDescType;
 }
 
 describe('resolveLatestConcreteCountryIndex', () => {
   it('keeps CA anchored while the 7-digit UAN length is still valid', () => {
     const resolver = createResolver('1', '3101234');
-    const countryIndex = resolver.resolveLatestConcreteCountryIndex();
+    const countryIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
 
-    expect(getResourceProvider().refMapping.regions.indexToKey[countryIndex]).toBe('CA');
+    expect(getResourceProvider().regionIds[countryIndex]).toBe('CA');
   });
 
   it('drops CA anchor once the input grows past the 7-digit UAN length', () => {
     const resolver = createResolver('1', '31012344');
-    const countryIndex = resolver.resolveLatestConcreteCountryIndex();
+    const countryIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
 
-    expect(getResourceProvider().refMapping.regions.indexToKey[countryIndex]).not.toBe('CA');
+    expect(getResourceProvider().regionIds[countryIndex]).not.toBe('CA');
   });
 });
 
@@ -112,8 +106,7 @@ describe('resolveFirstMatchingNumberTypeProfile', () => {
   });
 });
 
-// Priority chain: non-strict.
-// Steps mirror the JSDoc on resolveFirstMatchingNumberTypeProfile.
+// Priority chain (non-strict): steps mirror the JSDoc on resolveFirstMatchingNumberTypeProfile.
 describe('priority chain: non-strict', () => {
   // Step 1: anchored concrete exact wins before any other candidate.
   describe('Step 1: anchored concrete exact', () => {
@@ -168,19 +161,13 @@ describe('priority chain: non-strict', () => {
   // isAlive=false (dead state). Only terminal-prefix path is consulted.
   describe('dead-state recovery', () => {
     it('once state dies, falls back to terminal-prefix anchor (CA from 310 UAN)', () => {
-      // 3101234 = CA UAN exact. Appending an invalid digit drops the DFA to dead state
-      // while the snapshot keeps the CA terminal-prefix history.
+      // 3101234 = CA UAN exact; appending an invalid digit drops the DFA to dead state, but the snapshot keeps the CA terminal-prefix history.
       const resolver = createResolver('1', '3101234');
       resolver.advance(0); // pushes into dead state on most NANP roll-outs
 
-      const profile = resolveFirstMatchingNumberTypeProfile(
-        resolver.snapshot,
-        getResourceProvider().refMapping.regions.keyToIndex['US']!,
-        resolver.resolveLatestConcreteCountryIndex(),
-      );
+      const profile = resolveProfileRef(resolver.snapshot, getResourceProvider().regionKeyToIndex['US']!);
 
-      // Whatever the resolver returns must come from the terminal-prefix history,
-      // not from a live DFA state: and CA's UAN was the only concrete anchor we saw.
+      // Whatever the resolver returns must come from the terminal-prefix history (CA's UAN, the only concrete anchor), not a live DFA state.
       if (profile !== null) {
         expect(['CA', 'US']).toContain(getProfileCountry(profile));
       }

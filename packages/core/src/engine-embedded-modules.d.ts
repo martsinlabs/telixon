@@ -1,11 +1,5 @@
-// Engine EMBEDDED channel modules: each `engine/embedded/<artifact>.js` exports the base64 of the
-// gzipped artifact bytes as its default export.
+// Engine EMBEDDED channel modules: each `engine/embedded/<file>.bin.js` default-exports layer keys to base64 of gzipped bytes.
 declare module '*.bin.js' {
-  const base64: string;
-  export default base64;
-}
-
-declare module '*.json.js' {
-  const base64: string;
-  export default base64;
+  const layers: Readonly<Record<string, string>>;
+  export default layers;
 }

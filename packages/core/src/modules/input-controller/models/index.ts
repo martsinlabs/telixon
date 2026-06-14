@@ -1,4 +1,4 @@
-import { CallingCodeLayer, GraphLayer, NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionId } from '@telixon/core/engine';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
@@ -22,15 +22,6 @@ export interface InputChange {
   insertText: string;
   selectionStart: number;
   selectionEnd: number;
-}
-
-export interface InputResolveContext {
-  graphLayer: GraphLayer;
-  callingCodeLayer: CallingCodeLayer;
-  callingCode?: {
-    value: string;
-    graphState: number;
-  };
 }
 
 export type CaretIndex = number;

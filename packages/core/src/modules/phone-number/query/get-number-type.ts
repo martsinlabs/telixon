@@ -1,17 +1,18 @@
 import {
-  containsLength,
-  forEachNumberTypeIndex,
-  forEachStateRegionWithTerminalPrefix,
-  getLengthMask,
-  getNumberTypeMask,
-  getNumberTypeProfileId,
-  getRegionIndex,
-  getTerminalPrefixNumberTypeMask,
+  getVerdict,
   MetadataNumberType,
   NumberType,
+  RegionId,
+  toNumberTypes,
+  VERDICT_LENGTH_COUNT,
+  VERDICT_TYPE_FIXED_LINE_OR_MOBILE,
+  VERDICT_TYPE_UNKNOWN,
+  verdictIsDecided,
+  verdictType,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { isNumberTypeAllowed } from '../../number-resolver/utils/is-number-type-allowed';
+import { resolveExactMatchedTypeIdMask } from '../../number-resolver/utils/resolve-exact-matched-types';
+import { resolveRegionCode } from '../../number-resolver/utils/resolve-region-code';
 import { ResolvedPhoneNumber } from '../models';
 
 // One type from the matched set, in libphonenumber priority order (getNumberTypeHelper).
@@ -34,52 +35,54 @@ function selectNumberType(matched: readonly MetadataNumberType[]): Exclude<Numbe
   return null;
 }
 
-// Unions every type matching the full number across all terminal states of the resolved country:
-// one number can match FIXED_LINE in one terminal state and MOBILE in another.
-export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
-  const { profileRef, nationalDigits, numberTypeFilter, terminalStates } = resolved;
-  if (!profileRef) return null;
+// Explicit resolution behind the baked verdicts: undecided inputs and filtered queries.
+function getNumberTypeResolved(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
+  const { callingCodeState, nationalDigits, endState, countryFilter, numberTypeFilter } = resolved;
+
+  const region: RegionId | null = resolveRegionCode(callingCodeState, endState, nationalDigits);
+  if (!region) return null;
 
   const resourceProvider = getResourceProvider();
-  const scope = resourceProvider.numberTypeScopeLayer;
-  const profileLayer = resourceProvider.numberTypeProfileLayer;
-  const countryScopeLayer = resourceProvider.countryScopeLayer;
+  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[region];
+  if (countryIndex === undefined) return null;
+  if (countryFilter && countryFilter[countryIndex] === 0) return null;
 
-  const countryIndex: number = getRegionIndex(countryScopeLayer, profileRef.stateCountryIndex);
-  const territory = resourceProvider.territorySpecTable[countryIndex];
-  if (!territory) return null;
+  const matchedTypeIdMask: number = resolveExactMatchedTypeIdMask(
+    endState,
+    nationalDigits.length,
+    countryIndex,
+    numberTypeFilter,
+  );
+  if (matchedTypeIdMask === 0) return null;
 
-  const length: number = nationalDigits.length;
   const matched: MetadataNumberType[] = [];
-  let seenTypeIds = 0;
-
-  for (const terminalState of terminalStates) {
-    forEachStateRegionWithTerminalPrefix(countryScopeLayer, terminalState, (stateCountryIndex, stateCountry) => {
-      if (stateCountry !== countryIndex) return;
-
-      const numberTypeMask: number = getNumberTypeMask(scope, stateCountryIndex);
-      const candidateMask: number = getTerminalPrefixNumberTypeMask(scope, stateCountryIndex);
-
-      forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
-        if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) return;
-
-        const profileId: number = getNumberTypeProfileId(
-          profileLayer,
-          stateCountryIndex,
-          numberTypeMask,
-          numberTypeIndex,
-        );
-        if (!containsLength(getLengthMask(profileLayer, profileId), length)) return;
-
-        const typeId: number = territory.numberTypes[numberTypeIndex]!.type;
-        const typeBit: number = 1 << typeId;
-        if (seenTypeIds & typeBit) return;
-        seenTypeIds |= typeBit;
-
-        matched.push(resourceProvider.refMapping.numberTypes[typeId]!);
-      });
-    });
+  for (let typeId = 0; typeId < resourceProvider.numberTypeNames.length; typeId++) {
+    if (matchedTypeIdMask & (1 << typeId)) matched.push(resourceProvider.numberTypeNames[typeId]!);
   }
 
   return selectNumberType(matched);
+}
+
+// libphonenumber getNumberType: one baked verdict lookup on the unfiltered path.
+export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
+  const { nationalDigits, endState, countryFilter, numberTypeFilter } = resolved;
+  const length: number = nationalDigits.length;
+
+  if (length >= VERDICT_LENGTH_COUNT) return null;
+
+  if (!countryFilter && !numberTypeFilter) {
+    const resourceProvider = getResourceProvider();
+    const verdict: number = getVerdict(resourceProvider.engine, endState, length);
+    if (verdictIsDecided(verdict)) {
+      const publicType: number = verdictType(verdict);
+      if (publicType === VERDICT_TYPE_UNKNOWN) return null;
+      if (publicType === VERDICT_TYPE_FIXED_LINE_OR_MOBILE) return 'FIXED_LINE_OR_MOBILE';
+
+      const metadataType: MetadataNumberType = resourceProvider.numberTypeNames[publicType]!;
+      const numberType: NumberType | undefined = toNumberTypes([metadataType])[0];
+      return numberType !== undefined && numberType !== 'UNKNOWN' ? numberType : null;
+    }
+  }
+
+  return getNumberTypeResolved(resolved);
 }

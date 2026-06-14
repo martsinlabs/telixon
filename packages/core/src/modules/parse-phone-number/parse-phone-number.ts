@@ -1,21 +1,29 @@
-import { normalizeNationalNumber, TerritorySpec } from '@telixon/core/engine';
+import { getMetadataRegionCallingCode, getRegionNationalPrefix } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
+import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { NumberResolver } from '../number-resolver';
-import { NumberResolverSnapshot, NumberTypeProfileRef } from '../number-resolver/models';
-import { resolveFirstMatchingNumberTypeProfile } from '../number-resolver/resolve-first-matching-number-type-profile';
+import { NumberResolverSnapshot } from '../number-resolver/models';
+import { resolvePrimaryCountryIndex } from '../number-resolver/utils/resolve-primary-country-index';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../phone-number';
+import { applyNationalPrefixStrip } from './apply-national-prefix-strip';
 import { ParsePhoneNumberOptions } from './models';
 
 let cachedResolver: NumberResolver | null = null;
 
+function walkInputDigits(resolver: NumberResolver, input: string, fromIndex: number): void {
+  for (let inputIndex = fromIndex; inputIndex < input.length; inputIndex++) {
+    const charCode: number = input.charCodeAt(inputIndex);
+    if (charCode >= 0x30 && charCode <= 0x39) resolver.advance(charCode - 48);
+  }
+}
+
 // Parses a number into a PhoneNumber (no controller): '+' is international, else national via defaultCountry.
 export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions = {}): PhoneNumber {
-  assertResourcesReady();
+  requireEngineReady();
 
-  const { refMapping, territorySpecTable } = getResourceProvider();
+  const resourceProvider = getResourceProvider();
   const defaultCountryIndex: number =
-    options.defaultCountry !== undefined ? (refMapping.regions.keyToIndex[options.defaultCountry] ?? -1) : -1;
+    options.defaultCountry !== undefined ? (resourceProvider.regionKeyToIndex[options.defaultCountry] ?? -1) : -1;
 
   let bodyStartIndex = 0;
   while (bodyStartIndex < input.length) {
@@ -31,46 +39,39 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   resolver.setCountryFilter(null);
   resolver.setNumberTypeFilter(null);
   resolver.setStrict(false);
-  let nationalPrefixPresent: boolean = false;
 
   if (readAsNational) {
-    let nationalDigits = '';
-
-    for (let inputIndex = bodyStartIndex; inputIndex < input.length; inputIndex++) {
-      const charCode: number = input.charCodeAt(inputIndex);
-      if (charCode >= 0x30 && charCode <= 0x39) {
-        nationalDigits += String.fromCharCode(charCode);
-      }
-    }
-
-    const territorySpec: TerritorySpec = territorySpecTable[defaultCountryIndex]!;
-    resolver.setCallingCode(territorySpec.countryCode);
-    const normalizedDigits: string =
-      nationalDigits.length > 0
-        ? normalizeNationalNumber(nationalDigits, territorySpec).normalizedDigits
-        : nationalDigits;
-
-    nationalPrefixPresent = !!territorySpec.nationalPrefix && nationalDigits.startsWith(territorySpec.nationalPrefix);
-
-    for (let digitIndex = 0; digitIndex < normalizedDigits.length; digitIndex++) {
-      resolver.advance(normalizedDigits.charCodeAt(digitIndex) - 48);
-    }
+    resolver.setCallingCode(String(getMetadataRegionCallingCode(resourceProvider.engine, defaultCountryIndex)));
+    walkInputDigits(resolver, input, bodyStartIndex);
   } else {
     resolver.reset();
-    const firstDigitIndex: number = hasLeadingPlus ? bodyStartIndex + 1 : bodyStartIndex;
+    walkInputDigits(resolver, input, hasLeadingPlus ? bodyStartIndex + 1 : bodyStartIndex);
+  }
 
-    for (let inputIndex = firstDigitIndex; inputIndex < input.length; inputIndex++) {
-      const charCode: number = input.charCodeAt(inputIndex);
-      if (charCode >= 0x30 && charCode <= 0x39) resolver.advance(charCode - 48);
+  // libphonenumber strips the national prefix on both forms: national input against the default country, international against the calling code's main region.
+  const stripCountryIndex: number = readAsNational
+    ? defaultCountryIndex
+    : resolvePrimaryCountryIndex(resolver.callingCodeState, -1);
+  const nationalDigits: string = resolver.getNationalNumber();
+  const stripped: string | null = applyNationalPrefixStrip(
+    nationalDigits,
+    resolver.endState,
+    resolver.callingCodeState,
+    stripCountryIndex,
+  );
+
+  let nationalPrefixPresent: boolean = false;
+  if (stripped !== null) {
+    if (readAsNational) {
+      const nationalPrefix: string | undefined = getRegionNationalPrefix(resourceProvider.engine, defaultCountryIndex);
+      nationalPrefixPresent = !!nationalPrefix && nationalDigits.startsWith(nationalPrefix);
     }
+    const callingCodeDigits: string = resolver.getCallingCode();
+    resolver.setCallingCode(callingCodeDigits);
+    walkInputDigits(resolver, stripped, 0);
   }
 
   const snapshot: NumberResolverSnapshot = resolver.snapshot;
-  const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
-    snapshot,
-    defaultCountryIndex,
-    resolver.resolveLatestConcreteCountryIndex(snapshot),
-  );
 
-  return createPhoneNumber(toResolvedPhoneNumber(snapshot, profile, defaultCountryIndex, nationalPrefixPresent));
+  return createPhoneNumber(toResolvedPhoneNumber(snapshot, defaultCountryIndex, nationalPrefixPresent));
 }

@@ -1,7 +1,8 @@
-import { __clearProfileCaches } from '../resolve-first-matching-number-type-profile';
-import { __clearRegionCodeCache } from '../utils/resolve-region-code';
+import { __clearFormatMaskCaches } from '../utils/format-masks';
+import { __clearNationalPrefixRulesCache } from '../utils/get-national-prefix-rules';
 
+// Clears module-level memos derived from the artifact, so the bench's strict-cold scenarios measure true one-shot cost.
 export function clearGlobalCaches(): void {
-  __clearRegionCodeCache();
-  __clearProfileCaches();
+  __clearFormatMaskCaches();
+  __clearNationalPrefixRulesCache();
 }

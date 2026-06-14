@@ -7,15 +7,13 @@ import { resolveMetadataTypes } from './resolve-metadata-types';
 export function createCountryFilter(countryIds: readonly RegionId[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
-  const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.regions.indexToKey.length);
-
-  const keyToIndex: Record<RegionId, number> = resourceProvider.refMapping.regions.keyToIndex;
+  const filter: BinaryFilter = new Uint8Array(resourceProvider.regionIds.length);
 
   for (const countryId of countryIds) {
-    const idx: number | undefined = keyToIndex[countryId];
+    const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[countryId];
 
-    if (idx !== undefined) {
-      filter[idx] = 1;
+    if (countryIndex !== undefined) {
+      filter[countryIndex] = 1;
     }
   }
 
@@ -24,29 +22,24 @@ export function createCountryFilter(countryIds: readonly RegionId[]): BinaryFilt
 
 export function createNumberTypeFilter(numberTypes: readonly NumberType[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
+  const typeNames: readonly string[] = resourceProvider.numberTypeNames;
 
-  const filter: BinaryFilter = new Uint8Array(resourceProvider.refMapping.numberTypes.length);
-
-  const keyToIndex: Record<string, number> = {};
-
-  resourceProvider.refMapping.numberTypes.forEach((key: string, index: number) => {
-    keyToIndex[key] = index;
-  });
+  const filter: BinaryFilter = new Uint8Array(typeNames.length);
 
   for (const type of numberTypes) {
     for (const metadataType of resolveMetadataTypes(type)) {
-      const idx: number | undefined = keyToIndex[metadataType];
+      const typeId: number = typeNames.indexOf(metadataType);
 
-      if (idx !== undefined) {
-        filter[idx] = 1;
+      if (typeId !== -1) {
+        filter[typeId] = 1;
       }
     }
   }
 
   // GENERAL_DESC must always pass: structural fallback for non-matching types.
-  const generalDescIdx: number | undefined = keyToIndex['GENERAL_DESC'];
-  if (generalDescIdx !== undefined) {
-    filter[generalDescIdx] = 1;
+  const generalDescTypeId: number = typeNames.indexOf('GENERAL_DESC');
+  if (generalDescTypeId !== -1) {
+    filter[generalDescTypeId] = 1;
   }
 
   return filter;

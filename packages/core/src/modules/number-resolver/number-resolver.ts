@@ -1,41 +1,23 @@
 import {
-  CallingCodeLayer,
-  getNextGraphState,
-  GraphLayer,
-  hasTerminalPrefix,
-  isCallingCodeState,
-  isCallingCodeStateTerminal,
+  ENGINE_DEAD,
+  Engine,
+  STATE_FLAG_CALLING_CODE,
+  STATE_FLAG_CALLING_CODE_TERMINAL,
+  getStateFlags,
+  walkDigit,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { NumberResolverSnapshot } from './models';
-import { resolveLatestConcreteCountryIndex } from './resolve-first-matching-number-type-profile';
 import { stateMatchesFilters } from './utils/state-matches-filters';
-import { terminalStateMatchesFilters } from './utils/terminal-state-matches-filters';
 
 export class NumberResolver {
-  private static readonly INITIAL_CAPACITY: number = 64;
-
-  private readonly resourceProvider: ResourceProvider = getResourceProvider();
-
-  private readonly graphLayer: GraphLayer = this.resourceProvider.graphLayer;
-
-  private readonly callingCodeLayer: CallingCodeLayer = this.resourceProvider.callingCodeLayer;
+  private readonly engine: Engine = getResourceProvider().engine;
 
   private _state: number = 0;
 
-  private _terminalStates: number[] = new Array(NumberResolver.INITIAL_CAPACITY).fill(0);
-
-  private _terminalStatesLength: number = 0;
-
-  private _terminalStateEnds: number[] = new Array(NumberResolver.INITIAL_CAPACITY).fill(0);
-
-  private _terminalStateEndsLength: number = 0;
-
-  private _nationalStates: number[] = new Array(NumberResolver.INITIAL_CAPACITY).fill(0);
-
-  private _nationalStatesLength: number = 0;
+  // Deepest non-dead state of the full walk (calling code + national digits).
+  private _endState: number = 0;
 
   private _nationalDigitString: string = '';
 
@@ -52,56 +34,46 @@ export class NumberResolver {
   private _strict: boolean = false;
 
   advance(digit: number): void {
-    const deadStateId: number = this.graphLayer.deadStateId;
     const digitChar: string = String.fromCharCode(48 + digit);
 
-    if (this._state === deadStateId) {
+    if (this._state === ENGINE_DEAD) {
       this._nationalDigitString += digitChar;
-      this._nationalStates[this._nationalStatesLength++] = deadStateId;
-      this._terminalStateEnds[this._terminalStateEndsLength++] = this._terminalStatesLength;
       return;
     }
 
-    let state: number = getNextGraphState(this.graphLayer, this._state, digit);
+    let state: number = walkDigit(this.engine, this._state, digit);
     const filtersActive: boolean = this._countryFilter !== null || this._numberTypeFilter !== null;
 
     if (
-      state !== deadStateId &&
+      state !== ENGINE_DEAD &&
       filtersActive &&
       !stateMatchesFilters(state, this._countryFilter, this._numberTypeFilter)
     ) {
-      state = deadStateId;
+      state = ENGINE_DEAD;
     }
 
     this._state = state;
 
-    if (state === deadStateId) {
+    if (state === ENGINE_DEAD) {
       this._nationalDigitString += digitChar;
-      this._nationalStates[this._nationalStatesLength++] = state;
-      this._terminalStateEnds[this._terminalStateEndsLength++] = this._terminalStatesLength;
       return;
     }
 
-    const isCallingCode: boolean = isCallingCodeState(this.callingCodeLayer, state);
+    this._endState = state;
 
-    if (isCallingCode) {
+    // Calling codes are prefix-free: once one completes, every further digit is national.
+    if (this._callingCodeCompleted) {
+      this._nationalDigitString += digitChar;
+      return;
+    }
+
+    const stateWord: number = getStateFlags(this.engine, state);
+    if (stateWord & STATE_FLAG_CALLING_CODE) {
       this._callingCodeDigitString += digitChar;
       this._callingCodeState = state;
-      this._callingCodeCompleted = isCallingCodeStateTerminal(this.callingCodeLayer, state);
+      this._callingCodeCompleted = (stateWord & STATE_FLAG_CALLING_CODE_TERMINAL) !== 0;
     } else {
       this._nationalDigitString += digitChar;
-      this._nationalStates[this._nationalStatesLength++] = state;
-    }
-
-    if (
-      hasTerminalPrefix(this.graphLayer, state) &&
-      (!filtersActive || terminalStateMatchesFilters(state, this._countryFilter, this._numberTypeFilter))
-    ) {
-      this._terminalStates[this._terminalStatesLength++] = state;
-    }
-
-    if (!isCallingCode && this._callingCodeCompleted) {
-      this._terminalStateEnds[this._terminalStateEndsLength++] = this._terminalStatesLength;
     }
   }
 
@@ -115,17 +87,11 @@ export class NumberResolver {
 
   reset(): void {
     this._state = 0;
-    this._terminalStatesLength = 0;
-    this._terminalStateEndsLength = 0;
-    this._nationalStatesLength = 0;
+    this._endState = 0;
     this._nationalDigitString = '';
     this._callingCodeDigitString = '';
     this._callingCodeCompleted = false;
     this._callingCodeState = -1;
-  }
-
-  resolveLatestConcreteCountryIndex(snapshot?: NumberResolverSnapshot): number {
-    return resolveLatestConcreteCountryIndex(snapshot ?? this.snapshot, this._nationalStates, this._terminalStateEnds);
   }
 
   getCallingCode(): string {
@@ -152,8 +118,8 @@ export class NumberResolver {
     return this._state;
   }
 
-  get terminalStates(): readonly number[] {
-    return this._terminalStates.slice(0, this._terminalStatesLength);
+  get endState(): number {
+    return this._endState;
   }
 
   get nationalNumberLength(): number {
@@ -178,10 +144,9 @@ export class NumberResolver {
 
   get snapshot(): NumberResolverSnapshot {
     return {
-      state: this._state,
-      terminalStates: this._terminalStates.slice(0, this._terminalStatesLength),
-      callingCodeDigits: this.getCallingCode(),
-      nationalDigits: this.getNationalNumber(),
+      endState: this._endState,
+      callingCodeDigits: this._callingCodeDigitString,
+      nationalDigits: this._nationalDigitString,
       callingCodeCompleted: this._callingCodeCompleted,
       callingCodeState: this._callingCodeState,
       countryFilter: this._countryFilter,

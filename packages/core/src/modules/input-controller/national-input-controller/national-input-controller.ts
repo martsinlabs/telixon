@@ -1,10 +1,17 @@
-import { normalizeNationalNumber, NumberType, RegionId, TerritorySpec } from '@telixon/core/engine';
+import {
+  getMetadataRegionCallingCode,
+  NationalPrefixRules,
+  normalizeNationalNumber,
+  NumberType,
+  RegionId,
+} from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { assertResourcesReady } from '@telixon/core/utils/assert-resources-ready';
+import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
-import { resolveFirstMatchingNumberTypeProfile } from '../../number-resolver/resolve-first-matching-number-type-profile';
+import { resolveProfile } from '../../number-resolver/resolve-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
+import { getNationalPrefixRules } from '../../number-resolver/utils/get-national-prefix-rules';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
@@ -19,12 +26,12 @@ import { resolveInput } from '../utils/resolve-input';
 import { NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
 
-function hasTypedNationalPrefix(rawDigits: string, territorySpec: TerritorySpec | undefined): boolean {
-  if (!territorySpec?.nationalPrefix) {
+function hasTypedNationalPrefix(rawDigits: string, prefixRules: NationalPrefixRules | undefined): boolean {
+  if (!prefixRules?.nationalPrefix) {
     return false;
   }
 
-  return rawDigits.startsWith(territorySpec.nationalPrefix);
+  return rawDigits.startsWith(prefixRules.nationalPrefix);
 }
 
 class NationalInputController extends InputController {
@@ -52,11 +59,11 @@ class NationalInputController extends InputController {
   }
 
   #setCountry(country: RegionId): void {
-    this.#defaultCountryIndex = getResourceProvider().refMapping.regions.keyToIndex[country] ?? -1;
+    this.#defaultCountryIndex = getResourceProvider().regionKeyToIndex[country] ?? -1;
 
     this.#defaultCallingCode =
       this.#defaultCountryIndex !== -1
-        ? getResourceProvider().territorySpecTable[this.#defaultCountryIndex]!.countryCode
+        ? String(getMetadataRegionCallingCode(getResourceProvider().engine, this.#defaultCountryIndex))
         : null;
   }
 
@@ -80,38 +87,27 @@ class NationalInputController extends InputController {
     const rawDigits: number[] = [];
     const rawCaretIndex: number = resolveInput(value, change, (digit: number) => rawDigits.push(digit));
 
-    const territorySpec: TerritorySpec | undefined =
-      this.#defaultCountryIndex !== -1
-        ? getResourceProvider().territorySpecTable[this.#defaultCountryIndex]
-        : undefined;
+    const prefixRules: NationalPrefixRules | undefined = getNationalPrefixRules(this.#defaultCountryIndex);
 
     const rawString: string = rawDigits.join('');
 
-    // normalizedDigits drive the resolver/validation; displayDigits drive the as-you-type formatting
-    // (they drop digit-adding transforms, so no untyped digit ever surfaces mid-typing). The caret stays
-    // in raw-typed space: formatNumberWithRawCaret maps it through the mask to the formatted position.
+    // normalizedDigits drive validation; displayDigits drive formatting (no untyped digit shown); caret stays in raw space.
     let normalizedDigits: string = rawString;
     let displayDigits: string = rawString;
-    if (rawString.length > 0 && territorySpec) {
-      const normalized = normalizeNationalNumber(rawString, territorySpec);
+    if (rawString.length > 0 && prefixRules) {
+      const normalized = normalizeNationalNumber(rawString, prefixRules);
       normalizedDigits = normalized.normalizedDigits;
       displayDigits = normalized.displayDigits;
     }
 
-    const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, territorySpec);
+    const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, prefixRules);
 
     for (let i = 0; i < normalizedDigits.length; i++) {
       numberResolver.advance(normalizedDigits.charCodeAt(i) - 48);
     }
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const anchoredCountryIndex: number = numberResolver.resolveLatestConcreteCountryIndex(snapshot);
-
-    const profile: NumberTypeProfileRef | null = resolveFirstMatchingNumberTypeProfile(
-      snapshot,
-      this.#defaultCountryIndex,
-      anchoredCountryIndex,
-    );
+    const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultCountryIndex);
 
     return resolveNationalControllerState(
       snapshot,
@@ -295,11 +291,9 @@ class NationalInputController extends InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
-    const { snapshot, profileRef, nationalPrefixPresent } = this.#history.current;
+    const { snapshot, nationalPrefixPresent } = this.#history.current;
 
-    return createPhoneNumber(
-      toResolvedPhoneNumber(snapshot, profileRef, this.#defaultCountryIndex, nationalPrefixPresent),
-    );
+    return createPhoneNumber(toResolvedPhoneNumber(snapshot, this.#defaultCountryIndex, nationalPrefixPresent));
   }
 
   undo(): InputState {
@@ -324,7 +318,7 @@ class NationalInputController extends InputController {
 }
 
 export function createNationalInputController(config: NationalInputControllerConfig): InputController {
-  assertResourcesReady();
+  requireEngineReady();
 
   return new NationalInputController(config);
 }

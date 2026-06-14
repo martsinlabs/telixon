@@ -17,7 +17,7 @@ export { countrySupportsNumberType } from './modules/country-number-types';
 export { getPlaceholders, isNationalPrefixOptional } from './modules/placeholders';
 export type { Placeholders } from './modules/placeholders';
 
-export { ensureReady } from './resource-provider';
+export { ensureEngineReady, ensureEngineReadySync, isEngineReady } from './resource-provider';
 
 export { TelixonNotReadyError } from './errors';
 

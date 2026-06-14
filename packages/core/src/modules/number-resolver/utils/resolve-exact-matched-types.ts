@@ -1,0 +1,54 @@
+import {
+  containsLength,
+  getExactTypeMask,
+  getGeneralDescLengthMask,
+  getRegionTypeCount,
+  getRegionTypeId,
+  getRegionTypeLengthMask,
+} from '@telixon/core/engine';
+import { BinaryFilter } from '@telixon/core/models';
+import { getResourceProvider } from '@telixon/core/resource-provider';
+import { isNumberTypeAllowed } from './is-number-type-allowed';
+
+// general-desc pattern matches the whole number (libphonenumber maybeStripNationalPrefix viability test); pattern-only.
+export function isGeneralDescExactMatch(endState: number, nationalLength: number, countryIndex: number): boolean {
+  const { engine } = getResourceProvider();
+  const generalDescPosition: number = getRegionTypeCount(engine, countryIndex) - 1;
+  if (generalDescPosition < 0) return false;
+
+  const exactMask: number = getExactTypeMask(engine, endState, countryIndex, nationalLength);
+  return (exactMask & (1 << generalDescPosition)) !== 0;
+}
+
+// libphonenumber getNumberTypeHelper over exact acceptance: type-id bitset matching the whole number and its length, gated by general-desc. Zero = UNKNOWN.
+export function resolveExactMatchedTypeIdMask(
+  endState: number,
+  nationalLength: number,
+  countryIndex: number,
+  numberTypeFilter: BinaryFilter | null,
+): number {
+  const { engine } = getResourceProvider();
+  const typeCount: number = getRegionTypeCount(engine, countryIndex);
+  if (typeCount === 0) return 0;
+
+  const generalDescPosition: number = typeCount - 1;
+  const exactMask: number = getExactTypeMask(engine, endState, countryIndex, nationalLength);
+  if ((exactMask & (1 << generalDescPosition)) === 0) return 0;
+  if (!containsLength(getGeneralDescLengthMask(engine, countryIndex), nationalLength)) return 0;
+
+  let matchedTypeIdMask = 0;
+  let mask: number = exactMask & ~(1 << generalDescPosition);
+  while (mask !== 0) {
+    const typePosition: number = 31 - Math.clz32(mask & -mask);
+    mask &= mask - 1;
+
+    if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, typePosition)) continue;
+    if (!containsLength(getRegionTypeLengthMask(engine, countryIndex, typePosition), nationalLength)) {
+      continue;
+    }
+
+    matchedTypeIdMask |= 1 << getRegionTypeId(engine, countryIndex, typePosition);
+  }
+
+  return matchedTypeIdMask;
+}

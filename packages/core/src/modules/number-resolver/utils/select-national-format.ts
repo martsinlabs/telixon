@@ -1,8 +1,17 @@
-import { selectCompleteFormat } from '@telixon/core/engine';
+import { selectCompleteFormat, selectPartialFormat } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 
-// Index of the matching national format, or -1 (then the number stays ungrouped).
-// Resolved by the format-select DFA layer (replaces the leadingDigits + full-pattern regex).
-export function selectNationalFormatIndex(callingCodeIndex: number, nationalDigits: string): number {
-  return selectCompleteFormat(getResourceProvider().formatSelectLayer, callingCodeIndex, nationalDigits).national;
+// National format index for `nationalDigits`, or -1: complete match (= formatNational), else partial while typing.
+export function selectNationalFormatIndex(
+  callingCodeIndex: number,
+  nationalDigits: string,
+  allowPartial: boolean,
+): number {
+  const { engine } = getResourceProvider();
+
+  const complete: number = selectCompleteFormat(engine, callingCodeIndex, nationalDigits).national;
+  if (complete !== -1) return complete;
+  if (!allowPartial) return -1;
+
+  return selectPartialFormat(engine, callingCodeIndex, nationalDigits, 0).national;
 }

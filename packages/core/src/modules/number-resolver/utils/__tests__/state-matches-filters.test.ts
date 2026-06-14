@@ -1,9 +1,8 @@
-import { isCallingCodeState } from '@telixon/core/engine';
+import { isInCallingCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberResolver } from '../../number-resolver';
 import { stateMatchesFilters } from '../state-matches-filters';
-import { terminalStateMatchesFilters } from '../terminal-state-matches-filters';
 
 function walkTo(digits: string): NumberResolver {
   const resolver = new NumberResolver();
@@ -12,19 +11,19 @@ function walkTo(digits: string): NumberResolver {
 }
 
 function matchAllCountries(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.regions.indexToKey.length).fill(1);
+  return new Uint8Array(getResourceProvider().regionIds.length).fill(1);
 }
 
 function matchNoCountries(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.regions.indexToKey.length);
+  return new Uint8Array(getResourceProvider().regionIds.length);
 }
 
 function matchAllNumberTypes(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.numberTypes.length).fill(1);
+  return new Uint8Array(getResourceProvider().numberTypeNames.length).fill(1);
 }
 
 function matchNoNumberTypes(): Uint8Array {
-  return new Uint8Array(getResourceProvider().refMapping.numberTypes.length);
+  return new Uint8Array(getResourceProvider().numberTypeNames.length);
 }
 
 describe('stateMatchesFilters', () => {
@@ -37,7 +36,7 @@ describe('stateMatchesFilters', () => {
     it('returns true with a match-all country filter', () => {
       const state = walkTo('1').callingCodeState;
 
-      expect(isCallingCodeState(getResourceProvider().callingCodeLayer, state)).toBe(true);
+      expect(isInCallingCode(getResourceProvider().engine, state)).toBe(true);
       expect(stateMatchesFilters(state, matchAllCountries(), null)).toBe(true);
     });
 
@@ -72,34 +71,5 @@ describe('stateMatchesFilters', () => {
 
       expect(stateMatchesFilters(resolver.state, null, matchNoNumberTypes())).toBe(false);
     });
-  });
-});
-
-describe('terminalStateMatchesFilters', () => {
-  it('short-circuits to true when both filters are null', () => {
-    expect(terminalStateMatchesFilters(0, null, null)).toBe(true);
-    expect(terminalStateMatchesFilters(99, null, null)).toBe(true);
-  });
-
-  it('returns true at a terminal state with match-all filters', () => {
-    const resolver = walkTo('14165551234');
-    const terminal = resolver.terminalStates[0];
-
-    expect(terminal).toBeDefined();
-    expect(terminalStateMatchesFilters(terminal!, matchAllCountries(), matchAllNumberTypes())).toBe(true);
-  });
-
-  it('returns false at a terminal state with a match-none country filter', () => {
-    const resolver = walkTo('14165551234');
-    const terminal = resolver.terminalStates[0];
-
-    expect(terminalStateMatchesFilters(terminal!, matchNoCountries(), null)).toBe(false);
-  });
-
-  it('returns false when the number-type filter allows no terminal type', () => {
-    const resolver = walkTo('14165551234');
-    const terminal = resolver.terminalStates[0];
-
-    expect(terminalStateMatchesFilters(terminal!, null, matchNoNumberTypes())).toBe(false);
   });
 });

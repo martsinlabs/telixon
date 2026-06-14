@@ -16,8 +16,7 @@ describe('InternationalInputController initial state', () => {
     expect(state.country).toBeNull();
   });
 
-  // When the calling code is complete, the controller appends a trailing space separator
-  // (resolve-international-controller-state.ts L82): pinned here so accidental removal trips this test.
+  // A complete calling code appends a trailing space separator; pinned here so accidental removal trips this test.
   it('seeds calling code from defaultCountry with trailing space separator', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
     const state = controller.currentState;
@@ -134,8 +133,7 @@ describe('InternationalInputController country resolution', () => {
     expect(state.country).toBe('AG');
   });
 
-  // setCountry only updates the default-country anchor used for resolution;
-  // it does NOT rewrite the input. Country still derives from the digits currently in the value.
+  // setCountry only updates the default-country anchor, not the input; country still derives from the current digits.
   it('setCountry keeps current value and country when digits still resolve elsewhere', () => {
     const controller = createInternationalInputController({ defaultCountry: 'US' });
     const state = controller.setCountry('GB');
@@ -187,8 +185,7 @@ describe('InternationalInputController caret across boundaries', () => {
 });
 
 describe('InternationalInputController format selection', () => {
-  // FI has two formats sharing a length but distinct leadingDigits; selection must match the prefix,
-  // not just pick the first length-fit. '10' takes the 2-3-… grouping, not 3-3-… .
+  // FI has two same-length formats with distinct leadingDigits; selection must match the prefix ('10' takes 2-3-..., not 3-3-...).
   it('selects the format by leading digits', () => {
     const controller = createInternationalInputController({
       display: { callingCodeInInput: true, plusPrefix: true },

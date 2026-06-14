@@ -10,7 +10,6 @@ import { getNumberType } from './query/get-number-type';
 import { getURI } from './query/get-uri';
 import { getValidationError } from './query/get-validation-error';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
-import { isValid } from './query/is-valid';
 
 class PhoneNumberView implements PhoneNumber {
   private cachedNationalNumber: string | undefined = undefined;
@@ -33,11 +32,14 @@ class PhoneNumberView implements PhoneNumber {
 
   private cachedIsValid: boolean | undefined = undefined;
 
+  private cachedNumberType: Exclude<NumberType, 'UNKNOWN'> | null | undefined = undefined;
+
   constructor(private readonly resolved: ResolvedPhoneNumber) {}
 
+  // libphonenumber isValidNumber: a number is valid iff it resolves to a concrete type.
   isValid(): boolean {
     if (this.cachedIsValid === undefined) {
-      this.cachedIsValid = isValid(this.resolved);
+      this.cachedIsValid = this.getNumberType() !== null;
     }
 
     return this.cachedIsValid;
@@ -66,7 +68,11 @@ class PhoneNumberView implements PhoneNumber {
   }
 
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null {
-    return getNumberType(this.resolved);
+    if (this.cachedNumberType === undefined) {
+      this.cachedNumberType = getNumberType(this.resolved);
+    }
+
+    return this.cachedNumberType;
   }
 
   getNationalNumber(): string {

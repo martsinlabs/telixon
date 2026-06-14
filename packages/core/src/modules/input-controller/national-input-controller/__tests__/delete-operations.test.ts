@@ -75,8 +75,7 @@ describe('NationalInputController.deleteForward', () => {
     controller.setValue(AR_RAW);
     const state = controller.deleteForward(AR_FORMATTED, 0, 0);
 
-    // First digit '0' removed: remaining 12 digits re-format. Without the trunk-prefix '0',
-    // AR may resolve to a different format; the contract here is "the leading 0 is gone".
+    // First digit '0' removed; without the trunk prefix AR may re-format differently, so the contract is just "the leading 0 is gone".
     expect(state.value.replace(/\D/g, '')).toBe(AR_RAW.slice(1));
   });
 

@@ -1,145 +1,84 @@
 import {
-  containsLength,
-  forEachNumberTypeIndex,
-  forEachStateRegionWithTerminalPrefix,
+  forEachExactRegion,
   getCallingCodeStateRegions,
-  getLengthMask,
-  getNextGraphState,
-  getNumberTypeMask,
-  getNumberTypeProfileId,
-  getTerminalPrefixNumberTypeMask,
-  GraphLayer,
-  hasTerminalPrefix,
+  getMetadataRegionCallingCode,
+  getVerdict,
+  isRegionLeadingDigitsSatisfied,
   RegionId,
-  regionLeadingDigitsSatisfied,
-  TerritorySpec,
+  VERDICT_LENGTH_COUNT,
+  verdictIsDecided,
+  verdictRegion,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { resolveExactMatchedTypeIdMask } from './resolve-exact-matched-types';
 
-const GENERAL_DESC = 'GENERAL_DESC';
+// Verdict region payload meaning "no region" (engine verdict contract).
+const VERDICT_REGION_NONE = 255;
 
-// Terminal states of the national number walked unfiltered, so region resolution stays independent of
-// any active number-type filter (libphonenumber resolves the region purely from the number).
-function collectTerminalStates(graph: GraphLayer, callingCodeState: number, nationalDigits: string): number[] {
-  const terminalStates: number[] = [];
-  let state: number = callingCodeState;
-  for (let i = 0; i < nationalDigits.length; i++) {
-    state = getNextGraphState(graph, state, nationalDigits.charCodeAt(i) - 48);
-    if (state === graph.deadStateId) break;
-    if (hasTerminalPrefix(graph, state)) terminalStates.push(state);
-  }
-  return terminalStates;
+// Regions with any exact acceptance at (endState, length), collected in one scan of the state's exact list.
+function collectExactRegions(endState: number, nationalLength: number): number[] {
+  const exactRegions: number[] = [];
+  forEachExactRegion(getResourceProvider().engine, endState, nationalLength, (regionIndex) => {
+    exactRegions.push(regionIndex);
+  });
+  return exactRegions;
 }
 
-// Main region match via the DFA terminal scope (same acceptance getNumberType uses): the region has a
-// non-GENERAL_DESC type valid at one of the number's terminal states with a matching length. Equivalent
-// to fully matching a specific type's nationalNumberPattern, without shipping the regex.
-function mainRegionMatches(
-  countryIndex: number,
-  territory: TerritorySpec,
-  length: number,
-  terminalStates: readonly number[],
-): boolean {
-  const { numberTypeScopeLayer, numberTypeProfileLayer, countryScopeLayer, refMapping } = getResourceProvider();
-
-  for (const terminalState of terminalStates) {
-    let matched = false;
-    forEachStateRegionWithTerminalPrefix(countryScopeLayer, terminalState, (stateCountryIndex, stateCountry) => {
-      if (stateCountry !== countryIndex) return;
-
-      const numberTypeMask: number = getNumberTypeMask(numberTypeScopeLayer, stateCountryIndex);
-      const candidateMask: number = getTerminalPrefixNumberTypeMask(numberTypeScopeLayer, stateCountryIndex);
-
-      forEachNumberTypeIndex(candidateMask, (numberTypeIndex: number) => {
-        const typeId: number = territory.numberTypes[numberTypeIndex]!.type;
-        if (refMapping.numberTypes[typeId] === GENERAL_DESC) return;
-
-        const profileId: number = getNumberTypeProfileId(
-          numberTypeProfileLayer,
-          stateCountryIndex,
-          numberTypeMask,
-          numberTypeIndex,
-        );
-        if (!containsLength(getLengthMask(numberTypeProfileLayer, profileId), length)) return;
-
-        matched = true;
-        return true;
-      });
-
-      if (matched) return true;
-    });
-    if (matched) return true;
-  }
-  return false;
-}
-
-// libphonenumber getRegionCodeForNumberFromRegionList: a non-main region matches by its leadingDigits
-// prefix; the main region (no leadingDigits) matches when a specific type accepts the number. GENERAL_DESC
-// is excluded: its acceptance is broad and would attribute foreign numbers to the main region.
+// libphonenumber getRegionCodeForNumberFromRegionList: a region matches by leadingDigits, or (no leadingDigits) by a concrete type accepting the number.
 function matchesRegion(
   countryIndex: number,
-  territory: TerritorySpec,
   nationalDigits: string,
-  terminalStates: readonly number[],
+  endState: number,
+  exactRegions: readonly number[],
 ): boolean {
-  if (territory.leadingDigits) {
-    const { regionSelectLayer, refMapping } = getResourceProvider();
-    const callingCodeIndex: number | undefined = refMapping.callingCodes.keyToIndex[Number(territory.countryCode)];
+  const resourceProvider = getResourceProvider();
+  if (resourceProvider.regionHasLeadingDigits[countryIndex]) {
+    const callingCode: number = getMetadataRegionCallingCode(resourceProvider.engine, countryIndex);
+    const callingCodeIndex: number | undefined = resourceProvider.callingCodeIndexByCode[callingCode];
     if (callingCodeIndex === undefined) return false;
-    return regionLeadingDigitsSatisfied(regionSelectLayer, callingCodeIndex, countryIndex, nationalDigits);
+    return isRegionLeadingDigitsSatisfied(resourceProvider.engine, callingCodeIndex, countryIndex, nationalDigits);
   }
-  return mainRegionMatches(countryIndex, territory, nationalDigits.length, terminalStates);
+  if (!exactRegions.includes(countryIndex)) return false;
+  return resolveExactMatchedTypeIdMask(endState, nationalDigits.length, countryIndex, null) !== 0;
 }
 
-const REGION_CODE_CACHE_MAX_ENTRIES: number = 100_000;
-const REGION_CODE_CACHE = new Map<number, Map<string, RegionId | null>>();
-let regionCodeCacheEntryCount: number = 0;
-
-// libphonenumber getRegionCodeForNumber: the first region in the calling code's main-first order that
-// the number matches, or null. Shared by getCountry and the input controller so they always agree.
-export function resolveRegionCode(callingCodeState: number, nationalDigits: string): RegionId | null {
+// libphonenumber getRegionCodeForNumber: first region (main-first) the number matches, or null; fallback behind baked verdicts.
+export function resolveRegionCode(callingCodeState: number, endState: number, nationalDigits: string): RegionId | null {
   if (callingCodeState === -1) return null;
 
-  const cachedForState = REGION_CODE_CACHE.get(callingCodeState);
-  if (cachedForState !== undefined) {
-    const cachedResult = cachedForState.get(nationalDigits);
-    if (cachedResult !== undefined) return cachedResult;
+  const resourceProvider = getResourceProvider();
+  const regions: Uint8Array = getCallingCodeStateRegions(resourceProvider.engine, callingCodeState);
+
+  if (regions.length === 1) {
+    return resourceProvider.regionIds[regions[0]!] ?? null;
   }
 
-  const { refMapping, callingCodeLayer, territorySpecTable, graphLayer } = getResourceProvider();
-  const regions: Uint8Array = getCallingCodeStateRegions(callingCodeLayer, callingCodeState);
-
-  let resolvedRegion: RegionId | null;
-  if (regions.length === 1) {
-    resolvedRegion = refMapping.regions.indexToKey[regions[0]!] ?? null;
-  } else {
-    resolvedRegion = null;
-    const terminalStates: readonly number[] = collectTerminalStates(graphLayer, callingCodeState, nationalDigits);
-    for (const countryIndex of regions) {
-      const territory: TerritorySpec | undefined = territorySpecTable[countryIndex];
-      if (territory && matchesRegion(countryIndex, territory, nationalDigits, terminalStates)) {
-        resolvedRegion = refMapping.regions.indexToKey[countryIndex] ?? null;
-        break;
-      }
+  const exactRegions: number[] = collectExactRegions(endState, nationalDigits.length);
+  for (const countryIndex of regions) {
+    if (matchesRegion(countryIndex, nationalDigits, endState, exactRegions)) {
+      return resourceProvider.regionIds[countryIndex] ?? null;
     }
   }
 
-  if (regionCodeCacheEntryCount >= REGION_CODE_CACHE_MAX_ENTRIES) {
-    REGION_CODE_CACHE.clear();
-    regionCodeCacheEntryCount = 0;
-  }
-  let cacheForState = REGION_CODE_CACHE.get(callingCodeState);
-  if (cacheForState === undefined) {
-    cacheForState = new Map();
-    REGION_CODE_CACHE.set(callingCodeState, cacheForState);
-  }
-  if (!cacheForState.has(nationalDigits)) regionCodeCacheEntryCount++;
-  cacheForState.set(nationalDigits, resolvedRegion);
-
-  return resolvedRegion;
+  return null;
 }
 
-export function __clearRegionCodeCache(): void {
-  REGION_CODE_CACHE.clear();
-  regionCodeCacheEntryCount = 0;
+// Verdict-first region resolution: one baked lookup at (endState, length), else the explicit resolution above.
+export function resolveRegionCodeFast(
+  callingCodeState: number,
+  endState: number,
+  nationalDigits: string,
+): RegionId | null {
+  const length: number = nationalDigits.length;
+
+  if (length < VERDICT_LENGTH_COUNT) {
+    const verdict: number = getVerdict(getResourceProvider().engine, endState, length);
+    if (verdictIsDecided(verdict)) {
+      const regionIndex: number = verdictRegion(verdict);
+      if (regionIndex === VERDICT_REGION_NONE) return null;
+      return getResourceProvider().regionIds[regionIndex] ?? null;
+    }
+  }
+
+  return resolveRegionCode(callingCodeState, endState, nationalDigits);
 }

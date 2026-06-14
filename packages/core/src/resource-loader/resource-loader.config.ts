@@ -2,7 +2,7 @@ import { ResourceLoader } from './models';
 
 let currentLoader: ResourceLoader | undefined;
 
-export function setResourceLoader(loader: ResourceLoader) {
+export function setResourceLoader(loader: ResourceLoader): void {
   currentLoader = loader;
 }
 
