@@ -34,6 +34,11 @@
       "node": "./dist/index.node.js",
       "browser": "./dist/index.browser.js",
       "default": "./dist/index.node.js"
+    },
+    "./sync-init": {
+      "types": "./dist/index.sync-init.node.d.ts",
+      "node": "./dist/index.sync-init.node.js",
+      "default": "./dist/index.sync-init.js"
     }
   },
   "main": "./dist/index.node.js",

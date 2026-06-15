@@ -1,4 +1,5 @@
 import { Engine, MetadataNumberType, RegionId } from '@telixon/core/engine';
+import { ResourceLoader, SyncResourceLoader } from '@telixon/core/resource-loader/models';
 
 // The three formatter placeholders, decoded once at load (PhoneNumberFormattingContext inputs).
 export interface MetadataPlaceholders {
@@ -22,9 +23,9 @@ export abstract class ResourceProvider {
   abstract regionHasLeadingDigits: Uint8Array;
   abstract placeholders: MetadataPlaceholders;
 
-  abstract ensureReady(): Promise<void>;
+  abstract ensureReady(loader: ResourceLoader): Promise<void>;
 
-  abstract ensureReadySync(): void;
+  abstract ensureReadySync(loader: SyncResourceLoader): void;
 
   abstract get isReady(): boolean;
 }

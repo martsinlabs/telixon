@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telixon Sandbox · Sync Init</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header">
+        <div class="header-inner">
+          <span class="logo">Telixon</span>
+          <span class="badge">Sync Init</span>
+          <div id="nav-mount"></div>
+        </div>
+      </header>
+
+      <main class="main main--single">
+        <div class="form-shell">
+          <section class="card">
+            <h2 class="variation-title">Synchronous init</h2>
+            <p class="hint">
+              <code>ensureEngineReadySync()</code> from <code>@telixon/core/sync-init</code>: a fully synchronous decode
+              of the statically bundled engine, all on the main thread. A synchronous call is atomic, so exactly zero
+              frames paint while it runs and the block equals the total time. The spinner is driven by
+              <code>requestAnimationFrame</code>.
+            </p>
+
+            <div class="freeze-stage">
+              <div class="spinner" id="spinner"></div>
+              <span class="fps" id="fps">0.0 ms/frame</span>
+            </div>
+
+            <button class="btn btn--primary" id="run" type="button">Initialize synchronously</button>
+
+            <dl class="metrics">
+              <dt>Total time</dt>
+              <dd id="total">not run</dd>
+              <dt>Frames painted during call</dt>
+              <dd id="frames">n/a</dd>
+              <dt>Longest no-paint gap</dt>
+              <dd id="gap">n/a</dd>
+              <dt>Long tasks (over 50 ms)</dt>
+              <dd id="long-tasks">n/a</dd>
+            </dl>
+
+            <div class="verdict verdict--idle" id="verdict">Not initialized yet</div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/pages/sync-init.ts"></script>
+  </body>
+</html>

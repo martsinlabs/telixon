@@ -127,28 +127,36 @@ The engine loads as a **single indivisible artifact**. Because the recognition a
 single region cannot be loaded in isolation; there is no per-region lazy loading by design.
 
 The four modules ship as base64-of-gzip ESM (`engine/embedded/*.bin.js`); the library owns loading and
-decoding, and each environment uses the fastest path it has:
+decoding. Initialization is explicit and **asynchronous by default**: `await ensureEngineReady()` from
+`@telixon/core` loads the engine on demand and decodes it off the main thread. A synchronous path lives
+in a separate thin entry, `@telixon/core/sync-init`, exporting `ensureEngineReadySync()`, which
+statically bundles the modules and decodes them in-process. Each uses the fastest decode the runtime has:
 
-- **Node**: the modules are static imports; the first API call decodes them synchronously with native
-  `node:zlib` and proceeds.
-- **Browser**: the host bundler code-splits the modules into lazy chunks. The consumer triggers the
-  load with `ensureEngineReady()` (the library does no import-time work), decoding off the main thread
-  (`DecompressionStream`), with a pure-JS base64 + gunzip decoder as the universal floor.
-- **Edge** (`workerd`, `edge-light`, `worker`): the modules ship inside the deployed script and the
-  engine initializes synchronously in global scope, outside per-request CPU accounting.
+- **Node**: dynamic import with native `zlib.gunzip` off the libuv threadpool (async), or static import
+  with `zlib.gunzipSync` (`@telixon/core/sync-init`).
+- **Browser**: the host bundler code-splits the modules into lazy chunks that `ensureEngineReady()`
+  fetches and decodes off the main thread (`DecompressionStream`); `@telixon/core/sync-init` bundles
+  them into your JS and decodes with the pure-JS floor.
+- **Edge** (`workerd`, `edge-light`, `worker`): `ensureEngineReadySync()` from `@telixon/core/sync-init`,
+  called in global scope, initializes once per isolate, outside per-request CPU accounting, with the
+  pure-JS floor.
+
+The pure-JS base64 + gunzip floor runs in any runtime and is byte-equality-tested against zlib in CI.
 
 The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
 - The engine artifact is runtime data, out of the initial JS bundle (~120 KB gzipped across four
-  content-hashed chunks, ~0.73 MB decompressed). In Node it is local module data; in the browser it is
-  lazy chunks cached after first load.
+  content-hashed chunks, ~0.61 MB decompressed). The async entries load it lazily (cached after first
+  load on the web); `@telixon/core/sync-init` carries it in the bundle.
 
-`index.node.ts`, `index.browser.ts`, and `index.edge.ts` (selected via package export conditions)
-register the correct loader and re-export the shared `index.ts`, so the rest of the engine stays
-environment-agnostic. `ensureEngineReady()` (async) and `ensureEngineReadySync()` pay the one-time
-decode-and-parse cost at a chosen moment; otherwise the first API call initializes on its own
-(synchronously in Node and on edge). `isEngineReady()` is a synchronous readiness predicate. Full
+`index.node.ts`, `index.browser.ts`, and `index.edge.ts` (selected via package export conditions) bind
+`ensureEngineReady()` to the environment's loader and re-export the shared `index.ts`;
+`index.sync-init.ts` and `index.sync-init.node.ts` back the `@telixon/core/sync-init` entry. The
+provider is process-wide, so either entry readies one engine and the rest of the code stays
+environment-agnostic. Initialization is explicit: `await ensureEngineReady()` is the default,
+`ensureEngineReadySync()` from `@telixon/core/sync-init` is the synchronous path, and an API call before
+either throws `TelixonNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
 detail: [Initialization](docs/initialization.md).
 
 ## Resolution

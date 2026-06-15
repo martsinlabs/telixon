@@ -4,16 +4,15 @@ import { EmbeddedResourceLoader } from '../../resource-loader/embedded-resource-
 import type { ResourceLoader } from '../../resource-loader/models';
 import type { ResourceProvider } from '../models';
 
-// Each test gets a fresh module registry, so the provider singleton and loader start clean.
-async function createIsolatedProvider(loader: ResourceLoader): Promise<ResourceProvider> {
+// Each test gets a fresh provider: reset the process-wide singleton, then drive it with the test's loader.
+async function createIsolatedProvider(): Promise<ResourceProvider> {
   vi.resetModules();
-  const loaderConfig = await import('../../resource-loader/resource-loader.config');
-  loaderConfig.setResourceLoader(loader);
   const providerModule = await import('../resource-provider');
+  providerModule.__resetResourceProvider();
   return providerModule.getResourceProvider();
 }
 
-// Async-only view of the bundled loader: simulates the browser channel (no loadModulesSync), with leading failures to exercise retry/self-healing.
+// Async-only loader: simulates the browser channel (no sync bytes), with leading failures to exercise retry.
 function createAsyncOnlyLoader(failuresBeforeSuccess: number): ResourceLoader {
   const embedded = new EmbeddedResourceLoader();
   let failuresLeft: number = failuresBeforeSuccess;
@@ -23,7 +22,7 @@ function createAsyncOnlyLoader(failuresBeforeSuccess: number): ResourceLoader {
         failuresLeft--;
         throw new Error('simulated chunk failure');
       }
-      return embedded.loadEngineBytes();
+      return embedded.loadEngineBytesSync();
     },
   };
 }
@@ -39,50 +38,44 @@ describe('DefaultResourceProvider state machine', () => {
     const countingLoader: ResourceLoader = {
       async loadEngineBytes(): Promise<EngineLayerBytes> {
         loadCalls++;
-        return embedded.loadEngineBytes();
+        return embedded.loadEngineBytesSync();
       },
     };
-    const provider = await createIsolatedProvider(countingLoader);
+    const provider = await createIsolatedProvider();
 
-    await Promise.all([provider.ensureReady(), provider.ensureReady(), provider.ensureReady()]);
+    await Promise.all([
+      provider.ensureReady(countingLoader),
+      provider.ensureReady(countingLoader),
+      provider.ensureReady(countingLoader),
+    ]);
     expect(provider.isReady).toBe(true);
     expect(loadCalls).toBe(1);
   });
 
   it('a failed load clears in-flight state and the next ensureReady retries successfully', async () => {
-    const provider = await createIsolatedProvider(createAsyncOnlyLoader(1));
+    const loader = createAsyncOnlyLoader(1);
+    const provider = await createIsolatedProvider();
 
-    await expect(provider.ensureReady()).rejects.toThrow('simulated chunk failure');
+    await expect(provider.ensureReady(loader)).rejects.toThrow('simulated chunk failure');
     expect(provider.isReady).toBe(false);
 
-    await provider.ensureReady();
-    expect(provider.isReady).toBe(true);
-  });
-
-  it('ensureReadySync on an async-only channel throws TelixonNotReadyError and restarts a failed load', async () => {
-    const provider = await createIsolatedProvider(createAsyncOnlyLoader(1));
-
-    await expect(provider.ensureReady()).rejects.toThrow('simulated chunk failure');
-
-    // The throw itself must kick a fresh background load (self-healing).
-    expect(() => provider.ensureReadySync()).toThrow('still loading');
-    await provider.ensureReady();
+    await provider.ensureReady(loader);
     expect(provider.isReady).toBe(true);
   });
 
   it('ensureReadySync initializes synchronously on a local byte channel', async () => {
-    const provider = await createIsolatedProvider(new EmbeddedResourceLoader());
+    const provider = await createIsolatedProvider();
 
     expect(provider.isReady).toBe(false);
-    provider.ensureReadySync();
+    provider.ensureReadySync(new EmbeddedResourceLoader());
     expect(provider.isReady).toBe(true);
   });
 
   it('ensureReadySync during an in-flight async load wins and the load result is discarded', async () => {
-    const provider = await createIsolatedProvider(new EmbeddedResourceLoader());
+    const provider = await createIsolatedProvider();
 
-    const inFlight: Promise<void> = provider.ensureReady();
-    provider.ensureReadySync();
+    const inFlight: Promise<void> = provider.ensureReady(createAsyncOnlyLoader(0));
+    provider.ensureReadySync(new EmbeddedResourceLoader());
     expect(provider.isReady).toBe(true);
 
     await expect(inFlight).resolves.toBeUndefined();

@@ -62,6 +62,26 @@
                 </span>
               </a>
             </li>
+            <li class="demo-item">
+              <a class="demo-link" href="/sync-init.html">
+                <span class="demo-name">SyncInit</span>
+                <span class="demo-desc">
+                  Measures <code>ensureEngineReadySync()</code> from <code>@telixon/core/sync-init</code>: total time,
+                  main-thread block, and dropped frames against the display's real refresh, with a
+                  <code>requestAnimationFrame</code> spinner that reveals any stutter.
+                </span>
+              </a>
+            </li>
+            <li class="demo-item">
+              <a class="demo-link" href="/async-init.html">
+                <span class="demo-name">AsyncInit</span>
+                <span class="demo-desc">
+                  The same readout for <code>ensureEngineReady()</code> from <code>@telixon/core</code>. Open it beside
+                  SyncInit to compare: total time runs higher, but the off-thread decode keeps the main-thread block and
+                  dropped frames near zero.
+                </span>
+              </a>
+            </li>
           </ul>
         </section>
       </main>

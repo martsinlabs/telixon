@@ -4,14 +4,15 @@ export class TelixonNotReadyError extends Error {
   constructor() {
     super(
       [
-        'Telixon engine resources are still loading.',
+        'Telixon engine is not initialized.',
         '',
-        'The engine chunks start downloading in the background when the library is imported.',
-        'To guarantee readiness before first use, await the preload once:',
+        'Initialization is explicit. Call ensureEngineReady() before the first API call:',
         '',
         "  import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';",
         '  await ensureEngineReady();',
         "  parsePhoneNumber('+12015550123');",
+        '',
+        "For synchronous initialization, import ensureEngineReadySync from '@telixon/core/sync-init'.",
         '',
         'Docs: https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md',
       ].join('\n'),

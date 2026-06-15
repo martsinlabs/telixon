@@ -10,6 +10,10 @@ const ENGINE_DIR = resolve(CORE_SRC_DIR, 'engine');
 const ENGINE_URL_PREFIX = '/engine/';
 const CORE_ALIASES = [
   {
+    find: '@telixon/core/sync-init',
+    replacement: resolve(CORE_SRC_DIR, 'index.sync-init.ts'),
+  },
+  {
     find: /^@telixon\/core\/(.+)$/,
     replacement: resolve(CORE_SRC_DIR, '$1'),
   },
@@ -77,6 +81,8 @@ export default defineConfig({
         'phone-input': resolve(import.meta.dirname, 'phone-input.html'),
         'country-list': resolve(import.meta.dirname, 'country-list.html'),
         variations: resolve(import.meta.dirname, 'variations.html'),
+        'sync-init': resolve(import.meta.dirname, 'sync-init.html'),
+        'async-init': resolve(import.meta.dirname, 'async-init.html'),
       },
     },
   },

@@ -1,47 +1,38 @@
 # Initialization
 
-`@telixon/core` builds its engine (precompiled DFA tables and Google libphonenumber metadata) once per process. The engine ships as four embedded modules in the package; every environment uses the same modules and differs only in how it imports and decodes them. Node and edge initialize with no setup call; in the browser you decide when to load the engine.
+`@telixon/core` builds its engine (precompiled DFA tables and Google libphonenumber metadata) once per process. The engine ships as four embedded modules in the package; every environment uses the same modules and differs only in how it imports and decodes them. Initialization is **explicit** and **asynchronous by default**: call `await ensureEngineReady()` from `@telixon/core` before the first API call. A synchronous path lives in a separate thin entry, `@telixon/core/sync-init`, which exports only `ensureEngineReadySync()`. Nothing initializes on your behalf, and a call before initialization throws `TelixonNotReadyError`.
 
-| Environment                                                  | How the modules arrive                    | What happens                                                                           |
-| ------------------------------------------------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------- |
-| Node                                                         | static imports from the package           | the first API call initializes synchronously and proceeds                              |
-| Browsers                                                     | code-split lazy chunks over the network   | you trigger the load with `ensureEngineReady()`; the first API call loads on demand    |
-| Edge runtimes (`workerd`, `edge-light`, `worker` conditions) | static imports inside the deployed script | the entry initializes synchronously in global scope; every request hits a ready engine |
+The engine is compressed runtime data, never live JavaScript objects in your bundle. By default it stays out of your initial bundle: the four base64-of-gzip modules are code-split into lazy chunks, and nothing loads until you call `ensureEngineReady()`. This is deliberate, so you decide when to pay the one-time load cost, which matters most in the browser, where bundle size and initial load are the constraint. Because the load is deferred and `ensureEngineReady()` decodes off the main thread, it stays off the critical path: during a single-page-app route transition or an animation you schedule it where it fits (pre-warm at startup, on entering the route with the phone field, or behind `requestIdleCallback`) rather than letting a synchronous decode block a frame, and since nothing loads on import you never pay at a moment you did not choose. Once it resolves, the entire API is synchronous. `@telixon/core/sync-init` is the opposite trade: it carries the modules in your bundle so initialization needs no round-trip.
 
-## Node
+The two entries share one engine. The provider is process-wide, so `ensureEngineReadySync()` from `@telixon/core/sync-init` readies the same engine the API in `@telixon/core` uses; you import the API as usual and add the synchronous initializer only where you want it.
 
-The engine modules ship with the package, so initialization needs no ceremony: the first API call finds the engine unbuilt, decodes it with native `node:zlib`, and proceeds.
+| Entry                     | Exports                                            | Initialization                                             |
+| ------------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| `@telixon/core`           | full API, `ensureEngineReady()`, `isEngineReady()` | asynchronous: engine loaded on demand, decoded off-thread  |
+| `@telixon/core/sync-init` | `ensureEngineReadySync()` only                     | synchronous: engine statically bundled, decoded in-process |
 
-```ts
-import { parsePhoneNumber } from '@telixon/core';
+| Environment                              | Async default (`@telixon/core`)                                   | Sync (`@telixon/core/sync-init`)                 |
+| ---------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| Node                                     | dynamic import, native `zlib.gunzip` off the libuv threadpool     | native `zlib.gunzipSync`                         |
+| Browsers                                 | code-split lazy chunks, `DecompressionStream` off the main thread | engine bundled in your JS, pure-JS gunzip        |
+| Edge (`workerd`, `edge-light`, `worker`) | dynamic import, `DecompressionStream`, inside a request           | pure-JS gunzip in global scope, once per isolate |
 
-parsePhoneNumber('+12015550123'); // first call initializes
-```
+## Asynchronous: `ensureEngineReady()`
 
-To pay the cost at a chosen moment instead, call `ensureEngineReadySync()` (or `await ensureEngineReady()`) at boot.
-
-## Browsers
-
-The engine is runtime data, **not part of your JS bundle**: the host bundler code-splits the four engine modules into lazy chunks, so they never affect your initial bundle or the library's code size.
-
-The library loads nothing as a side effect of import. **When** to fetch and decode the engine is your call, not the library's: the right moment depends on your page (where a phone input appears, when the app reaches interactive), which the library cannot know. You control it with `ensureEngineReady()`, which starts the load and resolves when the engine is ready; it is idempotent, so a second call joins the same in-flight or finished load. The four chunks fetch in parallel and each layer is base64-decoded and gunzipped off the main thread (`DecompressionStream`).
+`await ensureEngineReady()` is the default in every environment. The engine loads **on demand** (a dynamic import: code-split chunks on the web, local modules on Node and edge) and decodes **off the main thread** (native `zlib.gunzip` on the libuv threadpool in Node; `DecompressionStream` on the web and edge). The engine is not part of the importing module, so importing `@telixon/core` costs almost nothing; the work happens when you call `ensureEngineReady()`.
 
 ```ts
-import { ensureEngineReady, createInternationalInputController } from '@telixon/core';
+import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
 
-await ensureEngineReady(); // load the engine, then use it
-const controller = createInternationalInputController();
+await ensureEngineReady();
+parsePhoneNumber('+12015550123');
 ```
 
-Trigger it where it fits your app: at startup to pre-warm, on entering a route with a phone field, or behind your own `requestIdleCallback` to keep it off first paint. Fire it early and `await` it later; the await is instant once the load has finished.
+**When** to load is your call, not the library's: the right moment depends on your app (where a phone input appears, when the app reaches interactive), which the library cannot know. `ensureEngineReady()` starts the load and resolves when the engine is ready; it is idempotent, so a second call joins the same in-flight or finished load. Fire it early and `await` it later; the await is instant once the load has finished. A failed load (a network flake) surfaces on `await ensureEngineReady()`, and the next call retries; nothing is poisoned permanently.
 
 ### The loading window
 
-A network fetch cannot be made synchronous, only already done. Until the engine has loaded, a synchronous API call (including constructing a controller, which reads metadata) throws `TelixonNotReadyError` rather than degrading silently. `await ensureEngineReady()` before that call removes the window.
-
-The first API call also starts the load on demand, so a consumer who never calls `ensureEngineReady()` still loads the engine; only that first call, made while the load is in flight, throws. A failed download (network flake) surfaces on `await ensureEngineReady()` and the next call retries; nothing is poisoned permanently.
-
-For guards in code that may run before the load finishes, `isEngineReady()` is a synchronous predicate:
+A network fetch cannot be made synchronous, only already done. Until the engine has loaded, a synchronous API call (including constructing a controller, which reads metadata) throws `TelixonNotReadyError` rather than degrading silently. `await ensureEngineReady()` before that call removes the window. For guards in code that may run before the load finishes, `isEngineReady()` is a synchronous predicate:
 
 ```ts
 import { isEngineReady, parsePhoneNumber } from '@telixon/core';
@@ -58,50 +49,70 @@ try {
   return parsePhoneNumber(input);
 } catch (error) {
   if (error instanceof TelixonNotReadyError) {
-    /* engine still loading: wait for ensureEngineReady() */
+    /* engine not initialized: call ensureEngineReady() first */
   }
   throw error;
 }
 ```
 
-## Edge runtimes
+## Synchronous: `ensureEngineReadySync()`
 
-Bundlers for Cloudflare Workers (`workerd`), Vercel Edge (`edge-light`), and other worker platforms select a dedicated entry through package export conditions; no configuration or import path change is involved. On this entry the engine modules are static imports inside the deployed script, and the engine initializes synchronously at module evaluation, in global scope:
+`@telixon/core/sync-init` is a thin entry that exports only `ensureEngineReadySync()`. It statically bundles the engine modules and decodes them **synchronously, in-process** (native `zlib.gunzipSync` in Node; pure-JS gunzip on the web and edge). Because the provider is process-wide, this readies the same engine the API in `@telixon/core` uses:
 
 ```ts
 import { parsePhoneNumber } from '@telixon/core';
+import { ensureEngineReadySync } from '@telixon/core/sync-init';
+
+ensureEngineReadySync();
+parsePhoneNumber('+12015550123');
+```
+
+A synchronous decode blocks the main thread for its duration: low single-digit milliseconds on a high single-thread CPU, tens of milliseconds on a low-end device. Use it where blocking is acceptable: at boot in Node, or in global scope on edge. On the web it trades a larger bundle (the engine ships in your JS) for an initialization with no network round-trip.
+
+### Edge
+
+For Cloudflare Workers (`workerd`), Vercel Edge (`edge-light`), and other worker platforms, `@telixon/core/sync-init` in **global scope** is the path to reach for. Global scope runs once per isolate, outside per-request CPU accounting, and the synchronous pure-JS decode does nothing the runtime restricts (no dynamic import, no asynchronous I/O):
+
+```ts
+import { parsePhoneNumber } from '@telixon/core';
+import { ensureEngineReadySync } from '@telixon/core/sync-init';
+
+ensureEngineReadySync();
 
 export default {
   fetch: (request: Request) => new Response(String(parsePhoneNumber('+12015550123').isValid())),
 };
 ```
 
-This placement matters on edge platforms: startup work in global scope runs once per isolate, outside per-request CPU accounting, so requests never pay the initialization cost and there is no loading window. `TelixonNotReadyError` cannot occur on this entry. The engine's tables live in flat `ArrayBuffer`s the garbage collector does not traverse, which keeps GC work inside billed request time at zero.
+The engine is ready before the first request: requests never pay the initialization cost, and `TelixonNotReadyError` cannot reach a handler. The engine's tables live in flat `ArrayBuffer`s the garbage collector does not traverse, which keeps GC work inside billed request time at zero. The asynchronous default works on edge as well, but only inside a request handler; the global-scope, once-per-isolate pattern is what the synchronous entry is for.
 
 ## How the engine loads
 
-The engine ships as four embedded modules (`engine/embedded/*.bin.js`); each default-exports a record of layer keys to the base64 of that layer's gzipped bytes (nine layers across the four modules). The library fetches or imports the modules, decodes each layer, and assembles the engine. Decode uses the fastest path the runtime offers, with a pure-JS decoder as the universal floor:
+The engine ships as four embedded modules (`engine/embedded/*.bin.js`); each default-exports a record of layer keys to the base64 of that layer's gzipped bytes (nine layers across the four modules). Initialization imports the modules, decodes each layer, and assembles the engine: import or fetch, decompress, parse structured data, with no computation on top. Assembly re-points typed-array views; it never copies.
 
-- **Node**: `node:zlib` (native, synchronous, JIT-free on cold start).
-- **Browsers**: native base64 (`Uint8Array.fromBase64` where available) plus `DecompressionStream`, which runs the gzip inflate off the main thread. Where those APIs are absent it falls back to the library's pure-JS base64 + gunzip, which is byte-equality-tested against zlib in CI and needs no platform decompression API.
-- **Edge**: the pure-JS decoder, synchronously, since `node:zlib` and a synchronous `DecompressionStream` are not available in global scope.
+Decode uses the fastest path the runtime offers, with a pure-JS decoder as the universal floor:
 
-Either way, loading is import or fetch, decompress, and parse structured data, with no computation on top. Assembly re-points the typed-array views; it never copies.
+- **Node**: native `node:zlib`, either `gunzipSync` (synchronous entry) or `gunzip` off the libuv threadpool (asynchronous default).
+- **Browsers**: native base64 (`Uint8Array.fromBase64` where available) plus `DecompressionStream`, which runs the gzip inflate off the main thread (asynchronous default); the pure-JS gunzip serves the synchronous entry and the fallback where the API is absent.
+- **Edge**: `DecompressionStream` off-thread (asynchronous default); the pure-JS gunzip in global scope (synchronous entry), since `node:zlib` and a synchronous `DecompressionStream` are not available there.
+
+The pure-JS base64 + gunzip floor is byte-equality-tested against zlib in CI and needs no platform decompression API.
 
 ## Cost
 
-Measured on a high single-thread CPU (Node v24, Chrome) on a local install. The browser numbers are the full `ensureEngineReady` path, not an isolated phase:
+Measured cold on a high single-thread CPU (Node v24; Chrome runs the same V8). Times scale with single-thread CPU performance and are paid once per process.
 
-| Step                                                                    | Time                |
-| ----------------------------------------------------------------------- | ------------------- |
-| First call / preload, cold (Node, native zlib)                          | low single-digit ms |
-| Browser, total main-thread work (module eval + base64 + parse + tables) | ~12-19 ms           |
-| of which the gzip inflate, off the main thread                          | ~1.6 ms             |
-| Edge entry import, incl. global-scope init (outside request accounting) | low single-digit ms |
-| Calls once ready (same process)                                         | negligible (~2 ns)  |
+| Step                                                                      | Time                |
+| ------------------------------------------------------------------------- | ------------------- |
+| Import `@telixon/core` (engine deferred)                                  | ~1.5 ms             |
+| Import `@telixon/core/sync-init` (compressed bytes loaded, not decoded)   | ~1.7 ms             |
+| `ensureEngineReadySync()`, Node native zlib                               | low single-digit ms |
+| `ensureEngineReadySync()`, pure-JS (web, edge)                            | ~8 ms               |
+| `ensureEngineReady()` total (dynamic import, off-thread decode, assemble) | ~12 to 20 ms        |
+| Calls once ready (same process)                                           | negligible (~2 ns)  |
 
-The browser main-thread cost is dominated by the JS evaluation of the base64-in-JS modules (~8 ms) and the engine parse (~3 ms); the inflate is the only part that runs off the main thread. Trigger `ensureEngineReady()` behind your own idle scheduler (e.g. `requestIdleCallback`) to keep this work off the page's first paint. The engine is ~120 KB gzipped on the wire across four content-hashed chunks, decompressing to ~0.73 MB of binary tables. Repeat visits load the chunks from HTTP cache. The cost scales with single-thread CPU performance; on a low-performance CPU it is in the tens of milliseconds, paid once per process.
+The asynchronous total runs higher than the synchronous decode because dynamic import and off-thread streaming add overhead the small engine does not amortize; its value is the deferred, code-split, non-blocking load, not raw speed. The engine is ~120 KB gzipped on the wire across four content-hashed chunks, decompressing to ~0.61 MB of binary tables; repeat visits load the chunks from HTTP cache. On a low-end device the cost is tens of milliseconds. Trigger `ensureEngineReady()` behind your own idle scheduler (for example `requestIdleCallback`) to keep it off first paint.
 
 ## Summary
 
-Import and call in Node and on edge: the first call initializes synchronously, and on edge the engine is ready before the first request by construction. In the browser, you decide when to load the engine with `ensureEngineReady()` (the only environment that needs it), decoding off the main thread; the first API call also loads it on demand.
+Initialization is explicit and asynchronous by default: `await ensureEngineReady()` from `@telixon/core`, at a moment that fits your app. For synchronous initialization (at boot in Node, or in global scope on edge, once per isolate before the first request), import `ensureEngineReadySync()` from `@telixon/core/sync-init`. The two entries share one process-wide engine, and a call before initialization throws `TelixonNotReadyError`.

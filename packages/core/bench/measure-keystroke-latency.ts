@@ -2,12 +2,9 @@ import { createInternationalInputController, ensureEngineReady, type InputContro
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { EmbeddedResourceLoader } from '../src/resource-loader/embedded-resource-loader';
-import { setResourceLoader } from '../src/resource-loader/resource-loader.config';
 import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
 
-setResourceLoader(new EmbeddedResourceLoader());
 await ensureEngineReady();
 
 const WARMUP_PASSES = 3;

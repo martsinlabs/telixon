@@ -1,4 +1,4 @@
-export type SandboxPage = 'index' | 'phone-input' | 'country-list' | 'variations';
+export type SandboxPage = 'index' | 'phone-input' | 'country-list' | 'variations' | 'sync-init' | 'async-init';
 
 type NavLink = {
   page: SandboxPage;
@@ -11,6 +11,8 @@ const NAV_LINKS: readonly NavLink[] = [
   { page: 'phone-input', href: '/phone-input.html', label: 'PhoneInput' },
   { page: 'country-list', href: '/country-list.html', label: 'CountryList' },
   { page: 'variations', href: '/variations.html', label: 'Variations' },
+  { page: 'sync-init', href: '/sync-init.html', label: 'SyncInit' },
+  { page: 'async-init', href: '/async-init.html', label: 'AsyncInit' },
 ];
 
 export function renderNav(active: SandboxPage): void {

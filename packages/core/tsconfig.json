@@ -4,7 +4,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@telixon/core": ["./src/index.ts"],
+      "@telixon/core": ["./src/index.node.ts"],
       "@telixon/core/*": ["./src/*"],
       "@telixon/testing": ["../testing/src/index.ts"],
       "@telixon/testing/*": ["../testing/src/*"]

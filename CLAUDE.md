@@ -22,9 +22,9 @@ packages/
 - `src/modules/`: feature modules (`number-resolver`, `input-controller`, …)
 - `src/models/`: shared types
 - `src/utils/`: pure, reusable utilities
-- `src/resource-provider/`: resource abstraction
-- `src/resource-loader/`: environment loaders (embedded for node/edge, web for browser)
-- Entry points: `index.ts`, `index.node.ts`, `index.browser.ts`, `index.edge.ts`
+- `src/resource-provider/`: process-wide engine singleton (one per process via `globalThis`)
+- `src/resource-loader/`: `LazyResourceLoader` (dynamic import, async, off-thread decode) and `EmbeddedResourceLoader` (static import, sync), each given a decode strategy (`decode-layer-native` / `-stream` / `-pure`)
+- Entry points: `index.ts` (shared API); `index.node.ts` / `index.browser.ts` / `index.edge.ts` (async default `ensureEngineReady`, per-env loader); `index.sync-init.ts` / `index.sync-init.node.ts` (the `@telixon/core/sync-init` sync entry, `ensureEngineReadySync`)
 
 Build: `tsup`. Engine binaries copied post-build via `cpy`.
 

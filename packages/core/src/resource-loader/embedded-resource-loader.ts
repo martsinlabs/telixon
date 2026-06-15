@@ -1,21 +1,11 @@
 import { EngineLayerBytes } from '../engine';
 import { STATIC_ENGINE_MODULES } from '../static-engine-modules';
-import { decodeBase64 } from '../utils/decode-base64';
-import { gunzipSync } from '../utils/gunzip';
-import { ResourceLoader } from './models';
+import { decodeLayerPure } from './decode-layer-pure';
+import { SyncResourceLoader } from './models';
 
-// Default sync decode: pure-JS base64 + gunzip, runs in any runtime (used on edge, where neither node:zlib nor a sync DecompressionStream exists).
-function decodeLayerPure(base64: string): ArrayBuffer {
-  return gunzipSync(decodeBase64(base64)).buffer;
-}
-
-// EMBEDDED over static imports: modules ship in the deployed script (Node, edge), so payloads are local and init is synchronous; decode is injected (Node native zlib, edge pure-JS).
-export class EmbeddedResourceLoader implements ResourceLoader {
+// Static, synchronous: the engine modules are statically imported (present in the deployed bundle), so payloads exist at eval and decode runs in-process; decode is injected (Node native zlib, edge/web pure-JS).
+export class EmbeddedResourceLoader implements SyncResourceLoader {
   constructor(private readonly decodeLayer: (base64: string) => ArrayBuffer = decodeLayerPure) {}
-
-  async loadEngineBytes(): Promise<EngineLayerBytes> {
-    return this.decodeAllLayers();
-  }
 
   loadEngineBytesSync(): EngineLayerBytes {
     return this.decodeAllLayers();

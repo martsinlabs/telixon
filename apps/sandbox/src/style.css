@@ -710,3 +710,67 @@ body {
     padding: 16px;
   }
 }
+
+/* ── Init-cost pages (sync / async) ──────────────────── */
+
+.freeze-stage {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 20px 0;
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  border: 5px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.fps {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 24px;
+  margin: 20px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.metrics dt {
+  color: var(--text-secondary);
+}
+
+.metrics dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.verdict {
+  padding: 11px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.verdict--ok {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.verdict--warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+
+.verdict--idle {
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}

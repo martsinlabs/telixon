@@ -12,9 +12,7 @@ import {
   REGION_IDS,
   RegionId,
 } from '../engine';
-import { TelixonNotReadyError } from '../errors';
-import { ResourceLoader } from '../resource-loader/models';
-import { getResourceLoader } from '../resource-loader/resource-loader.config';
+import { ResourceLoader, SyncResourceLoader } from '../resource-loader/models';
 import { MetadataPlaceholders, ResourceProvider } from './models';
 
 // The metadata region order is REGION_IDS (alphabetical); a mismatch means a broken artifact.
@@ -82,8 +80,6 @@ class DefaultResourceProvider extends ResourceProvider {
   private ready = false;
   private loading: Promise<void> | undefined;
 
-  private loader: ResourceLoader = getResourceLoader();
-
   engine!: Engine;
 
   regionIds!: readonly RegionId[];
@@ -94,39 +90,30 @@ class DefaultResourceProvider extends ResourceProvider {
   regionHasLeadingDigits!: Uint8Array;
   placeholders!: MetadataPlaceholders;
 
-  async ensureReady(): Promise<void> {
+  async ensureReady(loader: ResourceLoader): Promise<void> {
     if (this.ready) return;
 
     if (!this.loading) {
-      this.loading = this.loadAll();
+      this.loading = this.loadAll(loader);
     }
 
     return this.loading;
   }
 
-  // Synchronous init: only local byte channels (bundled modules) support it; on the network channel the bytes may still be in flight (TelixonNotReadyError).
-  ensureReadySync(): void {
+  // Synchronous init from a local byte channel (bundled modules decode in-process); the network channel has no sync loader, so it never reaches here.
+  ensureReadySync(loader: SyncResourceLoader): void {
     if (this.ready) return;
-
-    const loader: ResourceLoader = this.loader;
-    const loadEngineBytesSync = loader.loadEngineBytesSync?.bind(loader);
-    if (!loadEngineBytesSync) {
-      // Self-healing: restarts a background load that failed earlier (no-op while one is in flight), so the engine recovers at the next API touch.
-      void this.ensureReady().catch(() => undefined);
-      throw new TelixonNotReadyError();
-    }
-
-    this.materialize(parseEngine(loadEngineBytesSync()));
+    this.materialize(parseEngine(loader.loadEngineBytesSync()));
   }
 
   get isReady(): boolean {
     return this.ready;
   }
 
-  private async loadAll(): Promise<void> {
+  private async loadAll(loader: ResourceLoader): Promise<void> {
     try {
-      const engine: Engine = parseEngine(await this.loader.loadEngineBytes());
-      // A concurrent ensureReadySync may have materialized while the async loads were in flight.
+      const engine: Engine = parseEngine(await loader.loadEngineBytes());
+      // A concurrent ensureReadySync may have materialized while the async load was in flight.
       if (this.ready) return;
       this.materialize(engine);
     } catch (error) {
@@ -157,12 +144,21 @@ class DefaultResourceProvider extends ResourceProvider {
   }
 }
 
-let instance: ResourceProvider | null = null;
+// One engine per process: the provider lives on globalThis (Symbol.for), so duplicate copies of this module (multiple bundles, federated chunks) share one instance; the module-local cache keeps the hot path a single read.
+const PROVIDER_KEY = Symbol.for('telixon.core.resourceProvider');
+let cachedProvider: ResourceProvider | undefined;
 
 export function getResourceProvider(): ResourceProvider {
-  if (instance) return instance;
+  if (cachedProvider) return cachedProvider;
 
-  instance = new DefaultResourceProvider();
+  const store = globalThis as unknown as Record<symbol, ResourceProvider | undefined>;
+  cachedProvider = store[PROVIDER_KEY] ?? new DefaultResourceProvider();
+  store[PROVIDER_KEY] = cachedProvider;
+  return cachedProvider;
+}
 
-  return instance;
+// @internal Test and bench hook: drop the process-wide provider so the next getResourceProvider() rebuilds it.
+export function __resetResourceProvider(): void {
+  cachedProvider = undefined;
+  (globalThis as unknown as Record<symbol, ResourceProvider | undefined>)[PROVIDER_KEY] = undefined;
 }

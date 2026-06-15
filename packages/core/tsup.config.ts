@@ -15,6 +15,8 @@ export default defineConfig({
     'index.browser': 'src/index.browser.ts',
     'index.node': 'src/index.node.ts',
     'index.edge': 'src/index.edge.ts',
+    'index.sync-init': 'src/index.sync-init.ts',
+    'index.sync-init.node': 'src/index.sync-init.node.ts',
   },
   format: ['esm'],
   dts: true,

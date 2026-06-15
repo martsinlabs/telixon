@@ -1,11 +1,9 @@
+import { TelixonNotReadyError } from '../errors';
 import { getResourceProvider } from '../resource-provider';
-import { ResourceProvider } from '../resource-provider/models';
 
-// API entry gate: initialize synchronously if the byte channel is local; on the network channel (bytes in flight) this throws TelixonNotReadyError.
+// API entry gate: the engine must be initialized first via ensureEngineReady() or ensureEngineReadySync(); a call before then throws.
 export function requireEngineReady(): void {
-  const provider: ResourceProvider = getResourceProvider();
-
-  if (!provider.isReady) {
-    provider.ensureReadySync();
+  if (!getResourceProvider().isReady) {
+    throw new TelixonNotReadyError();
   }
 }
