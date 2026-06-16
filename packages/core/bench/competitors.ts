@@ -89,8 +89,13 @@ const googleLibphonenumberAdapter: PhoneLibraryAdapter = {
   getURI: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.RFC3966),
 };
 
-export const ADAPTERS: readonly PhoneLibraryAdapter[] = [
+// The competitor adapters exist only for the wall-time comparison ratio. Under CodSpeed (BENCH_TELIXON_ONLY) only telixon is benched, so the comparison libraries are not tracked as our own regressions.
+const COMPARISON_ADAPTERS: readonly PhoneLibraryAdapter[] = [
   telixonAdapter,
   libphonenumberJsAdapter,
   googleLibphonenumberAdapter,
-] as const;
+];
+
+export const ADAPTERS: readonly PhoneLibraryAdapter[] = process.env.BENCH_TELIXON_ONLY
+  ? [telixonAdapter]
+  : COMPARISON_ADAPTERS;

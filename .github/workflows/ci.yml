@@ -97,8 +97,11 @@ jobs:
 
       # Walltime-stable benchmark measurement: CodSpeed runs vitest bench under instrumentation
       # and posts per-PR regression deltas. Threshold and base reference are managed in the CodSpeed
-      # GitHub App settings.
+      # GitHub App settings. BENCH_TELIXON_ONLY drops the competitor adapters so only telixon
+      # benchmarks are tracked; the competitor comparison runs wall-time via bench:report.
       - uses: CodSpeedHQ/action@v3
+        env:
+          BENCH_TELIXON_ONLY: '1'
         with:
           run: pnpm bench
           token: ${{ secrets.CODSPEED_TOKEN }}
