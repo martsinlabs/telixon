@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@telixon/core bundle size · {{shortCommit}}</title>
+    <meta name="description" content="{{ogDescription}}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Telixon" />
+    <meta property="og:title" content="{{ogTitle}}" />
+    <meta property="og:description" content="{{ogDescription}}" />
+    <meta property="og:url" content="https://telixon.dev/bundle.html" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ogTitle}}" />
+    <meta name="twitter:description" content="{{ogDescription}}" />
+    <link rel="canonical" href="https://telixon.dev/bundle.html" />
+    <style>
+      body {
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 2rem;
+        margin-bottom: 0.25rem;
+      }
+      .meta,
+      .section-note {
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+      .section-note p {
+        margin: 0;
+      }
+      .section-note p + p {
+        margin-top: 0.75rem;
+      }
+      .section-note strong {
+        color: #222;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.92rem;
+        margin-bottom: 1rem;
+      }
+      th,
+      td {
+        padding: 0.4rem 0.6rem;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      thead th {
+        font-weight: 600;
+        border-bottom: 2px solid #ddd;
+      }
+      tbody tr.total td {
+        border-top: 2px solid #ddd;
+        font-weight: 600;
+      }
+      .role-initial {
+        color: #1a7f37;
+        font-weight: 600;
+      }
+      .role-engine {
+        color: #555;
+      }
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+      .stat-card {
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 0.9rem 1rem;
+      }
+      .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1a7f37;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat-value.muted {
+        color: #555;
+      }
+      .stat-label {
+        font-weight: 600;
+        margin-top: 0.1rem;
+      }
+      .stat-sub {
+        color: #555;
+        font-size: 0.85rem;
+        margin-top: 0.15rem;
+      }
+      .split-bar {
+        display: flex;
+        height: 30px;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #ddd;
+        margin: 0.75rem 0 0.4rem;
+      }
+      .split-initial {
+        background: #1a7f37;
+      }
+      .split-engine {
+        background: #d8d8d8;
+      }
+      .split-caption {
+        color: #555;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      .swatch {
+        display: inline-block;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 2px;
+        vertical-align: middle;
+        margin-right: 0.3rem;
+      }
+      .swatch.initial {
+        background: #1a7f37;
+      }
+      .swatch.engine {
+        background: #d8d8d8;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+      }
+      footer {
+        margin-top: 2rem;
+        color: #777;
+        font-size: 0.85rem;
+      }
+      a {
+        color: #0969da;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>@telixon/core bundle size</h1>
+    <div class="meta">
+      What @telixon/core actually adds to a consumer's initial download, measured from a real Vite production build. The
+      app exercises the entire public API, including the input controller, so the initial figure is the ceiling;
+      tree-shaking trims a typical app below it.<br />
+      Engine compiled from Google's libphonenumber source at
+      <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
+        >github.com/google/libphonenumber@{{shortCommit}}</a
+      >.<br />
+      Generated {{runAt}}.
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-card">
+        <div class="stat-value">{{initialGzip}}</div>
+        <div class="stat-label">initial bundle</div>
+        <div class="stat-sub">the entry chunk, gzipped: the entire public API plus the loader, no metadata</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value muted">{{engineGzip}}</div>
+        <div class="stat-label">engine, {{engineChunkCount}} lazy chunks</div>
+        <div class="stat-sub">
+          fetched by <code>ensureEngineReady()</code> after first paint, not in the initial bundle
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value muted">{{inlinedGzip}}</div>
+        <div class="stat-label">what an analyzer reports</div>
+        <div class="stat-sub">
+          bundlephobia and Import Cost inline the lazy chunks, so they show initial plus engine as one number
+        </div>
+      </div>
+    </div>
+
+    <div class="split-bar">
+      <div class="split-initial" style="width: {{initialBarPercent}}%"></div>
+      <div class="split-engine" style="width: {{engineBarPercent}}%"></div>
+    </div>
+    <div class="split-caption">
+      <span class="swatch initial"></span>initial bundle ({{initialGzip}}) &nbsp;
+      <span class="swatch engine"></span>engine, lazy ({{engineGzip}}). One bar, gzipped bytes to scale. The green slice
+      is everything that ships before the engine is needed.
+    </div>
+
+    <h2 id="chunks">Chunks</h2>
+    <div class="section-note">
+      Every JavaScript file the build emitted, gzipped at level 9 and brotli-compressed at quality 11. The engine's four
+      base64-of-gzip modules are referenced through dynamic <code>import()</code>, so the bundler splits each into its
+      own lazy chunk instead of inlining it into the entry.
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Chunk</th>
+          <th>Role</th>
+          <th>Raw</th>
+          <th>Gzip</th>
+          <th>Brotli</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{chunkRows}}
+      </tbody>
+    </table>
+
+    <h2 id="why">Why the analyzer number is higher</h2>
+    <div class="section-note">
+      <p>
+        Tools like bundlephobia and the Import Cost editor extension estimate size by inlining every
+        <code>import()</code> back into the entry, because they cannot model how a real bundler code-splits an
+        application. For a library that ships its data through lazy chunks, that collapses the initial bundle and the
+        on-demand engine into a single figure ({{inlinedGzip}}).
+      </p>
+      <p>
+        A production bundler keeps the split. The engine layers download in parallel, off the critical path, when
+        <code>ensureEngineReady()</code> runs. The number that reaches a user on first paint is the entry chunk:
+        <strong>{{initialGzip}} gzipped</strong>.
+      </p>
+    </div>
+
+    <h2 id="reproduce">Reproduce</h2>
+    <pre><code>git clone https://github.com/martsinlabs/telixon
+cd telixon &amp;&amp; pnpm install
+pnpm --filter @telixon/core build
+pnpm --filter @telixon/example-core-bundle-size build</code></pre>
+    <div class="section-note">
+      The build prints the same chunk sizes you see above. No bundler configuration hides anything: the engine is split
+      because it is loaded through dynamic <code>import()</code>, which is how a real consumer's bundler treats it.
+    </div>
+
+    <footer>
+      Source:
+      <a href="https://github.com/martsinlabs/telixon/tree/main/examples/core/bundle-size">examples/core/bundle-size</a
+      >.
+    </footer>
+  </body>
+</html>

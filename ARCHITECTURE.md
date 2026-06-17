@@ -146,7 +146,7 @@ The pure-JS base64 + gunzip floor runs in any runtime and is byte-equality-teste
 The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The engine artifact is runtime data, out of the initial JS bundle (~120 KB gzipped across four
+- The engine artifact is runtime data, out of the initial JS bundle (~119 KB gzipped across four
   content-hashed chunks, ~0.61 MB decompressed). The async entries load it lazily (cached after first
   load on the web); `@telixon/core/sync-init` carries it in the bundle.
 

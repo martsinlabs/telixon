@@ -136,8 +136,34 @@ jobs:
           path: packages/core/bench/dist
           if-no-files-found: error
 
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The example consumes the built package exactly as a published consumer would.
+      - run: pnpm --filter @telixon/core build
+
+      - run: pnpm --filter @telixon/example-core-bundle-size report
+
+      # @telixon/core bundle-size proof (bundle.html, treemap.html, bundle.json, bundle-badge.json) for the dashboard.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-artifacts
+          path: examples/core/bundle-size/report
+          if-no-files-found: error
+
   pages:
-    needs: [conformance, bench]
+    needs: [conformance, bench, bundle]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -147,8 +173,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Merge parity + bench artifacts at one root. Both publish flat files (parity.html,
-      # benchmark.html, *-badge.json) and the dashboard URLs are /parity.html and /benchmark.html.
+      # Merge parity + bench + bundle artifacts at one root. Each publishes flat files (parity.html,
+      # benchmark.html, bundle.html, *-badge.json); the dashboard URLs are /parity.html, /benchmark.html, /bundle.html.
       - uses: actions/download-artifact@v4
         with:
           name: parity-artifacts
@@ -157,6 +183,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: bench-artifacts
+          path: site
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: bundle-artifacts
           path: site
 
       # bench-raw.json is the intermediate vitest dump; not part of the public surface.

@@ -35,7 +35,8 @@ cheap.
 
 The metadata is runtime data loaded once, out of your JS bundle, so it never affects your initial
 bundle or load (in the browser you trigger the load with `ensureEngineReady()`). Details:
-[ARCHITECTURE.md](ARCHITECTURE.md).
+[ARCHITECTURE.md](ARCHITECTURE.md). Measured bundle breakdown, reproducible from
+[examples/core/bundle-size](examples/core/bundle-size): [telixon.dev/bundle.html](https://telixon.dev/bundle.html).
 
 ## Packages
 

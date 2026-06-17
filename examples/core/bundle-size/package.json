@@ -1,0 +1,17 @@
+{
+  "name": "@telixon/example-core-bundle-size",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "report": "vite build && tsx report.ts"
+  },
+  "dependencies": {
+    "@telixon/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "vite": "^6.3.0"
+  }
+}
