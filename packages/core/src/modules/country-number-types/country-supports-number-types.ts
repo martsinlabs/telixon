@@ -3,7 +3,7 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 
 // True if the country supports at least one of the given types (FIXED_LINE_OR_MOBILE matches FIXED_LINE or MOBILE; UNKNOWN/empty matches nothing). Requires ready resources.
-export function countrySupportsNumberType(country: RegionId, types: readonly NumberType[]): boolean {
+export function countrySupportsNumberTypes(country: RegionId, types: readonly NumberType[]): boolean {
   if (types.length === 0) return false;
 
   const resourceProvider = getResourceProvider();

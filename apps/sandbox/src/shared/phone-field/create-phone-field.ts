@@ -1,4 +1,4 @@
-import { getCallingCodeForRegion, type RegionId } from '@telixon/core';
+import { getCallingCodeForCountry, type RegionId } from '@telixon/core';
 import {
   createCountryList,
   createPhoneInput,
@@ -262,7 +262,7 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
 
   function updateCountryButton(country: RegionId): void {
     countryFlag!.textContent = flagEmoji(country);
-    countryDial!.textContent = `+${getCallingCodeForRegion(country)}`;
+    countryDial!.textContent = `+${getCallingCodeForCountry(country)}`;
   }
 
   function renderOptions(state: CountryListState): void {

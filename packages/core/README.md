@@ -22,7 +22,7 @@ await ensureEngineReady(); // load the engine once; the API is synchronous after
 const number = parsePhoneNumber('+12015550123');
 number.isValid(); // true
 number.getCountry(); // "US"
-number.getE164(); // "+12015550123"
+number.formatE164(); // "+12015550123"
 number.formatInternational(); // "+1 201-555-0123"
 ```
 
@@ -41,9 +41,9 @@ Full rationale and numbers: [Initialization docs](https://github.com/martsinlabs
 
 ## What's in this package
 
-- `parsePhoneNumber` and the `PhoneNumber` query view (`isValid`, `isPossible`, `getNumberType`, `getCountry`, `getE164`, `formatNational`, `formatInternational`, `getURI`, and more).
+- `parsePhoneNumber` and the `PhoneNumber` query view (`isValid`, `isPossible`, `getNumberType`, `getCountry`, `formatE164`, `formatNational`, `formatInternational`, `formatRfc3966`, and more).
 - `createInternationalInputController` and `createNationalInputController`: full per-keystroke input controllers (insert and delete at any position, caret tracking, undo/redo, and the complete query surface). The DOM-binding wrapper `createPhoneInput` lives in [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk).
-- Region and number-type helpers: `getCallingCodeForRegion`, `countrySupportsNumberType`, `getPlaceholders`, `isNationalPrefixOptional`.
+- Region and number-type helpers: `getCallingCodeForCountry`, `countrySupportsNumberTypes`, `getPlaceholders`, `isNationalPrefixOptional`.
 - `ensureEngineReady`, `isEngineReady`, and `ensureEngineReadySync` (from `@telixon/core/sync-init`): engine initialization and readiness.
 
 ## Project

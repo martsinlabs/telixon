@@ -18,21 +18,21 @@ describe('parsePhoneNumber: international', () => {
     expect(phone.getCountry()).toBe('US');
     expect(phone.getCallingCode()).toBe('1');
     expect(phone.getNationalNumber()).toBe(US_MOBILE);
-    expect(phone.getE164()).toBe(US_MOBILE_E164);
+    expect(phone.formatE164()).toBe(US_MOBILE_E164);
   });
 
   it('infers the calling code when the + is missing', () => {
     const phone = parsePhoneNumber(US_MOBILE_INTL);
 
     expect(phone.getCountry()).toBe('US');
-    expect(phone.getE164()).toBe(US_MOBILE_E164);
+    expect(phone.formatE164()).toBe(US_MOBILE_E164);
   });
 
   it('takes the calling code from the + prefix over defaultCountry', () => {
     const phone = parsePhoneNumber(GB_FIXED_E164, { defaultCountry: 'US' });
 
     expect(phone.getCountry()).toBe('GB');
-    expect(phone.getE164()).toBe(GB_FIXED_E164);
+    expect(phone.formatE164()).toBe(GB_FIXED_E164);
   });
 
   it('formats a possible-but-invalid number instead of failing', () => {
@@ -40,7 +40,7 @@ describe('parsePhoneNumber: international', () => {
 
     expect(phone.isPossible()).toBe(true);
     expect(phone.isValid()).toBe(false);
-    expect(phone.getE164()).toBe('+13101234434');
+    expect(phone.formatE164()).toBe('+13101234434');
   });
 });
 
@@ -50,7 +50,7 @@ describe('parsePhoneNumber: national', () => {
 
     expect(phone.getCountry()).toBe('US');
     expect(phone.getNationalNumber()).toBe(US_MOBILE);
-    expect(phone.getE164()).toBe(US_MOBILE_E164);
+    expect(phone.formatE164()).toBe(US_MOBILE_E164);
   });
 
   it('strips the national prefix using the default country', () => {
@@ -58,7 +58,7 @@ describe('parsePhoneNumber: national', () => {
 
     expect(phone.getCountry()).toBe('GB');
     expect(phone.getNationalNumber()).toBe(GB_FIXED);
-    expect(phone.getE164()).toBe(GB_FIXED_E164);
+    expect(phone.formatE164()).toBe(GB_FIXED_E164);
   });
 });
 
@@ -69,6 +69,6 @@ describe('parsePhoneNumber: unresolvable input', () => {
     expect(phone.isPossible()).toBe(false);
     expect(phone.getCountry()).toBeNull();
     expect(phone.getNationalNumber()).toBe('');
-    expect(phone.getE164()).toBeNull();
+    expect(phone.formatE164()).toBeNull();
   });
 });

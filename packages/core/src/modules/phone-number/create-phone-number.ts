@@ -1,13 +1,13 @@
 import { NumberType, RegionId } from '@telixon/core/engine';
 import { PhoneNumber, PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from './models';
+import { formatE164 } from './query/format-e164';
 import { formatInternational } from './query/format-international';
 import { formatNational } from './query/format-national';
+import { formatRfc3966 } from './query/format-rfc3966';
 import { getCallingCode } from './query/get-calling-code';
 import { getCountry } from './query/get-country';
-import { getE164 } from './query/get-e164';
 import { getNationalNumber } from './query/get-national-number';
 import { getNumberType } from './query/get-number-type';
-import { getURI } from './query/get-uri';
 import { getValidationError } from './query/get-validation-error';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
 
@@ -24,7 +24,7 @@ class PhoneNumberView implements PhoneNumber {
 
   private cachedFormattedInternational: string | null | undefined = undefined;
 
-  private cachedURI: string | null | undefined = undefined;
+  private cachedRfc3966: string | null | undefined = undefined;
 
   private cachedValidationResult: PhoneNumberValidationResult | undefined = undefined;
 
@@ -99,9 +99,9 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedCountry;
   }
 
-  getE164(): string | null {
+  formatE164(): string | null {
     if (this.cachedE164 === undefined) {
-      this.cachedE164 = getE164(this.resolved);
+      this.cachedE164 = formatE164(this.resolved);
     }
 
     return this.cachedE164;
@@ -123,12 +123,12 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedFormattedInternational;
   }
 
-  getURI(): string | null {
-    if (this.cachedURI === undefined) {
-      this.cachedURI = getURI(this.resolved);
+  formatRfc3966(): string | null {
+    if (this.cachedRfc3966 === undefined) {
+      this.cachedRfc3966 = formatRfc3966(this.resolved);
     }
 
-    return this.cachedURI;
+    return this.cachedRfc3966;
   }
 }
 

@@ -242,8 +242,8 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       if (inputController.canRedo) commit(() => inputController.redo());
     },
 
-    seal(): void {
-      inputController.seal();
+    clearHistory(): void {
+      inputController.clearHistory();
       notify(buildState());
     },
 

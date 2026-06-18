@@ -20,7 +20,7 @@ import { resolveInput } from '../utils/resolve-input';
 import { InternationalInputControllerConfig } from './models';
 import { resolveInternationalControllerState } from './utils';
 
-class InternationalInputController extends InputController {
+class InternationalInputController implements InputController {
   #history!: InputStateHistory<InputControllerState>;
 
   #numberResolver: NumberResolver = new NumberResolver();
@@ -30,8 +30,6 @@ class InternationalInputController extends InputController {
   #defaultCallingCode: string | null = null;
 
   constructor(private config: InternationalInputControllerConfig = {}) {
-    super();
-
     if (this.config.defaultCountry) {
       this.#setDefaultCountry(this.config.defaultCountry);
     }
@@ -266,8 +264,8 @@ class InternationalInputController extends InputController {
     return createPhoneNumber(toResolvedPhoneNumber(snapshot, this.#defaultCountryIndex, nationalPrefixPresent));
   }
 
-  seal(): void {
-    this.#history.seal();
+  clearHistory(): void {
+    this.#history.clearHistory();
   }
 
   undo(): InputState {

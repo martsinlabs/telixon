@@ -1,4 +1,4 @@
-import { eventsEl, phoneNumberEl, redoBtn, sealBtn, stateEl, undoBtn, warningEl } from './elements';
+import { clearHistoryBtn, eventsEl, phoneNumberEl, redoBtn, stateEl, undoBtn, warningEl } from './elements';
 import type { Controller } from './types';
 
 const MAX_LOG_LINES = 20;
@@ -17,10 +17,10 @@ function renderPhoneNumber(current: Controller | null): string {
     ['getNationalNumber', phoneNumber.getNationalNumber()],
     ['getCallingCode', phoneNumber.getCallingCode()],
     ['getCountry', phoneNumber.getCountry()],
-    ['getE164', phoneNumber.getE164()],
+    ['formatE164', phoneNumber.formatE164()],
     ['formatNational', phoneNumber.formatNational()],
     ['formatInternational', phoneNumber.formatInternational()],
-    ['getURI', phoneNumber.getURI()],
+    ['formatRfc3966', phoneNumber.formatRfc3966()],
   ];
 
   const width = Math.max(...rows.map(([name]) => name.length));
@@ -33,7 +33,7 @@ export function sync(current: Controller | null): void {
 
   undoBtn.disabled = phone === null || !phone.canUndo();
   redoBtn.disabled = phone === null || !phone.canRedo();
-  sealBtn.disabled = phone === null;
+  clearHistoryBtn.disabled = phone === null;
 
   warningEl.textContent =
     current === null

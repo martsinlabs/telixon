@@ -1,4 +1,4 @@
-import { getCallingCodeForRegion, REGION_IDS } from '@telixon/core';
+import { getCallingCodeForCountry, REGION_IDS } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
 import { buildCorpus, loadOracle } from '../oracle';
 import { exportArtifacts } from './artifacts';
@@ -71,13 +71,13 @@ describe('possibility prefix sweep vs Google', () => {
   });
 });
 
-describe('getCallingCodeForRegion vs Google getCountryCodeForRegion', () => {
+describe('getCallingCodeForCountry vs Google getCountryCodeForRegion', () => {
   it('matches Google for every supported region', () => {
     const mismatches = REGION_IDS.filter(
-      (region) => getCallingCodeForRegion(region) !== oracle.countryCallingCode(region),
+      (region) => getCallingCodeForCountry(region) !== oracle.countryCallingCode(region),
     ).map((region) => ({
       region,
-      telixon: getCallingCodeForRegion(region),
+      telixon: getCallingCodeForCountry(region),
       google: oracle.countryCallingCode(region),
     }));
 
@@ -98,10 +98,10 @@ describe('possible-but-invalid numbers format like Google', () => {
       expect(google!.isPossible).toBe(true);
       expect(google!.isValid).toBe(false);
 
-      expect(telixon.getE164).not.toBeNull();
-      expect(telixon.getE164).toBe(google!.getE164);
+      expect(telixon.formatE164).not.toBeNull();
+      expect(telixon.formatE164).toBe(google!.formatE164);
       expect(telixon.formatInternational).toBe(google!.formatInternational);
-      expect(telixon.getURI).toBe(google!.getURI);
+      expect(telixon.formatRfc3966).toBe(google!.formatRfc3966);
     });
   }
 });

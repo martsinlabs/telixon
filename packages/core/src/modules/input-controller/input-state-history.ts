@@ -78,7 +78,7 @@ export class InputStateHistory<State extends InputControllerState = InputControl
     return this.index < this.stack.length - 1;
   }
 
-  seal(): void {
+  clearHistory(): void {
     this.stack = [this.stack[this.index]!];
     this.index = 0;
   }

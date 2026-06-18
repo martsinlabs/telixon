@@ -1,16 +1,16 @@
 import {
-  countrySupportsNumberType,
+  countrySupportsNumberTypes,
   createInternationalInputController,
   createNationalInputController,
   ensureEngineReady,
-  getCallingCodeForRegion,
+  getCallingCodeForCountry,
   getPlaceholders,
-  InputController,
   isEngineReady,
   isNationalPrefixOptional,
   parsePhoneNumber,
   REGION_IDS,
   TelixonNotReadyError,
+  type InputController,
   type NumberType,
   type PhoneNumber,
   type RegionId,
@@ -48,10 +48,10 @@ function describeNumber(number: PhoneNumber): string[] {
     `nationalNumber: ${number.getNationalNumber()}`,
     `callingCode: ${String(number.getCallingCode())}`,
     `country: ${String(number.getCountry())}`,
-    `e164: ${String(number.getE164())}`,
+    `e164: ${String(number.formatE164())}`,
     `national: ${String(number.formatNational())}`,
     `international: ${String(number.formatInternational())}`,
-    `uri: ${String(number.getURI())}`,
+    `uri: ${String(number.formatRfc3966())}`,
   ];
 }
 
@@ -60,8 +60,8 @@ function describeRegion(): string[] {
   return [
     `regions: ${REGION_IDS.length}`,
     `engineReady: ${isEngineReady()}`,
-    `callingCode(${REGION}): ${getCallingCodeForRegion(REGION)}`,
-    `supports ${NUMBER_TYPE}: ${countrySupportsNumberType(REGION, [NUMBER_TYPE])}`,
+    `callingCode(${REGION}): ${getCallingCodeForCountry(REGION)}`,
+    `supports ${NUMBER_TYPE}: ${countrySupportsNumberTypes(REGION, [NUMBER_TYPE])}`,
     `nationalPrefixOptional: ${isNationalPrefixOptional(REGION, NUMBER_TYPE)}`,
     `placeholders: ${JSON.stringify(getPlaceholders(REGION, NUMBER_TYPE))}`,
   ];
@@ -76,7 +76,6 @@ function driveControllers(): string[] {
 
 // Calls every InputController member, so the controller implementation ships.
 function exerciseController(controller: InputController): string {
-  if (!(controller instanceof InputController)) throw new Error('expected an InputController');
   controller.setCountryFilter([REGION]);
   controller.setNumberTypeFilter([NUMBER_TYPE]);
   controller.setCountry(REGION);
@@ -88,7 +87,7 @@ function exerciseController(controller: InputController): string {
   if (controller.canRedo) state = controller.redo();
   const live = controller.currentState;
   const formatted = String(controller.getPhoneNumber().formatInternational());
-  controller.seal();
+  controller.clearHistory();
   return `${state.value}/${live.value} (${formatted})`;
 }
 

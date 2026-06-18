@@ -22,10 +22,10 @@ export interface MethodResults {
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
   readonly getCountry: string | null;
-  readonly getE164: string | null;
+  readonly formatE164: string | null;
   readonly formatNational: string | null;
   readonly formatInternational: string | null;
-  readonly getURI: string | null;
+  readonly formatRfc3966: string | null;
 }
 
 export interface Oracle {

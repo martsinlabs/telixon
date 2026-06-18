@@ -1,5 +1,5 @@
 import {
-  getCallingCodeForRegion,
+  getCallingCodeForCountry,
   getPlaceholders,
   isNationalPrefixOptional,
   NumberType,
@@ -51,7 +51,7 @@ export function resolvePlaceholder(country: RegionId | null, config: Placeholder
   }
 
   if (placeholders.international === undefined) return null;
-  const callingCode: string = getCallingCodeForRegion(country);
+  const callingCode: string = getCallingCodeForCountry(country);
 
   return config.plusPrefix
     ? '+' + callingCode + ' ' + placeholders.international

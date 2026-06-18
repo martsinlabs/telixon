@@ -1,1 +1,1 @@
-export { countrySupportsNumberType } from './country-supports-number-type';
+export { countrySupportsNumberTypes } from './country-supports-number-types';

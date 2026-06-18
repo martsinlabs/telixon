@@ -89,8 +89,8 @@ export type PhoneInput = {
   undo(): void;
   /** Restore the next history entry. No-op when `canRedo()` is false. */
   redo(): void;
-  /** Collapse undo history to a single current entry. */
-  seal(): void;
+  /** Clear undo/redo history, keeping only the current entry. */
+  clearHistory(): void;
   /** Build a {@link PhoneNumber} from the current digits and resolution. */
   getPhoneNumber(): PhoneNumber;
   /** Restrict resolution to the given regions. `null` removes the restriction. No-op when the value is unchanged. */

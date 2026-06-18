@@ -7,6 +7,7 @@ import {
   applyFiltersBtn,
   applyInitialValueBtn,
   clearFiltersBtn,
+  clearHistoryBtn,
   clearValueBtn,
   countryEl,
   countryFilterEl,
@@ -15,7 +16,6 @@ import {
   numberTypeFilterEl,
   reattachBtn,
   redoBtn,
-  sealBtn,
   setValueBtn,
   stateEl,
   strictEl,
@@ -96,11 +96,11 @@ redoBtn.addEventListener('click', () => {
   record('redo()');
 });
 
-sealBtn.addEventListener('click', () => {
+clearHistoryBtn.addEventListener('click', () => {
   const ctrl = getCurrent();
-  ctrl?.phone.seal();
+  ctrl?.phone.clearHistory();
   sync(ctrl);
-  record('seal()');
+  record('clearHistory()');
 });
 
 applyFiltersBtn.addEventListener('click', () => {

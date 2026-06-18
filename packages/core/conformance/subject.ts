@@ -21,10 +21,10 @@ export function evaluateWithTelixon(input: string, defaultCountry?: RegionId): M
     getNationalNumber: phoneNumber.getNationalNumber(),
     getCallingCode: phoneNumber.getCallingCode(),
     getCountry: phoneNumber.getCountry(),
-    getE164: phoneNumber.getE164(),
+    formatE164: phoneNumber.formatE164(),
     formatNational: phoneNumber.formatNational(),
     formatInternational: phoneNumber.formatInternational(),
-    getURI: phoneNumber.getURI(),
+    formatRfc3966: phoneNumber.formatRfc3966(),
   };
 }
 

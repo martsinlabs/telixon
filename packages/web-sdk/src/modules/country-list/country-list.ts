@@ -1,5 +1,5 @@
 import type { NumberType, RegionId } from '@telixon/core';
-import { countrySupportsNumberType } from '@telixon/core';
+import { countrySupportsNumberTypes } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import type {
   CountryDataFactory,
@@ -20,8 +20,8 @@ const DEFAULT_LOCALE: string = 'en';
 /**
  * Create a headless country list controller.
  *
- * Pipeline on every state change: base set (cached per locale) → countryFilter → numberTypeFilter
- * → searchFn → sort → prioritize → emit. Mutators that don't change the underlying value skip
+ * Pipeline on every state change: base set (cached per locale) -> countryFilter -> numberTypeFilter
+ * -> searchFn -> sort -> prioritize -> emit. Mutators that don't change the underlying value skip
  * emission (no-op detection via shallow array equality and string equality).
  *
  * Generic `T` flows from the optional `dataFactory` return type; when omitted, `T` defaults to
@@ -56,7 +56,7 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
       filtered = [];
       for (const option of baseSet) {
         if (hasCountryFilter && !countryFilter!.includes(option.country)) continue;
-        if (hasNumberTypeFilter && !countrySupportsNumberType(option.country, numberTypeFilter!)) continue;
+        if (hasNumberTypeFilter && !countrySupportsNumberTypes(option.country, numberTypeFilter!)) continue;
         if (hasQuery && !searchFn(searchQuery, option)) continue;
         filtered.push(option);
       }

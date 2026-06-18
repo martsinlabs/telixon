@@ -32,11 +32,11 @@ export function deriveDisplayVariants(renderedExamples: readonly RenderedExample
       });
     }
 
-    if (rendered.getURI) {
+    if (rendered.formatRfc3966) {
       variants.push({
         family: 'display-variant',
         kind: 'rfc3966-uri',
-        input: rendered.getURI,
+        input: rendered.formatRfc3966,
         regionCode,
         sourceE164: e164,
       });

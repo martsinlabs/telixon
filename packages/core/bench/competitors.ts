@@ -21,10 +21,10 @@ export interface PhoneLibraryAdapter {
   getNationalNumber: (parsed: unknown) => string;
   getCallingCode: (parsed: unknown) => string | null;
   getCountry: (parsed: unknown) => string | null;
-  getE164: (parsed: unknown) => string;
+  formatE164: (parsed: unknown) => string;
   formatNational: (parsed: unknown) => string;
   formatInternational: (parsed: unknown) => string;
-  getURI: (parsed: unknown) => string;
+  formatRfc3966: (parsed: unknown) => string;
 }
 
 export const telixonReady: Promise<void> = ensureEngineReady();
@@ -41,10 +41,10 @@ const telixonAdapter: PhoneLibraryAdapter = {
   getNationalNumber: (parsed) => (parsed as TelixonPhoneNumber).getNationalNumber(),
   getCallingCode: (parsed) => (parsed as TelixonPhoneNumber).getCallingCode(),
   getCountry: (parsed) => (parsed as TelixonPhoneNumber).getCountry(),
-  getE164: (parsed) => (parsed as TelixonPhoneNumber).getE164() ?? '',
+  formatE164: (parsed) => (parsed as TelixonPhoneNumber).formatE164() ?? '',
   formatNational: (parsed) => (parsed as TelixonPhoneNumber).formatNational() ?? '',
   formatInternational: (parsed) => (parsed as TelixonPhoneNumber).formatInternational() ?? '',
-  getURI: (parsed) => (parsed as TelixonPhoneNumber).getURI() ?? '',
+  formatRfc3966: (parsed) => (parsed as TelixonPhoneNumber).formatRfc3966() ?? '',
 };
 
 // ── libphonenumber-js ────────────────────────────────────
@@ -61,10 +61,10 @@ const libphonenumberJsAdapter: PhoneLibraryAdapter = {
   getNationalNumber: (parsed) => (parsed as LibphonenumberJsPhoneNumber).nationalNumber,
   getCallingCode: (parsed) => (parsed as LibphonenumberJsPhoneNumber).countryCallingCode,
   getCountry: (parsed) => (parsed as LibphonenumberJsPhoneNumber).country ?? null,
-  getE164: (parsed) => (parsed as LibphonenumberJsPhoneNumber).number,
+  formatE164: (parsed) => (parsed as LibphonenumberJsPhoneNumber).number,
   formatNational: (parsed) => (parsed as LibphonenumberJsPhoneNumber).formatNational(),
   formatInternational: (parsed) => (parsed as LibphonenumberJsPhoneNumber).formatInternational(),
-  getURI: (parsed) => (parsed as LibphonenumberJsPhoneNumber).getURI(),
+  formatRfc3966: (parsed) => (parsed as LibphonenumberJsPhoneNumber).getURI(),
 };
 
 // ── google-libphonenumber ────────────────────────────────
@@ -83,10 +83,10 @@ const googleLibphonenumberAdapter: PhoneLibraryAdapter = {
   getNationalNumber: (parsed) => String((parsed as GooglePhoneNumber).getNationalNumber()),
   getCallingCode: (parsed) => String((parsed as GooglePhoneNumber).getCountryCode()),
   getCountry: (parsed) => googleUtil.getRegionCodeForNumber(parsed as GooglePhoneNumber) ?? null,
-  getE164: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.E164),
+  formatE164: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.E164),
   formatNational: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.NATIONAL),
   formatInternational: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.INTERNATIONAL),
-  getURI: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.RFC3966),
+  formatRfc3966: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.RFC3966),
 };
 
 // The competitor adapters exist only for the wall-time comparison ratio. Under CodSpeed (BENCH_TELIXON_ONLY) only telixon is benched, so the comparison libraries are not tracked as our own regressions.

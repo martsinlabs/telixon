@@ -2,7 +2,7 @@ import { ResolvedPhoneNumber } from '../models';
 import { formatInternational } from './format-international';
 
 // RFC3966 URI ('tel:+<callingCode>-<national>'), or null until possible; same grouping as the international format, separators normalized to hyphens.
-export function getURI(resolved: ResolvedPhoneNumber): string | null {
+export function formatRfc3966(resolved: ResolvedPhoneNumber): string | null {
   const international: string | null = formatInternational(resolved);
   if (international === null) return null;
 

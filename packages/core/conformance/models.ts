@@ -9,10 +9,10 @@ export const COMPARED_METHODS = [
   'getNationalNumber',
   'getCallingCode',
   'getCountry',
-  'getE164',
+  'formatE164',
   'formatNational',
   'formatInternational',
-  'getURI',
+  'formatRfc3966',
 ] as const;
 
 export type MethodName = (typeof COMPARED_METHODS)[number];

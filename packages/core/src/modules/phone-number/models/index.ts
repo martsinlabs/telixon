@@ -39,8 +39,8 @@ export interface PhoneNumber {
   getNationalNumber(): string;
   getCallingCode(): string | null;
   getCountry(): RegionId | null;
-  getE164(): string | null;
+  formatE164(): string | null;
   formatNational(): string | null;
   formatInternational(): string | null;
-  getURI(): string | null;
+  formatRfc3966(): string | null;
 }

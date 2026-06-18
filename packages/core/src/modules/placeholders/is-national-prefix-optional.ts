@@ -12,12 +12,12 @@ import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calli
 import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 import { selectNationalFormatIndex } from '../number-resolver/utils/select-national-format';
 
-/** True when the format matching the example number for `(region, type)` allows the national prefix to be omitted. */
-export function isNationalPrefixOptional(region: RegionId, type: NumberType): boolean {
+/** True when the format matching the example number for `(country, type)` allows the national prefix to be omitted. */
+export function isNationalPrefixOptional(country: RegionId, type: NumberType): boolean {
   const resourceProvider = getResourceProvider();
   const tables = resourceProvider.engine;
 
-  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[region];
+  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[country];
   if (countryIndex === undefined) return false;
 
   const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);

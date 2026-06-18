@@ -27,12 +27,12 @@ function hasInternationalFormat(callingCodeIndex: number): boolean {
   return false;
 }
 
-/** Returns example placeholder variants for `(region, type)`, or `null` if none. Requires ready resources. */
-export function getPlaceholders(region: RegionId, type: NumberType): Placeholders | null {
+/** Returns example placeholder variants for `(country, type)`, or `null` if none. Requires ready resources. */
+export function getPlaceholders(country: RegionId, type: NumberType): Placeholders | null {
   const resourceProvider = getResourceProvider();
   const tables = resourceProvider.engine;
 
-  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[region];
+  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[country];
   if (countryIndex === undefined) return null;
 
   const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);

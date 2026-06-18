@@ -2,8 +2,6 @@ import { NumberType, RegionId } from '@telixon/core/engine';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
-export type { PhoneNumberValidationResult } from '../../phone-number/models';
-
 export interface InputState {
   value: string;
   country: RegionId | null;
@@ -26,32 +24,19 @@ export interface InputChange {
 
 export type CaretIndex = number;
 
-export abstract class InputController {
-  abstract insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState;
-
-  abstract deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
-
-  abstract deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
-
-  abstract setValue(value: string): InputState;
-
-  abstract setCountry(country: RegionId): InputState;
-
-  abstract undo(): InputState;
-
-  abstract redo(): InputState;
-
-  abstract setCountryFilter(countries: readonly RegionId[] | null): void;
-
-  abstract setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
-
-  abstract seal(): void;
-
-  abstract getPhoneNumber(): PhoneNumber;
-
-  abstract get canUndo(): boolean;
-
-  abstract get canRedo(): boolean;
-
-  abstract get currentState(): InputState;
+export interface InputController {
+  insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState;
+  deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
+  deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
+  setValue(value: string): InputState;
+  setCountry(country: RegionId): InputState;
+  undo(): InputState;
+  redo(): InputState;
+  setCountryFilter(countries: readonly RegionId[] | null): void;
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
+  clearHistory(): void;
+  getPhoneNumber(): PhoneNumber;
+  readonly canUndo: boolean;
+  readonly canRedo: boolean;
+  readonly currentState: InputState;
 }

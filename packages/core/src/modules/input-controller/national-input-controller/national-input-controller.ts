@@ -34,7 +34,7 @@ function hasTypedNationalPrefix(rawDigits: string, prefixRules: NationalPrefixRu
   return rawDigits.startsWith(prefixRules.nationalPrefix);
 }
 
-class NationalInputController extends InputController {
+class NationalInputController implements InputController {
   #history!: InputStateHistory<InputControllerState>;
 
   #numberResolver: NumberResolver = new NumberResolver();
@@ -44,8 +44,6 @@ class NationalInputController extends InputController {
   #defaultCallingCode: string | null = null;
 
   constructor(private config: NationalInputControllerConfig) {
-    super();
-
     this.#setCountry(this.config.country);
 
     if (this.config.strict) {
@@ -286,8 +284,8 @@ class NationalInputController extends InputController {
     this.#history.replaceCurrent(nextState);
   }
 
-  seal(): void {
-    this.#history.seal();
+  clearHistory(): void {
+    this.#history.clearHistory();
   }
 
   getPhoneNumber(): PhoneNumber {

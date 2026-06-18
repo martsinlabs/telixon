@@ -156,14 +156,14 @@ describe('InputStateHistory.updateCurrentSelection', () => {
   });
 });
 
-describe('InputStateHistory.seal', () => {
+describe('InputStateHistory.clearHistory', () => {
   it('collapses the stack to the current entry only', () => {
     const history = new InputStateHistory(makeState('a'));
     history.push(makeState('b'));
     history.push(makeState('c'));
 
     expect(history.canUndo).toBe(true);
-    history.seal();
+    history.clearHistory();
 
     expect(history.canUndo).toBe(false);
     expect(history.canRedo).toBe(false);
@@ -176,7 +176,7 @@ describe('InputStateHistory.seal', () => {
     history.push(makeState('c'));
     history.undo(); // current = 'b'
 
-    history.seal();
+    history.clearHistory();
 
     expect(history.current.value).toBe('b');
     expect(history.canUndo).toBe(false);
