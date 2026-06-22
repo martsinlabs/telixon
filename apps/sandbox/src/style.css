@@ -7,18 +7,24 @@
 }
 
 :root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface-raised: #191919;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  /* Telixon design system, dark. Tailwind neutral surfaces + valid-green (green-600). */
+  --bg: #171717; /* neutral-900: our signature dark background */
+  --surface: #262626; /* neutral-800: raised cards and panels */
+  --surface-raised: #171717; /* neutral-900: inset controls (inputs, chips, buttons) */
+  --border: #262626; /* neutral-800 */
+  --border-strong: #404040; /* neutral-700 */
 
-  --text-primary: #f0f0f0;
-  --text-secondary: rgba(240, 240, 240, 0.45);
-  --text-tertiary: rgba(240, 240, 240, 0.28);
+  --text-primary: #e5e5e5; /* neutral-200 */
+  --text-secondary: #a3a3a3; /* neutral-400 */
+  --text-tertiary: #737373; /* neutral-500 */
 
-  --accent: #22c55e;
-  --accent-dim: rgba(34, 197, 94, 0.12);
+  --accent: #16a34a; /* green-600: brand green, AA as text on dark */
+  --accent-dim: color-mix(in srgb, #16a34a 15%, transparent);
+  --accent-soft: color-mix(in srgb, #16a34a 22%, transparent);
+  --btn-bg: #166534; /* green-800: solid button on dark */
+  --btn-border: #15803d; /* green-700 edge */
+  --warn: #fbbf24; /* amber-400, functional */
+  --warn-dim: color-mix(in srgb, #fbbf24 14%, transparent);
 
   --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', 'Fira Code', monospace;
@@ -47,7 +53,7 @@ body {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 10, 10, 0.8);
+  background: rgba(23, 23, 23, 0.8);
   backdrop-filter: blur(12px);
 }
 
@@ -55,9 +61,10 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  height: 56px; /* fixed so populating the nav never reflows the header (no layout shift) */
   max-width: 1280px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 0 24px;
 }
 
 .logo {
@@ -274,6 +281,7 @@ body {
   position: relative;
   display: flex;
   align-items: stretch;
+  min-height: 46px;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   background: var(--surface-raised);
@@ -287,13 +295,44 @@ body {
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
+/* Reserves the field's exact height while the engine loads, so the mounted field never shifts layout. */
+.field-skeleton {
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  position: relative;
+  overflow: hidden;
+}
+
+.field-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-skeleton::after {
+    animation: none;
+  }
+}
+
 .phone-field-country {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 0 12px;
   border: none;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--border-strong);
   background: transparent;
   color: var(--text-primary);
   cursor: pointer;
@@ -389,6 +428,14 @@ body {
   max-height: 70dvh;
 }
 
+/* The country-list page list reserves its space and shows a placeholder until the engine is ready. */
+#options:empty::before {
+  content: 'Loading…';
+  padding: 6px 10px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
 .option-row {
   display: grid;
   grid-template-columns: 44px 1fr auto;
@@ -432,7 +479,7 @@ body {
 }
 
 .option-row--active:hover {
-  background: rgba(34, 197, 94, 0.18);
+  background: var(--accent-soft);
 }
 
 .option-code {
@@ -618,7 +665,7 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(240, 240, 240, 0.25);
+  background: var(--text-tertiary);
   transition:
     transform 0.15s,
     background 0.15s;
@@ -626,7 +673,7 @@ body {
 
 .toggle input[type='checkbox']:checked {
   background: var(--accent-dim);
-  border-color: rgba(34, 197, 94, 0.25);
+  border-color: color-mix(in srgb, #16a34a 35%, transparent);
 }
 
 .toggle input[type='checkbox']:checked::before {
@@ -665,14 +712,14 @@ body {
 }
 
 .btn--primary {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: rgba(34, 197, 94, 0.25);
+  background: var(--btn-bg);
+  color: #ffffff;
+  border-color: var(--btn-border);
 }
 
 .btn--primary:hover {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+  background: var(--btn-border);
+  color: #ffffff;
 }
 
 .btn:disabled {
@@ -689,9 +736,15 @@ body {
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.7;
-  color: rgba(240, 240, 240, 0.7);
+  color: var(--text-secondary);
   white-space: pre;
   min-height: 80px;
+}
+
+/* Reserve the panel with a placeholder until it is populated, so nothing pops in. */
+.output:empty::before {
+  content: 'Loading…';
+  color: var(--text-tertiary);
 }
 
 /* ── Hint ────────────────────────────────────────────── */
@@ -766,8 +819,8 @@ body {
 }
 
 .verdict--warn {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  background: var(--warn-dim);
+  color: var(--warn);
 }
 
 .verdict--idle {

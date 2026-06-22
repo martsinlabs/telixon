@@ -38,7 +38,7 @@ async function bootstrap(): Promise<void> {
 function mountAndWire(key: string, options: PhoneFieldOptions): PhoneFieldHandle {
   const slot = mustGet(`[data-mount="${key}"]`, HTMLDivElement);
   const field = createPhoneField(options);
-  slot.appendChild(field.root);
+  slot.replaceChildren(field.root);
 
   const chip = mustGet(`[data-info="${key}"]`, HTMLSpanElement);
   const paint = (state: PhoneInputState): void => {
