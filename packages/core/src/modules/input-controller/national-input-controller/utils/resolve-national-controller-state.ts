@@ -42,16 +42,21 @@ export function resolveNationalControllerState(
     // displayDigits drops parse-only digit-adding transforms, so no untyped digit is shown.
     const formatRef = resolveFormatFromProfile(profile, displayDigits);
 
-    // No specific region (possible but not valid): fall back to the calling code's primary region.
-    const fallbackRegionIndex: number = formatRef
-      ? countryIndex
-      : resolvePrimaryCountryIndex(snapshot.callingCodeState, countryIndex);
-    country = resolveRegionCodeOrFallback(
-      snapshot.callingCodeState,
-      snapshot.endState,
-      snapshot.nationalDigits,
-      fallbackRegionIndex,
-    );
+    if (snapshot.strict) {
+      // Strict never leaves the preferred country: report it, not the digit-resolved region (NANP shares a calling code).
+      country = resourceProvider.regionIds[countryIndex] ?? null;
+    } else {
+      // No specific region (possible but not valid): fall back to the calling code's primary region.
+      const fallbackRegionIndex: number = formatRef
+        ? countryIndex
+        : resolvePrimaryCountryIndex(snapshot.callingCodeState, countryIndex);
+      country = resolveRegionCodeOrFallback(
+        snapshot.callingCodeState,
+        snapshot.endState,
+        snapshot.nationalDigits,
+        fallbackRegionIndex,
+      );
+    }
 
     // Prefer the profile's format; otherwise the calling code's national format, so possible numbers group.
     const formatPosition: number = formatRef

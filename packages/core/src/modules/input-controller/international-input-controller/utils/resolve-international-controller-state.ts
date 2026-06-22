@@ -71,12 +71,17 @@ export function resolveInternationalControllerState(
       }
     }
 
-    country = resolveRegionCodeOrFallback(
-      snapshot.callingCodeState,
-      snapshot.endState,
-      snapshot.nationalDigits,
-      countryIndex,
-    );
+    if (snapshot.strict) {
+      // Strict never leaves the preferred country: report it, not the digit-resolved region (NANP shares a calling code).
+      country = resourceProvider.regionIds[countryIndex] ?? null;
+    } else {
+      country = resolveRegionCodeOrFallback(
+        snapshot.callingCodeState,
+        snapshot.endState,
+        snapshot.nationalDigits,
+        countryIndex,
+      );
+    }
   } else if (snapshot.callingCodeState !== -1) {
     const primaryCountryIndex: number = resolvePrimaryCountryIndex(snapshot.callingCodeState, -1);
 
