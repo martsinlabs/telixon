@@ -33,3 +33,21 @@ describe('InputController strict mode: the reported country stays the preferred 
     expect(controller.currentState.country).toBe('US');
   });
 });
+
+describe('InputController strict mode: validity is country-specific (isValidNumberForRegion)', () => {
+  it('national: strict rejects a number valid only for another country in the calling code', () => {
+    const controller = createNationalInputController({ country: 'US', strict: true });
+    controller.setValue(CA_NUMBER);
+
+    const phoneNumber = controller.getPhoneNumber();
+    expect(phoneNumber.isValid()).toBe(false);
+    expect(phoneNumber.getValidationError()?.kind).toBe('PATTERN_MISMATCH');
+  });
+
+  it('national: without strict, the same number is valid for its actual country', () => {
+    const controller = createNationalInputController({ country: 'US' });
+    controller.setValue(CA_NUMBER);
+
+    expect(controller.getPhoneNumber().isValid()).toBe(true);
+  });
+});

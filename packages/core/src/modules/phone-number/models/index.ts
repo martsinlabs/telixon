@@ -28,10 +28,12 @@ export interface ResolvedPhoneNumber {
   readonly countryFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
   readonly nationalPrefixPresent: boolean;
+  readonly strict: boolean;
 }
 
 export interface PhoneNumber {
   isValid(): boolean;
+  isValidForCountry(country: RegionId): boolean;
   isPossible(): boolean;
   isPossibleWithReason(): PhoneNumberValidationResult;
   getValidationError(): ValidationError | null;

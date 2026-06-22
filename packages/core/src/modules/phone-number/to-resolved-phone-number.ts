@@ -16,5 +16,6 @@ export function toResolvedPhoneNumber(
     countryFilter: snapshot.countryFilter,
     numberTypeFilter: snapshot.numberTypeFilter,
     nationalPrefixPresent,
+    strict: snapshot.strict,
   };
 }
