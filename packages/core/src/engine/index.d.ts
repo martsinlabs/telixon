@@ -396,6 +396,12 @@ export declare function getReachableLengthMask(engine: Engine, state: number): n
 
 /**
  * @public
+ * internationalPrefix of a region (a regex pattern, verbatim), or undefined.
+ */
+export declare function getRegionInternationalPrefix(engine: Engine, regionIndex: number): string | undefined;
+
+/**
+ * @public
  * leadingDigits of a region, or undefined.
  */
 export declare function getRegionLeadingDigits(engine: Engine, regionIndex: number): string | undefined;
@@ -405,6 +411,12 @@ export declare function getRegionLeadingDigits(engine: Engine, regionIndex: numb
  * nationalPrefix of a region, or undefined.
  */
 export declare function getRegionNationalPrefix(engine: Engine, regionIndex: number): string | undefined;
+
+/**
+ * @public
+ * preferredInternationalPrefix of a region (the canonical fixed prefix), or undefined.
+ */
+export declare function getRegionPreferredInternationalPrefix(engine: Engine, regionIndex: number): string | undefined;
 
 /**
  * @public
@@ -584,6 +596,8 @@ declare interface MetadataTablesLayer {
     regionPrefixForParsingRef: Uint16Array;
     regionTransformRuleRef: Uint16Array;
     regionLeadingDigitsRef: Uint16Array;
+    regionInternationalPrefixRef: Uint16Array;
+    regionPreferredInternationalPrefixRef: Uint16Array;
     regionUnionNational: Uint32Array;
     regionUnionLocalOnly: Uint32Array;
     regionTypeOffset: Uint16Array;

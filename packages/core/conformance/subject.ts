@@ -9,10 +9,7 @@ import {
 } from '@telixon/core';
 import { MethodResults } from '../oracle';
 
-// Telixon's verdict for every compared behavior, parsed under the same conditions as the oracle: international by default, national when `defaultCountry` is given.
-export function evaluateWithTelixon(input: string, defaultCountry?: RegionId): MethodResults {
-  const phoneNumber: PhoneNumber =
-    defaultCountry === undefined ? parsePhoneNumber(input) : parsePhoneNumber(input, { defaultCountry });
+function toMethodResults(phoneNumber: PhoneNumber): MethodResults {
   return {
     isValid: phoneNumber.isValid(),
     isPossible: phoneNumber.isPossible(),
@@ -26,6 +23,13 @@ export function evaluateWithTelixon(input: string, defaultCountry?: RegionId): M
     formatInternational: phoneNumber.formatInternational(),
     formatRfc3966: phoneNumber.formatRfc3966(),
   };
+}
+
+// Telixon's verdict for every compared behavior, parsed under the same conditions as the oracle: international by default, national when `defaultCountry` is given.
+export function evaluateWithTelixon(input: string, defaultCountry?: RegionId): MethodResults {
+  const phoneNumber: PhoneNumber =
+    defaultCountry === undefined ? parsePhoneNumber(input) : parsePhoneNumber(input, { defaultCountry });
+  return toMethodResults(phoneNumber);
 }
 
 // Telixon's live value after each input character, typed through the international controller (the real insert path), to compare against Google's formatter.

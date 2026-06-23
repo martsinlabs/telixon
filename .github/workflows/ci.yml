@@ -71,6 +71,8 @@ jobs:
 
       - run: pnpm typecheck:conformance
 
+      # Corpus parity plus the case-coverage gate: one number from every distinct case the library can
+      # produce, checked against Google (case-coverage.test.ts, runs in about a second).
       - run: pnpm conformance
 
       # Parity artifacts produced by the conformance run (parity.json, parity-badge.json, parity.html).
@@ -80,6 +82,13 @@ jobs:
           name: parity-artifacts
           path: packages/core/conformance/dist
           if-no-files-found: error
+
+      # Broad per-push parity sample on top of the corpus and the case-coverage gate: one million distinct
+      # numbers checked against Google. Runs after the artifact upload so its output stays off the
+      # dashboard. The full airtight proof (1,838,775,900 inputs) runs weekly in fuzz.yml.
+      - run: pnpm fuzz
+        env:
+          FUZZ_N: '1000000'
 
   codspeed:
     runs-on: ubuntu-latest

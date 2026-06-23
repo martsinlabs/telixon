@@ -6,11 +6,11 @@ import {
   normalizeNationalNumber,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getAllowedLengthMask } from '../number-resolver/utils/get-allowed-length-mask';
-import { getAllowedLocalOnlyLengthMask } from '../number-resolver/utils/get-allowed-local-only-length-mask';
-import { getNationalPrefixRules } from '../number-resolver/utils/get-national-prefix-rules';
-import { isGeneralDescExactMatch } from '../number-resolver/utils/resolve-exact-matched-types';
-import { walkEndState } from '../number-resolver/utils/walk-end-state';
+import { getAllowedLengthMask } from './utils/get-allowed-length-mask';
+import { getAllowedLocalOnlyLengthMask } from './utils/get-allowed-local-only-length-mask';
+import { getNationalPrefixRules } from './utils/get-national-prefix-rules';
+import { isGeneralDescExactMatch } from './utils/resolve-exact-matched-types';
+import { walkEndState } from './utils/walk-end-state';
 
 // libphonenumber parseHelper adopts the stripped number only when its length verdict is IS_POSSIBLE or TOO_LONG; a short/local-only result keeps the prefix.
 function strippedLengthAcceptable(countryIndex: number, length: number): boolean {
@@ -21,8 +21,8 @@ function strippedLengthAcceptable(countryIndex: number, length: number): boolean
   return containsLength(nationalMask, length) || length > getMaxLength(nationalMask);
 }
 
-// libphonenumber maybeStripNationalPrefixAndCarrierCode plus the parseHelper length guard: returns the digits to re-walk, or null when the original number stands.
-export function applyNationalPrefixStrip(
+// libphonenumber maybeStripNationalPrefixAndCarrierCode: strip the national prefix, keeping the original only when it matches the general desc and the stripped form does not. No length guard.
+export function stripNationalPrefix(
   nationalDigits: string,
   originalEndState: number,
   callingCodeState: number,
@@ -48,7 +48,23 @@ export function applyNationalPrefixStrip(
     if (!isGeneralDescExactMatch(candidateEndState, candidate.length, countryIndex)) return null;
   }
 
-  if (!strippedLengthAcceptable(countryIndex, candidate.length)) return null;
+  return candidate;
+}
 
+// The strip above plus the parseHelper length guard: returns the digits to re-walk, or null when the original number stands.
+export function applyNationalPrefixStrip(
+  nationalDigits: string,
+  originalEndState: number,
+  callingCodeState: number,
+  countryIndex: number,
+): string | null {
+  const candidate: string | null = stripNationalPrefix(
+    nationalDigits,
+    originalEndState,
+    callingCodeState,
+    countryIndex,
+  );
+  if (candidate === null) return null;
+  if (!strippedLengthAcceptable(countryIndex, candidate.length)) return null;
   return candidate;
 }

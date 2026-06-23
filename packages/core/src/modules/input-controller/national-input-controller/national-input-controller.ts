@@ -9,6 +9,7 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
+import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
 import { resolveProfile } from '../../number-resolver/resolve-profile';
 import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
 import { getNationalPrefixRules } from '../../number-resolver/utils/get-national-prefix-rules';
@@ -289,9 +290,18 @@ class NationalInputController implements InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
-    const { snapshot, nationalPrefixPresent } = this.#history.current;
+    const resolved: ResolvedNumberState = resolveNumber({
+      input: this.#history.current.value,
+      hasLeadingPlus: false,
+      defaultCountryIndex: this.#defaultCountryIndex,
+      countryFilter: this.#numberResolver.countryFilter,
+      numberTypeFilter: this.#numberResolver.numberTypeFilter,
+      strict: this.config.strict === true,
+    });
 
-    return createPhoneNumber(toResolvedPhoneNumber(snapshot, this.#defaultCountryIndex, nationalPrefixPresent));
+    return createPhoneNumber(
+      toResolvedPhoneNumber(resolved.snapshot, this.#defaultCountryIndex, resolved.nationalPrefixPresent),
+    );
   }
 
   undo(): InputState {

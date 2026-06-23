@@ -17,6 +17,7 @@
     "conformance": "vitest run --config vitest.conformance.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "fuzz": "vitest run --config vitest.fuzz.config.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "size": "size-limit",

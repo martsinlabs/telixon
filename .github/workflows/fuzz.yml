@@ -1,0 +1,53 @@
+name: Fuzz
+
+# Weekly airtight parity proof. Heavier than the per-push gate, so it runs on a schedule (and on demand)
+# rather than on every push: every deciding-digit combination at every length, 1,838,775,900 inputs,
+# checked against Google's libphonenumber. The per-push gate lives in ci.yml.
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Sundays 03:00 UTC.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  airtight:
+    runs-on: ubuntu-latest
+    strategy:
+      # Run every shard to completion; one shard's divergence must not cancel the others' evidence.
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Same Google source cache as the conformance and bench jobs.
+      - uses: actions/cache@v4
+        with:
+          path: packages/core/oracle/.cache
+          key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
+
+      # Each shard proves a disjoint tenth of the airtight space; together the ten cover all of it. The
+      # slice is derived from the runtime total inside the fuzzer (FUZZ_SHARD_COUNT/FUZZ_SHARD_INDEX), so
+      # the matrix stays declarative and a divergence in any shard fails the run.
+      - run: pnpm fuzz
+        env:
+          FUZZ_AIRTIGHT: '1'
+          FUZZ_MINLEN: '1'
+          FUZZ_MAXLEN: '15'
+          FUZZ_SHARD_COUNT: '10'
+          FUZZ_SHARD_INDEX: ${{ matrix.shard }}
