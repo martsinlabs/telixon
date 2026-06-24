@@ -18,11 +18,9 @@ interface KeystrokeLatencyDistribution {
   readonly p50: number;
   readonly p95: number;
   readonly p99: number;
-  readonly p999: number;
 }
 
 interface KeystrokeLatencyReport {
-  readonly frameBudgetMs: number;
   readonly scenarios: readonly KeystrokeLatencyDistribution[];
 }
 
@@ -31,8 +29,8 @@ function percentile(sorted: readonly number[], p: number): number {
   return sorted[idx]!;
 }
 
-// The full per-keystroke wall-clock distribution. The maximum of a sample set is omitted: it is dominated
-// by OS scheduling (not the code) and grows with sample count, so the tail is reported to the 99.9th percentile.
+// The full per-keystroke wall-clock distribution. The maximum and the deep tail (p99.9) are omitted: they
+// are dominated by OS scheduling (not the code) and grow with sample count, so it is reported to the 99th.
 function summarize(scenario: string, samples: number[]): KeystrokeLatencyDistribution {
   samples.sort((a, b) => a - b);
   const sum = samples.reduce((s, x) => s + x, 0);
@@ -44,7 +42,6 @@ function summarize(scenario: string, samples: number[]): KeystrokeLatencyDistrib
     p50: percentile(samples, 50),
     p95: percentile(samples, 95),
     p99: percentile(samples, 99),
-    p999: percentile(samples, 99.9),
   };
 }
 
@@ -112,7 +109,6 @@ function runScenario(
 }
 
 const report: KeystrokeLatencyReport = {
-  frameBudgetMs: 16.67,
   scenarios: [
     runScenario('international: insert per keystroke', typeFullNumberRaw),
     runScenario('international: insert + 7 query methods per keystroke', typeFullNumberWithQueries),

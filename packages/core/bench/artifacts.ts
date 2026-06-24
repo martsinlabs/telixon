@@ -64,11 +64,9 @@ interface KeystrokeLatencyDistribution {
   readonly p50: number;
   readonly p95: number;
   readonly p99: number;
-  readonly p999: number;
 }
 
 interface KeystrokeLatencyReport {
-  readonly frameBudgetMs: number;
   readonly scenarios: readonly KeystrokeLatencyDistribution[];
 }
 
@@ -251,6 +249,7 @@ function renderHtml(data: BenchData): string {
     '{{inputControllerRows}}': data.inputController.map(renderInputControllerRow).join('\n        '),
     '{{keystrokeHero}}': renderKeystrokeHero(data),
     '{{keystrokeLatencyRows}}': renderKeystrokeLatencyRows(data.keystrokeLatency),
+    '{{refreshLadder}}': renderRefreshLadder(data.keystrokeLatency),
     '{{keystrokeLatencyVerdict}}': renderKeystrokeLatencyVerdict(data.keystrokeLatency),
     '{{ogTitle}}': renderOgTitle(),
     '{{ogDescription}}': renderOgDescription(data),
@@ -258,25 +257,35 @@ function renderHtml(data: BenchData): string {
   return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), template);
 }
 
-// The three statements a reader should leave with, plus the frame bar for scale: median keystroke, p99 headroom in a 60 Hz frame, and a full corpus pass against one frame.
+// Standard display refresh rates, used only as reference scales for the measured latency. The benchmark
+// runs headless (no display), so it asserts no single rate: it reports margin against each, anchored on the
+// strictest so the claim holds for every slower display.
+const REFERENCE_REFRESH_RATES_HZ = [60, 120, 240, 360] as const;
+const STRICTEST_HZ = Math.max(...REFERENCE_REFRESH_RATES_HZ);
+const frameBudgetMs = (hz: number): number => 1000 / hz;
+
+// The three statements a reader should leave with, plus the frame bar for scale: median keystroke, p99
+// margin against the strictest frame, and a full corpus pass.
 function renderKeystrokeHero(data: BenchData): string {
   const report = data.keystrokeLatency;
   if (!report || report.scenarios.length === 0) return '';
 
   const insertScenario = report.scenarios[0]!;
   const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
-  const headroom = Math.round(report.frameBudgetMs / worstP99).toLocaleString('en-US');
-  const p99Percent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(3);
+  // Anchor on the strictest standard refresh rate: clearing it means clearing every slower display.
+  const strictBudget = frameBudgetMs(STRICTEST_HZ);
+  const headroom = Math.round(strictBudget / worstP99).toLocaleString('en-US');
+  const p99Percent = ((worstP99 / strictBudget) * 100).toFixed(3);
 
   const typeThrough = data.inputController.find((row) => row.label.startsWith('type-through full number'));
   const corpusCard = typeThrough
     ? `<div class="stat-card"><div class="stat-value">${formatLatency(typeThrough.mean)}</div>` +
       `<div class="stat-label">the whole corpus, typed</div>` +
       `<div class="stat-sub">every digit of all ${data.corpusSize.toLocaleString('en-US')} numbers` +
-      `${typeThrough.mean < report.frameBudgetMs ? ', inside one frame' : ''}</div></div>`
+      `${typeThrough.mean < strictBudget ? ', inside one frame' : ''}</div></div>`
     : '';
 
-  const fillPercent = ((worstP99 / report.frameBudgetMs) * 100).toFixed(4);
+  const fillPercent = ((worstP99 / strictBudget) * 100).toFixed(4);
 
   return (
     `<div class="hero-stats">` +
@@ -284,12 +293,12 @@ function renderKeystrokeHero(data: BenchData): string {
     `<div class="stat-label">median keystroke</div>` +
     `<div class="stat-sub">insert + resolve + format + caret</div></div>` +
     `<div class="stat-card"><div class="stat-value">${headroom}&times;</div>` +
-    `<div class="stat-label">headroom in one frame</div>` +
-    `<div class="stat-sub">p99 keystroke ${formatLatency(worstP99)} of the 16.67 ms budget</div></div>` +
+    `<div class="stat-label">margin under one frame</div>` +
+    `<div class="stat-sub">p99 keystroke ${formatLatency(worstP99)} vs a ${STRICTEST_HZ} Hz frame (more at lower rates)</div></div>` +
     corpusCard +
     `</div>` +
     `<div class="frame-bar"><div class="frame-bar-fill" style="width: ${fillPercent}%"></div></div>` +
-    `<div class="frame-bar-caption">One 60 Hz frame. The line at the left edge is the p99 keystroke ` +
+    `<div class="frame-bar-caption">One frame at ${STRICTEST_HZ} Hz, the strictest common refresh rate (slower displays have more headroom). The line at the left edge is the p99 keystroke ` +
     `(${formatLatency(worstP99)}), drawn at minimum visible width; to scale it would be ${p99Percent}% of the bar.</div>`
   );
 }
@@ -298,26 +307,40 @@ function renderKeystrokeLatencyRows(report: KeystrokeLatencyReport | null): stri
   if (!report) return '';
   return report.scenarios
     .map((scenario) => {
-      return `<tr><td>${escapeHtml(scenario.scenario)}</td><td>${scenario.sampleCount.toLocaleString('en-US')}</td><td>${formatLatency(scenario.mean)}</td><td>${formatLatency(scenario.p50)}</td><td>${formatLatency(scenario.p95)}</td><td>${formatLatency(scenario.p99)}</td><td>${formatLatency(scenario.p999)}</td></tr>`;
+      return `<tr><td>${escapeHtml(scenario.scenario)}</td><td>${scenario.sampleCount.toLocaleString('en-US')}</td><td>${formatLatency(scenario.mean)}</td><td>${formatLatency(scenario.p50)}</td><td>${formatLatency(scenario.p95)}</td><td>${formatLatency(scenario.p99)}</td></tr>`;
     })
     .join('\n        ');
+}
+
+// The p99 keystroke against one frame at each standard refresh rate, as a table. Higher rate = shorter
+// frame = stricter bar; reference scales only, since the benchmark runs headless.
+function renderRefreshLadder(report: KeystrokeLatencyReport | null): string {
+  if (!report || report.scenarios.length === 0) return '';
+  const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
+  const rows = REFERENCE_REFRESH_RATES_HZ.map((hz) => {
+    const budget = frameBudgetMs(hz);
+    const headroom = Math.round(budget / worstP99).toLocaleString('en-US');
+    const strictest = hz === STRICTEST_HZ ? ' (strictest)' : '';
+    return `<tr><td>${hz} Hz${strictest}</td><td>${budget.toFixed(2)} ms</td><td>${headroom}&times;</td></tr>`;
+  }).join('\n        ');
+  return (
+    `<table><thead><tr><th>Display refresh rate</th><th>One frame</th><th>p99 keystroke headroom</th></tr></thead>` +
+    `<tbody>\n        ${rows}\n      </tbody></table>` +
+    `<div class="frame-bar-caption">A higher refresh rate is a shorter frame and a stricter bar, so the headroom ` +
+    `shrinks as the rate rises. Clearing the strictest rate clears every slower display. Reference scales only ` +
+    `&mdash; the benchmark runs headless.</div>`
+  );
 }
 
 function renderKeystrokeLatencyVerdict(report: KeystrokeLatencyReport | null): string {
   if (!report) return '';
   const totalSamples = report.scenarios.reduce((sum, s) => sum + s.sampleCount, 0);
   const worstP99 = report.scenarios.reduce((max, s) => (s.p99 > max ? s.p99 : max), 0);
-  const worstP999 = report.scenarios.reduce((max, s) => (s.p999 > max ? s.p999 : max), 0);
   const totalSamplesFormatted = totalSamples.toLocaleString('en-US');
-  const p99Headroom = Math.round(report.frameBudgetMs / worstP99).toLocaleString('en-US');
-  const p999Percent = ((worstP999 / report.frameBudgetMs) * 100).toFixed(3);
-  const p999Headroom = Math.round(report.frameBudgetMs / worstP999).toLocaleString('en-US');
   return (
-    `<p>Across ${totalSamplesFormatted} sampled keystrokes, the 99th percentile is ${formatLatency(worstP99)} ` +
-    `(${p99Headroom}&times; frame-budget headroom) and the 99.9th is ${formatLatency(worstP999)} ` +
-    `(${p999Percent}% of the 16.67 ms budget, ${p999Headroom}&times; headroom). The single maximum is omitted: ` +
-    `the maximum of a sample set is dominated by OS scheduling, not the code, and grows with sample count.</p>` +
-    `<p><strong>Phone-number processing alone cannot cause UI frame drops on a 60Hz display.</strong></p>`
+    `<p>Across ${totalSamplesFormatted} sampled keystrokes, the 99th percentile is ${formatLatency(worstP99)}. ` +
+    `The maximum and deep tail are omitted: they are dominated by OS scheduling, not the code, and grow with sample count.</p>` +
+    `<p><strong>Phone-number processing alone stays orders of magnitude under one frame at every standard refresh rate.</strong></p>`
   );
 }
 
@@ -346,8 +369,8 @@ function renderOgDescription(data: BenchData): string {
   }
   if (data.keystrokeLatency) {
     const worstP99 = data.keystrokeLatency.scenarios.reduce((max, s) => Math.max(max, s.p99), 0);
-    const headroom = Math.round(data.keystrokeLatency.frameBudgetMs / worstP99).toLocaleString('en-US');
-    parts.push(`Per-keystroke p99: ${formatLatencyPlain(worstP99)} (${headroom}× UI headroom at 60Hz).`);
+    const headroom = Math.round(frameBudgetMs(STRICTEST_HZ) / worstP99).toLocaleString('en-US');
+    parts.push(`Per-keystroke p99: ${formatLatencyPlain(worstP99)} (${headroom}× under a ${STRICTEST_HZ} Hz frame).`);
   }
   return parts.join(' ');
 }
