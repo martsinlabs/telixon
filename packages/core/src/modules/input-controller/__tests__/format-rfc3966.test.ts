@@ -11,21 +11,21 @@ const US_MOBILE_NATIONAL = '(201) 555-0123';
 
 describe('PhoneNumber.formatRfc3966: national', () => {
   it('returns null while the number is incomplete', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().formatRfc3966()).toBeNull();
   });
 
   it('returns the RFC3966 tel: URI for a valid number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().formatRfc3966()).toBe(US_MOBILE_URI);
   });
 
   it('drops the national prefix before assembling the URI', () => {
-    const controller = createNationalInputController({ country: 'GB' });
+    const controller = createNationalInputController({ region: 'GB' });
     controller.setValue(GB_MOBILE_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().formatRfc3966()).toBe(GB_MOBILE_URI);

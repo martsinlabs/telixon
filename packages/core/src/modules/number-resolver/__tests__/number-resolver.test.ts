@@ -2,7 +2,7 @@ import { ENGINE_DEAD, hasExactMatch } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberResolver } from '../number-resolver';
-import { createCountryFilter, createNumberTypeFilter } from '../utils/filter-factory';
+import { createNumberTypeFilter, createRegionFilter } from '../utils/filter-factory';
 
 function digitsOf(digits: string): number[] {
   return Array.from(digits, (d) => d.charCodeAt(0) - 48);
@@ -34,7 +34,7 @@ describe('NumberResolver: initial state', () => {
     expect(snap.nationalDigits).toBe('');
     expect(snap.callingCodeCompleted).toBe(false);
     expect(snap.callingCodeState).toBe(-1);
-    expect(snap.countryFilter).toBeNull();
+    expect(snap.regionFilter).toBeNull();
     expect(snap.numberTypeFilter).toBeNull();
     expect(snap.strict).toBe(false);
   });
@@ -122,24 +122,24 @@ describe('NumberResolver: setCallingCode / reset', () => {
 describe('NumberResolver: filters', () => {
   it('preserves filters across reset (filters are configuration, not state)', () => {
     const resolver = new NumberResolver();
-    const countryFilter = createCountryFilter(['US']);
+    const regionFilter = createRegionFilter(['US']);
     const numberTypeFilter = createNumberTypeFilter(['MOBILE']);
 
-    resolver.setCountryFilter(countryFilter);
+    resolver.setRegionFilter(regionFilter);
     resolver.setNumberTypeFilter(numberTypeFilter);
     resolver.reset();
 
-    expect(resolver.snapshot.countryFilter).toBe(countryFilter);
+    expect(resolver.snapshot.regionFilter).toBe(regionFilter);
     expect(resolver.snapshot.numberTypeFilter).toBe(numberTypeFilter);
   });
 
-  it('null filters disable both country and number-type filtering', () => {
+  it('null filters disable both region and number-type filtering', () => {
     const resolver = new NumberResolver();
-    resolver.setCountryFilter(createCountryFilter(['US']));
-    resolver.setCountryFilter(null);
+    resolver.setRegionFilter(createRegionFilter(['US']));
+    resolver.setRegionFilter(null);
     resolver.setNumberTypeFilter(null);
 
-    expect(resolver.snapshot.countryFilter).toBeNull();
+    expect(resolver.snapshot.regionFilter).toBeNull();
     expect(resolver.snapshot.numberTypeFilter).toBeNull();
   });
 

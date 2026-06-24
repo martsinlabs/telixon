@@ -57,7 +57,7 @@ describe('PhoneInput createPhoneInput: input type', () => {
   it('accepts an <input type="text"> element', () => {
     const { input, cleanup } = attachInput('text');
 
-    expect(() => createPhoneInput({ input, mode: 'national', country: 'US' })).not.toThrow();
+    expect(() => createPhoneInput({ input, mode: 'national', region: 'US' })).not.toThrow();
 
     cleanup();
   });
@@ -65,7 +65,7 @@ describe('PhoneInput createPhoneInput: input type', () => {
   it('accepts an <input type="tel"> element', () => {
     const { input, cleanup } = attachInput('tel');
 
-    expect(() => createPhoneInput({ input, mode: 'national', country: 'US' })).not.toThrow();
+    expect(() => createPhoneInput({ input, mode: 'national', region: 'US' })).not.toThrow();
 
     cleanup();
   });
@@ -73,7 +73,7 @@ describe('PhoneInput createPhoneInput: input type', () => {
   it('rejects an <input type="email"> element', () => {
     const { input, cleanup } = attachInput('email');
 
-    expect(() => createPhoneInput({ input, mode: 'national', country: 'US' })).toThrow(/type="email"/);
+    expect(() => createPhoneInput({ input, mode: 'national', region: 'US' })).toThrow(/type="email"/);
 
     cleanup();
   });
@@ -81,7 +81,7 @@ describe('PhoneInput createPhoneInput: input type', () => {
   it('rejects an <input type="number"> element', () => {
     const { input, cleanup } = attachInput('number');
 
-    expect(() => createPhoneInput({ input, mode: 'national', country: 'US' })).toThrow(/type="number"/);
+    expect(() => createPhoneInput({ input, mode: 'national', region: 'US' })).toThrow(/type="number"/);
 
     cleanup();
   });
@@ -90,7 +90,7 @@ describe('PhoneInput createPhoneInput: input type', () => {
 describe('PhoneInput beforeinput: deleteSoftLineBackward', () => {
   it('deletes from start of line to caret when no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
@@ -105,7 +105,7 @@ describe('PhoneInput beforeinput: deleteSoftLineBackward', () => {
 
   it('deletes from start of line through the selection end when a selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
@@ -122,7 +122,7 @@ describe('PhoneInput beforeinput: deleteSoftLineBackward', () => {
 describe('PhoneInput beforeinput: insert with empty data', () => {
   it('does not modify the value when insertText has no data and no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -138,7 +138,7 @@ describe('PhoneInput beforeinput: insert with empty data', () => {
 
   it('does not delete the active selection when insertText has no data', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -156,7 +156,7 @@ describe('PhoneInput beforeinput: insert with empty data', () => {
 describe('PhoneInput beforeinput: composition inputTypes', () => {
   it('insertCompositionText does not modify the input value', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -171,7 +171,7 @@ describe('PhoneInput beforeinput: composition inputTypes', () => {
 
   it('insertFromComposition does not modify the input value', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -188,7 +188,7 @@ describe('PhoneInput beforeinput: composition inputTypes', () => {
 describe('PhoneInput beforeinput: deleteHardLineBackward', () => {
   it('deletes from start of line to caret when no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
@@ -203,7 +203,7 @@ describe('PhoneInput beforeinput: deleteHardLineBackward', () => {
 
   it('deletes from start of line through the selection end when a selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
@@ -220,7 +220,7 @@ describe('PhoneInput beforeinput: deleteHardLineBackward', () => {
 describe('PhoneInput beforeinput: deleteEntireSoftLine', () => {
   it('clears the entire value regardless of caret position', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
@@ -235,7 +235,7 @@ describe('PhoneInput beforeinput: deleteEntireSoftLine', () => {
 
   it('clears the entire value when a selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(2, 6);
@@ -252,7 +252,7 @@ describe('PhoneInput beforeinput: deleteEntireSoftLine', () => {
 describe('PhoneInput beforeinput: insertText', () => {
   it('inserts a digit at the end of the value', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE.slice(0, -1));
     input.setSelectionRange(input.value.length, input.value.length);
@@ -267,7 +267,7 @@ describe('PhoneInput beforeinput: insertText', () => {
 
   it('does not modify the value when the inserted character is not a digit', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -283,7 +283,7 @@ describe('PhoneInput beforeinput: insertText', () => {
 
   it('replaces the active selection with the inserted digit', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
@@ -300,7 +300,7 @@ describe('PhoneInput beforeinput: insertText', () => {
 describe('PhoneInput beforeinput: insertFromPaste', () => {
   it('extracts digits from a formatted phone number on paste', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     input.setSelectionRange(0, 0);
 
@@ -318,7 +318,7 @@ describe('PhoneInput beforeinput: insertFromPaste', () => {
 describe('PhoneInput beforeinput: deleteContentBackward', () => {
   it('deletes the last digit when the caret is at the end and no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(input.value.length, input.value.length);
@@ -333,7 +333,7 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
 
   it('deletes the selected digits when a selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
@@ -348,7 +348,7 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
 
   it('does not modify the value when the caret is at position 0', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -366,7 +366,7 @@ describe('PhoneInput beforeinput: deleteContentBackward', () => {
 describe('PhoneInput beforeinput: deleteContentForward', () => {
   it('deletes the next digit when the caret is at a digit and no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 1);
@@ -381,7 +381,7 @@ describe('PhoneInput beforeinput: deleteContentForward', () => {
 
   it('deletes the selected digits when a selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(1, 4);
@@ -398,7 +398,7 @@ describe('PhoneInput beforeinput: deleteContentForward', () => {
 describe('PhoneInput beforeinput: deleteWordBackward', () => {
   it('deletes back to the previous word boundary when the caret is at the end', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(input.value.length, input.value.length);
@@ -415,7 +415,7 @@ describe('PhoneInput beforeinput: deleteWordBackward', () => {
 describe('PhoneInput beforeinput: deleteWordForward', () => {
   it('deletes forward to the next word boundary when no selection is active', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
@@ -432,7 +432,7 @@ describe('PhoneInput beforeinput: deleteWordForward', () => {
 describe('PhoneInput beforeinput: deleteSoftLineForward', () => {
   it('deletes from the caret to the end of the value', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     input.setSelectionRange(6, 6);
@@ -449,7 +449,7 @@ describe('PhoneInput beforeinput: deleteSoftLineForward', () => {
 describe('PhoneInput beforeinput: history', () => {
   it('undoes the previous operation on historyUndo when canUndo is true', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     phone.setValue(US_TOLL_FREE);
@@ -464,7 +464,7 @@ describe('PhoneInput beforeinput: history', () => {
 
   it('does not modify the value on historyUndo when canUndo is false', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     const before = input.value;
 
@@ -479,7 +479,7 @@ describe('PhoneInput beforeinput: history', () => {
 
   it('restores the next operation on historyRedo when canRedo is true', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     phone.undo();
@@ -496,7 +496,7 @@ describe('PhoneInput beforeinput: history', () => {
 describe('PhoneInput keydown: undo and redo shortcuts', () => {
   it('triggers undo on Ctrl+Z when canUndo is true', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
 
@@ -510,7 +510,7 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
 
   it('triggers redo on Ctrl+Shift+Z when canRedo is true', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     phone.undo();
@@ -525,7 +525,7 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
 
   it('triggers redo on Ctrl+Y when canRedo is true', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     phone.undo();
@@ -542,7 +542,7 @@ describe('PhoneInput keydown: undo and redo shortcuts', () => {
 describe('PhoneInput beforeinput: blocked and unknown inputTypes', () => {
   it('does not modify the value for a blocked inputType such as formatBold', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -557,7 +557,7 @@ describe('PhoneInput beforeinput: blocked and unknown inputTypes', () => {
 
   it('does not modify the value for an unknown inputType', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -574,7 +574,7 @@ describe('PhoneInput beforeinput: blocked and unknown inputTypes', () => {
 describe('PhoneInput beforeinput: composition guard', () => {
   it('skips handling when isComposing is true even for an insertText with a digit payload', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     phone.setValue(US_MOBILE);
     const before = input.value;
@@ -589,16 +589,16 @@ describe('PhoneInput beforeinput: composition guard', () => {
 });
 
 describe('PhoneInput filters: initial application', () => {
-  it('reflects the initial countryFilter in the first emitted state', () => {
+  it('reflects the initial regionFilter in the first emitted state', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({
       input,
       mode: 'national',
-      country: 'US',
-      countryFilter: ['US', 'CA'],
+      region: 'US',
+      regionFilter: ['US', 'CA'],
     });
 
-    expect(phone.getState().countryFilter).toEqual(['US', 'CA']);
+    expect(phone.getState().regionFilter).toEqual(['US', 'CA']);
 
     phone.destroy();
     cleanup();
@@ -609,7 +609,7 @@ describe('PhoneInput filters: initial application', () => {
     const phone = createPhoneInput({
       input,
       mode: 'national',
-      country: 'US',
+      region: 'US',
       numberTypeFilter: ['MOBILE'],
     });
 
@@ -621,9 +621,9 @@ describe('PhoneInput filters: initial application', () => {
 
   it('defaults both filters to null when not provided', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
-    expect(phone.getState().countryFilter).toBe(null);
+    expect(phone.getState().regionFilter).toBe(null);
     expect(phone.getState().numberTypeFilter).toBe(null);
 
     phone.destroy();
@@ -632,18 +632,18 @@ describe('PhoneInput filters: initial application', () => {
 });
 
 describe('PhoneInput filters: runtime setters', () => {
-  it('emits a new state with the updated countryFilter on setCountryFilter', () => {
+  it('emits a new state with the updated regionFilter on setRegionFilter', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     let lastState = phone.getState();
     const unsubscribe = phone.subscribe((state) => {
       lastState = state;
     });
 
-    phone.setCountryFilter(['US']);
+    phone.setRegionFilter(['US']);
 
-    expect(lastState.countryFilter).toEqual(['US']);
+    expect(lastState.regionFilter).toEqual(['US']);
 
     unsubscribe();
     phone.destroy();
@@ -652,7 +652,7 @@ describe('PhoneInput filters: runtime setters', () => {
 
   it('emits a new state with the updated numberTypeFilter on setNumberTypeFilter', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     let lastState = phone.getState();
     const unsubscribe = phone.subscribe((state) => {
@@ -673,7 +673,7 @@ describe('PhoneInput filters: runtime setters', () => {
     const phone = createPhoneInput({
       input,
       mode: 'national',
-      country: 'US',
+      region: 'US',
       numberTypeFilter: ['FIXED_LINE'],
     });
 
@@ -687,16 +687,16 @@ describe('PhoneInput filters: runtime setters', () => {
 });
 
 describe('PhoneInput filters: re-resolution', () => {
-  it('drops the resolved country when setCountryFilter excludes it', () => {
+  it('drops the resolved region when setRegionFilter excludes it', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'international' });
 
     phone.setValue(`+1${US_MOBILE}`);
-    expect(phone.getState().country).toBe('US');
+    expect(phone.getState().region).toBe('US');
 
-    phone.setCountryFilter(['GB']);
+    phone.setRegionFilter(['GB']);
 
-    expect(phone.getState().country).not.toBe('US');
+    expect(phone.getState().region).not.toBe('US');
 
     phone.destroy();
     cleanup();
@@ -706,7 +706,7 @@ describe('PhoneInput filters: re-resolution', () => {
 describe('PhoneInput compositionend', () => {
   it('commits the IME composition data via inputController.insert', () => {
     const { input, cleanup } = attachInput();
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
 
     input.setSelectionRange(0, 0);
 

@@ -1,4 +1,4 @@
-import { Engine, MetadataNumberType, RegionId } from '@telixon/core/engine';
+import { Engine, MetadataNumberType, RegionCode } from '@telixon/core/engine';
 import { ResourceLoader, SyncResourceLoader } from '@telixon/core/resource-loader/models';
 
 // The three formatter placeholders, decoded once at load (PhoneNumberFormattingContext inputs).
@@ -13,11 +13,11 @@ export abstract class ResourceProvider {
   abstract engine: Engine;
 
   // Hot-path tables derived once at load: string accessors allocate, these reads do not.
-  abstract regionIds: readonly RegionId[];
+  abstract regionIds: readonly RegionCode[];
   abstract regionKeyToIndex: Readonly<Record<string, number>>;
   abstract callingCodeIndexByCode: Readonly<Record<number, number>>;
-  // Country index to calling-code index (per-keystroke formatting path).
-  abstract callingCodeIndexByCountry: Int16Array;
+  // Region index to calling-code index (per-keystroke formatting path).
+  abstract callingCodeIndexByRegion: Int16Array;
   abstract numberTypeNames: readonly MetadataNumberType[];
   // 1 = the region declares leadingDigits (region disambiguation by prefix instead of by type).
   abstract regionHasLeadingDigits: Uint8Array;

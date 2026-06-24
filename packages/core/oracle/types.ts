@@ -21,7 +21,7 @@ export interface MethodResults {
   readonly getNumberType: NumberType | null;
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
-  readonly getCountry: string | null;
+  readonly getRegion: string | null;
   readonly formatE164: string | null;
   readonly formatNational: string | null;
   readonly formatInternational: string | null;
@@ -35,7 +35,7 @@ export interface Oracle {
   supportedRegions(): readonly string[];
   // Google's example number for a region and type as E.164, or null when none exists.
   sampleExampleE164(regionCode: string, typeId: number): string | null;
-  // The oracle's verdict for every compared method, or null when Google rejects the input; `regionCode` reads national form (no '+'), like Telixon's defaultCountry.
+  // The oracle's verdict for every compared method, or null when Google rejects the input; `regionCode` reads national form (no '+'), like Telixon's defaultRegion.
   evaluate(input: string, regionCode?: string): MethodResults | null;
   // Google's country calling code for a region, as a string ('0' for an unknown region).
   countryCallingCode(regionCode: string): string;

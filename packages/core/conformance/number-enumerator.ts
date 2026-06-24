@@ -1,15 +1,15 @@
-import { RegionId } from '@telixon/core';
+import { RegionCode } from '@telixon/core';
 
 // A distinct input for the differential fuzzer: an international '+' string, or a national string
-// paired with the country it should be parsed against.
+// paired with the region it should be parsed against.
 export interface EnumeratedNumber {
   readonly input: string;
-  readonly country: RegionId | undefined;
+  readonly region: RegionCode | undefined;
 }
 
 export interface NumberEnumeratorOptions {
   readonly callingCodes: readonly string[];
-  readonly regions: readonly RegionId[];
+  readonly regions: readonly RegionCode[];
   readonly minLength: number;
   readonly maxLength: number;
 }
@@ -25,7 +25,7 @@ export interface NumberEnumerator {
 
 interface Track {
   readonly prefix: string;
-  readonly country: RegionId | undefined;
+  readonly region: RegionCode | undefined;
   readonly length: number;
 }
 
@@ -50,13 +50,13 @@ export function createNumberEnumerator(options: NumberEnumeratorOptions): Number
   const tracks: Track[] = [];
   for (const code of callingCodes) {
     for (let length = minLength; length <= maxLength; length++) {
-      tracks.push({ prefix: '+' + code, country: undefined, length });
+      tracks.push({ prefix: '+' + code, region: undefined, length });
     }
   }
 
   for (const region of regions) {
     for (let length = minLength; length <= maxLength; length++) {
-      tracks.push({ prefix: '', country: region, length });
+      tracks.push({ prefix: '', region: region, length });
     }
   }
   if (tracks.length === 0) {
@@ -73,7 +73,7 @@ export function createNumberEnumerator(options: NumberEnumeratorOptions): Number
       const track = tracks[index % tracks.length]!;
       const counter = Math.floor(index / tracks.length);
       const national = spreadOut(counter, track.length);
-      return { input: track.prefix + national, country: track.country };
+      return { input: track.prefix + national, region: track.region };
     },
   };
 }

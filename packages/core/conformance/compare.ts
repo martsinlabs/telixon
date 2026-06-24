@@ -1,4 +1,4 @@
-import { REGION_IDS } from '@telixon/core';
+import { REGION_CODES } from '@telixon/core';
 import { Oracle } from '../oracle';
 import { CorpusCase, CorpusCaseKind } from './corpus';
 import { COMPARED_METHODS, ConformanceReport, KindBreakdown, MethodName, MethodReport, Mismatch } from './models';
@@ -24,17 +24,17 @@ export function buildConformanceReport(oracle: Oracle, corpus: readonly CorpusCa
   let rejectionAgreed = 0;
 
   for (const corpusCase of corpus) {
-    const { family, kind, input, defaultCountry, regionCode } = corpusCase;
+    const { family, kind, input, defaultRegion, regionCode } = corpusCase;
     casesByKind.set(kind, (casesByKind.get(kind) ?? 0) + 1);
 
-    const expected = oracle.evaluate(input, defaultCountry);
+    const expected = oracle.evaluate(input, defaultRegion);
     if (!expected) {
       if (family !== 'mutation') {
         skipped += 1;
         continue;
       }
       rejected += 1;
-      const actual = evaluateWithTelixon(input, defaultCountry);
+      const actual = evaluateWithTelixon(input, defaultRegion);
       if (!actual.isPossible) {
         rejectionAgreed += 1;
       } else {
@@ -52,7 +52,7 @@ export function buildConformanceReport(oracle: Oracle, corpus: readonly CorpusCa
 
     if (kind === 'example') regions.add(regionCode);
     compared += 1;
-    const actual = evaluateWithTelixon(input, defaultCountry);
+    const actual = evaluateWithTelixon(input, defaultRegion);
 
     for (const method of COMPARED_METHODS) {
       const expectedValue = render(expected[method]);
@@ -84,7 +84,7 @@ export function buildConformanceReport(oracle: Oracle, corpus: readonly CorpusCa
     compared,
     skipped,
     regionsCovered: regions.size,
-    regionsTotal: REGION_IDS.length,
+    regionsTotal: REGION_CODES.length,
     commit: oracle.commit,
     composition,
     methods,

@@ -1,9 +1,9 @@
 import {
-  getCallingCodeForCountry,
+  getCallingCodeForRegion,
   getPlaceholders,
   isNationalPrefixOptional,
   NumberType,
-  RegionId,
+  RegionCode,
 } from '@telixon/core';
 import type { PhoneInputOptions } from '../models';
 
@@ -33,15 +33,15 @@ export function buildPlaceholderConfig(options: PhoneInputOptions): PlaceholderC
   return { mode: 'international', callingCodeInInput: true, plusPrefix: display.plusPrefix, numberType };
 }
 
-/** Compute the placeholder string for `(country, config)`, or `null` if unresolved. */
-export function resolvePlaceholder(country: RegionId | null, config: PlaceholderConfig): string | null {
-  if (country === null) return null;
+/** Compute the placeholder string for `(region, config)`, or `null` if unresolved. */
+export function resolvePlaceholder(region: RegionCode | null, config: PlaceholderConfig): string | null {
+  if (region === null) return null;
 
-  const placeholders = getPlaceholders(country, config.numberType);
+  const placeholders = getPlaceholders(region, config.numberType);
   if (placeholders === null) return null;
 
   if (config.mode === 'national') {
-    return isNationalPrefixOptional(country, config.numberType)
+    return isNationalPrefixOptional(region, config.numberType)
       ? (placeholders.national ?? placeholders.nationalWithPrefix ?? null)
       : (placeholders.nationalWithPrefix ?? placeholders.national ?? null);
   }
@@ -51,7 +51,7 @@ export function resolvePlaceholder(country: RegionId | null, config: Placeholder
   }
 
   if (placeholders.international === undefined) return null;
-  const callingCode: string = getCallingCodeForCountry(country);
+  const callingCode: string = getCallingCodeForRegion(region);
 
   return config.plusPrefix
     ? '+' + callingCode + ' ' + placeholders.international

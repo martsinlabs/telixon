@@ -3,14 +3,14 @@ import {
   getRegionTypeId,
   MetadataNumberType,
   normalizeNationalNumber,
-  RegionId,
+  RegionCode,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { NumberTypeProfileRef } from '../models';
 import { NumberResolver } from '../number-resolver';
 import { resolveLatestConcreteRegionIndex, resolveProfile as resolveProfileRef } from '../resolve-profile';
-import { createCountryFilter, createNumberTypeFilter } from '../utils/filter-factory';
+import { createNumberTypeFilter, createRegionFilter } from '../utils/filter-factory';
 import { getNationalPrefixRules } from '../utils/get-national-prefix-rules';
 
 function createResolver(callingCode: string, nationalDigits: string): NumberResolver {
@@ -24,23 +24,23 @@ function createResolver(callingCode: string, nationalDigits: string): NumberReso
   return resolver;
 }
 
-function createNationalResolver(country: RegionId, rawNationalDigits: string): NumberResolver {
+function createNationalResolver(region: RegionCode, rawNationalDigits: string): NumberResolver {
   const resourceProvider = getResourceProvider();
-  const countryIndex = resourceProvider.regionKeyToIndex[country] ?? -1;
-  const prefixRules = getNationalPrefixRules(countryIndex)!;
+  const regionIndex = resourceProvider.regionKeyToIndex[region] ?? -1;
+  const prefixRules = getNationalPrefixRules(regionIndex)!;
   const { normalizedDigits } = normalizeNationalNumber(rawNationalDigits, prefixRules);
 
-  return createResolver(String(getMetadataRegionCallingCode(resourceProvider.engine, countryIndex)), normalizedDigits);
+  return createResolver(String(getMetadataRegionCallingCode(resourceProvider.engine, regionIndex)), normalizedDigits);
 }
 
-function resolveProfile(resolver: NumberResolver, preferredCountry?: RegionId): NumberTypeProfileRef | null {
+function resolveProfile(resolver: NumberResolver, preferredRegion?: RegionCode): NumberTypeProfileRef | null {
   const resourceProvider = getResourceProvider();
-  const preferredCountryIndex = preferredCountry ? (resourceProvider.regionKeyToIndex[preferredCountry] ?? -1) : -1;
+  const preferredRegionIndex = preferredRegion ? (resourceProvider.regionKeyToIndex[preferredRegion] ?? -1) : -1;
 
-  return resolveProfileRef(resolver.snapshot, preferredCountryIndex);
+  return resolveProfileRef(resolver.snapshot, preferredRegionIndex);
 }
 
-function getProfileCountry(profile: NumberTypeProfileRef): RegionId {
+function getProfileRegion(profile: NumberTypeProfileRef): RegionCode {
   return getResourceProvider().regionIds[profile.regionIndex]!;
 }
 
@@ -58,35 +58,35 @@ function isGeneralDesc(profile: NumberTypeProfileRef): boolean {
   return getRegionTypeId(resourceProvider.engine, profile.regionIndex, profile.numberTypeIndex) === generalDescType;
 }
 
-describe('resolveLatestConcreteCountryIndex', () => {
+describe('resolveLatestConcreteRegionIndex', () => {
   it('keeps CA anchored while the 7-digit UAN length is still valid', () => {
     const resolver = createResolver('1', '3101234');
-    const countryIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
+    const regionIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
 
-    expect(getResourceProvider().regionIds[countryIndex]).toBe('CA');
+    expect(getResourceProvider().regionIds[regionIndex]).toBe('CA');
   });
 
   it('drops CA anchor once the input grows past the 7-digit UAN length', () => {
     const resolver = createResolver('1', '31012344');
-    const countryIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
+    const regionIndex = resolveLatestConcreteRegionIndex(resolver.snapshot);
 
-    expect(getResourceProvider().regionIds[countryIndex]).not.toBe('CA');
+    expect(getResourceProvider().regionIds[regionIndex]).not.toBe('CA');
   });
 });
 
 describe('resolveFirstMatchingNumberTypeProfile', () => {
-  it('resolves AG from +1 268 even when preferred country is US', () => {
+  it('resolves AG from +1 268 even when preferred region is US', () => {
     const profile = resolveProfile(createResolver('1', '268'), 'US');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('AG');
+    expect(getProfileRegion(profile!)).toBe('AG');
   });
 
   it('prefers anchored concrete exact CA over preferred US generalDesc', () => {
     const profile = resolveProfile(createResolver('1', '3101234'), 'US');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('CA');
+    expect(getProfileRegion(profile!)).toBe('CA');
     expect(isGeneralDesc(profile!)).toBe(false);
   });
 
@@ -94,14 +94,14 @@ describe('resolveFirstMatchingNumberTypeProfile', () => {
     const profile = resolveProfile(createResolver('1', '31012344'), 'US');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).not.toBe('CA');
+    expect(getProfileRegion(profile!)).not.toBe('CA');
   });
 
   it('resolves 0111523456789 as AR mobile', () => {
     const profile = resolveProfile(createNationalResolver('AR', '0111523456789'), 'AR');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('AR');
+    expect(getProfileRegion(profile!)).toBe('AR');
     expect(getProfileType(profile!)).toBe('MOBILE');
   });
 });
@@ -114,7 +114,7 @@ describe('priority chain: non-strict', () => {
       const profile = resolveProfile(createResolver('1', '4165551234'), 'US');
 
       expect(profile).not.toBeNull();
-      expect(getProfileCountry(profile!)).toBe('CA');
+      expect(getProfileRegion(profile!)).toBe('CA');
       expect(isGeneralDesc(profile!)).toBe(false);
     });
   });
@@ -125,7 +125,7 @@ describe('priority chain: non-strict', () => {
       const profile = resolveProfile(createResolver('1', '2684621234'), 'US');
 
       expect(profile).not.toBeNull();
-      expect(getProfileCountry(profile!)).toBe('AG');
+      expect(getProfileRegion(profile!)).toBe('AG');
       expect(isGeneralDesc(profile!)).toBe(false);
     });
 
@@ -133,7 +133,7 @@ describe('priority chain: non-strict', () => {
       const profile = resolveProfile(createResolver('1', '2681234567'), 'US');
 
       expect(profile).not.toBeNull();
-      expect(getProfileCountry(profile!)).toBe('AG');
+      expect(getProfileRegion(profile!)).toBe('AG');
       expect(isGeneralDesc(profile!)).toBe(true);
     });
   });
@@ -144,17 +144,17 @@ describe('priority chain: non-strict', () => {
       const profile = resolveProfile(createResolver('44', '7'), 'GB');
 
       expect(profile).not.toBeNull();
-      expect(getProfileCountry(profile!)).toBe('GB');
+      expect(getProfileRegion(profile!)).toBe('GB');
     });
   });
 
-  // Step 4: anchored country stays alive after preferred has nothing.
+  // Step 4: anchored region stays alive after preferred has nothing.
   describe('Step 4: anchored partial', () => {
     it('+1 416 with off-calling-code preferred=GB returns CA via anchor', () => {
       const profile = resolveProfile(createResolver('1', '416'), 'GB');
 
       expect(profile).not.toBeNull();
-      expect(getProfileCountry(profile!)).toBe('CA');
+      expect(getProfileRegion(profile!)).toBe('CA');
     });
   });
 
@@ -169,13 +169,13 @@ describe('priority chain: non-strict', () => {
 
       // Whatever the resolver returns must come from the terminal-prefix history (CA's UAN, the only concrete anchor), not a live DFA state.
       if (profile !== null) {
-        expect(['CA', 'US']).toContain(getProfileCountry(profile));
+        expect(['CA', 'US']).toContain(getProfileRegion(profile));
       }
     });
   });
 });
 
-// Strict mode never leaves the preferred country.
+// Strict mode never leaves the preferred region.
 describe('priority chain: strict', () => {
   function createStrictResolver(callingCode: string, nationalDigits: string): NumberResolver {
     const resolver = createResolver(callingCode, nationalDigits);
@@ -187,22 +187,22 @@ describe('priority chain: strict', () => {
     const profile = resolveProfile(createStrictResolver('1', '2681234567'), 'US');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('US');
+    expect(getProfileRegion(profile!)).toBe('US');
   });
 
   it('strict + preferred=-1 falls through to non-strict resolution', () => {
     const profile = resolveProfile(createStrictResolver('1', '2681234567'));
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('AG');
+    expect(getProfileRegion(profile!)).toBe('AG');
   });
 });
 
-// Filters mutate isCountryExcluded / isNumberTypeAllowed: they must short-circuit candidates.
+// Filters mutate isRegionExcluded / isNumberTypeAllowed: they must short-circuit candidates.
 describe('filters', () => {
-  it('countryFilter excluding CA does not return CA even when 416 normally anchors it', () => {
+  it('regionFilter excluding CA does not return CA even when 416 normally anchors it', () => {
     const resolver = new NumberResolver();
-    resolver.setCountryFilter(createCountryFilter(['US']));
+    resolver.setRegionFilter(createRegionFilter(['US']));
     resolver.setCallingCode('1');
     for (let i = 0; i < '4165551234'.length; i++) {
       resolver.advance('4165551234'.charCodeAt(i) - 48);
@@ -211,7 +211,7 @@ describe('filters', () => {
     const profile = resolveProfile(resolver, 'US');
 
     if (profile !== null) {
-      expect(getProfileCountry(profile)).not.toBe('CA');
+      expect(getProfileRegion(profile)).not.toBe('CA');
     }
   });
 
@@ -230,7 +230,7 @@ describe('filters', () => {
     }
   });
 
-  it('numberTypeFilter still resolves country via GENERAL_DESC fallback for non-matching types', () => {
+  it('numberTypeFilter still resolves region via GENERAL_DESC fallback for non-matching types', () => {
     const resolver = new NumberResolver();
     resolver.setNumberTypeFilter(createNumberTypeFilter(['MOBILE']));
     resolver.setCallingCode('1');
@@ -241,6 +241,6 @@ describe('filters', () => {
     const profile = resolveProfile(resolver, 'US');
 
     expect(profile).not.toBeNull();
-    expect(getProfileCountry(profile!)).toBe('US');
+    expect(getProfileRegion(profile!)).toBe('US');
   });
 });

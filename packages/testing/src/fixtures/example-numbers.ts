@@ -1,9 +1,9 @@
-import type { MetadataNumberType, RegionId } from '@telixon/core/engine';
+import type { MetadataNumberType, RegionCode } from '@telixon/core/engine';
 import { getMetadataTypeCount, getMetadataTypeExample, getMetadataTypeId } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 
 /** Returns the engine-emitted example number for `(region, type)`. Throws when the tuple is unknown. */
-export function getExampleNumber(region: RegionId, type: MetadataNumberType): string {
+export function getExampleNumber(region: RegionCode, type: MetadataNumberType): string {
   const provider = getResourceProvider();
 
   const countryIndex: number | undefined = provider.regionKeyToIndex[region];

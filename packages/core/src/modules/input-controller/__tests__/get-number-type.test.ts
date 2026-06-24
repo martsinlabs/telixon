@@ -12,55 +12,55 @@ const DE_FIXED_WITH_PREFIX = '0' + getExampleNumber('DE', 'FIXED_LINE');
 
 describe('PhoneNumber.getNumberType: national', () => {
   it('returns null for empty input', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
 
     expect(controller.getPhoneNumber().getNumberType()).toBeNull();
   });
 
   it('returns null for partial input (length not yet valid)', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().getNumberType()).toBeNull();
   });
 
   it('collapses FIXED_LINE + MOBILE into FIXED_LINE_OR_MOBILE for a US geographic number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
   });
 
   it('returns TOLL_FREE for a US 800 number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_TOLL_FREE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('TOLL_FREE');
   });
 
   it('returns MOBILE for a GB mobile number', () => {
-    const controller = createNationalInputController({ country: 'GB' });
+    const controller = createNationalInputController({ region: 'GB' });
     controller.setValue(GB_MOBILE_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('MOBILE');
   });
 
   it('returns FIXED_LINE for a DE geographic number', () => {
-    const controller = createNationalInputController({ country: 'DE' });
+    const controller = createNationalInputController({ region: 'DE' });
     controller.setValue(DE_FIXED_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE');
   });
 
   it('returns PREMIUM_RATE for a US 900 number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_PREMIUM_RATE);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('PREMIUM_RATE');
   });
 
   it('returns null for a length-valid but pattern-bogus number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('0001234567');
 
     expect(controller.getPhoneNumber().getNumberType()).toBeNull();
@@ -69,7 +69,7 @@ describe('PhoneNumber.getNumberType: national', () => {
 
 describe('PhoneNumber.getNumberType: respects active number-type filter', () => {
   it('narrows FIXED_LINE_OR_MOBILE to MOBILE when only MOBILE is allowed', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setNumberTypeFilter(['MOBILE']);
     controller.setValue(US_MOBILE);
 
@@ -77,7 +77,7 @@ describe('PhoneNumber.getNumberType: respects active number-type filter', () => 
   });
 
   it('returns null for a landline when only MOBILE is allowed', () => {
-    const controller = createNationalInputController({ country: 'DE' });
+    const controller = createNationalInputController({ region: 'DE' });
     controller.setNumberTypeFilter(['MOBILE']);
     controller.setValue(DE_FIXED_WITH_PREFIX);
 
@@ -87,14 +87,14 @@ describe('PhoneNumber.getNumberType: respects active number-type filter', () => 
 
 describe('PhoneNumber.getNumberType: international', () => {
   it('returns null before a full number resolves', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     controller.setValue('1212');
 
     expect(controller.getPhoneNumber().getNumberType()).toBeNull();
   });
 
   it('resolves a full international US number to FIXED_LINE_OR_MOBILE', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     controller.setValue(US_MOBILE_INTL);
 
     expect(controller.getPhoneNumber().getNumberType()).toBe('FIXED_LINE_OR_MOBILE');
@@ -130,7 +130,7 @@ describe('PhoneNumber.getNumberType: classifies service and special-rate numbers
 
 describe('PhoneNumber.getNumberType: after undo', () => {
   it('returns the type of the restored state', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_MOBILE);
     controller.setValue('');
     controller.undo();

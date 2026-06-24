@@ -14,7 +14,7 @@ describe('PhoneInput placeholder', () => {
   it('national mode uses prefix-free variant when the format flag is optional', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
     expect(phone.getState().placeholder).toBe('(201) 555-0123');
 
     phone.destroy();
@@ -24,7 +24,7 @@ describe('PhoneInput placeholder', () => {
   it('national mode uses with-prefix variant for prefix-required regions', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', country: 'AE' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'AE' });
     expect(phone.getState().placeholder).toBe('050 123 4567');
 
     phone.destroy();
@@ -38,7 +38,7 @@ describe('PhoneInput placeholder', () => {
       input,
       mode: 'international',
       display: { callingCodeInInput: true, plusPrefix: true },
-      defaultCountry: 'US',
+      defaultRegion: 'US',
     });
     expect(phone.getState().placeholder).toBe('+1 201-555-0123');
 
@@ -53,7 +53,7 @@ describe('PhoneInput placeholder', () => {
       input,
       mode: 'international',
       display: { callingCodeInInput: true, plusPrefix: false },
-      defaultCountry: 'US',
+      defaultRegion: 'US',
     });
     expect(phone.getState().placeholder).toBe('1 201-555-0123');
 
@@ -68,7 +68,7 @@ describe('PhoneInput placeholder', () => {
       input,
       mode: 'international',
       display: { callingCodeInInput: false },
-      defaultCountry: 'US',
+      defaultRegion: 'US',
     });
     expect(phone.getState().placeholder).toBe('201-555-0123');
 
@@ -76,7 +76,7 @@ describe('PhoneInput placeholder', () => {
     cleanup();
   });
 
-  it('international embedded without defaultCountry produces null until a country resolves', () => {
+  it('international embedded without defaultRegion produces null until a region resolves', () => {
     const { input, cleanup } = attachInput();
 
     const phone = createPhoneInput({
@@ -96,7 +96,7 @@ describe('PhoneInput placeholder', () => {
     const phone = createPhoneInput({
       input,
       mode: 'national',
-      country: 'US',
+      region: 'US',
       placeholderNumberType: 'TOLL_FREE',
     });
     expect(phone.getState().placeholder).toBe('(800) 234-5678');
@@ -105,13 +105,13 @@ describe('PhoneInput placeholder', () => {
     cleanup();
   });
 
-  it('updates on setCountry', () => {
+  it('updates on setRegion', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', country: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
     expect(phone.getState().placeholder).toBe('(201) 555-0123');
 
-    phone.setCountry('GB');
+    phone.setRegion('GB');
     expect(phone.getState().placeholder).not.toBe('(201) 555-0123');
     expect(phone.getState().placeholder).not.toBeNull();
 

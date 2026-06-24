@@ -1,4 +1,4 @@
-import { REGION_IDS, type NumberType, type RegionId } from '@telixon/core';
+import { REGION_CODES, type NumberType, type RegionCode } from '@telixon/core';
 
 const NUMBER_TYPES = [
   'FIXED_LINE',
@@ -15,10 +15,10 @@ const NUMBER_TYPES = [
   'UNKNOWN',
 ] as const satisfies readonly NumberType[];
 
-export function isCountryId(value: string): value is RegionId {
-  return REGION_IDS.some((id) => id === value);
+export function isRegionId(value: string): value is RegionCode {
+  return REGION_CODES.some((id: unknown) => id === value);
 }
 
 export function isNumberType(value: string): value is NumberType {
-  return NUMBER_TYPES.some((t) => t === value);
+  return NUMBER_TYPES.some((type: unknown) => type === value);
 }

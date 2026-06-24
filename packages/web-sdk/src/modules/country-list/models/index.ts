@@ -1,4 +1,4 @@
-import type { NumberType, RegionId } from '@telixon/core';
+import type { NumberType, RegionCode } from '@telixon/core';
 
 /**
  * One entry in the rendered country list.
@@ -10,7 +10,7 @@ import type { NumberType, RegionId } from '@telixon/core';
  * - `data`: caller-defined payload produced by {@link CountryDataFactory}; `undefined` when no factory.
  */
 export type CountryOption<T = undefined> = {
-  country: RegionId;
+  country: RegionCode;
   callingCode: string;
   displayName: string;
   data: T;
@@ -21,7 +21,7 @@ export type CountryOption<T = undefined> = {
  * active locale so the factory can produce derived values without recomputing them.
  */
 export type CountryDataFactoryInput = {
-  country: RegionId;
+  country: RegionCode;
   callingCode: string;
   displayName: string;
   locale: string;
@@ -62,13 +62,13 @@ export type CountryListSort<T> =
  */
 export type CountryListOptions<T = undefined> = {
   dataFactory?: CountryDataFactory<T>;
-  countryFilter?: readonly RegionId[] | null;
+  countryFilter?: readonly RegionCode[] | null;
   numberTypeFilter?: readonly NumberType[] | null;
   searchQuery?: string;
   searchFn?: CountrySearchFn<T>;
   locale?: string;
   sort?: CountryListSort<T>;
-  prioritize?: readonly RegionId[];
+  prioritize?: readonly RegionCode[];
 };
 
 /**
@@ -78,7 +78,7 @@ export type CountryListOptions<T = undefined> = {
  */
 export type CountryListState<T = undefined> = {
   options: readonly CountryOption<T>[];
-  countryFilter: readonly RegionId[] | null;
+  countryFilter: readonly RegionCode[] | null;
   numberTypeFilter: readonly NumberType[] | null;
   searchQuery: string;
   locale: string;
@@ -110,7 +110,7 @@ export type CountryList<T = undefined> = {
   /** Recompute the base set (display names + `dataFactory`) and re-emit. Useful when external state read by `dataFactory` has changed. Always emits. */
   refresh(): void;
   /** Restrict the list to the given regions. `null` removes the restriction; `[]` matches nothing. No-op when the value is unchanged. */
-  setCountryFilter(value: readonly RegionId[] | null): void;
+  setCountryFilter(value: readonly RegionCode[] | null): void;
   /** Restrict the list to regions supporting at least one of the given number types. `null` removes the restriction; `[]` matches nothing. No-op when the value is unchanged. */
   setNumberTypeFilter(value: readonly NumberType[] | null): void;
 

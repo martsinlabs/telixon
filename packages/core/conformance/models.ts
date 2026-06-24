@@ -8,7 +8,7 @@ export const COMPARED_METHODS = [
   'getNumberType',
   'getNationalNumber',
   'getCallingCode',
-  'getCountry',
+  'getRegion',
   'formatE164',
   'formatNational',
   'formatInternational',

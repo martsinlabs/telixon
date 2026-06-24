@@ -1,14 +1,14 @@
 import { mustGet } from '../shared/must-get';
 
 export const modeEl = mustGet('#mode', HTMLSelectElement);
-export const countryEl = mustGet('#country', HTMLInputElement);
+export const regionEl = mustGet('#region', HTMLInputElement);
 export const initialValueEl = mustGet('#initial-value', HTMLInputElement);
 export const phoneInputEl = mustGet('#phone-input', HTMLInputElement);
 export const applyInitialValueBtn = mustGet('#apply-initial-value', HTMLButtonElement);
-export const applyCountryBtn = mustGet('#apply-country', HTMLButtonElement);
+export const applyRegionBtn = mustGet('#apply-region', HTMLButtonElement);
 export const setValueBtn = mustGet('#set-value', HTMLButtonElement);
 export const clearValueBtn = mustGet('#clear-value', HTMLButtonElement);
-export const countryFilterEl = mustGet('#country-filter', HTMLInputElement);
+export const regionFilterEl = mustGet('#region-filter', HTMLInputElement);
 export const numberTypeFilterEl = mustGet('#number-type-filter', HTMLDivElement);
 export const applyFiltersBtn = mustGet('#apply-filters', HTMLButtonElement);
 export const clearFiltersBtn = mustGet('#clear-filters', HTMLButtonElement);

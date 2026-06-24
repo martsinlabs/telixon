@@ -1,11 +1,11 @@
-import { getMetadataRegionCallingCode, NumberType, RegionId } from '@telixon/core/engine';
+import { getMetadataRegionCallingCode, NumberType, RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
 import { resolveProfile } from '../../number-resolver/resolve-profile';
-import { createCountryFilter, createNumberTypeFilter } from '../../number-resolver/utils/filter-factory';
+import { createNumberTypeFilter, createRegionFilter } from '../../number-resolver/utils/filter-factory';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
@@ -26,13 +26,13 @@ class InternationalInputController implements InputController {
 
   #numberResolver: NumberResolver = new NumberResolver();
 
-  #defaultCountryIndex: number = -1;
+  #defaultRegionIndex: number = -1;
 
   #defaultCallingCode: string | null = null;
 
   constructor(private config: InternationalInputControllerConfig = {}) {
-    if (this.config.defaultCountry) {
-      this.#setDefaultCountry(this.config.defaultCountry);
+    if (this.config.defaultRegion) {
+      this.#setDefaultRegion(this.config.defaultRegion);
     }
 
     if (this.config.strict) {
@@ -52,13 +52,13 @@ class InternationalInputController implements InputController {
     );
   }
 
-  #setDefaultCountry(country: RegionId): void {
+  #setDefaultRegion(region: RegionCode): void {
     const resourceProvider = getResourceProvider();
-    this.#defaultCountryIndex = resourceProvider.regionKeyToIndex[country] ?? -1;
+    this.#defaultRegionIndex = resourceProvider.regionKeyToIndex[region] ?? -1;
 
     this.#defaultCallingCode =
-      this.#defaultCountryIndex !== -1
-        ? String(getMetadataRegionCallingCode(resourceProvider.engine, this.#defaultCountryIndex))
+      this.#defaultRegionIndex !== -1
+        ? String(getMetadataRegionCallingCode(resourceProvider.engine, this.#defaultRegionIndex))
         : null;
   }
 
@@ -82,7 +82,7 @@ class InternationalInputController implements InputController {
     const caretIndex: number = resolveInput(value, change, (digit: number) => numberResolver.advance(digit));
 
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
-    const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultCountryIndex);
+    const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultRegionIndex);
 
     return resolveInternationalControllerState(snapshot, caretIndex, profile, this.config.display, direction);
   }
@@ -223,8 +223,8 @@ class InternationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountry(country: RegionId): InputState {
-    this.#setDefaultCountry(country);
+  setRegion(region: RegionCode): InputState {
+    this.#setDefaultRegion(region);
 
     const { value } = this.#history.current;
 
@@ -239,8 +239,8 @@ class InternationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  setCountryFilter(countries: readonly RegionId[] | null): void {
-    this.#numberResolver.setCountryFilter(countries ? createCountryFilter(countries) : null);
+  setRegionFilter(countries: readonly RegionCode[] | null): void {
+    this.#numberResolver.setRegionFilter(countries ? createRegionFilter(countries) : null);
     this.#recomputeState();
   }
 
@@ -263,14 +263,14 @@ class InternationalInputController implements InputController {
     const resolved: ResolvedNumberState = resolveNumber({
       input: this.#history.current.value,
       hasLeadingPlus: this.config.display?.callingCodeInInput !== false,
-      defaultCountryIndex: this.#defaultCountryIndex,
-      countryFilter: this.#numberResolver.countryFilter,
+      defaultRegionIndex: this.#defaultRegionIndex,
+      regionFilter: this.#numberResolver.regionFilter,
       numberTypeFilter: this.#numberResolver.numberTypeFilter,
       strict: this.config.strict === true,
     });
 
     return createPhoneNumber(
-      toResolvedPhoneNumber(resolved.snapshot, this.#defaultCountryIndex, resolved.nationalPrefixPresent),
+      toResolvedPhoneNumber(resolved.snapshot, this.#defaultRegionIndex, resolved.nationalPrefixPresent),
     );
   }
 

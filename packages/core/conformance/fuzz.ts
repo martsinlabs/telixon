@@ -27,7 +27,7 @@ const airtight =
 
 const limit: number = airtight ? airtight.total : enumerator.distinctLimit;
 const numberAt = (index: number): EnumeratedNumber =>
-  airtight ? { input: airtight.at(index), country: undefined } : enumerator.at(index);
+  airtight ? { input: airtight.at(index), region: undefined } : enumerator.at(index);
 
 // The slice [start, start + count) this run covers: a shard of the whole space (FUZZ_SHARD_*), or an
 // explicit FUZZ_START/FUZZ_N (default: a 1M sample, or the entire airtight space).
@@ -58,7 +58,7 @@ describe('Differential fuzzer vs Google libphonenumber', () => {
     const collector = createDivergenceCollector(oracle);
     for (let offset = 0; offset < count; offset++) {
       const number = numberAt(start + offset);
-      collector.add(number.input, number.country);
+      collector.add(number.input, number.region);
     }
 
     const patterns = collector.patterns();
@@ -78,7 +78,7 @@ describe('Differential fuzzer vs Google libphonenumber', () => {
     console.log(`Skipped (non-geographic 001, out of scope): ${collector.skipped.toLocaleString()}`);
     console.log(`Divergences: ${collector.total} across ${patterns.length} distinct patterns\n`);
     for (const pattern of patterns.slice(0, 50)) {
-      const where = pattern.exampleCountry ? ` country=${pattern.exampleCountry}` : '';
+      const where = pattern.exampleRegion ? ` region=${pattern.exampleRegion}` : '';
       console.log(
         `  [${pattern.method}] ${pattern.expected} -> ${pattern.actual}  (x${pattern.count})  e.g. "${pattern.exampleInput}"${where}`,
       );

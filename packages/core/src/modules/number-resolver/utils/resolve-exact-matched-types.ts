@@ -11,12 +11,12 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { isNumberTypeAllowed } from './is-number-type-allowed';
 
 // general-desc pattern matches the whole number (libphonenumber maybeStripNationalPrefix viability test); pattern-only.
-export function isGeneralDescExactMatch(endState: number, nationalLength: number, countryIndex: number): boolean {
+export function isGeneralDescExactMatch(endState: number, nationalLength: number, regionIndex: number): boolean {
   const { engine } = getResourceProvider();
-  const generalDescPosition: number = getRegionTypeCount(engine, countryIndex) - 1;
+  const generalDescPosition: number = getRegionTypeCount(engine, regionIndex) - 1;
   if (generalDescPosition < 0) return false;
 
-  const exactMask: number = getExactTypeMask(engine, endState, countryIndex, nationalLength);
+  const exactMask: number = getExactTypeMask(engine, endState, regionIndex, nationalLength);
   return (exactMask & (1 << generalDescPosition)) !== 0;
 }
 
@@ -24,17 +24,17 @@ export function isGeneralDescExactMatch(endState: number, nationalLength: number
 export function resolveExactMatchedTypeIdMask(
   endState: number,
   nationalLength: number,
-  countryIndex: number,
+  regionIndex: number,
   numberTypeFilter: BinaryFilter | null,
 ): number {
   const { engine } = getResourceProvider();
-  const typeCount: number = getRegionTypeCount(engine, countryIndex);
+  const typeCount: number = getRegionTypeCount(engine, regionIndex);
   if (typeCount === 0) return 0;
 
   const generalDescPosition: number = typeCount - 1;
-  const exactMask: number = getExactTypeMask(engine, endState, countryIndex, nationalLength);
+  const exactMask: number = getExactTypeMask(engine, endState, regionIndex, nationalLength);
   if ((exactMask & (1 << generalDescPosition)) === 0) return 0;
-  if (!containsLength(getGeneralDescLengthMask(engine, countryIndex), nationalLength)) return 0;
+  if (!containsLength(getGeneralDescLengthMask(engine, regionIndex), nationalLength)) return 0;
 
   let matchedTypeIdMask = 0;
   let mask: number = exactMask & ~(1 << generalDescPosition);
@@ -42,12 +42,12 @@ export function resolveExactMatchedTypeIdMask(
     const typePosition: number = 31 - Math.clz32(mask & -mask);
     mask &= mask - 1;
 
-    if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, countryIndex, typePosition)) continue;
-    if (!containsLength(getRegionTypeLengthMask(engine, countryIndex, typePosition), nationalLength)) {
+    if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, regionIndex, typePosition)) continue;
+    if (!containsLength(getRegionTypeLengthMask(engine, regionIndex, typePosition), nationalLength)) {
       continue;
     }
 
-    matchedTypeIdMask |= 1 << getRegionTypeId(engine, countryIndex, typePosition);
+    matchedTypeIdMask |= 1 << getRegionTypeId(engine, regionIndex, typePosition);
   }
 
   return matchedTypeIdMask;

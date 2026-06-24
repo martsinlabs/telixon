@@ -4,20 +4,20 @@ import {
   getMetadataFormatIndex,
   getRegionNationalPrefix,
   MASK_VARIANT,
-  RegionId,
+  RegionCode,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { buildFormattingContext } from '../../number-resolver/utils/build-formatting-context';
 import { hasMaskVariant, pickFormatMask } from '../../number-resolver/utils/format-masks';
-import { resolvePrimaryCountryIndex } from '../../number-resolver/utils/resolve-primary-country-index';
+import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { selectNationalFormatIndex } from '../../number-resolver/utils/select-national-format';
 import { ResolvedPhoneNumber } from '../models';
-import { getCountry } from './get-country';
+import { getRegion } from './get-region';
 import { isPossible } from './is-possible';
 
 // NATIONAL format, or null until possible; national prefix only when the format has a prefix rule, from the resolved region (else the calling code's main region, like libphonenumber).
 export function formatNational(resolved: ResolvedPhoneNumber): string | null {
-  const { nationalDigits, callingCode, callingCodeState, defaultCountryIndex } = resolved;
+  const { nationalDigits, callingCode, callingCodeState, defaultRegionIndex } = resolved;
   if (!isPossible(resolved)) return null;
 
   const resourceProvider = getResourceProvider();
@@ -37,12 +37,12 @@ export function formatNational(resolved: ResolvedPhoneNumber): string | null {
 
   let nationalPrefix: string | undefined;
   if (usePrefixMasks) {
-    const region: RegionId | null = getCountry(resolved);
-    const countryIndex: number =
+    const region: RegionCode | null = getRegion(resolved);
+    const regionIndex: number =
       region !== null
         ? (resourceProvider.regionKeyToIndex[region] ?? -1)
-        : resolvePrimaryCountryIndex(callingCodeState, defaultCountryIndex);
-    nationalPrefix = countryIndex >= 0 ? getRegionNationalPrefix(resourceProvider.engine, countryIndex) : undefined;
+        : resolvePrimaryRegionIndex(callingCodeState, defaultRegionIndex);
+    nationalPrefix = regionIndex >= 0 ? getRegionNationalPrefix(resourceProvider.engine, regionIndex) : undefined;
   }
 
   return formatNumber(buildFormattingContext(mask, nationalDigits, resourceProvider.placeholders, nationalPrefix))

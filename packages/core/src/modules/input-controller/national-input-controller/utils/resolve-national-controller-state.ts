@@ -4,15 +4,15 @@ import {
   getMetadataFormatIndex,
   getRegionNationalPrefix,
   MASK_VARIANT,
-  RegionId,
+  RegionCode,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
+import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
 import { resolveFormatFromProfile } from '../../../number-resolver/resolve-format-from-profile';
 import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
 import { hasMaskVariant, pickFormatMask } from '../../../number-resolver/utils/format-masks';
-import { resolvePrimaryCountryIndex } from '../../../number-resolver/utils/resolve-primary-country-index';
+import { resolvePrimaryRegionIndex } from '../../../number-resolver/utils/resolve-primary-region-index';
 import { resolveRegionCodeOrFallback } from '../../../number-resolver/utils/resolve-region-code-or-fallback';
 import { selectNationalFormatIndex } from '../../../number-resolver/utils/select-national-format';
 import { CaretIndex, InputControllerState } from '../../models';
@@ -20,7 +20,7 @@ import { CaretIndex, InputControllerState } from '../../models';
 export function resolveNationalControllerState(
   snapshot: NumberResolverSnapshot,
   profile: NumberTypeProfileRef | null,
-  defaultCountryIndex: number,
+  defaultRegionIndex: number,
   nationalPrefixTyped: boolean,
   rawString: string,
   displayDigits: string,
@@ -32,25 +32,25 @@ export function resolveNationalControllerState(
   // Fallback (no matching format, e.g. just the national prefix) shows the typed digits; the format path below groups displayDigits.
   let formattedNationalNumber: string = rawString;
   let formattedNationalCaretIndex: number = rawCaretIndex;
-  let country: RegionId | null = null;
+  let region: RegionCode | null = null;
   let appliedFormatIndex: number | null = null;
 
   if (profile) {
-    const countryIndex: number = profile.regionIndex;
-    const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
+    const regionIndex: number = profile.regionIndex;
+    const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(regionIndex);
 
     // displayDigits drops parse-only digit-adding transforms, so no untyped digit is shown.
     const formatRef = resolveFormatFromProfile(profile, displayDigits);
 
     if (snapshot.strict) {
-      // Strict never leaves the preferred country: report it, not the digit-resolved region (NANP shares a calling code).
-      country = resourceProvider.regionIds[countryIndex] ?? null;
+      // Strict never leaves the preferred region: report it, not the digit-resolved region (NANP shares a calling code).
+      region = resourceProvider.regionIds[regionIndex] ?? null;
     } else {
       // No specific region (possible but not valid): fall back to the calling code's primary region.
       const fallbackRegionIndex: number = formatRef
-        ? countryIndex
-        : resolvePrimaryCountryIndex(snapshot.callingCodeState, countryIndex);
-      country = resolveRegionCodeOrFallback(
+        ? regionIndex
+        : resolvePrimaryRegionIndex(snapshot.callingCodeState, regionIndex);
+      region = resolveRegionCodeOrFallback(
         snapshot.callingCodeState,
         snapshot.endState,
         snapshot.nationalDigits,
@@ -75,7 +75,7 @@ export function resolveNationalControllerState(
 
       if (mask !== undefined) {
         const nationalPrefix: string | undefined = usePrefixMasks
-          ? getRegionNationalPrefix(resourceProvider.engine, countryIndex)
+          ? getRegionNationalPrefix(resourceProvider.engine, regionIndex)
           : undefined;
 
         const { formatted, caretIndex: natCaretFormatted } = formatNumberWithRawCaret(
@@ -88,12 +88,12 @@ export function resolveNationalControllerState(
         formattedNationalCaretIndex = natCaretFormatted;
       }
     }
-  } else if (defaultCountryIndex !== -1) {
-    country = resourceProvider.regionIds[defaultCountryIndex] ?? null;
+  } else if (defaultRegionIndex !== -1) {
+    region = resourceProvider.regionIds[defaultRegionIndex] ?? null;
   }
 
   return {
-    country,
+    region,
     value: formattedNationalNumber,
     selectionStart: formattedNationalCaretIndex,
     selectionEnd: formattedNationalCaretIndex,

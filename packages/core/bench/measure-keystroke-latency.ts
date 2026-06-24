@@ -80,7 +80,7 @@ function typeFullNumberWithQueries(
     consume(phoneNumber.isValid());
     consume(phoneNumber.isPossible());
     consume(phoneNumber.getNumberType());
-    consume(phoneNumber.getCountry());
+    consume(phoneNumber.getRegion());
     consume(phoneNumber.getNationalNumber());
     consume(phoneNumber.getCallingCode());
     consume(phoneNumber.formatInternational());

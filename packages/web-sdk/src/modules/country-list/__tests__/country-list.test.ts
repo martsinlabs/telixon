@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { REGION_IDS } from '@telixon/core';
+import { REGION_CODES } from '@telixon/core';
 import { describe, expect, it, vi } from 'vitest';
 import { createCountryList } from '../country-list';
 import type { CountryOption } from '../models';
@@ -10,7 +10,7 @@ describe('createCountryList: defaults', () => {
     const list = createCountryList();
     const state = list.getState();
 
-    expect(state.options.length).toBe(REGION_IDS.length);
+    expect(state.options.length).toBe(REGION_CODES.length);
     expect(state.locale).toBe('en');
     expect(state.countryFilter).toBe(null);
     expect(state.numberTypeFilter).toBe(null);
@@ -31,7 +31,7 @@ describe('createCountryList: defaults', () => {
     const factory = vi.fn((input) => ({ tag: `${input.country}-${input.locale}` }));
     const list = createCountryList({ dataFactory: factory, locale: 'en' });
 
-    expect(factory).toHaveBeenCalledTimes(REGION_IDS.length);
+    expect(factory).toHaveBeenCalledTimes(REGION_CODES.length);
 
     const firstCall = factory.mock.calls[0]![0];
     expect(firstCall).toHaveProperty('country');
@@ -69,7 +69,7 @@ describe('createCountryList: filters', () => {
 
   it('treats null countryFilter as no restriction and [] as matches nothing', () => {
     const allList = createCountryList({ countryFilter: null });
-    expect(allList.getState().options.length).toBe(REGION_IDS.length);
+    expect(allList.getState().options.length).toBe(REGION_CODES.length);
 
     const noneList = createCountryList({ countryFilter: [] });
     expect(noneList.getState().options.length).toBe(0);
@@ -239,7 +239,7 @@ describe('createCountryList: refresh', () => {
     factory.mockClear();
     list.refresh();
 
-    expect(factory).toHaveBeenCalledTimes(REGION_IDS.length);
+    expect(factory).toHaveBeenCalledTimes(REGION_CODES.length);
 
     list.destroy();
   });

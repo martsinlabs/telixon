@@ -6,14 +6,14 @@ import { createNationalInputController } from '../national-input-controller';
 const GB_FIXED_E164 = '+44' + getExampleNumber('GB', 'FIXED_LINE');
 
 describe('PhoneNumber.getCallingCode: national', () => {
-  it("returns the bound country's calling code, even when empty", () => {
-    const controller = createNationalInputController({ country: 'US' });
+  it("returns the bound region's calling code, even when empty", () => {
+    const controller = createNationalInputController({ region: 'US' });
 
     expect(controller.getPhoneNumber().getCallingCode()).toBe('1');
   });
 
-  it('returns the multi-digit calling code for the bound country', () => {
-    const controller = createNationalInputController({ country: 'GB' });
+  it('returns the multi-digit calling code for the bound region', () => {
+    const controller = createNationalInputController({ region: 'GB' });
 
     expect(controller.getPhoneNumber().getCallingCode()).toBe('44');
   });

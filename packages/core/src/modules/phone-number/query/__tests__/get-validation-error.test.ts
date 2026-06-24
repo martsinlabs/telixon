@@ -12,11 +12,11 @@ describe('PhoneNumber.getValidationError', () => {
     expect(parsePhoneNumber('+1 ' + US_MOBILE).getValidationError()).toBeNull();
   });
 
-  it('returns EMPTY when no digits and no country context are available', () => {
+  it('returns EMPTY when no digits and no region context are available', () => {
     expect(parsePhoneNumber('').getValidationError()).toEqual({ kind: 'EMPTY' });
   });
 
-  it('returns INVALID_COUNTRY_CODE when digits do not resolve to a country', () => {
+  it('returns INVALID_COUNTRY_CODE when digits do not resolve to a region', () => {
     const controller = createInternationalInputController({});
     controller.setValue('0');
 
@@ -42,16 +42,16 @@ describe('PhoneNumber.getValidationError', () => {
   });
 
   it('returns NATIONAL_PREFIX_MISSING when a required prefix is absent', () => {
-    const error = parsePhoneNumber(AE_MOBILE, { defaultCountry: 'AE' }).getValidationError();
+    const error = parsePhoneNumber(AE_MOBILE, { defaultRegion: 'AE' }).getValidationError();
     expect(error).toEqual({ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' });
   });
 
   it('does not emit NATIONAL_PREFIX_MISSING when the national prefix was typed', () => {
-    expect(parsePhoneNumber(AE_MOBILE_WITH_PREFIX, { defaultCountry: 'AE' }).getValidationError()).toBeNull();
+    expect(parsePhoneNumber(AE_MOBILE_WITH_PREFIX, { defaultRegion: 'AE' }).getValidationError()).toBeNull();
   });
 
   it('does not emit NATIONAL_PREFIX_MISSING when the format allows the prefix to be optional', () => {
-    expect(parsePhoneNumber(US_MOBILE, { defaultCountry: 'US' }).getValidationError()).toBeNull();
+    expect(parsePhoneNumber(US_MOBILE, { defaultRegion: 'US' }).getValidationError()).toBeNull();
   });
 
   it('precedence: EMPTY wins over INVALID_COUNTRY_CODE when both apply', () => {

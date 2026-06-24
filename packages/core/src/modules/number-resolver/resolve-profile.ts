@@ -35,7 +35,7 @@ interface ResolveContext {
   readonly hasTerminals: boolean;
   readonly callingCodeState: number;
   readonly nationalDigits: string;
-  readonly countryFilter: BinaryFilter | null;
+  readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
 }
 
@@ -49,13 +49,13 @@ function makeContext(snapshot: NumberResolverSnapshot): ResolveContext {
     hasTerminals: hasExactMatch(engine, snapshot.endState),
     callingCodeState: snapshot.callingCodeState,
     nationalDigits: snapshot.nationalDigits,
-    countryFilter: snapshot.countryFilter,
+    regionFilter: snapshot.regionFilter,
     numberTypeFilter: snapshot.numberTypeFilter,
   };
 }
 
 function isRegionExcluded(context: ResolveContext, regionIndex: number): boolean {
-  return context.countryFilter !== null && context.countryFilter[regionIndex] === 0;
+  return context.regionFilter !== null && context.regionFilter[regionIndex] === 0;
 }
 
 function isTypeExcluded(context: ResolveContext, regionIndex: number, typePosition: number): boolean {
@@ -218,7 +218,7 @@ function resolveFallbackPartials(context: ResolveContext, preferredRegionIndex: 
   return { concrete, general };
 }
 
-// Strict mode never leaves the preferred country: exact first, then partial.
+// Strict mode never leaves the preferred region: exact first, then partial.
 function resolveStrictPreferred(context: ResolveContext, preferredRegionIndex: number): NumberTypeProfileRef | null {
   if (isRegionExcluded(context, preferredRegionIndex)) return null;
 
@@ -319,12 +319,12 @@ function uniqueConcreteTerminalRegionAt(context: ResolveContext, state: number, 
   return multiple ? -1 : uniqueRegionIndex;
 }
 
-// The anchor: latest digit position whose state has a single concrete terminal region reaching the full length (keeps the country stable while typing).
+// The anchor: latest digit position whose state has a single concrete terminal region reaching the full length (keeps the region stable while typing).
 function resolveAnchoredRegionIndex(context: ResolveContext, snapshot: NumberResolverSnapshot): number {
   const totalDigits: number = snapshot.nationalDigits.length;
   if (totalDigits === 0 || snapshot.callingCodeState === -1) return -1;
 
-  const filtersActive: boolean = snapshot.countryFilter !== null || snapshot.numberTypeFilter !== null;
+  const filtersActive: boolean = snapshot.regionFilter !== null || snapshot.numberTypeFilter !== null;
 
   // Only states carrying a terminal can anchor; the flags word filters them during the re-walk.
   const terminalStates: number[] = [];
@@ -332,7 +332,7 @@ function resolveAnchoredRegionIndex(context: ResolveContext, snapshot: NumberRes
   for (let i = 0; i < totalDigits; i++) {
     state = walkDigit(context.engine, state, snapshot.nationalDigits.charCodeAt(i) - 48);
     if (state === ENGINE_DEAD) break;
-    if (filtersActive && !stateMatchesFilters(state, snapshot.countryFilter, snapshot.numberTypeFilter)) break;
+    if (filtersActive && !stateMatchesFilters(state, snapshot.regionFilter, snapshot.numberTypeFilter)) break;
     if (getStateFlags(context.engine, state) & STATE_FLAG_TERMINAL_PREFIX) terminalStates.push(state);
   }
 

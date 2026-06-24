@@ -1,4 +1,4 @@
-import { getCallingCodeForCountry, type RegionId } from '@telixon/core';
+import { getCallingCodeForRegion, type RegionCode } from '@telixon/core';
 import {
   createCountryList,
   createPhoneInput,
@@ -9,20 +9,20 @@ import {
   type PhoneInputListener,
   type PhoneInputState,
 } from '@telixon/web-sdk';
-import { isCountryId } from '../guards';
+import { isRegionId } from '../guards';
 import { buildPhoneFieldDom, type PhoneFieldDom } from './dom';
 import { flagEmoji } from './flag';
 
 /**
- * National-mode phone field. Country is chosen via the selector (or fixed when `showSelector: false`)
- * and the input holds only national digits formatted with the country's national mask.
+ * National-mode phone field. Region is chosen via the selector (or fixed when `showSelector: false`)
+ * and the input holds only national digits formatted with the region's national mask.
  */
 export type NationalPhoneFieldOptions = {
   mode: 'national';
-  country: RegionId;
+  region: RegionCode;
   initialValue?: string;
   showSelector?: boolean;
-  countryFilter?: readonly RegionId[];
+  regionFilter?: readonly RegionCode[];
 };
 
 /**
@@ -31,27 +31,27 @@ export type NationalPhoneFieldOptions = {
  * - `display: 'plus'`: input starts with `+` (e.g. `+1 201-555-0123`).
  * - `display: 'no-plus'`: input starts with the calling code digits (e.g. `1 201-555-0123`).
  *
- * No separate selector is rendered; the country is resolved live from the typed calling code.
+ * No separate selector is rendered; the region is resolved live from the typed calling code.
  */
 export type InternationalEmbeddedOptions = {
   mode: 'international';
   display: 'plus' | 'no-plus';
-  defaultCountry?: RegionId;
+  defaultRegion?: RegionCode;
   initialValue?: string;
 };
 
 /**
  * International-mode phone field with the calling code rendered outside the input (in the selector).
  * The input holds the national digits formatted with the international body mask
- * (e.g. `201-555-0123`, no parens). `defaultCountry` is required because there is no calling code in
+ * (e.g. `201-555-0123`, no parens). `defaultRegion` is required because there is no calling code in
  * the input to resolve from.
  */
 export type InternationalSplitOptions = {
   mode: 'international';
   display: 'split';
-  defaultCountry: RegionId;
+  defaultRegion: RegionCode;
   showSelector?: boolean;
-  countryFilter?: readonly RegionId[];
+  regionFilter?: readonly RegionCode[];
   initialValue?: string;
 };
 
@@ -76,7 +76,7 @@ export type PhoneFieldHandle = {
 
 /**
  * Build a self-contained phone-input UI: a styled input bound to a Telixon `PhoneInput` controller,
- * with an optional country selector dropdown wired via `CountryList`.
+ * with an optional region selector dropdown wired via `CountryList`.
  *
  * The factory chooses the right `PhoneInput` configuration from the discriminated `options` union
  * and decides whether to render the selector based on the mode:
@@ -100,15 +100,15 @@ export function createPhoneField(options: PhoneFieldOptions): PhoneFieldHandle {
   let selectorCleanup: (() => void) | null = null;
 
   if (showSelector) {
-    const initialCountry: RegionId = resolveInitialCountry(options);
-    const countryFilter: readonly RegionId[] | undefined =
-      'countryFilter' in options ? options.countryFilter : undefined;
+    const initialRegion: RegionCode = resolveInitialRegion(options);
+    const regionFilter: readonly RegionCode[] | undefined =
+      'regionFilter' in options ? options.regionFilter : undefined;
 
     selectorCleanup = wireSelector({
       dom,
       phone,
-      initialCountry,
-      ...(countryFilter !== undefined && { countryFilter }),
+      initialRegion,
+      ...(regionFilter !== undefined && { regionFilter }),
     });
   }
 
@@ -132,17 +132,17 @@ function resolveShowSelector(options: PhoneFieldOptions): boolean {
   return false;
 }
 
-function resolveInitialCountry(options: PhoneFieldOptions): RegionId {
-  if (options.mode === 'national') return options.country;
-  if (options.display === 'split') return options.defaultCountry;
-  throw new Error('resolveInitialCountry: only called when a selector is rendered (national or split)');
+function resolveInitialRegion(options: PhoneFieldOptions): RegionCode {
+  if (options.mode === 'national') return options.region;
+  if (options.display === 'split') return options.defaultRegion;
+  throw new Error('resolveInitialRegion: only called when a selector is rendered (national or split)');
 }
 
 function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElement): PhoneInput {
   if (options.mode === 'national') {
     return createPhoneInput({
       mode: 'national',
-      country: options.country,
+      region: options.region,
       input,
       ...(options.initialValue !== undefined && { initialValue: options.initialValue }),
     });
@@ -152,7 +152,7 @@ function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElemen
     return createPhoneInput({
       mode: 'international',
       display: { callingCodeInInput: false },
-      defaultCountry: options.defaultCountry,
+      defaultRegion: options.defaultRegion,
       input,
       ...(options.initialValue !== undefined && { initialValue: options.initialValue }),
     });
@@ -162,7 +162,7 @@ function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElemen
     mode: 'international',
     display: { callingCodeInInput: true, plusPrefix: options.display === 'plus' },
     input,
-    ...(options.defaultCountry !== undefined && { defaultCountry: options.defaultCountry }),
+    ...(options.defaultRegion !== undefined && { defaultRegion: options.defaultRegion }),
     ...(options.initialValue !== undefined && { initialValue: options.initialValue }),
   });
 }
@@ -170,16 +170,16 @@ function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElemen
 type SelectorWiringOptions = {
   dom: PhoneFieldDom;
   phone: PhoneInput;
-  initialCountry: RegionId;
-  countryFilter?: readonly RegionId[];
+  initialRegion: RegionCode;
+  regionFilter?: readonly RegionCode[];
 };
 
-function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWiringOptions): () => void {
-  const { countryBtn, countryFlag, countryDial, dropdown, search, options } = dom;
+function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWiringOptions): () => void {
+  const { regionBtn, regionFlag, regionDial, dropdown, search, options } = dom;
   if (
-    countryBtn === null ||
-    countryFlag === null ||
-    countryDial === null ||
+    regionBtn === null ||
+    regionFlag === null ||
+    regionDial === null ||
     dropdown === null ||
     search === null ||
     options === null
@@ -189,20 +189,20 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
 
   const list: CountryList = createCountryList({
     sort: 'alphabetical',
-    countryFilter: countryFilter ?? null,
+    countryFilter: regionFilter ?? null,
   });
 
-  let selectedCountry: RegionId = initialCountry;
+  let selectedRegion: RegionCode = initialRegion;
   let open: boolean = false;
 
-  updateCountryButton(selectedCountry);
+  updateRegionButton(selectedRegion);
   renderOptions(list.getState());
 
   const unsubscribeList: () => void = list.subscribe(renderOptions);
   const unsubscribePhone: () => void = phone.subscribe((state: PhoneInputState) => {
-    if (state.country !== null && state.country !== selectedCountry) {
-      selectedCountry = state.country;
-      updateCountryButton(selectedCountry);
+    if (state.region !== null && state.region !== selectedRegion) {
+      selectedRegion = state.region;
+      updateRegionButton(selectedRegion);
       renderOptions(list.getState());
     }
   });
@@ -217,17 +217,17 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
   const handleKeydown = (event: KeyboardEvent): void => {
     if (event.key === 'Escape' && open) {
       close();
-      countryBtn.focus();
+      regionBtn.focus();
     }
   };
 
-  countryBtn.addEventListener('click', handleButtonClick);
+  regionBtn.addEventListener('click', handleButtonClick);
   search.addEventListener('input', handleSearchInput);
   document.addEventListener('click', handleDocClick);
   document.addEventListener('keydown', handleKeydown);
 
   return () => {
-    countryBtn.removeEventListener('click', handleButtonClick);
+    regionBtn.removeEventListener('click', handleButtonClick);
     search.removeEventListener('input', handleSearchInput);
     document.removeEventListener('click', handleDocClick);
     document.removeEventListener('keydown', handleKeydown);
@@ -239,7 +239,7 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
   function openDropdown(): void {
     open = true;
     dropdown!.hidden = false;
-    countryBtn!.setAttribute('aria-expanded', 'true');
+    regionBtn!.setAttribute('aria-expanded', 'true');
     search!.value = '';
     list.search('');
     search!.focus();
@@ -248,21 +248,21 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
   function close(): void {
     open = false;
     dropdown!.hidden = true;
-    countryBtn!.setAttribute('aria-expanded', 'false');
+    regionBtn!.setAttribute('aria-expanded', 'false');
   }
 
-  function selectCountry(country: RegionId): void {
-    selectedCountry = country;
-    phone.setCountry(country);
-    updateCountryButton(country);
+  function selectRegion(region: RegionCode): void {
+    selectedRegion = region;
+    phone.setRegion(region);
+    updateRegionButton(region);
     renderOptions(list.getState());
     close();
     dom.input.focus();
   }
 
-  function updateCountryButton(country: RegionId): void {
-    countryFlag!.textContent = flagEmoji(country);
-    countryDial!.textContent = `+${getCallingCodeForCountry(country)}`;
+  function updateRegionButton(region: RegionCode): void {
+    regionFlag!.textContent = flagEmoji(region);
+    regionDial!.textContent = `+${getCallingCodeForRegion(region)}`;
   }
 
   function renderOptions(state: CountryListState): void {
@@ -276,8 +276,8 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
     const li: HTMLLIElement = document.createElement('li');
     li.className = 'option-row option-row--clickable';
     li.setAttribute('role', 'option');
-    li.setAttribute('aria-selected', String(option.country === selectedCountry));
-    if (option.country === selectedCountry) li.classList.add('option-row--active');
+    li.setAttribute('aria-selected', String(option.country === selectedRegion));
+    if (option.country === selectedRegion) li.classList.add('option-row--active');
 
     const flag: HTMLSpanElement = document.createElement('span');
     flag.className = 'option-flag';
@@ -293,8 +293,8 @@ function wireSelector({ dom, phone, initialCountry, countryFilter }: SelectorWir
 
     li.append(flag, name, dial);
     li.addEventListener('click', () => {
-      if (!isCountryId(option.country)) return;
-      selectCountry(option.country);
+      if (!isRegionId(option.country)) return;
+      selectRegion(option.country);
     });
 
     return li;

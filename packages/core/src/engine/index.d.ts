@@ -11,7 +11,7 @@ export declare function assembleEngine(parts: ReadonlyArray<Partial<EngineLayers
  * Per-state region data for the calling-code zone of the trie (the states spanning the calling-code
  * digits, before the national number). Built from the same trie + metadata; read via the accessors.
  */
-declare interface CallingCodeLayer {
+export declare interface CallingCodeLayer {
     stateRegionOffset: Uint16Array;
     stateRegionCount: Uint8Array;
     regionIndexPool: Uint8Array;
@@ -63,7 +63,7 @@ export declare const ENGINE_MODULES: ReadonlyArray<{
  * The walk core of an {@link Engine}: transitions, per-state flags, verdicts, scope, and exact
  * acceptance. Reached as `engine.core`; read it through the accessors (`walkDigit`, `getVerdict`, …).
  */
-declare interface EngineCore {
+export declare interface EngineCore {
     words: Uint32Array;
     profile: Uint16Array;
     bundleScopeOffset: Uint16Array;
@@ -123,8 +123,11 @@ export declare interface EngineLayers {
     metadata: MetadataTablesLayer;
 }
 
-/** The slice of {@link EngineCore} carried by `engine-exact.bin`. */
-declare type ExactSection = Pick<EngineCore, 'exactListOffset' | 'exactRegion' | 'exactVector' | 'vectorOffset' | 'vectorMasks'>;
+/**
+ * @public
+ * The slice of {@link EngineCore} carried by `engine-exact.bin`.
+ */
+export declare type ExactSection = Pick<EngineCore, 'exactListOffset' | 'exactRegion' | 'exactVector' | 'vectorOffset' | 'vectorMasks'>;
 
 /**
  * @public
@@ -136,7 +139,7 @@ export declare function findMetadataCallingCode(engine: Engine, callingCode: num
  * @public
  * Region index for a two-letter id; -1 when unknown.
  */
-export declare function findMetadataRegion(engine: Engine, regionId: string): number;
+export declare function findMetadataRegion(engine: Engine, regionCode: string): number;
 
 /**
  * @public
@@ -202,7 +205,7 @@ export declare function formatNumberWithRawCaret(context: PhoneNumberFormattingC
  * @public
  * Format-selection layer: picks the format index for a national number. Use the select accessors.
  */
-declare interface FormatSelectLayer {
+export declare interface FormatSelectLayer {
     callingCodeFormatStart: Uint32Array;
     formatLengthMask: Uint32Array;
     formatRangeLow: Uint8Array;
@@ -335,15 +338,15 @@ export declare function getMetadataRegionCallingCode(engine: Engine, regionIndex
 
 /**
  * @public
- * Number of regions in the tables.
+ * Two-letter region code. Cold path: allocates.
  */
-export declare function getMetadataRegionCount(engine: Engine): number;
+export declare function getMetadataRegionCode(engine: Engine, regionIndex: number): string;
 
 /**
  * @public
- * Two-letter region id. Cold path: allocates.
+ * Number of regions in the tables.
  */
-export declare function getMetadataRegionId(engine: Engine, regionIndex: number): string;
+export declare function getMetadataRegionCount(engine: Engine): number;
 
 /**
  * @public
@@ -587,10 +590,10 @@ export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBI
  * The shipped metadata (territories, formats, reference mapping). Read through the accessors;
  * string accessors allocate and are cold-path by design.
  */
-declare interface MetadataTablesLayer {
+export declare interface MetadataTablesLayer {
     poolOffsets: Uint16Array;
     poolBytes: Uint8Array;
-    regionIdChars: Uint8Array;
+    regionCodeChars: Uint8Array;
     regionCallingCode: Uint16Array;
     regionNationalPrefixRef: Uint16Array;
     regionPrefixForParsingRef: Uint16Array;
@@ -685,22 +688,22 @@ export declare interface PhoneNumberFormattingContext {
 
 /**
  * @public
- * CLDR two-letter region codes recognized by the engine; source of truth for {@link RegionId}.
+ * CLDR two-letter region codes recognized by the engine; source of truth for {@link RegionCode}.
  */
-export declare const REGION_IDS: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
+export declare const REGION_CODES: readonly ["AC", "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TA", "TC", "TD", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW"];
 
 /**
  * @public
- * Territory identifier per CLDR two-letter region code; derived from {@link REGION_IDS}.
+ * Territory identifier per CLDR two-letter region code; derived from {@link REGION_CODES}.
  */
-export declare type RegionId = (typeof REGION_IDS)[number];
+export declare type RegionCode = (typeof REGION_CODES)[number];
 
 /**
  * @public
  * Flat per-region tables: general-desc length masks, type length masks, and the strip
  * quick-reject mask. Read through the accessors.
  */
-declare interface RegionMasksLayer {
+export declare interface RegionMasksLayer {
     generalDescNationalMask: Uint32Array;
     generalDescLocalOnlyMask: Uint32Array;
     stripFirstDigitMask: Uint16Array;
@@ -713,7 +716,7 @@ declare interface RegionMasksLayer {
  * @public
  * Region-disambiguation layer for shared calling codes. Use the select accessors.
  */
-declare interface RegionSelectLayer {
+export declare interface RegionSelectLayer {
     callingCodeSlotStart: Uint32Array;
     slotRegion: Uint16Array;
     callingCodeTrieRoot: Uint32Array;
@@ -723,8 +726,11 @@ declare interface RegionSelectLayer {
     childNode: Uint16Array;
 }
 
-/** The slice of {@link EngineCore} carried by `engine-scope.bin`. */
-declare type ScopeSection = Pick<EngineCore, 'bundleScopeOffset' | 'scopeRegion' | 'scopeNumberMask' | 'scopeTerminalMask' | 'scopeProfileStart' | 'profileIds' | 'formatMaskPool' | 'lengthMaskPool' | 'bundleExactList'>;
+/**
+ * @public
+ * The slice of {@link EngineCore} carried by `engine-scope.bin`.
+ */
+export declare type ScopeSection = Pick<EngineCore, 'bundleScopeOffset' | 'scopeRegion' | 'scopeNumberMask' | 'scopeTerminalMask' | 'scopeProfileStart' | 'profileIds' | 'formatMaskPool' | 'lengthMaskPool' | 'bundleExactList'>;
 
 /**
  * @public
@@ -793,8 +799,11 @@ export declare type StopIteration = true | void;
  */
 export declare function toNumberTypes(metadataTypes: readonly MetadataNumberType[]): NumberType[];
 
-/** The slice of {@link EngineCore} carried by `engine-trie.bin`. */
-declare type TrieSection = Pick<EngineCore, 'words' | 'profile'>;
+/**
+ * @public
+ * The slice of {@link EngineCore} carried by `engine-trie.bin`.
+ */
+export declare type TrieSection = Pick<EngineCore, 'words' | 'profile'>;
 
 /**
  * @public
@@ -844,8 +853,11 @@ export declare function verdictIsValid(verdict: number): boolean;
  */
 export declare function verdictRegion(verdict: number): number;
 
-/** The slice of {@link EngineCore} carried by `engine-verdict.bin`. */
-declare type VerdictSection = Pick<EngineCore, 'bundleVerdictVector' | 'bundleLengthsUnion' | 'scopeLengthTypeVector' | 'verdictVectors' | 'lengthTypeVectors'>;
+/**
+ * @public
+ * The slice of {@link EngineCore} carried by `engine-verdict.bin`.
+ */
+export declare type VerdictSection = Pick<EngineCore, 'bundleVerdictVector' | 'bundleLengthsUnion' | 'scopeLengthTypeVector' | 'verdictVectors' | 'lengthTypeVectors'>;
 
 /**
  * @public

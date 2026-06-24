@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createNationalInputController } from '..';
 
 describe('national controller history de-duplication', () => {
-  it('does not push when typing a non-digit leaves value and country unchanged', () => {
-    const controller = createNationalInputController({ country: 'AR' });
+  it('does not push when typing a non-digit leaves value and region unchanged', () => {
+    const controller = createNationalInputController({ region: 'AR' });
     const initial = controller.setValue('0111523456789');
 
     expect(controller.canUndo).toBe(true);
@@ -15,7 +15,7 @@ describe('national controller history de-duplication', () => {
   });
 
   it('does not push when setValue receives an equivalent value', () => {
-    const controller = createNationalInputController({ country: 'AR' });
+    const controller = createNationalInputController({ region: 'AR' });
     controller.setValue('0111523456789');
     controller.setValue('0111523456789');
     controller.undo();
@@ -24,7 +24,7 @@ describe('national controller history de-duplication', () => {
   });
 
   it('updates caret on the current entry without growing history', () => {
-    const controller = createNationalInputController({ country: 'AR' });
+    const controller = createNationalInputController({ region: 'AR' });
     const initial = controller.setValue('0111523456789');
 
     controller.insert(initial.value, 'a', 0, 0);

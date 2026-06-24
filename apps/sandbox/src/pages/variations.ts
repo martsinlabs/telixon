@@ -14,24 +14,24 @@ async function bootstrap(): Promise<void> {
   const ok = await bootstrapResources(reportFatal);
   if (!ok) return;
 
-  mountAndWire('national', { mode: 'national', country: 'US' });
+  mountAndWire('national', { mode: 'national', region: 'US' });
 
   mountAndWire('international-plus', {
     mode: 'international',
     display: 'plus',
-    defaultCountry: 'US',
+    defaultRegion: 'US',
   });
 
   mountAndWire('international-no-plus', {
     mode: 'international',
     display: 'no-plus',
-    defaultCountry: 'US',
+    defaultRegion: 'US',
   });
 
   mountAndWire('international-split', {
     mode: 'international',
     display: 'split',
-    defaultCountry: 'US',
+    defaultRegion: 'US',
   });
 }
 
@@ -42,7 +42,7 @@ function mountAndWire(key: string, options: PhoneFieldOptions): PhoneFieldHandle
 
   const chip = mustGet(`[data-info="${key}"]`, HTMLSpanElement);
   const paint = (state: PhoneInputState): void => {
-    chip.textContent = state.country === null ? 'n/a' : `${flagEmoji(state.country)}  ${state.country}`;
+    chip.textContent = state.region === null ? 'n/a' : `${flagEmoji(state.region)}  ${state.region}`;
   };
   field.subscribe(paint);
   paint(field.getState());

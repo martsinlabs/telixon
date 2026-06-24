@@ -1,19 +1,19 @@
-import { NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionCode } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { resolveMetadataTypes } from './resolve-metadata-types';
 
-export function createCountryFilter(countryIds: readonly RegionId[]): BinaryFilter {
+export function createRegionFilter(regionIds: readonly RegionCode[]): BinaryFilter {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   const filter: BinaryFilter = new Uint8Array(resourceProvider.regionIds.length);
 
-  for (const countryId of countryIds) {
-    const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[countryId];
+  for (const regionId of regionIds) {
+    const regionIndex: number | undefined = resourceProvider.regionKeyToIndex[regionId];
 
-    if (countryIndex !== undefined) {
-      filter[countryIndex] = 1;
+    if (regionIndex !== undefined) {
+      filter[regionIndex] = 1;
     }
   }
 

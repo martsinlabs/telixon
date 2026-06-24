@@ -1,7 +1,7 @@
-import { RegionId } from '@telixon/core/engine';
+import { RegionCode } from '@telixon/core/engine';
 
 export interface NationalInputControllerConfig {
-  country: RegionId;
+  region: RegionCode;
   strict?: boolean;
   initialValue?: string;
   maxHistorySize?: number;

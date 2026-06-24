@@ -7,7 +7,7 @@ const US_MOBILE_INTL = '1' + US_MOBILE;
 
 describe('InternationalInputController.deleteBackward', () => {
   it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     // '1 ' with caret at end: the separator is structurally re-added on resolve, so backspace snaps the caret after the calling-code digit.
     const state = controller.deleteBackward('1 ', 2, 2);
 
@@ -16,7 +16,7 @@ describe('InternationalInputController.deleteBackward', () => {
   });
 
   it('strips trailing formatting after a partial national number without losing a digit', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     const seeded = controller.setValue('1212');
     const valueWithTrailingFormatter = `${seeded.value}-`;
     const caret = valueWithTrailingFormatter.length;
@@ -30,7 +30,7 @@ describe('InternationalInputController.deleteBackward', () => {
   });
 
   it('deletes the last digit from a full US number with calling code shown', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     const seeded = controller.setValue(US_MOBILE_INTL);
 
     const state = controller.deleteBackward(seeded.value, seeded.value.length, seeded.value.length);
@@ -40,7 +40,7 @@ describe('InternationalInputController.deleteBackward', () => {
 
   it('does not jump the caret over the "+" prefix when backspacing right after it', () => {
     const controller = createInternationalInputController({
-      defaultCountry: 'US',
+      defaultRegion: 'US',
       display: { callingCodeInInput: true, plusPrefix: true },
     });
     // Value is "+1 ". Place caret right after "+" (position 1).
@@ -54,7 +54,7 @@ describe('InternationalInputController.deleteBackward', () => {
 
   it('deletes the last digit when callingCodeInInput is false (national-only display)', () => {
     const controller = createInternationalInputController({
-      defaultCountry: 'US',
+      defaultRegion: 'US',
       display: { callingCodeInInput: false },
     });
     const seeded = controller.setValue(US_MOBILE);
@@ -69,7 +69,7 @@ describe('InternationalInputController.deleteBackward', () => {
 
 describe('InternationalInputController.deleteForward', () => {
   it('removes the first digit of national number from a full US value', () => {
-    const controller = createInternationalInputController({ defaultCountry: 'US' });
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
     const seeded = controller.setValue(US_MOBILE_INTL);
 
     // Skip past the calling code segment "1 " to land on the first national digit.

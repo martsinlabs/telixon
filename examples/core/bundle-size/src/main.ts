@@ -8,18 +8,18 @@ import {
   isEngineReady,
   isNationalPrefixOptional,
   parsePhoneNumber,
-  REGION_IDS,
+  REGION_CODES,
   TelixonNotReadyError,
   type InputController,
   type NumberType,
   type PhoneNumber,
-  type RegionId,
+  type RegionCode,
 } from '@telixon/core';
 
 // Exercises the entire public API so the measured initial bundle is the ceiling, not a tree-shaken minimum.
 
 const SAMPLE = '+12015550123';
-const REGION: RegionId = 'US';
+const REGION: RegionCode = 'US';
 const NUMBER_TYPE: NumberType = 'MOBILE';
 
 async function main(): Promise<void> {
@@ -58,7 +58,7 @@ function describeNumber(number: PhoneNumber): string[] {
 // The standalone helpers and engine-state queries.
 function describeRegion(): string[] {
   return [
-    `regions: ${REGION_IDS.length}`,
+    `regions: ${REGION_CODES.length}`,
     `engineReady: ${isEngineReady()}`,
     `callingCode(${REGION}): ${getCallingCodeForCountry(REGION)}`,
     `supports ${NUMBER_TYPE}: ${countrySupportsNumberTypes(REGION, [NUMBER_TYPE])}`,

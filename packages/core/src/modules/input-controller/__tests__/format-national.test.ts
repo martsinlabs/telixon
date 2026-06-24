@@ -11,28 +11,28 @@ const GB_MOBILE_NATIONAL = '07400 123456';
 
 describe('PhoneNumber.formatNational: national', () => {
   it('returns null while the number is not yet possible', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().formatNational()).toBeNull();
   });
 
   it('groups a valid US number without adding a prefix', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().formatNational()).toBe(US_MOBILE_NATIONAL);
   });
 
   it('reconstructs the national prefix from the format rule', () => {
-    const controller = createNationalInputController({ country: 'GB' });
+    const controller = createNationalInputController({ region: 'GB' });
     controller.setValue(GB_MOBILE_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().formatNational()).toBe(GB_MOBILE_NATIONAL);
   });
 
   it('formats a possible-but-invalid number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('3101234434');
 
     expect(controller.getPhoneNumber().formatNational()).toBe('(310) 123-4434');

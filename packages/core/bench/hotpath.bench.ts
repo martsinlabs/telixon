@@ -15,7 +15,7 @@ const QUERY_METHODS = [
   'getNumberType',
   'getNationalNumber',
   'getCallingCode',
-  'getCountry',
+  'getRegion',
   'formatE164',
   'formatRfc3966',
   'formatNational',

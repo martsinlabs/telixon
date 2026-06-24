@@ -1,7 +1,7 @@
-import { REGION_IDS } from '@telixon/core';
+import { REGION_CODES } from '@telixon/core';
 import { CorpusEntry, Oracle } from './types';
 
-const TELIXON_REGIONS: ReadonlySet<string> = new Set<string>(REGION_IDS);
+const TELIXON_REGIONS: ReadonlySet<string> = new Set<string>(REGION_CODES);
 
 // One Google example number per supported region per type, intersected with the engine's regions.
 export function buildCorpus(oracle: Oracle): CorpusEntry[] {

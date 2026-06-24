@@ -1,7 +1,9 @@
-import { REGION_IDS, RegionId } from '@telixon/core';
+import { REGION_CODES, RegionCode } from '@telixon/core';
 import { CorpusCase, RenderedExample } from './models';
 
-const REGION_ID_BY_CODE: ReadonlyMap<string, RegionId> = new Map(REGION_IDS.map((regionId) => [regionId, regionId]));
+const REGION_ID_BY_CODE: ReadonlyMap<string, RegionCode> = new Map(
+  REGION_CODES.map((regionId) => [regionId, regionId]),
+);
 
 // Every Google-rendered spelling a user could paste (international, national, RFC3966 URI, padded E.164); each must resolve exactly like the canonical E.164 on both sides.
 export function deriveDisplayVariants(renderedExamples: readonly RenderedExample[]): CorpusCase[] {
@@ -20,13 +22,13 @@ export function deriveDisplayVariants(renderedExamples: readonly RenderedExample
       });
     }
 
-    const defaultCountry = REGION_ID_BY_CODE.get(regionCode);
-    if (rendered.formatNational && defaultCountry) {
+    const defaultRegion = REGION_ID_BY_CODE.get(regionCode);
+    if (rendered.formatNational && defaultRegion) {
       variants.push({
         family: 'display-variant',
         kind: 'national-display',
         input: rendered.formatNational,
-        defaultCountry,
+        defaultRegion,
         regionCode,
         sourceE164: e164,
       });

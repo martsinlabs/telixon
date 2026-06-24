@@ -16,7 +16,7 @@ function renderPhoneNumber(current: Controller | null): string {
     ['getNumberType', phoneNumber.getNumberType()],
     ['getNationalNumber', phoneNumber.getNationalNumber()],
     ['getCallingCode', phoneNumber.getCallingCode()],
-    ['getCountry', phoneNumber.getCountry()],
+    ['getRegion', phoneNumber.getRegion()],
     ['formatE164', phoneNumber.formatE164()],
     ['formatNational', phoneNumber.formatNational()],
     ['formatInternational', phoneNumber.formatInternational()],

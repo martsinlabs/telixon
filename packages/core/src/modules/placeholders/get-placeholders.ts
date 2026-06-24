@@ -6,11 +6,11 @@ import {
   getMetadataTypeExample,
   getMetadataTypeId,
   NumberType,
-  RegionId,
+  RegionCode,
   selectCompleteFormat,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
+import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 import { buildExamplePlaceholders, Placeholders } from './build-example-placeholders';
 
@@ -27,25 +27,25 @@ function hasInternationalFormat(callingCodeIndex: number): boolean {
   return false;
 }
 
-/** Returns example placeholder variants for `(country, type)`, or `null` if none. Requires ready resources. */
-export function getPlaceholders(country: RegionId, type: NumberType): Placeholders | null {
+/** Returns example placeholder variants for `(region, type)`, or `null` if none. Requires ready resources. */
+export function getPlaceholders(region: RegionCode, type: NumberType): Placeholders | null {
   const resourceProvider = getResourceProvider();
   const tables = resourceProvider.engine;
 
-  const countryIndex: number | undefined = resourceProvider.regionKeyToIndex[country];
-  if (countryIndex === undefined) return null;
+  const regionIndex: number | undefined = resourceProvider.regionKeyToIndex[region];
+  if (regionIndex === undefined) return null;
 
-  const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
+  const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(regionIndex);
   if (callingCodeIndex === -1) return null;
 
   for (const metadataType of resolveMetadataTypes(type)) {
     const typeId: number = resourceProvider.numberTypeNames.indexOf(metadataType);
     if (typeId < 0) continue;
 
-    const typeCount: number = getMetadataTypeCount(tables, countryIndex);
+    const typeCount: number = getMetadataTypeCount(tables, regionIndex);
     for (let typePosition = 0; typePosition < typeCount; typePosition++) {
-      if (getMetadataTypeId(tables, countryIndex, typePosition) !== typeId) continue;
-      const exampleNsn: string | undefined = getMetadataTypeExample(tables, countryIndex, typePosition);
+      if (getMetadataTypeId(tables, regionIndex, typePosition) !== typeId) continue;
+      const exampleNsn: string | undefined = getMetadataTypeExample(tables, regionIndex, typePosition);
       if (exampleNsn === undefined) continue;
 
       const selected = selectCompleteFormat(resourceProvider.engine, callingCodeIndex, exampleNsn);
@@ -59,7 +59,7 @@ export function getPlaceholders(country: RegionId, type: NumberType): Placeholde
 
       const placeholders: Placeholders | null = buildExamplePlaceholders(
         exampleNsn,
-        countryIndex,
+        regionIndex,
         nationalFormatIndex,
         internationalFormatIndex,
       );

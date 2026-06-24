@@ -2,7 +2,7 @@ import {
   getVerdict,
   MetadataNumberType,
   NumberType,
-  RegionId,
+  RegionCode,
   toNumberTypes,
   VERDICT_LENGTH_COUNT,
   VERDICT_TYPE_FIXED_LINE_OR_MOBILE,
@@ -19,7 +19,7 @@ import { numberTypeForRegion } from './number-type-for-region';
 function getNumberTypeResolved(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
   const { callingCodeState, nationalDigits, endState } = resolved;
 
-  const region: RegionId | null = resolveRegionCode(callingCodeState, endState, nationalDigits);
+  const region: RegionCode | null = resolveRegionCode(callingCodeState, endState, nationalDigits);
   if (!region) return null;
 
   const regionIndex: number | undefined = getResourceProvider().regionKeyToIndex[region];
@@ -30,17 +30,17 @@ function getNumberTypeResolved(resolved: ResolvedPhoneNumber): Exclude<NumberTyp
 
 // libphonenumber getNumberType: one baked verdict lookup on the unfiltered path.
 export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
-  const { nationalDigits, endState, countryFilter, numberTypeFilter, strict, defaultCountryIndex } = resolved;
+  const { nationalDigits, endState, regionFilter, numberTypeFilter, strict, defaultRegionIndex } = resolved;
   const length: number = nationalDigits.length;
 
   if (length >= VERDICT_LENGTH_COUNT) return null;
 
-  // Strict mode validates against the configured country only (libphonenumber isValidNumberForRegion).
-  if (strict && defaultCountryIndex !== -1) {
-    return numberTypeForRegion(resolved, defaultCountryIndex);
+  // Strict mode validates against the configured region only (libphonenumber isValidNumberForRegion).
+  if (strict && defaultRegionIndex !== -1) {
+    return numberTypeForRegion(resolved, defaultRegionIndex);
   }
 
-  if (!countryFilter && !numberTypeFilter) {
+  if (!regionFilter && !numberTypeFilter) {
     const resourceProvider = getResourceProvider();
     const verdict: number = getVerdict(resourceProvider.engine, endState, length);
     if (verdictIsDecided(verdict)) {

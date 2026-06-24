@@ -5,7 +5,7 @@ export { findNextDigitPosition, findPreviousDigitPosition, isFormattingChar } fr
 export const toInputState = (state: InputControllerState): InputState => {
   return {
     value: state.value,
-    country: state.country,
+    region: state.region,
     selectionStart: state.selectionStart,
     selectionEnd: state.selectionEnd,
   };
@@ -18,7 +18,7 @@ export const toInputStateWithSelection = (
 ): InputState => {
   return {
     value: state.value,
-    country: state.country,
+    region: state.region,
     selectionStart,
     selectionEnd,
   };

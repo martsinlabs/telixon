@@ -31,7 +31,7 @@ function fill(mask: string, nsn: string, placeholders: MetadataPlaceholders, nat
 // Derives example placeholders for a number type on demand from the shipped masks (format indices are global, selected by the caller via the format-select layer).
 export function buildExamplePlaceholders(
   exampleNsn: string,
-  countryIndex: number,
+  regionIndex: number,
   nationalFormatIndex: number,
   internationalFormatIndex: number,
 ): Placeholders | null {
@@ -51,7 +51,7 @@ export function buildExamplePlaceholders(
         prefixMask,
         exampleNsn,
         resourceProvider.placeholders,
-        getRegionNationalPrefix(resourceProvider.engine, countryIndex),
+        getRegionNationalPrefix(resourceProvider.engine, regionIndex),
       );
     }
   }

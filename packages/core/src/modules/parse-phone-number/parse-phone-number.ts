@@ -8,14 +8,14 @@ function isWhitespace(charCode: number): boolean {
   return charCode === 0x20 || charCode === 0x09 || charCode === 0x0a || charCode === 0x0d;
 }
 
-// Parses a number into a PhoneNumber (no controller): '+' is international, else national via defaultCountry.
+// Parses a number into a PhoneNumber (no controller): '+' is international, else national via defaultRegion.
 // Detects the leading-plus flag, then defers to the shared resolveNumber pipeline (which ignores non-digits).
 export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions = {}): PhoneNumber {
   requireEngineReady();
 
   const resourceProvider = getResourceProvider();
-  const defaultCountryIndex: number =
-    options.defaultCountry !== undefined ? (resourceProvider.regionKeyToIndex[options.defaultCountry] ?? -1) : -1;
+  const defaultRegionIndex: number =
+    options.defaultRegion !== undefined ? (resourceProvider.regionKeyToIndex[options.defaultRegion] ?? -1) : -1;
 
   let index = 0;
   while (index < input.length && isWhitespace(input.charCodeAt(index))) index++;
@@ -24,13 +24,13 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   const resolved: ResolvedNumberState = resolveNumber({
     input,
     hasLeadingPlus,
-    defaultCountryIndex,
-    countryFilter: null,
+    defaultRegionIndex,
+    regionFilter: null,
     numberTypeFilter: null,
     strict: false,
   });
 
   return createPhoneNumber(
-    toResolvedPhoneNumber(resolved.snapshot, defaultCountryIndex, resolved.nationalPrefixPresent),
+    toResolvedPhoneNumber(resolved.snapshot, defaultRegionIndex, resolved.nationalPrefixPresent),
   );
 }

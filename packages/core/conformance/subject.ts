@@ -5,7 +5,7 @@ import {
   InputState,
   parsePhoneNumber,
   PhoneNumber,
-  RegionId,
+  RegionCode,
 } from '@telixon/core';
 import { MethodResults } from '../oracle';
 
@@ -17,7 +17,7 @@ function toMethodResults(phoneNumber: PhoneNumber): MethodResults {
     getNumberType: phoneNumber.getNumberType(),
     getNationalNumber: phoneNumber.getNationalNumber(),
     getCallingCode: phoneNumber.getCallingCode(),
-    getCountry: phoneNumber.getCountry(),
+    getRegion: phoneNumber.getRegion(),
     formatE164: phoneNumber.formatE164(),
     formatNational: phoneNumber.formatNational(),
     formatInternational: phoneNumber.formatInternational(),
@@ -25,10 +25,10 @@ function toMethodResults(phoneNumber: PhoneNumber): MethodResults {
   };
 }
 
-// Telixon's verdict for every compared behavior, parsed under the same conditions as the oracle: international by default, national when `defaultCountry` is given.
-export function evaluateWithTelixon(input: string, defaultCountry?: RegionId): MethodResults {
+// Telixon's verdict for every compared behavior, parsed under the same conditions as the oracle: international by default, national when `defaultRegion` is given.
+export function evaluateWithTelixon(input: string, defaultRegion?: RegionCode): MethodResults {
   const phoneNumber: PhoneNumber =
-    defaultCountry === undefined ? parsePhoneNumber(input) : parsePhoneNumber(input, { defaultCountry });
+    defaultRegion === undefined ? parsePhoneNumber(input) : parsePhoneNumber(input, { defaultRegion });
   return toMethodResults(phoneNumber);
 }
 
@@ -47,9 +47,9 @@ export function asYouTypeWithTelixon(input: string): string[] {
   return snapshots;
 }
 
-// As asYouTypeWithTelixon, but through the national controller for a fixed country, to compare against Google in national mode.
-export function asYouTypeNationalWithTelixon(country: RegionId, input: string): string[] {
-  const controller: InputController = createNationalInputController({ country });
+// As asYouTypeWithTelixon, but through the national controller for a fixed region, to compare against Google in national mode.
+export function asYouTypeNationalWithTelixon(region: RegionCode, input: string): string[] {
+  const controller: InputController = createNationalInputController({ region });
 
   let state: InputState = controller.currentState;
   const snapshots: string[] = [];

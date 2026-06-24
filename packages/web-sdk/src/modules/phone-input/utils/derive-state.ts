@@ -1,19 +1,19 @@
-import type { InputState, NumberType, RegionId, ValidationError } from '@telixon/core';
+import type { InputState, NumberType, RegionCode, ValidationError } from '@telixon/core';
 import type { PhoneInputState } from '../models';
 
 export function deriveState(
   inputState: InputState,
-  countryFilter: readonly RegionId[] | null,
+  regionFilter: readonly RegionCode[] | null,
   numberTypeFilter: readonly NumberType[] | null,
   placeholder: string | null,
   validationError: ValidationError | null,
 ): PhoneInputState {
   return {
     value: inputState.value,
-    country: inputState.country,
+    region: inputState.region,
     selectionStart: inputState.selectionStart,
     selectionEnd: inputState.selectionEnd,
-    countryFilter,
+    regionFilter,
     numberTypeFilter,
     placeholder,
     validationError,

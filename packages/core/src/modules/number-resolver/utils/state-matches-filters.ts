@@ -12,18 +12,18 @@ import { isNumberTypeAllowed } from './is-number-type-allowed';
 
 export function stateMatchesFilters(
   state: number,
-  countryFilter: BinaryFilter | null = null,
+  regionFilter: BinaryFilter | null = null,
   numberTypeFilter: BinaryFilter | null = null,
 ): boolean {
-  if (!countryFilter && !numberTypeFilter) return true;
+  if (!regionFilter && !numberTypeFilter) return true;
 
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   let foundMatch: boolean = false;
 
   if (isInCallingCode(resourceProvider.engine, state)) {
-    forEachRegionInCallingCodeState(resourceProvider.engine, state, (countryIndex: number) => {
-      if (!countryFilter || countryFilter[countryIndex]) {
+    forEachRegionInCallingCodeState(resourceProvider.engine, state, (regionIndex: number) => {
+      if (!regionFilter || regionFilter[regionIndex]) {
         foundMatch = true;
         return true;
       }
@@ -32,13 +32,13 @@ export function stateMatchesFilters(
     return foundMatch;
   }
 
-  forEachScopeRegion(resourceProvider.engine, state, (scopeEntryIndex: number, countryIndex: number) => {
-    if (countryFilter && countryFilter[countryIndex] === 0) return;
+  forEachScopeRegion(resourceProvider.engine, state, (scopeEntryIndex: number, regionIndex: number) => {
+    if (regionFilter && regionFilter[regionIndex] === 0) return;
 
     const mask: number = getScopeNumberTypeMask(resourceProvider.engine, scopeEntryIndex);
 
     forEachNumberTypeIndex(mask, (numberTypeIndex: number) => {
-      if (!numberTypeFilter || isNumberTypeAllowed(numberTypeFilter, countryIndex, numberTypeIndex)) {
+      if (!numberTypeFilter || isNumberTypeAllowed(numberTypeFilter, regionIndex, numberTypeIndex)) {
         foundMatch = true;
         return true;
       }

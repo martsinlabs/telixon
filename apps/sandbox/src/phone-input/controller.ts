@@ -1,13 +1,13 @@
-import type { RegionId } from '@telixon/core';
+import type { RegionCode } from '@telixon/core';
 import { createPhoneInput, PhoneInput } from '@telixon/web-sdk';
-import { isCountryId } from '../shared/guards';
-import { countryEl, initialValueEl, phoneInputEl, strictEl } from './elements';
+import { isRegionId } from '../shared/guards';
+import { initialValueEl, phoneInputEl, regionEl, strictEl } from './elements';
 import type { Controller, Mode } from './types';
 import { record, sync } from './view';
 
 export type { Controller, Mode } from './types';
 
-const DEFAULT_COUNTRY: RegionId = 'US';
+const DEFAULT_COUNTRY: RegionCode = 'US';
 
 let current: Controller | null = null;
 
@@ -28,14 +28,14 @@ export function attach(mode: Mode, value: string = initialValueEl.value): void {
 }
 
 export function mount(mode: Mode, value: string): PhoneInput {
-  const raw = countryEl.value.toUpperCase();
-  const country: RegionId = isCountryId(raw) ? raw : DEFAULT_COUNTRY;
+  const raw = regionEl.value.toUpperCase();
+  const region: RegionCode = isRegionId(raw) ? raw : DEFAULT_COUNTRY;
   const strict = strictEl.checked;
 
   if (mode === 'national') {
     return createPhoneInput({
       mode: 'national',
-      country,
+      region,
       strict,
       initialValue: value,
       input: phoneInputEl,
@@ -44,7 +44,7 @@ export function mount(mode: Mode, value: string): PhoneInput {
 
   return createPhoneInput({
     mode: 'international',
-    defaultCountry: country,
+    defaultRegion: region,
     strict,
     display: { callingCodeInInput: true, plusPrefix: true },
     initialValue: value,

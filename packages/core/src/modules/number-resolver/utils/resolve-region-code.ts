@@ -4,7 +4,7 @@ import {
   getMetadataRegionCallingCode,
   getVerdict,
   isRegionLeadingDigitsSatisfied,
-  RegionId,
+  RegionCode,
   VERDICT_LENGTH_COUNT,
   verdictIsDecided,
   verdictRegion,
@@ -26,24 +26,28 @@ function collectExactRegions(endState: number, nationalLength: number): number[]
 
 // libphonenumber getRegionCodeForNumberFromRegionList: a region matches by leadingDigits, or (no leadingDigits) by a concrete type accepting the number.
 function matchesRegion(
-  countryIndex: number,
+  regionIndex: number,
   nationalDigits: string,
   endState: number,
   exactRegions: readonly number[],
 ): boolean {
   const resourceProvider = getResourceProvider();
-  if (resourceProvider.regionHasLeadingDigits[countryIndex]) {
-    const callingCode: number = getMetadataRegionCallingCode(resourceProvider.engine, countryIndex);
+  if (resourceProvider.regionHasLeadingDigits[regionIndex]) {
+    const callingCode: number = getMetadataRegionCallingCode(resourceProvider.engine, regionIndex);
     const callingCodeIndex: number | undefined = resourceProvider.callingCodeIndexByCode[callingCode];
     if (callingCodeIndex === undefined) return false;
-    return isRegionLeadingDigitsSatisfied(resourceProvider.engine, callingCodeIndex, countryIndex, nationalDigits);
+    return isRegionLeadingDigitsSatisfied(resourceProvider.engine, callingCodeIndex, regionIndex, nationalDigits);
   }
-  if (!exactRegions.includes(countryIndex)) return false;
-  return resolveExactMatchedTypeIdMask(endState, nationalDigits.length, countryIndex, null) !== 0;
+  if (!exactRegions.includes(regionIndex)) return false;
+  return resolveExactMatchedTypeIdMask(endState, nationalDigits.length, regionIndex, null) !== 0;
 }
 
 // libphonenumber getRegionCodeForNumber: first region (main-first) the number matches, or null; fallback behind baked verdicts.
-export function resolveRegionCode(callingCodeState: number, endState: number, nationalDigits: string): RegionId | null {
+export function resolveRegionCode(
+  callingCodeState: number,
+  endState: number,
+  nationalDigits: string,
+): RegionCode | null {
   if (callingCodeState === -1) return null;
 
   const resourceProvider = getResourceProvider();
@@ -54,9 +58,9 @@ export function resolveRegionCode(callingCodeState: number, endState: number, na
   }
 
   const exactRegions: number[] = collectExactRegions(endState, nationalDigits.length);
-  for (const countryIndex of regions) {
-    if (matchesRegion(countryIndex, nationalDigits, endState, exactRegions)) {
-      return resourceProvider.regionIds[countryIndex] ?? null;
+  for (const regionIndex of regions) {
+    if (matchesRegion(regionIndex, nationalDigits, endState, exactRegions)) {
+      return resourceProvider.regionIds[regionIndex] ?? null;
     }
   }
 
@@ -68,7 +72,7 @@ export function resolveRegionCodeFast(
   callingCodeState: number,
   endState: number,
   nationalDigits: string,
-): RegionId | null {
+): RegionCode | null {
   const length: number = nationalDigits.length;
 
   if (length < VERDICT_LENGTH_COUNT) {

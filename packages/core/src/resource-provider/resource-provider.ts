@@ -4,30 +4,30 @@ import {
   getMetadataNumberTypeName,
   getMetadataPlaceholders,
   getMetadataRegionCallingCode,
+  getMetadataRegionCode,
   getMetadataRegionCount,
-  getMetadataRegionId,
   getRegionLeadingDigits,
   MetadataNumberType,
   parseEngine,
-  REGION_IDS,
-  RegionId,
+  REGION_CODES,
+  RegionCode,
 } from '../engine';
 import { ResourceLoader, SyncResourceLoader } from '../resource-loader/models';
 import { MetadataPlaceholders, ResourceProvider } from './models';
 
-// The metadata region order is REGION_IDS (alphabetical); a mismatch means a broken artifact.
-function resolveRegionIds(engine: Engine): readonly RegionId[] {
+// The metadata region order is REGION_CODES (alphabetical); a mismatch means a broken artifact.
+function resolveRegionCodes(engine: Engine): readonly RegionCode[] {
   const count: number = getMetadataRegionCount(engine);
-  if (count !== REGION_IDS.length) throw new Error('Engine metadata region count differs from REGION_IDS');
+  if (count !== REGION_CODES.length) throw new Error('Engine metadata region count differs from REGION_CODES');
   for (let regionIndex = 0; regionIndex < count; regionIndex++) {
-    if (getMetadataRegionId(engine, regionIndex) !== REGION_IDS[regionIndex]) {
-      throw new Error('Engine metadata region order differs from REGION_IDS');
+    if (getMetadataRegionCode(engine, regionIndex) !== REGION_CODES[regionIndex]) {
+      throw new Error('Engine metadata region order differs from REGION_CODES');
     }
   }
-  return REGION_IDS;
+  return REGION_CODES;
 }
 
-function buildRegionKeyToIndex(regionIds: readonly RegionId[]): Record<string, number> {
+function buildRegionKeyToIndex(regionIds: readonly RegionCode[]): Record<string, number> {
   const map: Record<string, number> = {};
   for (let regionIndex = 0; regionIndex < regionIds.length; regionIndex++) map[regionIds[regionIndex]!] = regionIndex;
   return map;
@@ -43,7 +43,7 @@ function buildCallingCodeIndexByCode(engine: Engine, regionCount: number): Recor
   return map;
 }
 
-function buildCallingCodeIndexByCountry(
+function buildCallingCodeIndexByRegion(
   engine: Engine,
   regionCount: number,
   callingCodeIndexByCode: Readonly<Record<number, number>>,
@@ -82,10 +82,10 @@ class DefaultResourceProvider extends ResourceProvider {
 
   engine!: Engine;
 
-  regionIds!: readonly RegionId[];
+  regionIds!: readonly RegionCode[];
   regionKeyToIndex!: Readonly<Record<string, number>>;
   callingCodeIndexByCode!: Readonly<Record<number, number>>;
-  callingCodeIndexByCountry!: Int16Array;
+  callingCodeIndexByRegion!: Int16Array;
   numberTypeNames!: readonly MetadataNumberType[];
   regionHasLeadingDigits!: Uint8Array;
   placeholders!: MetadataPlaceholders;
@@ -126,10 +126,10 @@ class DefaultResourceProvider extends ResourceProvider {
   private materialize(engine: Engine): void {
     this.engine = engine;
 
-    this.regionIds = resolveRegionIds(engine);
+    this.regionIds = resolveRegionCodes(engine);
     this.regionKeyToIndex = buildRegionKeyToIndex(this.regionIds);
     this.callingCodeIndexByCode = buildCallingCodeIndexByCode(engine, this.regionIds.length);
-    this.callingCodeIndexByCountry = buildCallingCodeIndexByCountry(
+    this.callingCodeIndexByRegion = buildCallingCodeIndexByRegion(
       engine,
       this.regionIds.length,
       this.callingCodeIndexByCode,

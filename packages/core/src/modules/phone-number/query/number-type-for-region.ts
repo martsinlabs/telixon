@@ -30,12 +30,12 @@ function selectNumberType(matched: readonly MetadataNumberType[]): Exclude<Numbe
 
 // libphonenumber getNumberTypeHelper over ONE region's metadata: the number's type under that
 // region's patterns, or null (UNKNOWN). Returns null when the region's calling code does not match
-// the number's, mirroring isValidNumberForRegion's country-code guard.
+// the number's, mirroring isValidNumberForRegion's region-code guard.
 export function numberTypeForRegion(
   resolved: ResolvedPhoneNumber,
   regionIndex: number,
 ): Exclude<NumberType, 'UNKNOWN'> | null {
-  const { endState, nationalDigits, callingCode, countryFilter, numberTypeFilter } = resolved;
+  const { endState, nationalDigits, callingCode, regionFilter, numberTypeFilter } = resolved;
   const resourceProvider = getResourceProvider();
 
   if (
@@ -44,7 +44,7 @@ export function numberTypeForRegion(
   ) {
     return null;
   }
-  if (countryFilter && countryFilter[regionIndex] === 0) return null;
+  if (regionFilter && regionFilter[regionIndex] === 0) return null;
 
   const length: number = nationalDigits.length;
   if (length === 0 || length >= VERDICT_LENGTH_COUNT) return null;

@@ -1,10 +1,10 @@
-import { NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionCode } from '@telixon/core/engine';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
 export interface InputState {
   value: string;
-  country: RegionId | null;
+  region: RegionCode | null;
   selectionStart: number;
   selectionEnd: number;
 }
@@ -29,10 +29,10 @@ export interface InputController {
   deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
   deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
   setValue(value: string): InputState;
-  setCountry(country: RegionId): InputState;
+  setRegion(region: RegionCode): InputState;
   undo(): InputState;
   redo(): InputState;
-  setCountryFilter(countries: readonly RegionId[] | null): void;
+  setRegionFilter(countries: readonly RegionCode[] | null): void;
   setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
   clearHistory(): void;
   getPhoneNumber(): PhoneNumber;

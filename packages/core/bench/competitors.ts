@@ -3,7 +3,7 @@ import {
   parsePhoneNumber as telixonParse,
   type PhoneNumber as TelixonPhoneNumber,
 } from '@telixon/core';
-import { type RegionId } from '@telixon/core/engine';
+import { type RegionCode } from '@telixon/core/engine';
 import googleLibphonenumber from 'google-libphonenumber';
 import libphonenumberJsParse, {
   validatePhoneNumberLength,
@@ -20,7 +20,7 @@ export interface PhoneLibraryAdapter {
   getNumberType: (parsed: unknown) => string | null;
   getNationalNumber: (parsed: unknown) => string;
   getCallingCode: (parsed: unknown) => string | null;
-  getCountry: (parsed: unknown) => string | null;
+  getRegion: (parsed: unknown) => string | null;
   formatE164: (parsed: unknown) => string;
   formatNational: (parsed: unknown) => string;
   formatInternational: (parsed: unknown) => string;
@@ -33,14 +33,14 @@ export const telixonReady: Promise<void> = ensureEngineReady();
 
 const telixonAdapter: PhoneLibraryAdapter = {
   name: 'telixon',
-  parse: (input, region) => telixonParse(input, { defaultCountry: region as RegionId }),
+  parse: (input, region) => telixonParse(input, { defaultRegion: region as RegionCode }),
   isValid: (parsed) => (parsed as TelixonPhoneNumber).isValid(),
   isPossible: (parsed) => (parsed as TelixonPhoneNumber).isPossible(),
   isPossibleWithReason: (parsed) => (parsed as TelixonPhoneNumber).isPossibleWithReason(),
   getNumberType: (parsed) => (parsed as TelixonPhoneNumber).getNumberType(),
   getNationalNumber: (parsed) => (parsed as TelixonPhoneNumber).getNationalNumber(),
   getCallingCode: (parsed) => (parsed as TelixonPhoneNumber).getCallingCode(),
-  getCountry: (parsed) => (parsed as TelixonPhoneNumber).getCountry(),
+  getRegion: (parsed) => (parsed as TelixonPhoneNumber).getRegion(),
   formatE164: (parsed) => (parsed as TelixonPhoneNumber).formatE164() ?? '',
   formatNational: (parsed) => (parsed as TelixonPhoneNumber).formatNational() ?? '',
   formatInternational: (parsed) => (parsed as TelixonPhoneNumber).formatInternational() ?? '',
@@ -60,7 +60,7 @@ const libphonenumberJsAdapter: PhoneLibraryAdapter = {
   getNumberType: (parsed) => (parsed as LibphonenumberJsPhoneNumber).getType() ?? null,
   getNationalNumber: (parsed) => (parsed as LibphonenumberJsPhoneNumber).nationalNumber,
   getCallingCode: (parsed) => (parsed as LibphonenumberJsPhoneNumber).countryCallingCode,
-  getCountry: (parsed) => (parsed as LibphonenumberJsPhoneNumber).country ?? null,
+  getRegion: (parsed) => (parsed as LibphonenumberJsPhoneNumber).country ?? null,
   formatE164: (parsed) => (parsed as LibphonenumberJsPhoneNumber).number,
   formatNational: (parsed) => (parsed as LibphonenumberJsPhoneNumber).formatNational(),
   formatInternational: (parsed) => (parsed as LibphonenumberJsPhoneNumber).formatInternational(),
@@ -82,7 +82,7 @@ const googleLibphonenumberAdapter: PhoneLibraryAdapter = {
   getNumberType: (parsed) => String(googleUtil.getNumberType(parsed as GooglePhoneNumber)),
   getNationalNumber: (parsed) => String((parsed as GooglePhoneNumber).getNationalNumber()),
   getCallingCode: (parsed) => String((parsed as GooglePhoneNumber).getCountryCode()),
-  getCountry: (parsed) => googleUtil.getRegionCodeForNumber(parsed as GooglePhoneNumber) ?? null,
+  getRegion: (parsed) => googleUtil.getRegionCodeForNumber(parsed as GooglePhoneNumber) ?? null,
   formatE164: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.E164),
   formatNational: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.NATIONAL),
   formatInternational: (parsed) => googleUtil.format(parsed as GooglePhoneNumber, PhoneNumberFormat.INTERNATIONAL),

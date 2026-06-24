@@ -1,4 +1,4 @@
-import { InputController, NumberType, PhoneNumber, RegionId } from '@telixon/core';
+import { InputController, NumberType, PhoneNumber, RegionCode } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import {
   isBackwardDeleteInputType,
@@ -44,19 +44,19 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const listeners: Set<PhoneInputListener> = new Set();
 
   let isDestroyed: boolean = false;
-  let currentCountryFilter: readonly RegionId[] | null = options.countryFilter ?? null;
+  let currentRegionFilter: readonly RegionCode[] | null = options.regionFilter ?? null;
   let currentNumberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
 
-  let cachedPlaceholderCountry: RegionId | null = inputController.currentState.country;
-  let cachedPlaceholder: string | null = resolvePlaceholder(cachedPlaceholderCountry, placeholderConfig);
+  let cachedPlaceholderRegion: RegionCode | null = inputController.currentState.region;
+  let cachedPlaceholder: string | null = resolvePlaceholder(cachedPlaceholderRegion, placeholderConfig);
 
-  if (currentCountryFilter !== null) inputController.setCountryFilter(currentCountryFilter);
+  if (currentRegionFilter !== null) inputController.setRegionFilter(currentRegionFilter);
   if (currentNumberTypeFilter !== null) inputController.setNumberTypeFilter(currentNumberTypeFilter);
 
-  function currentPlaceholder(country: RegionId | null): string | null {
-    if (country === cachedPlaceholderCountry) return cachedPlaceholder;
-    cachedPlaceholderCountry = country;
-    cachedPlaceholder = resolvePlaceholder(country, placeholderConfig);
+  function currentPlaceholder(region: RegionCode | null): string | null {
+    if (region === cachedPlaceholderRegion) return cachedPlaceholder;
+    cachedPlaceholderRegion = region;
+    cachedPlaceholder = resolvePlaceholder(region, placeholderConfig);
     return cachedPlaceholder;
   }
 
@@ -65,9 +65,9 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
     return deriveState(
       inputState,
-      currentCountryFilter,
+      currentRegionFilter,
       currentNumberTypeFilter,
-      currentPlaceholder(inputState.country),
+      currentPlaceholder(inputState.region),
       inputController.getPhoneNumber().getValidationError(),
     );
   }
@@ -230,8 +230,8 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       commit(() => inputController.setValue(value));
     },
 
-    setCountry(country: RegionId): void {
-      commit(() => inputController.setCountry(country));
+    setRegion(region: RegionCode): void {
+      commit(() => inputController.setRegion(region));
     },
 
     undo(): void {
@@ -251,10 +251,10 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       return inputController.getPhoneNumber();
     },
 
-    setCountryFilter(countries: readonly RegionId[] | null): void {
-      if (readonlyArraysEqual(countries, currentCountryFilter)) return;
-      currentCountryFilter = countries;
-      inputController.setCountryFilter(countries);
+    setRegionFilter(countries: readonly RegionCode[] | null): void {
+      if (readonlyArraysEqual(countries, currentRegionFilter)) return;
+      currentRegionFilter = countries;
+      inputController.setRegionFilter(countries);
       notify(buildState());
     },
 

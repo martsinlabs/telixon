@@ -184,7 +184,7 @@ export async function loadOracle(): Promise<Oracle> {
         getNumberType: typeId === ph.PhoneNumberType.UNKNOWN ? null : (numberTypeName[typeId] ?? null),
         getNationalNumber: util.getNationalSignificantNumber(parsed),
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
-        getCountry: util.getRegionCodeForNumber(parsed) ?? null,
+        getRegion: util.getRegionCodeForNumber(parsed) ?? null,
         formatE164: possible ? util.format(parsed, ph.PhoneNumberFormat.E164) : null,
         formatNational: possible ? util.format(parsed, ph.PhoneNumberFormat.NATIONAL) : null,
         formatInternational: possible ? util.format(parsed, ph.PhoneNumberFormat.INTERNATIONAL) : null,

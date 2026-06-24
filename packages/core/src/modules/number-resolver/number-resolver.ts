@@ -27,7 +27,7 @@ export class NumberResolver {
 
   private _callingCodeState: number = -1;
 
-  private _countryFilter: BinaryFilter | null = null;
+  private _regionFilter: BinaryFilter | null = null;
 
   private _numberTypeFilter: BinaryFilter | null = null;
 
@@ -42,12 +42,12 @@ export class NumberResolver {
     }
 
     let state: number = walkDigit(this.engine, this._state, digit);
-    const filtersActive: boolean = this._countryFilter !== null || this._numberTypeFilter !== null;
+    const filtersActive: boolean = this._regionFilter !== null || this._numberTypeFilter !== null;
 
     if (
       state !== ENGINE_DEAD &&
       filtersActive &&
-      !stateMatchesFilters(state, this._countryFilter, this._numberTypeFilter)
+      !stateMatchesFilters(state, this._regionFilter, this._numberTypeFilter)
     ) {
       state = ENGINE_DEAD;
     }
@@ -102,8 +102,8 @@ export class NumberResolver {
     return this._nationalDigitString;
   }
 
-  setCountryFilter(filter: BinaryFilter | null): void {
-    this._countryFilter = filter;
+  setRegionFilter(filter: BinaryFilter | null): void {
+    this._regionFilter = filter;
   }
 
   setNumberTypeFilter(filter: BinaryFilter | null): void {
@@ -134,8 +134,8 @@ export class NumberResolver {
     return this._callingCodeState;
   }
 
-  get countryFilter(): BinaryFilter | null {
-    return this._countryFilter;
+  get regionFilter(): BinaryFilter | null {
+    return this._regionFilter;
   }
 
   get numberTypeFilter(): BinaryFilter | null {
@@ -149,7 +149,7 @@ export class NumberResolver {
       nationalDigits: this._nationalDigitString,
       callingCodeCompleted: this._callingCodeCompleted,
       callingCodeState: this._callingCodeState,
-      countryFilter: this._countryFilter,
+      regionFilter: this._regionFilter,
       numberTypeFilter: this._numberTypeFilter,
       strict: this._strict,
     };

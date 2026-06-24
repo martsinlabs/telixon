@@ -5,9 +5,9 @@ import {
   isFormatPrefixOptional,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
+import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
-import { resolvePrimaryCountryIndex } from '../../number-resolver/utils/resolve-primary-country-index';
+import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { selectNationalFormatIndex } from '../../number-resolver/utils/select-national-format';
 import { PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from '../models';
 import { getMinLength, getPossibleLengths } from './length-utils';
@@ -22,8 +22,8 @@ export function getValidationError(
     nationalDigits,
     callingCode,
     callingCodeState,
-    defaultCountryIndex,
-    countryFilter,
+    defaultRegionIndex,
+    regionFilter,
     numberTypeFilter,
     nationalPrefixPresent,
   } = resolved;
@@ -32,8 +32,8 @@ export function getValidationError(
 
   if (reason === 'INVALID_COUNTRY_CODE') return { kind: 'INVALID_COUNTRY_CODE' };
 
-  const countryIndex: number = resolvePrimaryCountryIndex(callingCodeState, defaultCountryIndex);
-  const nationalMask: number = getAllowedLengthMask(countryIndex, countryFilter, numberTypeFilter);
+  const regionIndex: number = resolvePrimaryRegionIndex(callingCodeState, defaultRegionIndex);
+  const nationalMask: number = getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter);
 
   if (reason === 'TOO_SHORT') return { kind: 'TOO_SHORT', minLength: getMinLength(nationalMask) };
   if (reason === 'TOO_LONG') return { kind: 'TOO_LONG', maxLength: getMaxLength(nationalMask) };
@@ -42,21 +42,21 @@ export function getValidationError(
   if (!valid) return { kind: 'PATTERN_MISMATCH' };
 
   if (!nationalPrefixPresent) {
-    return detectNationalPrefixMissing(countryIndex, nationalDigits);
+    return detectNationalPrefixMissing(regionIndex, nationalDigits);
   }
 
   return null;
 }
 
 /** Returns `NATIONAL_PREFIX_MISSING` when the matching format requires the national prefix and the typed digits omit it; otherwise `null`. */
-function detectNationalPrefixMissing(countryIndex: number, nationalDigits: string): ValidationError | null {
+function detectNationalPrefixMissing(regionIndex: number, nationalDigits: string): ValidationError | null {
   const resourceProvider = getResourceProvider();
-  if (countryIndex < 0) return null;
+  if (regionIndex < 0) return null;
 
-  const nationalPrefix: string | undefined = getRegionNationalPrefix(resourceProvider.engine, countryIndex);
+  const nationalPrefix: string | undefined = getRegionNationalPrefix(resourceProvider.engine, regionIndex);
   if (!nationalPrefix) return null;
 
-  const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
+  const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(regionIndex);
   if (callingCodeIndex === -1) return null;
 
   const formatPosition: number = selectNationalFormatIndex(callingCodeIndex, nationalDigits, false);

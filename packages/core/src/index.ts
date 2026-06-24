@@ -11,14 +11,14 @@ export type { InputController, InputState } from './modules/input-controller/mod
 export { createNationalInputController } from './modules/input-controller/national-input-controller';
 export type { NationalInputControllerConfig } from './modules/input-controller/national-input-controller';
 
-export { getCallingCodeForCountry } from './modules/calling-code-for-country';
-export { countrySupportsNumberTypes } from './modules/country-number-types';
+export { getCallingCodeForRegion } from './modules/calling-code-for-region';
 export { getPlaceholders, isNationalPrefixOptional } from './modules/placeholders';
 export type { Placeholders } from './modules/placeholders';
+export { regionSupportsNumberTypes } from './modules/region-number-types';
 
 export { TelixonNotReadyError } from './errors';
 export { isEngineReady } from './resource-provider';
 
-export { REGION_IDS } from './engine';
-export type { NumberType, RegionId } from './engine';
+export { REGION_CODES } from './engine';
+export type { NumberType, RegionCode } from './engine';
 export { NUMBER_TYPES } from './number-types';

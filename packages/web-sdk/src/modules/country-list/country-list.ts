@@ -1,5 +1,5 @@
-import type { NumberType, RegionId } from '@telixon/core';
-import { countrySupportsNumberTypes } from '@telixon/core';
+import type { NumberType, RegionCode } from '@telixon/core';
+import { regionSupportsNumberTypes } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import type {
   CountryDataFactory,
@@ -31,10 +31,10 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
   const dataFactory: CountryDataFactory<T> | undefined = options.dataFactory;
   const searchFn: CountrySearchFn<T> = options.searchFn ?? defaultSearch;
   const sortConfig: CountryListSort<T> | undefined = options.sort;
-  const prioritize: readonly RegionId[] = options.prioritize ?? [];
+  const prioritize: readonly RegionCode[] = options.prioritize ?? [];
 
   let locale: string = options.locale ?? DEFAULT_LOCALE;
-  let countryFilter: readonly RegionId[] | null = options.countryFilter ?? null;
+  let countryFilter: readonly RegionCode[] | null = options.countryFilter ?? null;
   let numberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
   let searchQuery: string = options.searchQuery ?? '';
 
@@ -56,7 +56,7 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
       filtered = [];
       for (const option of baseSet) {
         if (hasCountryFilter && !countryFilter!.includes(option.country)) continue;
-        if (hasNumberTypeFilter && !countrySupportsNumberTypes(option.country, numberTypeFilter!)) continue;
+        if (hasNumberTypeFilter && !regionSupportsNumberTypes(option.country, numberTypeFilter!)) continue;
         if (hasQuery && !searchFn(searchQuery, option)) continue;
         filtered.push(option);
       }
@@ -65,8 +65,8 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
     filtered.sort(resolveCountryListComparator(sortConfig));
 
     if (prioritize.length > 0) {
-      const prioritizeSet: Set<RegionId> = new Set(prioritize);
-      const byCountry: Map<RegionId, CountryOption<T>> = new Map();
+      const prioritizeSet: Set<RegionCode> = new Set(prioritize);
+      const byCountry: Map<RegionCode, CountryOption<T>> = new Map();
       for (const option of filtered) byCountry.set(option.country, option);
 
       const prioritized: CountryOption<T>[] = [];
@@ -136,7 +136,7 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
       emit();
     },
 
-    setCountryFilter(value: readonly RegionId[] | null): void {
+    setCountryFilter(value: readonly RegionCode[] | null): void {
       if (readonlyArraysEqual(value, countryFilter)) return;
       countryFilter = value;
       emit();

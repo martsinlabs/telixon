@@ -1,23 +1,23 @@
-import { NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionCode } from '@telixon/core/engine';
 import { PhoneNumber, PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from './models';
 import { formatE164 } from './query/format-e164';
 import { formatInternational } from './query/format-international';
 import { formatNational } from './query/format-national';
 import { formatRfc3966 } from './query/format-rfc3966';
 import { getCallingCode } from './query/get-calling-code';
-import { getCountry } from './query/get-country';
 import { getNationalNumber } from './query/get-national-number';
 import { getNumberType } from './query/get-number-type';
+import { getRegion } from './query/get-region';
 import { getValidationError } from './query/get-validation-error';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
-import { isValidForCountry } from './query/is-valid-for-country';
+import { isValidForRegion } from './query/is-valid-for-region';
 
 class PhoneNumberView implements PhoneNumber {
   private cachedNationalNumber: string | undefined = undefined;
 
   private cachedCallingCode: string | null | undefined = undefined;
 
-  private cachedCountry: RegionId | null | undefined = undefined;
+  private cachedRegion: RegionCode | null | undefined = undefined;
 
   private cachedE164: string | null | undefined = undefined;
 
@@ -46,9 +46,9 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedIsValid;
   }
 
-  // libphonenumber isValidNumberForRegion: valid for one specific country's patterns.
-  isValidForCountry(country: RegionId): boolean {
-    return isValidForCountry(this.resolved, country);
+  // libphonenumber isValidNumberForRegion: valid for one specific region's patterns.
+  isValidForRegion(region: RegionCode): boolean {
+    return isValidForRegion(this.resolved, region);
   }
 
   isPossible(): boolean {
@@ -97,12 +97,12 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedCallingCode;
   }
 
-  getCountry(): RegionId | null {
-    if (this.cachedCountry === undefined) {
-      this.cachedCountry = getCountry(this.resolved);
+  getRegion(): RegionCode | null {
+    if (this.cachedRegion === undefined) {
+      this.cachedRegion = getRegion(this.resolved);
     }
 
-    return this.cachedCountry;
+    return this.cachedRegion;
   }
 
   formatE164(): string | null {

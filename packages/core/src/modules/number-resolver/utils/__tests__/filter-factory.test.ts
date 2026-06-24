@@ -1,13 +1,13 @@
-import { MetadataNumberType, RegionId } from '@telixon/core/engine';
+import { MetadataNumberType, RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
-import { createCountryFilter, createNumberTypeFilter } from '../filter-factory';
+import { createNumberTypeFilter, createRegionFilter } from '../filter-factory';
 
 function metadataTypeIndex(type: MetadataNumberType): number {
   return getResourceProvider().numberTypeNames.indexOf(type);
 }
 
-function countryIndex(id: RegionId): number {
+function regionIndex(id: RegionCode): number {
   return getResourceProvider().regionKeyToIndex[id] ?? -1;
 }
 
@@ -21,35 +21,35 @@ function countBits(filter: Uint8Array): number {
   return count;
 }
 
-describe('createCountryFilter', () => {
-  it('sets bits for each valid country id', () => {
-    const filter = createCountryFilter(['US', 'CA']);
+describe('createRegionFilter', () => {
+  it('sets bits for each valid region id', () => {
+    const filter = createRegionFilter(['US', 'CA']);
 
-    expect(filter[countryIndex('US')]).toBe(1);
-    expect(filter[countryIndex('CA')]).toBe(1);
+    expect(filter[regionIndex('US')]).toBe(1);
+    expect(filter[regionIndex('CA')]).toBe(1);
     expect(countBits(filter)).toBe(2);
   });
 
   it('returns an all-zero filter for an empty list', () => {
-    const filter = createCountryFilter([]);
+    const filter = createRegionFilter([]);
 
     expect(countBits(filter)).toBe(0);
   });
 
-  it('does not set a bit for an unknown country id', () => {
-    const filter = createCountryFilter(['US']);
+  it('does not set a bit for an unknown region id', () => {
+    const filter = createRegionFilter(['US']);
     const beforeCount = countBits(filter);
 
     // @ts-expect-error 'ZZ' is not a CLDR region: runtime safeguard test
-    const filterWithUnknown = createCountryFilter(['US', 'ZZ']);
+    const filterWithUnknown = createRegionFilter(['US', 'ZZ']);
 
     expect(countBits(filterWithUnknown)).toBe(beforeCount);
   });
 
   it('handles duplicate ids idempotently', () => {
-    const filter = createCountryFilter(['US', 'US', 'US']);
+    const filter = createRegionFilter(['US', 'US', 'US']);
 
-    expect(filter[countryIndex('US')]).toBe(1);
+    expect(filter[regionIndex('US')]).toBe(1);
     expect(countBits(filter)).toBe(1);
   });
 });

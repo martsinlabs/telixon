@@ -1,7 +1,7 @@
 import { getProfileFormatMask, selectPartialFormat } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
-import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
+import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { NumberFormatRef, NumberTypeProfileRef } from './models';
 
 // @internal Profile's format for `nationalDigits`: first length-feasible format whose leadingDigits match, else the first.
@@ -11,7 +11,7 @@ export function resolveFormatFromProfile(
 ): NumberFormatRef | null {
   const resourceProvider: ResourceProvider = getResourceProvider();
 
-  const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(profileRef.regionIndex);
+  const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(profileRef.regionIndex);
   const formatMask: number = getProfileFormatMask(resourceProvider.engine, profileRef.numberTypeProfileId);
 
   // Position within the calling code's format list (getMetadataFormatIndex maps it to the global index).

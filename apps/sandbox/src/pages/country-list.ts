@@ -1,4 +1,4 @@
-import type { NumberType, RegionId } from '@telixon/core';
+import type { NumberType, RegionCode } from '@telixon/core';
 import { createCountryList, type CountryList, type CountryListSort } from '@telixon/web-sdk';
 import '../style.css';
 
@@ -18,7 +18,7 @@ import {
 import { render } from '../country-list/view';
 import { bootstrapResources } from '../shared/bootstrap';
 import { createChipFilter } from '../shared/chip-filter';
-import { isCountryId } from '../shared/guards';
+import { isRegionId } from '../shared/guards';
 import { renderNav } from '../shared/nav';
 
 renderNav('country-list');
@@ -89,10 +89,10 @@ function resolveNumberTypeFilter(): readonly NumberType[] | null {
   return selected.length > 0 ? selected : null;
 }
 
-function parseCountries(value: string): RegionId[] | null {
-  const items: RegionId[] = value
+function parseCountries(value: string): RegionCode[] | null {
+  const items: RegionCode[] = value
     .split(',')
     .map((s) => s.trim().toUpperCase())
-    .filter(isCountryId);
+    .filter(isRegionId);
   return items.length > 0 ? items : null;
 }

@@ -1,4 +1,4 @@
-import { RegionId } from '@telixon/core';
+import { RegionCode } from '@telixon/core';
 import { MethodResults, Oracle } from '../oracle';
 import { GOOGLE_REJECTS_AT_PARSE } from './compare';
 import { COMPARED_METHODS, MethodName } from './models';
@@ -11,7 +11,7 @@ import { evaluateWithTelixon } from './subject';
 const NON_GEO_CODES: readonly string[] = ['800', '808', '870', '878', '881', '882', '883', '888', '979', '991'];
 
 export function isNonGeographic(input: string, expected: MethodResults | null): boolean {
-  if (expected && expected.getCountry === '001') return true;
+  if (expected && expected.getRegion === '001') return true;
   if (input.startsWith('+')) {
     const digits = input.slice(1);
     return NON_GEO_CODES.some((code) => digits.startsWith(code));
@@ -35,14 +35,14 @@ function render(value: string | boolean | null): string {
 export function compareAgainstOracle(
   oracle: Oracle,
   input: string,
-  country: RegionId | undefined,
+  region: RegionCode | undefined,
 ): Divergence[] | null {
-  const expected = oracle.evaluate(input, country);
+  const expected = oracle.evaluate(input, region);
   if (isNonGeographic(input, expected)) return null;
 
   let actual: MethodResults;
   try {
-    actual = evaluateWithTelixon(input, country);
+    actual = evaluateWithTelixon(input, region);
   } catch (error) {
     return [
       { method: 'threw', expected: '(no throw)', actual: error instanceof Error ? error.message : String(error) },
@@ -68,14 +68,14 @@ export function compareAgainstOracle(
 // A disagreement class deduplicated across inputs: how many inputs hit it, plus a reproducing example.
 export interface DivergencePattern extends Divergence {
   readonly exampleInput: string;
-  readonly exampleCountry: RegionId | null;
+  readonly exampleRegion: RegionCode | null;
   count: number;
 }
 
 export interface DivergenceCollector {
   readonly total: number;
   readonly skipped: number;
-  add(input: string, country: RegionId | undefined): void;
+  add(input: string, region: RegionCode | undefined): void;
   // Distinct patterns, most frequent first.
   patterns(): DivergencePattern[];
 }
@@ -94,8 +94,8 @@ export function createDivergenceCollector(oracle: Oracle): DivergenceCollector {
     get skipped() {
       return skipped;
     },
-    add(input, country) {
-      const divergences = compareAgainstOracle(oracle, input, country);
+    add(input, region) {
+      const divergences = compareAgainstOracle(oracle, input, region);
       if (divergences === null) {
         skipped += 1;
         return;
@@ -108,7 +108,7 @@ export function createDivergenceCollector(oracle: Oracle): DivergenceCollector {
           existing.count += 1;
           continue;
         }
-        patterns.set(key, { ...divergence, exampleInput: input, exampleCountry: country ?? null, count: 1 });
+        patterns.set(key, { ...divergence, exampleInput: input, exampleRegion: region ?? null, count: 1 });
       }
     },
     patterns() {

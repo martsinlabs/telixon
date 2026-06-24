@@ -1,4 +1,4 @@
-import { getCallingCodeForCountry, REGION_IDS } from '@telixon/core';
+import { getCallingCodeForRegion, REGION_CODES } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
 import { buildCorpus, loadOracle } from '../oracle';
 import { exportArtifacts } from './artifacts';
@@ -71,13 +71,13 @@ describe('possibility prefix sweep vs Google', () => {
   });
 });
 
-describe('getCallingCodeForCountry vs Google getCountryCodeForRegion', () => {
+describe('getCallingCodeForRegion vs Google getCountryCodeForRegion', () => {
   it('matches Google for every supported region', () => {
-    const mismatches = REGION_IDS.filter(
-      (region) => getCallingCodeForCountry(region) !== oracle.countryCallingCode(region),
+    const mismatches = REGION_CODES.filter(
+      (region) => getCallingCodeForRegion(region) !== oracle.countryCallingCode(region),
     ).map((region) => ({
       region,
-      telixon: getCallingCodeForCountry(region),
+      telixon: getCallingCodeForRegion(region),
       google: oracle.countryCallingCode(region),
     }));
 

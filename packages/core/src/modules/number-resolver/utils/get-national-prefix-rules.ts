@@ -9,22 +9,22 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 // National-prefix rules per region, decoded lazily and cached (consulted per parse and per keystroke).
 const cache: (NationalPrefixRules | undefined)[] = [];
 
-export function getNationalPrefixRules(countryIndex: number): NationalPrefixRules | undefined {
-  if (countryIndex < 0) return undefined;
+export function getNationalPrefixRules(regionIndex: number): NationalPrefixRules | undefined {
+  if (regionIndex < 0) return undefined;
 
-  let rules: NationalPrefixRules | undefined = cache[countryIndex];
+  let rules: NationalPrefixRules | undefined = cache[regionIndex];
   if (rules === undefined) {
     const tables = getResourceProvider().engine;
-    const nationalPrefix: string | undefined = getRegionNationalPrefix(tables, countryIndex);
-    const prefixForParsing: string | undefined = getRegionPrefixForParsing(tables, countryIndex);
-    const transformRule: string | undefined = getRegionTransformRule(tables, countryIndex);
+    const nationalPrefix: string | undefined = getRegionNationalPrefix(tables, regionIndex);
+    const prefixForParsing: string | undefined = getRegionPrefixForParsing(tables, regionIndex);
+    const transformRule: string | undefined = getRegionTransformRule(tables, regionIndex);
 
     rules = {};
     if (nationalPrefix !== undefined) rules.nationalPrefix = nationalPrefix;
     if (prefixForParsing !== undefined) rules.nationalPrefixForParsing = prefixForParsing;
     if (transformRule !== undefined) rules.nationalPrefixTransformRule = transformRule;
 
-    cache[countryIndex] = rules;
+    cache[regionIndex] = rules;
   }
   return rules;
 }

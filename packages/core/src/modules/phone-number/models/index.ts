@@ -1,4 +1,4 @@
-import { NumberType, RegionId } from '@telixon/core/engine';
+import { NumberType, RegionCode } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 
 export type PhoneNumberValidationResult =
@@ -24,8 +24,8 @@ export interface ResolvedPhoneNumber {
   readonly callingCode: string;
   readonly callingCodeState: number;
   readonly endState: number;
-  readonly defaultCountryIndex: number;
-  readonly countryFilter: BinaryFilter | null;
+  readonly defaultRegionIndex: number;
+  readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
   readonly nationalPrefixPresent: boolean;
   readonly strict: boolean;
@@ -33,14 +33,14 @@ export interface ResolvedPhoneNumber {
 
 export interface PhoneNumber {
   isValid(): boolean;
-  isValidForCountry(country: RegionId): boolean;
+  isValidForRegion(region: RegionCode): boolean;
   isPossible(): boolean;
   isPossibleWithReason(): PhoneNumberValidationResult;
   getValidationError(): ValidationError | null;
   getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
   getNationalNumber(): string;
   getCallingCode(): string | null;
-  getCountry(): RegionId | null;
+  getRegion(): RegionCode | null;
   formatE164(): string | null;
   formatNational(): string | null;
   formatInternational(): string | null;

@@ -1,21 +1,21 @@
-import { type NumberType, type RegionId } from '@telixon/core';
+import { type NumberType, type RegionCode } from '@telixon/core';
 import '../style.css';
 
 import { attach, getCurrent, mount, type Mode } from '../phone-input/controller';
 import {
-  applyCountryBtn,
   applyFiltersBtn,
   applyInitialValueBtn,
+  applyRegionBtn,
   clearFiltersBtn,
   clearHistoryBtn,
   clearValueBtn,
-  countryEl,
-  countryFilterEl,
   initialValueEl,
   modeEl,
   numberTypeFilterEl,
   reattachBtn,
   redoBtn,
+  regionEl,
+  regionFilterEl,
   setValueBtn,
   stateEl,
   strictEl,
@@ -25,7 +25,7 @@ import {
 import { record, sync } from '../phone-input/view';
 import { bootstrapResources } from '../shared/bootstrap';
 import { createChipFilter } from '../shared/chip-filter';
-import { isCountryId } from '../shared/guards';
+import { isRegionId } from '../shared/guards';
 import { renderNav } from '../shared/nav';
 
 renderNav('phone-input');
@@ -56,16 +56,16 @@ strictEl.addEventListener('change', () => attach(resolveMode()));
 
 applyInitialValueBtn.addEventListener('click', () => attach(resolveMode(), initialValueEl.value));
 
-applyCountryBtn.addEventListener('click', () => {
-  const raw = countryEl.value.toUpperCase();
-  if (!isCountryId(raw)) {
-    record(`setCountry skipped: invalid country "${raw}"`);
+applyRegionBtn.addEventListener('click', () => {
+  const raw = regionEl.value.toUpperCase();
+  if (!isRegionId(raw)) {
+    record(`setRegion skipped: invalid region "${raw}"`);
     return;
   }
   const ctrl = getCurrent();
-  ctrl?.phone.setCountry(raw);
+  ctrl?.phone.setRegion(raw);
   sync(ctrl);
-  record(`setCountry("${raw}")`);
+  record(`setRegion("${raw}")`);
 });
 
 setValueBtn.addEventListener('click', () => {
@@ -107,21 +107,21 @@ applyFiltersBtn.addEventListener('click', () => {
   const ctrl = getCurrent();
   if (!ctrl) return;
 
-  const countries = parseCountryFilter(countryFilterEl.value);
+  const countries = parseRegionFilter(regionFilterEl.value);
   const selected = numberTypeFilter.getValues();
   const numberTypes = selected.length > 0 ? selected : null;
 
-  ctrl.phone.setCountryFilter(countries);
+  ctrl.phone.setRegionFilter(countries);
   ctrl.phone.setNumberTypeFilter(numberTypes);
   sync(ctrl);
-  record(`setCountryFilter(${JSON.stringify(countries)}) · setNumberTypeFilter(${JSON.stringify(numberTypes)})`);
+  record(`setRegionFilter(${JSON.stringify(countries)}) · setNumberTypeFilter(${JSON.stringify(numberTypes)})`);
 });
 
 clearFiltersBtn.addEventListener('click', () => {
   const ctrl = getCurrent();
-  countryFilterEl.value = '';
+  regionFilterEl.value = '';
   numberTypeFilter.setValues([]);
-  ctrl?.phone.setCountryFilter(null);
+  ctrl?.phone.setRegionFilter(null);
   ctrl?.phone.setNumberTypeFilter(null);
   sync(ctrl);
   record('filters cleared');
@@ -151,10 +151,10 @@ function resolveMode(): Mode {
   return modeEl.value === 'international' ? 'international' : 'national';
 }
 
-function parseCountryFilter(value: string): RegionId[] | null {
-  const items: RegionId[] = value
+function parseRegionFilter(value: string): RegionCode[] | null {
+  const items: RegionCode[] = value
     .split(',')
     .map((s) => s.trim().toUpperCase())
-    .filter(isCountryId);
+    .filter(isRegionId);
   return items.length > 0 ? items : null;
 }

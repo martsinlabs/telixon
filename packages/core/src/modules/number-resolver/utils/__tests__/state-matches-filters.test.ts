@@ -33,14 +33,14 @@ describe('stateMatchesFilters', () => {
   });
 
   describe('calling-code state', () => {
-    it('returns true with a match-all country filter', () => {
+    it('returns true with a match-all region filter', () => {
       const state = walkTo('1').callingCodeState;
 
       expect(isInCallingCode(getResourceProvider().engine, state)).toBe(true);
       expect(stateMatchesFilters(state, matchAllCountries(), null)).toBe(true);
     });
 
-    it('returns false with a match-none country filter', () => {
+    it('returns false with a match-none region filter', () => {
       const state = walkTo('1').callingCodeState;
 
       expect(stateMatchesFilters(state, matchNoCountries(), null)).toBe(false);
@@ -60,7 +60,7 @@ describe('stateMatchesFilters', () => {
       expect(stateMatchesFilters(resolver.state, matchAllCountries(), matchAllNumberTypes())).toBe(true);
     });
 
-    it('returns false when the country filter allows no country', () => {
+    it('returns false when the region filter allows no region', () => {
       const resolver = walkTo('1416');
 
       expect(stateMatchesFilters(resolver.state, matchNoCountries(), null)).toBe(false);

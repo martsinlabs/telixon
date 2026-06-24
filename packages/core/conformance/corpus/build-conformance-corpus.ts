@@ -6,7 +6,7 @@ import { CorpusCase, RenderedExample } from './models';
 // One parse condition per case (same input + different region = different case); example cases also keep their region attribution, since shared-calling-code regions can carry byte-identical examples.
 function caseIdentity(corpusCase: CorpusCase): string {
   const regionScope: string = corpusCase.kind === 'example' ? corpusCase.regionCode : '';
-  return `${regionScope}|${corpusCase.defaultCountry ?? ''}|${corpusCase.input}`;
+  return `${regionScope}|${corpusCase.defaultRegion ?? ''}|${corpusCase.input}`;
 }
 
 // Examples first, so a derived case that collides with a canonical one is dropped, not the reverse.

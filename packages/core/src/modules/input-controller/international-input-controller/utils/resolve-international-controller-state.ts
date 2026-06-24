@@ -3,14 +3,14 @@ import {
   FormattingDirection,
   getMetadataFormatIndex,
   MASK_VARIANT,
-  RegionId,
+  RegionCode,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getCallingCodeIndexByCountryIndex } from '@telixon/core/utils/get-calling-code-index-by-country-index';
+import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
 import { buildFormattingContext } from '../../../number-resolver/utils/build-formatting-context';
 import { hasMaskVariant, pickFormatMask } from '../../../number-resolver/utils/format-masks';
-import { resolvePrimaryCountryIndex } from '../../../number-resolver/utils/resolve-primary-country-index';
+import { resolvePrimaryRegionIndex } from '../../../number-resolver/utils/resolve-primary-region-index';
 import { resolveRegionCodeOrFallback } from '../../../number-resolver/utils/resolve-region-code-or-fallback';
 import { selectInternationalFormatIndex } from '../../../number-resolver/utils/select-international-format';
 import { CaretIndex, InputControllerState } from '../../models';
@@ -34,11 +34,11 @@ export function resolveInternationalControllerState(
   let formattedNationalNumber: string = snapshot.nationalDigits;
   let formattedNationalCaretIndex: number = caretInCallingCode ? 0 : nationalCaretIndex;
   let formatIndex: number | null = null;
-  let country: RegionId | null = null;
+  let region: RegionCode | null = null;
 
   if (profile) {
-    const countryIndex: number = profile.regionIndex;
-    const callingCodeIndex: number = getCallingCodeIndexByCountryIndex(countryIndex);
+    const regionIndex: number = profile.regionIndex;
+    const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(regionIndex);
 
     // Complete pattern wins (= formatInternational), else progressive partial grouping per keystroke.
     const selectedIndex: number = selectInternationalFormatIndex(callingCodeIndex, snapshot.nationalDigits, true);
@@ -72,20 +72,20 @@ export function resolveInternationalControllerState(
     }
 
     if (snapshot.strict) {
-      // Strict never leaves the preferred country: report it, not the digit-resolved region (NANP shares a calling code).
-      country = resourceProvider.regionIds[countryIndex] ?? null;
+      // Strict never leaves the preferred region: report it, not the digit-resolved region (NANP shares a calling code).
+      region = resourceProvider.regionIds[regionIndex] ?? null;
     } else {
-      country = resolveRegionCodeOrFallback(
+      region = resolveRegionCodeOrFallback(
         snapshot.callingCodeState,
         snapshot.endState,
         snapshot.nationalDigits,
-        countryIndex,
+        regionIndex,
       );
     }
   } else if (snapshot.callingCodeState !== -1) {
-    const primaryCountryIndex: number = resolvePrimaryCountryIndex(snapshot.callingCodeState, -1);
+    const primaryRegionIndex: number = resolvePrimaryRegionIndex(snapshot.callingCodeState, -1);
 
-    country = resourceProvider.regionIds[primaryCountryIndex] ?? null;
+    region = resourceProvider.regionIds[primaryRegionIndex] ?? null;
   }
 
   let value: string;
@@ -108,7 +108,7 @@ export function resolveInternationalControllerState(
 
   return {
     value,
-    country,
+    region,
     selectionStart: finalCaret,
     selectionEnd: finalCaret,
     snapshot,

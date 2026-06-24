@@ -7,7 +7,7 @@ export interface NumberResolverSnapshot {
   readonly nationalDigits: string;
   readonly callingCodeCompleted: boolean;
   readonly callingCodeState: number;
-  readonly countryFilter: BinaryFilter | null;
+  readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
   readonly strict: boolean;
 }

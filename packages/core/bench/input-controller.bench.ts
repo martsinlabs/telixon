@@ -44,7 +44,7 @@ describe('input-controller: type-through + full PhoneNumber query suite per keys
         consume(phoneNumber.isValid());
         consume(phoneNumber.isPossible());
         consume(phoneNumber.getNumberType());
-        consume(phoneNumber.getCountry());
+        consume(phoneNumber.getRegion());
         consume(phoneNumber.getNationalNumber());
         consume(phoneNumber.getCallingCode());
         consume(phoneNumber.formatInternational());

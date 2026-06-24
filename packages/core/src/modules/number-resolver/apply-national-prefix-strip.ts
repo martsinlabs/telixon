@@ -13,9 +13,9 @@ import { isGeneralDescExactMatch } from './utils/resolve-exact-matched-types';
 import { walkEndState } from './utils/walk-end-state';
 
 // libphonenumber parseHelper adopts the stripped number only when its length verdict is IS_POSSIBLE or TOO_LONG; a short/local-only result keeps the prefix.
-function strippedLengthAcceptable(countryIndex: number, length: number): boolean {
-  const nationalMask: number = getAllowedLengthMask(countryIndex, null, null);
-  const localOnlyMask: number = getAllowedLocalOnlyLengthMask(countryIndex, null, null) & ~nationalMask;
+function strippedLengthAcceptable(regionIndex: number, length: number): boolean {
+  const nationalMask: number = getAllowedLengthMask(regionIndex, null, null);
+  const localOnlyMask: number = getAllowedLocalOnlyLengthMask(regionIndex, null, null) & ~nationalMask;
   if (containsLength(localOnlyMask, length)) return false;
   if (nationalMask === 0) return false;
   return containsLength(nationalMask, length) || length > getMaxLength(nationalMask);
@@ -26,26 +26,26 @@ export function stripNationalPrefix(
   nationalDigits: string,
   originalEndState: number,
   callingCodeState: number,
-  countryIndex: number,
+  regionIndex: number,
 ): string | null {
-  if (countryIndex < 0 || nationalDigits.length === 0) return null;
+  if (regionIndex < 0 || nationalDigits.length === 0) return null;
 
   const { engine } = getResourceProvider();
 
   // Quick reject: the first digit cannot start this territory's nationalPrefixForParsing.
-  const leadMask: number = getStripFirstDigitMask(engine, countryIndex);
+  const leadMask: number = getStripFirstDigitMask(engine, regionIndex);
   if (((leadMask >>> (nationalDigits.charCodeAt(0) - 48)) & 1) === 0) return null;
 
-  const prefixRules: NationalPrefixRules | undefined = getNationalPrefixRules(countryIndex);
+  const prefixRules: NationalPrefixRules | undefined = getNationalPrefixRules(regionIndex);
   if (!prefixRules) return null;
 
   const candidate: string = normalizeNationalNumber(nationalDigits, prefixRules).normalizedDigits;
   if (candidate === nationalDigits) return null;
 
   // Viability rule: keep the original when it matches the general desc entirely and the candidate does not.
-  if (isGeneralDescExactMatch(originalEndState, nationalDigits.length, countryIndex)) {
+  if (isGeneralDescExactMatch(originalEndState, nationalDigits.length, regionIndex)) {
     const candidateEndState: number = walkEndState(engine, callingCodeState, candidate);
-    if (!isGeneralDescExactMatch(candidateEndState, candidate.length, countryIndex)) return null;
+    if (!isGeneralDescExactMatch(candidateEndState, candidate.length, regionIndex)) return null;
   }
 
   return candidate;
@@ -56,15 +56,10 @@ export function applyNationalPrefixStrip(
   nationalDigits: string,
   originalEndState: number,
   callingCodeState: number,
-  countryIndex: number,
+  regionIndex: number,
 ): string | null {
-  const candidate: string | null = stripNationalPrefix(
-    nationalDigits,
-    originalEndState,
-    callingCodeState,
-    countryIndex,
-  );
+  const candidate: string | null = stripNationalPrefix(nationalDigits, originalEndState, callingCodeState, regionIndex);
   if (candidate === null) return null;
-  if (!strippedLengthAcceptable(countryIndex, candidate.length)) return null;
+  if (!strippedLengthAcceptable(regionIndex, candidate.length)) return null;
   return candidate;
 }

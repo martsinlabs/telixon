@@ -1,9 +1,9 @@
 export type PhoneFieldDom = {
   root: HTMLDivElement;
   input: HTMLInputElement;
-  countryBtn: HTMLButtonElement | null;
-  countryFlag: HTMLSpanElement | null;
-  countryDial: HTMLSpanElement | null;
+  regionBtn: HTMLButtonElement | null;
+  regionFlag: HTMLSpanElement | null;
+  regionDial: HTMLSpanElement | null;
   dropdown: HTMLDivElement | null;
   search: HTMLInputElement | null;
   options: HTMLUListElement | null;
@@ -13,33 +13,33 @@ export function buildPhoneFieldDom(opts: { withSelector: boolean }): PhoneFieldD
   const root: HTMLDivElement = document.createElement('div');
   root.className = 'phone-field';
 
-  let countryBtn: HTMLButtonElement | null = null;
-  let countryFlag: HTMLSpanElement | null = null;
-  let countryDial: HTMLSpanElement | null = null;
+  let regionBtn: HTMLButtonElement | null = null;
+  let regionFlag: HTMLSpanElement | null = null;
+  let regionDial: HTMLSpanElement | null = null;
   let dropdown: HTMLDivElement | null = null;
   let search: HTMLInputElement | null = null;
   let options: HTMLUListElement | null = null;
 
   if (opts.withSelector) {
-    countryBtn = document.createElement('button');
-    countryBtn.type = 'button';
-    countryBtn.className = 'phone-field-country';
-    countryBtn.setAttribute('aria-haspopup', 'listbox');
-    countryBtn.setAttribute('aria-expanded', 'false');
+    regionBtn = document.createElement('button');
+    regionBtn.type = 'button';
+    regionBtn.className = 'phone-field-region';
+    regionBtn.setAttribute('aria-haspopup', 'listbox');
+    regionBtn.setAttribute('aria-expanded', 'false');
 
-    countryFlag = document.createElement('span');
-    countryFlag.className = 'phone-field-flag';
+    regionFlag = document.createElement('span');
+    regionFlag.className = 'phone-field-flag';
 
-    countryDial = document.createElement('span');
-    countryDial.className = 'phone-field-dial';
+    regionDial = document.createElement('span');
+    regionDial.className = 'phone-field-dial';
 
     const chevron: HTMLSpanElement = document.createElement('span');
     chevron.className = 'phone-field-chevron';
     chevron.setAttribute('aria-hidden', 'true');
     chevron.textContent = '▾';
 
-    countryBtn.append(countryFlag, countryDial, chevron);
-    root.appendChild(countryBtn);
+    regionBtn.append(regionFlag, regionDial, chevron);
+    root.appendChild(regionBtn);
   }
 
   const input: HTMLInputElement = document.createElement('input');
@@ -61,7 +61,7 @@ export function buildPhoneFieldDom(opts: { withSelector: boolean }): PhoneFieldD
     search = document.createElement('input');
     search.className = 'control';
     search.type = 'text';
-    search.placeholder = 'Search country or code…';
+    search.placeholder = 'Search region or code…';
     search.autocomplete = 'off';
     search.spellcheck = false;
 
@@ -75,5 +75,5 @@ export function buildPhoneFieldDom(opts: { withSelector: boolean }): PhoneFieldD
     root.appendChild(dropdown);
   }
 
-  return { root, input, countryBtn, countryFlag, countryDial, dropdown, search, options };
+  return { root, input, regionBtn, regionFlag, regionDial, dropdown, search, options };
 }

@@ -1,12 +1,12 @@
-import { RegionId } from '@telixon/core/engine';
+import { RegionCode } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
 import { InputStateHistory } from '../input-state-history';
 import { InputControllerState } from '../models';
 
-function makeState(value: string, country: RegionId | null = null, selectionStart = 0): InputControllerState {
+function makeState(value: string, region: RegionCode | null = null, selectionStart = 0): InputControllerState {
   return {
     value,
-    country,
+    region,
     selectionStart,
     selectionEnd: selectionStart,
     snapshot: {
@@ -15,7 +15,7 @@ function makeState(value: string, country: RegionId | null = null, selectionStar
       nationalDigits: '',
       callingCodeCompleted: false,
       callingCodeState: -1,
-      countryFilter: null,
+      regionFilter: null,
       numberTypeFilter: null,
       strict: false,
     },
@@ -26,7 +26,7 @@ function makeState(value: string, country: RegionId | null = null, selectionStar
 }
 
 describe('InputStateHistory.push: de-duplication', () => {
-  it('replaces the current entry in place when value and country are unchanged', () => {
+  it('replaces the current entry in place when value and region are unchanged', () => {
     const history = new InputStateHistory(makeState('123'));
     history.push(makeState('123', null, 3));
 
@@ -42,11 +42,11 @@ describe('InputStateHistory.push: de-duplication', () => {
     expect(history.canUndo).toBe(true);
   });
 
-  it('treats a country change as a distinct entry even when value is identical', () => {
+  it('treats a region change as a distinct entry even when value is identical', () => {
     const history = new InputStateHistory(makeState('123', 'US'));
     history.push(makeState('123', 'CA'));
 
-    expect(history.current.country).toBe('CA');
+    expect(history.current.region).toBe('CA');
     expect(history.canUndo).toBe(true);
   });
 });

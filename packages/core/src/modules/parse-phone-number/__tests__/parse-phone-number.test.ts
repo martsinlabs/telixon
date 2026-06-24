@@ -15,7 +15,7 @@ describe('parsePhoneNumber: international', () => {
     const phone = parsePhoneNumber('+1 ' + US_MOBILE_NATIONAL);
 
     expect(phone.isValid()).toBe(true);
-    expect(phone.getCountry()).toBe('US');
+    expect(phone.getRegion()).toBe('US');
     expect(phone.getCallingCode()).toBe('1');
     expect(phone.getNationalNumber()).toBe(US_MOBILE);
     expect(phone.formatE164()).toBe(US_MOBILE_E164);
@@ -24,14 +24,14 @@ describe('parsePhoneNumber: international', () => {
   it('infers the calling code when the + is missing', () => {
     const phone = parsePhoneNumber(US_MOBILE_INTL);
 
-    expect(phone.getCountry()).toBe('US');
+    expect(phone.getRegion()).toBe('US');
     expect(phone.formatE164()).toBe(US_MOBILE_E164);
   });
 
-  it('takes the calling code from the + prefix over defaultCountry', () => {
-    const phone = parsePhoneNumber(GB_FIXED_E164, { defaultCountry: 'US' });
+  it('takes the calling code from the + prefix over defaultRegion', () => {
+    const phone = parsePhoneNumber(GB_FIXED_E164, { defaultRegion: 'US' });
 
-    expect(phone.getCountry()).toBe('GB');
+    expect(phone.getRegion()).toBe('GB');
     expect(phone.formatE164()).toBe(GB_FIXED_E164);
   });
 
@@ -45,18 +45,18 @@ describe('parsePhoneNumber: international', () => {
 });
 
 describe('parsePhoneNumber: national', () => {
-  it('reads a national number for the default country', () => {
-    const phone = parsePhoneNumber(US_MOBILE_NATIONAL, { defaultCountry: 'US' });
+  it('reads a national number for the default region', () => {
+    const phone = parsePhoneNumber(US_MOBILE_NATIONAL, { defaultRegion: 'US' });
 
-    expect(phone.getCountry()).toBe('US');
+    expect(phone.getRegion()).toBe('US');
     expect(phone.getNationalNumber()).toBe(US_MOBILE);
     expect(phone.formatE164()).toBe(US_MOBILE_E164);
   });
 
-  it('strips the national prefix using the default country', () => {
-    const phone = parsePhoneNumber(GB_FIXED_NATIONAL, { defaultCountry: 'GB' });
+  it('strips the national prefix using the default region', () => {
+    const phone = parsePhoneNumber(GB_FIXED_NATIONAL, { defaultRegion: 'GB' });
 
-    expect(phone.getCountry()).toBe('GB');
+    expect(phone.getRegion()).toBe('GB');
     expect(phone.getNationalNumber()).toBe(GB_FIXED);
     expect(phone.formatE164()).toBe(GB_FIXED_E164);
   });
@@ -67,7 +67,7 @@ describe('parsePhoneNumber: unresolvable input', () => {
     const phone = parsePhoneNumber('');
 
     expect(phone.isPossible()).toBe(false);
-    expect(phone.getCountry()).toBeNull();
+    expect(phone.getRegion()).toBeNull();
     expect(phone.getNationalNumber()).toBe('');
     expect(phone.formatE164()).toBeNull();
   });

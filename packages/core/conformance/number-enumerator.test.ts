@@ -1,12 +1,12 @@
-import { RegionId } from '@telixon/core';
+import { RegionCode } from '@telixon/core';
 import { describe, expect, it } from 'vitest';
 import { createNumberEnumerator, NumberEnumerator } from './number-enumerator';
 
 const CALLING_CODES = ['1', '44', '380'];
-const REGIONS = ['US', 'GB', 'UA'] as RegionId[];
+const REGIONS = ['US', 'GB', 'UA'] as RegionCode[];
 const key = (enumerator: NumberEnumerator, index: number): string => {
   const number = enumerator.at(index);
-  return `${number.input} ${number.country ?? ''}`;
+  return `${number.input} ${number.region ?? ''}`;
 };
 
 describe('createNumberEnumerator', () => {
@@ -28,11 +28,11 @@ describe('createNumberEnumerator', () => {
     });
     for (let index = 0; index < 2000; index++) {
       const number = enumerator.at(index);
-      if (number.country === undefined) {
+      if (number.region === undefined) {
         expect(number.input).toMatch(/^\+\d+$/);
       } else {
         expect(number.input).toMatch(/^\d+$/);
-        expect(REGIONS).toContain(number.country);
+        expect(REGIONS).toContain(number.region);
       }
     }
   });
@@ -52,7 +52,7 @@ describe('createNumberEnumerator', () => {
   it('yields distinct numbers across the entire guaranteed range', () => {
     const enumerator = createNumberEnumerator({
       callingCodes: ['1', '44'],
-      regions: ['US'] as RegionId[],
+      regions: ['US'] as RegionCode[],
       minLength: 2,
       maxLength: 2,
     });
@@ -64,7 +64,7 @@ describe('createNumberEnumerator', () => {
   it('wraps exactly at the distinct limit (the bound is tight)', () => {
     const enumerator = createNumberEnumerator({
       callingCodes: ['1', '44'],
-      regions: ['US'] as RegionId[],
+      regions: ['US'] as RegionCode[],
       minLength: 2,
       maxLength: 2,
     });

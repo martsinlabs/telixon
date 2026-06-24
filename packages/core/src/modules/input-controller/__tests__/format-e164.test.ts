@@ -11,21 +11,21 @@ const GB_MOBILE_E164 = '+44' + getExampleNumber('GB', 'MOBILE');
 
 describe('PhoneNumber.formatE164: national', () => {
   it('returns null while the number is incomplete', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().formatE164()).toBeNull();
   });
 
   it('returns the canonical E.164 for a valid number', () => {
-    const controller = createNationalInputController({ country: 'US' });
+    const controller = createNationalInputController({ region: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().formatE164()).toBe(US_MOBILE_E164);
   });
 
   it('drops the national prefix before assembling E.164', () => {
-    const controller = createNationalInputController({ country: 'GB' });
+    const controller = createNationalInputController({ region: 'GB' });
     controller.setValue(GB_MOBILE_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().formatE164()).toBe(GB_MOBILE_E164);

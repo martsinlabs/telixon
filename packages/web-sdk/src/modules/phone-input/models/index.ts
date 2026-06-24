@@ -3,14 +3,14 @@ import type {
   NationalInputControllerConfig,
   NumberType,
   PhoneNumber,
-  RegionId,
+  RegionCode,
   ValidationError,
 } from '@telixon/core';
 
 type PhoneInputBaseOptions = {
   input: PhoneInputElement;
   initialValue?: string;
-  countryFilter?: readonly RegionId[] | null;
+  regionFilter?: readonly RegionCode[] | null;
   numberTypeFilter?: readonly NumberType[] | null;
   placeholderNumberType?: NumberType;
 };
@@ -24,31 +24,31 @@ export type PhoneInputElement = HTMLInputElement;
  * Snapshot of the input controller produced after every state change.
  *
  * - `value`: formatted phone string currently in the input.
- * - `country`: ISO region code resolved from the digits, or `null` when unresolved.
+ * - `region`: ISO region code resolved from the digits, or `null` when unresolved.
  * - `selectionStart` / `selectionEnd`: caret range within `value` after the last operation.
- * - `countryFilter` / `numberTypeFilter`: active filter values (`null` = no restriction).
- * - `placeholder`: example for resolved country + display config, or `null` when unresolved.
+ * - `regionFilter` / `numberTypeFilter`: active filter values (`null` = no restriction).
+ * - `placeholder`: example for resolved region + display config, or `null` when unresolved.
  * - `validationError`: structured outcome from `PhoneNumber.getValidationError()`, or `null` when none apply.
  */
 export type PhoneInputState = {
   value: string;
-  country: RegionId | null;
+  region: RegionCode | null;
   selectionStart: number;
   selectionEnd: number;
-  countryFilter: readonly RegionId[] | null;
+  regionFilter: readonly RegionCode[] | null;
   numberTypeFilter: readonly NumberType[] | null;
   placeholder: string | null;
   validationError: ValidationError | null;
 };
 
 /**
- * Options for a national PhoneInput. `country` selects the territory whose national formatting applies.
+ * Options for a national PhoneInput. `region` selects the territory whose national formatting applies.
  */
 export type NationalPhoneInputOptions = { mode: 'national' } & PhoneInputBaseOptions & NationalInputControllerConfig;
 
 /**
  * Options for an international PhoneInput. By default the calling code is part of the input value;
- * set `display.callingCodeInInput: false` (with a `defaultCountry`) to keep it outside the input.
+ * set `display.callingCodeInInput: false` (with a `defaultRegion`) to keep it outside the input.
  */
 export type InternationalPhoneInputOptions = {
   mode: 'international';
@@ -77,8 +77,8 @@ export type PhoneInput = {
   subscribe(listener: PhoneInputListener): () => void;
   /** Replace the current value with the given digits as a single parse-and-format operation. Pushes a new history entry. */
   setValue(value: string): void;
-  /** Switch the active country and re-resolve the current digits under its rules. Pushes a new history entry. */
-  setCountry(country: RegionId): void;
+  /** Switch the active region and re-resolve the current digits under its rules. Pushes a new history entry. */
+  setRegion(region: RegionCode): void;
   /** Read the current state without subscribing. */
   getState(): PhoneInputState;
   /** True when an undo step is available. */
@@ -94,7 +94,7 @@ export type PhoneInput = {
   /** Build a {@link PhoneNumber} from the current digits and resolution. */
   getPhoneNumber(): PhoneNumber;
   /** Restrict resolution to the given regions. `null` removes the restriction. No-op when the value is unchanged. */
-  setCountryFilter(countries: readonly RegionId[] | null): void;
+  setRegionFilter(countries: readonly RegionCode[] | null): void;
   /** Restrict resolution to the given number types. `null` removes the restriction. No-op when the value is unchanged. */
   setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
   /** Detach all DOM listeners and clear subscribers. Idempotent. */

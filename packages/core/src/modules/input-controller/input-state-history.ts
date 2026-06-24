@@ -16,7 +16,7 @@ export class InputStateHistory<State extends InputControllerState = InputControl
   push(state: State): void {
     const current: State = this.stack[this.index]!;
 
-    if (current.value === state.value && current.country === state.country) {
+    if (current.value === state.value && current.region === state.region) {
       this.stack[this.index] = state;
       return;
     }

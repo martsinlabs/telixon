@@ -1,4 +1,4 @@
-import { RegionId } from '@telixon/core/engine';
+import { RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveRegionCodeFast } from './resolve-region-code';
 
@@ -7,11 +7,11 @@ export function resolveRegionCodeOrFallback(
   callingCodeState: number,
   endState: number,
   nationalDigits: string,
-  fallbackCountryIndex: number,
-): RegionId | null {
+  fallbackRegionIndex: number,
+): RegionCode | null {
   return (
     resolveRegionCodeFast(callingCodeState, endState, nationalDigits) ??
-    getResourceProvider().regionIds[fallbackCountryIndex] ??
+    getResourceProvider().regionIds[fallbackRegionIndex] ??
     null
   );
 }

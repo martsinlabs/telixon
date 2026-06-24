@@ -5,7 +5,7 @@ function createNationalController(options: NationalPhoneInputOptions): InputCont
   const {
     input: _input,
     mode: _mode,
-    countryFilter: _cf,
+    regionFilter: _cf,
     numberTypeFilter: _ntf,
     placeholderNumberType: _pnt,
     ...config
@@ -18,7 +18,7 @@ function createInternationalController(options: InternationalPhoneInputOptions):
   const {
     input: _input,
     mode: _mode,
-    countryFilter: _cf,
+    regionFilter: _cf,
     numberTypeFilter: _ntf,
     placeholderNumberType: _pnt,
     ...config

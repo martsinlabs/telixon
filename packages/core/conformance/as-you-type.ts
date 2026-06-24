@@ -1,4 +1,4 @@
-import { REGION_IDS, RegionId } from '@telixon/core';
+import { REGION_CODES, RegionCode } from '@telixon/core';
 import { CorpusEntry, Oracle } from '../oracle';
 import { asYouTypeNationalWithTelixon, asYouTypeWithTelixon } from './subject';
 
@@ -33,8 +33,8 @@ export interface AsYouTypeCase {
 // Builds the per-keystroke case for one corpus number, or null to skip it.
 export type AsYouTypeProbe = (oracle: Oracle, entry: CorpusEntry) => AsYouTypeCase | null;
 
-function toRegionId(region: string): RegionId | null {
-  return REGION_IDS.find((id) => id === region) ?? null;
+function toRegionCode(region: string): RegionCode | null {
+  return REGION_CODES.find((id) => id === region) ?? null;
 }
 
 // International: type the full E.164 (with '+') into the international controller and Google's formatter.
@@ -46,14 +46,14 @@ export const internationalProbe: AsYouTypeProbe = (oracle, entry) => ({
 
 // National: type the national digits (national prefix + NSN) into the national controller and Google's formatter for the entry's region.
 export const nationalProbe: AsYouTypeProbe = (oracle, entry) => {
-  const country = toRegionId(entry.regionCode);
-  if (!country) return null;
+  const region = toRegionCode(entry.regionCode);
+  if (!region) return null;
   const input = oracle.nationalInputDigits(entry.e164);
   if (!input) return null;
   return {
     input,
     google: oracle.asYouType(entry.regionCode, input),
-    telixon: asYouTypeNationalWithTelixon(country, input),
+    telixon: asYouTypeNationalWithTelixon(region, input),
   };
 };
 

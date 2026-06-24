@@ -42,12 +42,12 @@ describe('Input controllers resolve identically to parsePhoneNumber', () => {
     for (let index = 0; index < count; index++) {
       const number = enumerator.at(index);
       const controller: InputController =
-        number.country === undefined
+        number.region === undefined
           ? createInternationalInputController({})
-          : createNationalInputController({ country: number.country });
+          : createNationalInputController({ region: number.region });
 
       const state: InputState = typeInto(controller, number.input);
-      const options = number.country === undefined ? undefined : { defaultCountry: number.country };
+      const options = number.region === undefined ? undefined : { defaultRegion: number.region };
 
       expect(methods(controller.getPhoneNumber())).toEqual(methods(parsePhoneNumber(state.value, options)));
     }

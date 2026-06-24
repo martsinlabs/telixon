@@ -1,4 +1,4 @@
-import { RegionId } from '@telixon/core';
+import { RegionCode } from '@telixon/core';
 import { CorpusEntry, MethodResults } from '../../oracle';
 
 // The family decides the comparison contract: 'example'/'display-variant' must parse on both sides; 'mutation' may be Google-rejected, and Telixon must then judge it not possible.
@@ -25,7 +25,7 @@ export interface CorpusCase {
   // The exact string both sides parse.
   readonly input: string;
   // Region both sides parse with, for inputs written in national form.
-  readonly defaultCountry?: RegionId;
+  readonly defaultRegion?: RegionCode;
   // Region the case derives from; 'ZZ' when the case is not tied to one. Display-only provenance.
   readonly regionCode: string;
   // The Google example the case was derived from; null for standalone cases.
