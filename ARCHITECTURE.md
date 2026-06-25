@@ -156,7 +156,7 @@ The bundle-size story is code-and-data separation, not "ship fewer regions":
 provider is process-wide, so either entry readies one engine and the rest of the code stays
 environment-agnostic. Initialization is explicit: `await ensureEngineReady()` is the default,
 `ensureEngineReadySync()` from `@telixon/core/sync-init` is the synchronous path, and an API call before
-either throws `TelixonNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
+either throws `EngineNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
 detail: [Initialization](docs/initialization.md).
 
 ## Resolution
@@ -167,8 +167,8 @@ There is one resolution core. Both entry shapes use it; neither duplicates query
 - `createInternationalInputController` / `createNationalInputController`: incremental, per keystroke.
 
 The `PhoneNumber` query surface (`isValid`, `isPossible`, `isPossibleWithReason`, `getNumberType`,
-`getNationalNumber`, `getCallingCode`, `getCountry`, `getE164`, `formatNational`, `formatInternational`,
-`getURI`) is pure reads over an already-resolved snapshot.
+`getNationalNumber`, `getCallingCode`, `getRegion`, `formatE164`, `formatNational`, `formatInternational`,
+`formatRfc3966`) is pure reads over an already-resolved snapshot.
 
 ## Cross-cutting invariants
 
@@ -210,10 +210,11 @@ These keep modules independent and the dependency graph legible. They are enforc
 
 ## Naming
 
-The engine speaks in **regions** (`RegionId`, `REGION_IDS`) to match libphonenumber, where a region is
-an ISO 3166-1 area that may not be a sovereign country. The user-facing surface keeps the familiar
-**country** wording in method and config names (`getCountry`, the `country` config). Both are
-deliberate: types are regions, ergonomic names are country. Do not "fix" one to match the other.
+The engine and the public API both speak in **regions** (`RegionCode`, `REGION_CODES`, `getRegion`, the
+`defaultRegion` config), matching libphonenumber and ECMAScript `Intl`, where a region is an ISO 3166-1 area that
+may not be a sovereign country. "Country" appears only as a UI label in the web-sdk country picker, the
+word users expect for that dropdown. The term "calling code" names the ITU E.164 dial prefix (the `+1`
+number), never the region; the two stay distinct everywhere, including internal names.
 
 ## Public API
 

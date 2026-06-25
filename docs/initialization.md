@@ -1,6 +1,6 @@
 # Initialization
 
-`@telixon/core` builds its engine (precompiled DFA tables and Google libphonenumber metadata) once per process. The engine ships as four embedded modules in the package; every environment uses the same modules and differs only in how it imports and decodes them. Initialization is **explicit** and **asynchronous by default**: call `await ensureEngineReady()` from `@telixon/core` before the first API call. A synchronous path lives in a separate thin entry, `@telixon/core/sync-init`, which exports only `ensureEngineReadySync()`. Nothing initializes on your behalf, and a call before initialization throws `TelixonNotReadyError`.
+`@telixon/core` builds its engine (precompiled DFA tables and Google libphonenumber metadata) once per process. The engine ships as four embedded modules in the package; every environment uses the same modules and differs only in how it imports and decodes them. Initialization is **explicit** and **asynchronous by default**: call `await ensureEngineReady()` from `@telixon/core` before the first API call. A synchronous path lives in a separate thin entry, `@telixon/core/sync-init`, which exports only `ensureEngineReadySync()`. Nothing initializes on your behalf, and a call before initialization throws `EngineNotReadyError`.
 
 The engine is compressed runtime data, never live JavaScript objects in your bundle. By default it stays out of your initial bundle: the four base64-of-gzip modules are code-split into lazy chunks, and nothing loads until you call `ensureEngineReady()`. This is deliberate, so you decide when to pay the one-time load cost, which matters most in the browser, where bundle size and initial load are the constraint. Because the load is deferred and `ensureEngineReady()` decodes off the main thread, it stays off the critical path: during a single-page-app route transition or an animation you schedule it where it fits (pre-warm at startup, on entering the route with the phone field, or behind `requestIdleCallback`) rather than letting a synchronous decode block a frame, and since nothing loads on import you never pay at a moment you did not choose. Once it resolves, the entire API is synchronous. `@telixon/core/sync-init` is the opposite trade: it carries the modules in your bundle so initialization needs no round-trip.
 
@@ -32,7 +32,7 @@ parsePhoneNumber('+12015550123');
 
 ### The loading window
 
-A network fetch cannot be made synchronous, only already done. Until the engine has loaded, a synchronous API call (including constructing a controller, which reads metadata) throws `TelixonNotReadyError` rather than degrading silently. `await ensureEngineReady()` before that call removes the window. For guards in code that may run before the load finishes, `isEngineReady()` is a synchronous predicate:
+A network fetch cannot be made synchronous, only already done. Until the engine has loaded, a synchronous API call (including constructing a controller, which reads metadata) throws `EngineNotReadyError` rather than degrading silently. `await ensureEngineReady()` before that call removes the window. For guards in code that may run before the load finishes, `isEngineReady()` is a synchronous predicate:
 
 ```ts
 import { isEngineReady, parsePhoneNumber } from '@telixon/core';
@@ -43,12 +43,12 @@ const display = isEngineReady() ? parsePhoneNumber(stored).formatInternational()
 The error is exported for `instanceof` checks:
 
 ```ts
-import { parsePhoneNumber, TelixonNotReadyError } from '@telixon/core';
+import { parsePhoneNumber, EngineNotReadyError } from '@telixon/core';
 
 try {
   return parsePhoneNumber(input);
 } catch (error) {
-  if (error instanceof TelixonNotReadyError) {
+  if (error instanceof EngineNotReadyError) {
     /* engine not initialized: call ensureEngineReady() first */
   }
   throw error;
@@ -84,7 +84,7 @@ export default {
 };
 ```
 
-The engine is ready before the first request: requests never pay the initialization cost, and `TelixonNotReadyError` cannot reach a handler. The engine's tables live in flat `ArrayBuffer`s the garbage collector does not traverse, which keeps GC work inside billed request time at zero. The asynchronous default works on edge as well, but only inside a request handler; the global-scope, once-per-isolate pattern is what the synchronous entry is for.
+The engine is ready before the first request: requests never pay the initialization cost, and `EngineNotReadyError` cannot reach a handler. The engine's tables live in flat `ArrayBuffer`s the garbage collector does not traverse, which keeps GC work inside billed request time at zero. The asynchronous default works on edge as well, but only inside a request handler; the global-scope, once-per-isolate pattern is what the synchronous entry is for.
 
 ## How the engine loads
 
@@ -117,4 +117,4 @@ The initial bundle is the public API plus the loader, ~18 KB gzipped even when y
 
 ## Summary
 
-Initialization is explicit and asynchronous by default: `await ensureEngineReady()` from `@telixon/core`, at a moment that fits your app. For synchronous initialization (at boot in Node, or in global scope on edge, once per isolate before the first request), import `ensureEngineReadySync()` from `@telixon/core/sync-init`. The two entries share one process-wide engine, and a call before initialization throws `TelixonNotReadyError`.
+Initialization is explicit and asynchronous by default: `await ensureEngineReady()` from `@telixon/core`, at a moment that fits your app. For synchronous initialization (at boot in Node, or in global scope on edge, once per isolate before the first request), import `ensureEngineReadySync()` from `@telixon/core/sync-init`. The two entries share one process-wide engine, and a call before initialization throws `EngineNotReadyError`.

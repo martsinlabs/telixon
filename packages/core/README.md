@@ -21,14 +21,14 @@ await ensureEngineReady(); // load the engine once; the API is synchronous after
 
 const number = parsePhoneNumber('+12015550123');
 number.isValid(); // true
-number.getCountry(); // "US"
+number.getRegion(); // "US"
 number.formatE164(); // "+12015550123"
 number.formatInternational(); // "+1 201-555-0123"
 ```
 
 ## Initialization
 
-Initialization is explicit and asynchronous by default; an API call before it throws `TelixonNotReadyError`. `await ensureEngineReady()` from `@telixon/core` loads the engine on demand (a dynamic import, code-split into ~119 KB of lazy chunks in the browser) and decodes it off the main thread. For synchronous initialization, `ensureEngineReadySync()` from `@telixon/core/sync-init` bundles the engine and decodes it in-process (native `node:zlib` in Node, pure-JS elsewhere); in global scope on edge it readies the engine once per isolate, outside per-request CPU accounting. Both entries share one process-wide engine, which decompresses to ~0.61 MB of binary tables.
+Initialization is explicit and asynchronous by default; an API call before it throws `EngineNotReadyError`. `await ensureEngineReady()` from `@telixon/core` loads the engine on demand (a dynamic import, code-split into ~119 KB of lazy chunks in the browser) and decodes it off the main thread. For synchronous initialization, `ensureEngineReadySync()` from `@telixon/core/sync-init` bundles the engine and decodes it in-process (native `node:zlib` in Node, pure-JS elsewhere); in global scope on edge it readies the engine once per isolate, outside per-request CPU accounting. Both entries share one process-wide engine, which decompresses to ~0.61 MB of binary tables.
 
 Full rationale and numbers: [Initialization docs](https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md). Measured bundle breakdown: [telixon.dev/bundle.html](https://telixon.dev/bundle.html).
 
@@ -41,9 +41,9 @@ Full rationale and numbers: [Initialization docs](https://github.com/martsinlabs
 
 ## What's in this package
 
-- `parsePhoneNumber` and the `PhoneNumber` query view (`isValid`, `isPossible`, `getNumberType`, `getCountry`, `formatE164`, `formatNational`, `formatInternational`, `formatRfc3966`, and more).
+- `parsePhoneNumber` and the `PhoneNumber` query view (`isValid`, `isPossible`, `getNumberType`, `getRegion`, `formatE164`, `formatNational`, `formatInternational`, `formatRfc3966`, and more).
 - `createInternationalInputController` and `createNationalInputController`: full per-keystroke input controllers (insert and delete at any position, caret tracking, undo/redo, and the complete query surface). The DOM-binding wrapper `createPhoneInput` lives in [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk).
-- Region and number-type helpers: `getCallingCodeForCountry`, `countrySupportsNumberTypes`, `getPlaceholders`, `isNationalPrefixOptional`.
+- Region and number-type helpers: `getCallingCodeForRegion`, `regionSupportsNumberTypes`, `getPlaceholders`, `isNationalPrefixOptional`.
 - `ensureEngineReady`, `isEngineReady`, and `ensureEngineReadySync` (from `@telixon/core/sync-init`): engine initialization and readiness.
 
 ## Project
