@@ -14,7 +14,7 @@ async function bootstrap(): Promise<void> {
   const ok = await bootstrapResources(reportFatal);
   if (!ok) return;
 
-  mountAndWire('national', { mode: 'national', region: 'US' });
+  mountAndWire('national', { mode: 'national', defaultRegion: 'US' });
 
   mountAndWire('international-plus', {
     mode: 'international',

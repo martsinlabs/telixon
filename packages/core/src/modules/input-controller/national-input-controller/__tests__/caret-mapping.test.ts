@@ -4,7 +4,7 @@ import { createNationalInputController } from '..';
 import { InputState } from '../../models';
 
 function placeCaretInRaw(region: RegionCode, raw: string, caret: number): InputState {
-  const controller = createNationalInputController({ region });
+  const controller = createNationalInputController({ defaultRegion: region });
 
   return controller.insert(raw, '', caret, caret);
 }
@@ -38,7 +38,7 @@ describe('national controller caret mapping', () => {
     });
 
     it('places caret at end after sequential typing', () => {
-      const controller = createNationalInputController({ region: 'AR' });
+      const controller = createNationalInputController({ defaultRegion: 'AR' });
       let state: InputState = controller.currentState;
 
       for (let i = 0; i < RAW.length; i++) {
@@ -84,7 +84,7 @@ describe('national controller caret mapping', () => {
     });
 
     it('places caret at end after sequential typing', () => {
-      const controller = createNationalInputController({ region: 'US' });
+      const controller = createNationalInputController({ defaultRegion: 'US' });
       let state: InputState = controller.currentState;
 
       for (let i = 0; i < RAW.length; i++) {

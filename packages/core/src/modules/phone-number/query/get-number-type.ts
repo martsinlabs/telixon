@@ -16,28 +16,28 @@ import { ResolvedPhoneNumber } from '../models';
 import { numberTypeForRegion } from './number-type-for-region';
 
 // Explicit resolution behind the baked verdicts: undecided inputs and filtered queries.
-function getNumberTypeResolved(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
+function getNumberTypeResolved(resolved: ResolvedPhoneNumber): NumberType {
   const { callingCodeState, nationalDigits, endState } = resolved;
 
   const region: RegionCode | null = resolveRegionCode(callingCodeState, endState, nationalDigits);
-  if (!region) return null;
+  if (!region) return 'UNKNOWN';
 
   const regionIndex: number | undefined = getResourceProvider().regionKeyToIndex[region];
-  if (regionIndex === undefined) return null;
+  if (regionIndex === undefined) return 'UNKNOWN';
 
-  return numberTypeForRegion(resolved, regionIndex);
+  return numberTypeForRegion(resolved, regionIndex) ?? 'UNKNOWN';
 }
 
 // libphonenumber getNumberType: one baked verdict lookup on the unfiltered path.
-export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType, 'UNKNOWN'> | null {
+export function getNumberType(resolved: ResolvedPhoneNumber): NumberType {
   const { nationalDigits, endState, regionFilter, numberTypeFilter, strict, defaultRegionIndex } = resolved;
   const length: number = nationalDigits.length;
 
-  if (length >= VERDICT_LENGTH_COUNT) return null;
+  if (length >= VERDICT_LENGTH_COUNT) return 'UNKNOWN';
 
   // Strict mode validates against the configured region only (libphonenumber isValidNumberForRegion).
   if (strict && defaultRegionIndex !== -1) {
-    return numberTypeForRegion(resolved, defaultRegionIndex);
+    return numberTypeForRegion(resolved, defaultRegionIndex) ?? 'UNKNOWN';
   }
 
   if (!regionFilter && !numberTypeFilter) {
@@ -45,12 +45,12 @@ export function getNumberType(resolved: ResolvedPhoneNumber): Exclude<NumberType
     const verdict: number = getVerdict(resourceProvider.engine, endState, length);
     if (verdictIsDecided(verdict)) {
       const publicType: number = verdictType(verdict);
-      if (publicType === VERDICT_TYPE_UNKNOWN) return null;
+      if (publicType === VERDICT_TYPE_UNKNOWN) return 'UNKNOWN';
       if (publicType === VERDICT_TYPE_FIXED_LINE_OR_MOBILE) return 'FIXED_LINE_OR_MOBILE';
 
       const metadataType: MetadataNumberType = resourceProvider.numberTypeNames[publicType]!;
       const numberType: NumberType | undefined = toNumberTypes([metadataType])[0];
-      return numberType !== undefined && numberType !== 'UNKNOWN' ? numberType : null;
+      return numberType ?? 'UNKNOWN';
     }
   }
 

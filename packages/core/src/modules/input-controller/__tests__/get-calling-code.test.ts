@@ -7,13 +7,13 @@ const GB_FIXED_E164 = '+44' + getExampleNumber('GB', 'FIXED_LINE');
 
 describe('PhoneNumber.getCallingCode: national', () => {
   it("returns the bound region's calling code, even when empty", () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
 
     expect(controller.getPhoneNumber().getCallingCode()).toBe('1');
   });
 
   it('returns the multi-digit calling code for the bound region', () => {
-    const controller = createNationalInputController({ region: 'GB' });
+    const controller = createNationalInputController({ defaultRegion: 'GB' });
 
     expect(controller.getPhoneNumber().getCallingCode()).toBe('44');
   });

@@ -9,14 +9,14 @@ const CA_NUMBER = getExampleNumber('CA', 'MOBILE');
 
 describe('InputController strict mode: the reported region stays the preferred region', () => {
   it('national: strict keeps the configured region for a shared-calling-code number', () => {
-    const controller = createNationalInputController({ region: 'US', strict: true });
+    const controller = createNationalInputController({ defaultRegion: 'US', strict: true });
     controller.setValue(CA_NUMBER);
 
     expect(controller.currentState.region).toBe('US');
   });
 
   it('national: without strict, it resolves the number to its actual region', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue(CA_NUMBER);
 
     expect(controller.currentState.region).toBe('CA');
@@ -36,7 +36,7 @@ describe('InputController strict mode: the reported region stays the preferred r
 
 describe('InputController strict mode: validity is region-specific (isValidNumberForRegion)', () => {
   it('national: strict rejects a number valid only for another region in the calling code', () => {
-    const controller = createNationalInputController({ region: 'US', strict: true });
+    const controller = createNationalInputController({ defaultRegion: 'US', strict: true });
     controller.setValue(CA_NUMBER);
 
     const phoneNumber = controller.getPhoneNumber();
@@ -45,7 +45,7 @@ describe('InputController strict mode: validity is region-specific (isValidNumbe
   });
 
   it('national: without strict, the same number is valid for its actual region', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue(CA_NUMBER);
 
     expect(controller.getPhoneNumber().isValid()).toBe(true);

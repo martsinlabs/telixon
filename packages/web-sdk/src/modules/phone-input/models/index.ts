@@ -31,18 +31,18 @@ export type PhoneInputElement = HTMLInputElement;
  * - `validationError`: structured outcome from `PhoneNumber.getValidationError()`, or `null` when none apply.
  */
 export type PhoneInputState = {
-  value: string;
-  region: RegionCode | null;
-  selectionStart: number;
-  selectionEnd: number;
-  regionFilter: readonly RegionCode[] | null;
-  numberTypeFilter: readonly NumberType[] | null;
-  placeholder: string | null;
-  validationError: ValidationError | null;
+  readonly value: string;
+  readonly region: RegionCode | null;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
+  readonly regionFilter: readonly RegionCode[] | null;
+  readonly numberTypeFilter: readonly NumberType[] | null;
+  readonly placeholder: string | null;
+  readonly validationError: ValidationError | null;
 };
 
 /**
- * Options for a national PhoneInput. `region` selects the territory whose national formatting applies.
+ * Options for a national PhoneInput. `defaultRegion` selects the territory whose national formatting applies.
  */
 export type NationalPhoneInputOptions = { mode: 'national' } & PhoneInputBaseOptions & NationalInputControllerConfig;
 
@@ -94,7 +94,7 @@ export type PhoneInput = {
   /** Build a {@link PhoneNumber} from the current digits and resolution. */
   getPhoneNumber(): PhoneNumber;
   /** Restrict resolution to the given regions. `null` removes the restriction. No-op when the value is unchanged. */
-  setRegionFilter(countries: readonly RegionCode[] | null): void;
+  setRegionFilter(regions: readonly RegionCode[] | null): void;
   /** Restrict resolution to the given number types. `null` removes the restriction. No-op when the value is unchanged. */
   setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
   /** Detach all DOM listeners and clear subscribers. Idempotent. */

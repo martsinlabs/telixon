@@ -1,1 +1,1 @@
-export { TelixonNotReadyError } from './telixon-not-ready-error';
+export { EngineNotReadyError } from './engine-not-ready-error';

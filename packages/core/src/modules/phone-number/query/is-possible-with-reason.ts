@@ -3,20 +3,20 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
 import { getAllowedLocalOnlyLengthMask } from '../../number-resolver/utils/get-allowed-local-only-length-mask';
 import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
-import { PhoneNumberValidationResult, ResolvedPhoneNumber } from '../models';
+import { PossibilityResult, ResolvedPhoneNumber } from '../models';
 import { validationResultFromLength } from './validation-result-from-length';
 
-export function isPossibleWithReason(resolved: ResolvedPhoneNumber): PhoneNumberValidationResult {
+export function isPossibleWithReason(resolved: ResolvedPhoneNumber): PossibilityResult {
   const { nationalDigits, callingCodeState, defaultRegionIndex, regionFilter, numberTypeFilter } = resolved;
 
-  // A '+' number whose calling code never reached a terminal state has no valid country code
+  // A '+' number whose calling code never reached a terminal state is not a valid calling code
   // (libphonenumber rejects it at parse).
   if (callingCodeState !== -1 && !isCallingCodeComplete(getResourceProvider().engine, callingCodeState)) {
-    return 'INVALID_COUNTRY_CODE';
+    return 'INVALID_CALLING_CODE';
   }
 
   const regionIndex: number = resolvePrimaryRegionIndex(callingCodeState, defaultRegionIndex);
-  if (regionIndex < 0) return 'INVALID_COUNTRY_CODE';
+  if (regionIndex < 0) return 'INVALID_CALLING_CODE';
 
   const length: number = nationalDigits.length;
   const nationalMask: number = getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter);

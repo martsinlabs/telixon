@@ -35,7 +35,7 @@ export function mount(mode: Mode, value: string): PhoneInput {
   if (mode === 'national') {
     return createPhoneInput({
       mode: 'national',
-      region,
+      defaultRegion: region,
       strict,
       initialValue: value,
       input: phoneInputEl,

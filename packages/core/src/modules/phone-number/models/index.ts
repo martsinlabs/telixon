@@ -1,23 +1,23 @@
 import { NumberType, RegionCode } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 
-export type PhoneNumberValidationResult =
+export type PossibilityResult =
   | 'IS_POSSIBLE'
   | 'IS_POSSIBLE_LOCAL_ONLY'
-  | 'INVALID_COUNTRY_CODE'
+  | 'INVALID_CALLING_CODE'
   | 'TOO_SHORT'
   | 'TOO_LONG'
   | 'INVALID_LENGTH';
 
 /** Structured validation outcome beyond `valid: boolean`. Kind values mirror libphonenumber where applicable. */
 export type ValidationError =
-  | { kind: 'EMPTY' }
-  | { kind: 'INVALID_COUNTRY_CODE' }
-  | { kind: 'TOO_SHORT'; minLength: number }
-  | { kind: 'TOO_LONG'; maxLength: number }
-  | { kind: 'INVALID_LENGTH'; possibleLengths: readonly number[] }
-  | { kind: 'PATTERN_MISMATCH' }
-  | { kind: 'NATIONAL_PREFIX_MISSING'; expectedPrefix: string };
+  | { readonly kind: 'EMPTY' }
+  | { readonly kind: 'INVALID_CALLING_CODE' }
+  | { readonly kind: 'TOO_SHORT'; readonly minLength: number }
+  | { readonly kind: 'TOO_LONG'; readonly maxLength: number }
+  | { readonly kind: 'INVALID_LENGTH'; readonly possibleLengths: readonly number[] }
+  | { readonly kind: 'PATTERN_MISMATCH' }
+  | { readonly kind: 'NATIONAL_PREFIX_MISSING'; readonly expectedPrefix: string };
 
 export interface ResolvedPhoneNumber {
   readonly nationalDigits: string;
@@ -35,9 +35,9 @@ export interface PhoneNumber {
   isValid(): boolean;
   isValidForRegion(region: RegionCode): boolean;
   isPossible(): boolean;
-  isPossibleWithReason(): PhoneNumberValidationResult;
+  isPossibleWithReason(): PossibilityResult;
   getValidationError(): ValidationError | null;
-  getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null;
+  getNumberType(): NumberType;
   getNationalNumber(): string;
   getCallingCode(): string | null;
   getRegion(): RegionCode | null;

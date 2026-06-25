@@ -7,7 +7,7 @@ const AR_FORMATTED = '011 15-3434-3444';
 
 describe('NationalInputController.deleteBackward', () => {
   it('is a no-op when caret is at position 0', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
 
     const state = controller.deleteBackward(AR_FORMATTED, 0, 0);
@@ -18,7 +18,7 @@ describe('NationalInputController.deleteBackward', () => {
   });
 
   it('snaps caret past a formatting char without deleting a digit (caret just after "011 ")', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     // Position 4 is right after "011 ": char at index 3 is the space.
     const state = controller.deleteBackward(AR_FORMATTED, 4, 4);
@@ -29,7 +29,7 @@ describe('NationalInputController.deleteBackward', () => {
   });
 
   it('removes the last digit and trims trailing formatting (direction backward)', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
 
     const state = controller.deleteBackward(AR_FORMATTED, AR_FORMATTED.length, AR_FORMATTED.length);
@@ -41,7 +41,7 @@ describe('NationalInputController.deleteBackward', () => {
   });
 
   it('deletes a selection range and reformats from the remaining digits', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     // Delete the slice "15-3434" (positions 4..11), 6 digits removed.
     const state = controller.deleteBackward(AR_FORMATTED, 4, 11);
@@ -52,7 +52,7 @@ describe('NationalInputController.deleteBackward', () => {
 
 describe('NationalInputController.deleteForward', () => {
   it('snaps caret forward past a formatting char (caret on the space at index 3)', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     const state = controller.deleteForward(AR_FORMATTED, 3, 3);
 
@@ -62,7 +62,7 @@ describe('NationalInputController.deleteForward', () => {
   });
 
   it('is a no-op when caret is at the end of the value', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     const seeded = controller.setValue(AR_RAW);
     const state = controller.deleteForward(seeded.value, seeded.value.length, seeded.value.length);
 
@@ -71,7 +71,7 @@ describe('NationalInputController.deleteForward', () => {
   });
 
   it('removes the first digit when caret is at position 0', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     const state = controller.deleteForward(AR_FORMATTED, 0, 0);
 
@@ -80,7 +80,7 @@ describe('NationalInputController.deleteForward', () => {
   });
 
   it('deletes a selection range and reformats from the remaining digits', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     const state = controller.deleteForward(AR_FORMATTED, 4, 11);
 

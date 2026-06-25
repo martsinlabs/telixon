@@ -1,6 +1,6 @@
 export { parsePhoneNumber } from './modules/parse-phone-number';
 export type { ParsePhoneNumberOptions } from './modules/parse-phone-number';
-export type { PhoneNumber, PhoneNumberValidationResult, ValidationError } from './modules/phone-number';
+export type { PhoneNumber, PossibilityResult, ValidationError } from './modules/phone-number';
 
 export { createInternationalInputController } from './modules/input-controller/international-input-controller';
 export type {
@@ -16,7 +16,7 @@ export { getPlaceholders, isNationalPrefixOptional } from './modules/placeholder
 export type { Placeholders } from './modules/placeholders';
 export { regionSupportsNumberTypes } from './modules/region-number-types';
 
-export { TelixonNotReadyError } from './errors';
+export { EngineNotReadyError } from './errors';
 export { isEngineReady } from './resource-provider';
 
 export { REGION_CODES } from './engine';

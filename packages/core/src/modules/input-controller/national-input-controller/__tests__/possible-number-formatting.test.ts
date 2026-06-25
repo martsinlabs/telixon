@@ -4,7 +4,7 @@ import { createNationalInputController } from '..';
 import { InputState } from '../../models';
 
 function typeNational(region: RegionCode, digits: string): InputState {
-  const controller = createNationalInputController({ region });
+  const controller = createNationalInputController({ defaultRegion: region });
   let state: InputState = controller.currentState;
   for (const character of digits) {
     state = controller.insert(state.value, character, state.selectionStart, state.selectionEnd);

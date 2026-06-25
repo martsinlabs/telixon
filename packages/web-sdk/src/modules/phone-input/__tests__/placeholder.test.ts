@@ -14,7 +14,7 @@ describe('PhoneInput placeholder', () => {
   it('national mode uses prefix-free variant when the format flag is optional', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
     expect(phone.getState().placeholder).toBe('(201) 555-0123');
 
     phone.destroy();
@@ -24,7 +24,7 @@ describe('PhoneInput placeholder', () => {
   it('national mode uses with-prefix variant for prefix-required regions', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'AE' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'AE' });
     expect(phone.getState().placeholder).toBe('050 123 4567');
 
     phone.destroy();
@@ -96,7 +96,7 @@ describe('PhoneInput placeholder', () => {
     const phone = createPhoneInput({
       input,
       mode: 'national',
-      region: 'US',
+      defaultRegion: 'US',
       placeholderNumberType: 'TOLL_FREE',
     });
     expect(phone.getState().placeholder).toBe('(800) 234-5678');
@@ -108,7 +108,7 @@ describe('PhoneInput placeholder', () => {
   it('updates on setRegion', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
     expect(phone.getState().placeholder).toBe('(201) 555-0123');
 
     phone.setRegion('GB');

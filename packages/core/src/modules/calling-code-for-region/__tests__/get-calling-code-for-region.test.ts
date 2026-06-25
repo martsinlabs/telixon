@@ -1,4 +1,4 @@
-import { REGION_CODES } from '@telixon/core/engine';
+import { REGION_CODES, type RegionCode } from '@telixon/core/engine';
 import { describe, expect, it } from 'vitest';
 import { getCallingCodeForRegion } from '../get-calling-code-for-region';
 
@@ -21,5 +21,10 @@ describe('getCallingCodeForRegion', () => {
     for (const region of REGION_CODES) {
       expect(getCallingCodeForRegion(region), region).toMatch(/^\d+$/);
     }
+  });
+
+  it("returns '0' for an unknown region (Google getCountryCodeForRegion parity)", () => {
+    // 'ZZ' is Google's unknown-region code, not a supported RegionCode; cast to exercise the guard.
+    expect(getCallingCodeForRegion('ZZ' as unknown as RegionCode)).toBe('0');
   });
 });

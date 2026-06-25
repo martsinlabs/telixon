@@ -10,9 +10,9 @@ import { pickFormatMask } from '../number-resolver/utils/format-masks';
 
 /** Example placeholder variants for one number type, all optional. */
 export interface Placeholders {
-  national?: string;
-  nationalWithPrefix?: string;
-  international?: string;
+  readonly national?: string;
+  readonly nationalWithPrefix?: string;
+  readonly international?: string;
 }
 
 // Fills a placeholder mask with the example NSN via the engine's formatter.
@@ -36,7 +36,7 @@ export function buildExamplePlaceholders(
   internationalFormatIndex: number,
 ): Placeholders | null {
   const resourceProvider = getResourceProvider();
-  const placeholders: Placeholders = {};
+  const placeholders: { national?: string; nationalWithPrefix?: string; international?: string } = {};
   const length: number = exampleNsn.length;
 
   if (nationalFormatIndex !== -1) {

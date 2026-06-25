@@ -17,7 +17,7 @@ describe('PhoneNumber.isValidForRegion (libphonenumber isValidNumberForRegion)',
     expect(ca.isValidForRegion('US')).toBe(false);
   });
 
-  it('is false when the country calling code does not match the number', () => {
+  it('is false when the calling code does not match the number', () => {
     const gb = parsePhoneNumber('+44' + GB_FIXED);
     expect(gb.isValidForRegion('GB')).toBe(true);
     expect(gb.isValidForRegion('US')).toBe(false);

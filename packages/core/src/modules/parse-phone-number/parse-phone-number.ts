@@ -27,7 +27,7 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
     defaultRegionIndex,
     regionFilter: null,
     numberTypeFilter: null,
-    strict: false,
+    strict: options.strict ?? false,
   });
 
   return createPhoneNumber(

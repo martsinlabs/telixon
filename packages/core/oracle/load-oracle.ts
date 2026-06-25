@@ -113,7 +113,7 @@ function loadPhoneNumbersNamespace(dir: string): PhoneNumbersNamespace {
   return goog.global.i18n.phonenumbers;
 }
 
-// Google PhoneNumberType ids -> Telixon NumberType names. UNKNOWN maps to null at the call site.
+// Google PhoneNumberType ids -> Telixon NumberType names. Unmapped ids (UNKNOWN) fall back to 'UNKNOWN' at the call site.
 function buildNumberTypeNames(types: PhoneNumbersNamespace['PhoneNumberType']): Record<number, NumberType> {
   return {
     [types.FIXED_LINE]: 'FIXED_LINE',
@@ -130,9 +130,15 @@ function buildNumberTypeNames(types: PhoneNumbersNamespace['PhoneNumberType']): 
   };
 }
 
-// Reverse of the ValidationResult enum: id -> name.
+// Reverse of the ValidationResult enum: id -> name. Google's INVALID_COUNTRY_CODE names the E.164
+// calling code; map it to Telixon's INVALID_CALLING_CODE so the oracle compares in our vocabulary.
 function buildValidationResultNames(util: PhoneNumbersNamespace['PhoneNumberUtil']): Record<number, string> {
-  return Object.fromEntries(Object.entries(util.ValidationResult).map(([name, id]) => [id, name]));
+  return Object.fromEntries(
+    Object.entries(util.ValidationResult).map(([name, id]) => [
+      id,
+      name === 'INVALID_COUNTRY_CODE' ? 'INVALID_CALLING_CODE' : name,
+    ]),
+  );
 }
 
 export async function loadOracle(): Promise<Oracle> {
@@ -181,7 +187,7 @@ export async function loadOracle(): Promise<Oracle> {
         isValid: util.isValidNumber(parsed),
         isPossible: possible,
         isPossibleWithReason: validationResultName[reasonId] ?? String(reasonId),
-        getNumberType: typeId === ph.PhoneNumberType.UNKNOWN ? null : (numberTypeName[typeId] ?? null),
+        getNumberType: numberTypeName[typeId] ?? 'UNKNOWN',
         getNationalNumber: util.getNationalSignificantNumber(parsed),
         getCallingCode: String(parsed.getCountryCodeOrDefault()),
         getRegion: util.getRegionCodeForNumber(parsed) ?? null,

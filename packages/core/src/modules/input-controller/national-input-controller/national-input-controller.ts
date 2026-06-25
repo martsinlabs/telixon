@@ -45,7 +45,7 @@ class NationalInputController implements InputController {
   #defaultCallingCode: string | null = null;
 
   constructor(private config: NationalInputControllerConfig) {
-    this.#setRegion(this.config.region);
+    this.#setRegion(this.config.defaultRegion);
 
     if (this.config.strict) {
       this.#numberResolver.setStrict(true);
@@ -265,17 +265,17 @@ class NationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  setRegionFilter(countries: readonly RegionCode[] | null): void {
-    this.#numberResolver.setRegionFilter(countries ? createRegionFilter(countries) : null);
-    this.#recomputeState();
+  setRegionFilter(regions: readonly RegionCode[] | null): InputState {
+    this.#numberResolver.setRegionFilter(regions ? createRegionFilter(regions) : null);
+    return this.#recomputeState();
   }
 
-  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void {
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): InputState {
     this.#numberResolver.setNumberTypeFilter(numberTypes ? createNumberTypeFilter(numberTypes) : null);
-    this.#recomputeState();
+    return this.#recomputeState();
   }
 
-  #recomputeState(): void {
+  #recomputeState(): InputState {
     const { value, selectionStart, selectionEnd } = this.#history.current;
     const nextState: InputControllerState = this.#resolveState(value, {
       insertText: '',
@@ -283,6 +283,7 @@ class NationalInputController implements InputController {
       selectionEnd,
     });
     this.#history.replaceCurrent(nextState);
+    return toInputState(this.#history.current);
   }
 
   clearHistory(): void {

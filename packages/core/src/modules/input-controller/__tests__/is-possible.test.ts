@@ -7,41 +7,41 @@ const US_MOBILE = getExampleNumber('US', 'MOBILE');
 
 describe('InputController.isPossibleWithReason: national', () => {
   it('returns TOO_SHORT for empty input', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('TOO_SHORT');
   });
 
   it('returns TOO_SHORT for partial input', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('TOO_SHORT');
   });
 
   it('returns IS_POSSIBLE at a valid length', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE');
   });
 
   it('returns IS_POSSIBLE for length-only match: pattern is ignored (bogus area code)', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue('0001234567');
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('IS_POSSIBLE');
   });
 
   it('returns TOO_LONG for digits past max', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue('212555123499999');
 
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('TOO_LONG');
   });
 
   it('returns INVALID_LENGTH when all allowed types have no length matching', () => {
-    const controller = createNationalInputController({ region: 'DE' });
+    const controller = createNationalInputController({ defaultRegion: 'DE' });
     controller.setNumberTypeFilter(['PAGER']);
     controller.setValue('030');
 
@@ -69,7 +69,7 @@ describe('InputController.isPossibleWithReason: local-only length', () => {
 
 describe('InputController.isPossible: boolean wrapper', () => {
   it('returns true for possible numbers, including local-only', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
 
     controller.setValue('21255');
     expect(controller.getPhoneNumber().isPossible()).toBe(false);
@@ -90,10 +90,10 @@ describe('InputController.isPossible: boolean wrapper', () => {
 });
 
 describe('InputController.isPossibleWithReason: international', () => {
-  it('returns INVALID_COUNTRY_CODE before any calling code resolves', () => {
+  it('returns INVALID_CALLING_CODE before any calling code resolves', () => {
     const controller = createInternationalInputController({});
 
-    expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('INVALID_COUNTRY_CODE');
+    expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('INVALID_CALLING_CODE');
   });
 
   it('returns TOO_SHORT once calling code resolves but digits are short', () => {

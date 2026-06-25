@@ -18,7 +18,7 @@ export interface MethodResults {
   readonly isValid: boolean;
   readonly isPossible: boolean;
   readonly isPossibleWithReason: string;
-  readonly getNumberType: NumberType | null;
+  readonly getNumberType: NumberType;
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
   readonly getRegion: string | null;

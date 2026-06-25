@@ -16,11 +16,11 @@ describe('PhoneNumber.getValidationError', () => {
     expect(parsePhoneNumber('').getValidationError()).toEqual({ kind: 'EMPTY' });
   });
 
-  it('returns INVALID_COUNTRY_CODE when digits do not resolve to a region', () => {
+  it('returns INVALID_CALLING_CODE when digits do not resolve to a region', () => {
     const controller = createInternationalInputController({});
     controller.setValue('0');
 
-    expect(controller.getPhoneNumber().getValidationError()).toEqual({ kind: 'INVALID_COUNTRY_CODE' });
+    expect(controller.getPhoneNumber().getValidationError()).toEqual({ kind: 'INVALID_CALLING_CODE' });
   });
 
   it('returns TOO_SHORT with the minimum length when the NSN is too short', () => {
@@ -54,7 +54,7 @@ describe('PhoneNumber.getValidationError', () => {
     expect(parsePhoneNumber(US_MOBILE, { defaultRegion: 'US' }).getValidationError()).toBeNull();
   });
 
-  it('precedence: EMPTY wins over INVALID_COUNTRY_CODE when both apply', () => {
+  it('precedence: EMPTY wins over INVALID_CALLING_CODE when both apply', () => {
     const controller = createInternationalInputController({});
 
     expect(controller.getPhoneNumber().getValidationError()).toEqual({ kind: 'EMPTY' });

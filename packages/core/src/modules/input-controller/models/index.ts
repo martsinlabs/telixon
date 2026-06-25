@@ -3,10 +3,10 @@ import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resol
 import { PhoneNumber } from '../../phone-number/models';
 
 export interface InputState {
-  value: string;
-  region: RegionCode | null;
-  selectionStart: number;
-  selectionEnd: number;
+  readonly value: string;
+  readonly region: RegionCode | null;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
 }
 
 export interface InputControllerState extends InputState {
@@ -32,8 +32,8 @@ export interface InputController {
   setRegion(region: RegionCode): InputState;
   undo(): InputState;
   redo(): InputState;
-  setRegionFilter(countries: readonly RegionCode[] | null): void;
-  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
+  setRegionFilter(regions: readonly RegionCode[] | null): InputState;
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): InputState;
   clearHistory(): void;
   getPhoneNumber(): PhoneNumber;
   readonly canUndo: boolean;

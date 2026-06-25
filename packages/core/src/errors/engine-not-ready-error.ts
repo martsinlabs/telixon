@@ -1,5 +1,5 @@
-export class TelixonNotReadyError extends Error {
-  readonly name = 'TelixonNotReadyError';
+export class EngineNotReadyError extends Error {
+  readonly name = 'EngineNotReadyError';
 
   constructor() {
     super(

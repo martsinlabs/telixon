@@ -32,7 +32,7 @@ describe('parsePhoneNumber: incomplete international calling code', () => {
     const number = parsePhoneNumber('+42690123456');
 
     expect(number.isPossible()).toBe(false);
-    expect(number.isPossibleWithReason()).toBe('INVALID_COUNTRY_CODE');
+    expect(number.isPossibleWithReason()).toBe('INVALID_CALLING_CODE');
   });
 
   it('does not recover a different calling code by dropping a stray digit', () => {

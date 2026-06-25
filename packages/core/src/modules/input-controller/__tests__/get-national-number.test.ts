@@ -9,34 +9,34 @@ const US_MOBILE_NATIONAL = '(201) 555-0123';
 
 describe('PhoneNumber.getNationalNumber: national', () => {
   it('returns empty string for empty input', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
 
     expect(controller.getPhoneNumber().getNationalNumber()).toBe('');
   });
 
   it('returns the digits typed so far for partial input', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue('21255');
 
     expect(controller.getPhoneNumber().getNationalNumber()).toBe('21255');
   });
 
   it('returns digits only, stripping formatting characters', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue(US_MOBILE_NATIONAL);
 
     expect(controller.getPhoneNumber().getNationalNumber()).toBe(US_MOBILE);
   });
 
   it('strips the national prefix (AR 0 prefix)', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue('01112345678');
 
     expect(controller.getPhoneNumber().getNationalNumber()).toBe('1112345678');
   });
 
   it('applies the AR mobile transform (drops the 0 prefix and 15, prepends 9)', () => {
-    const controller = createNationalInputController({ region: 'AR' });
+    const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue('0111523456789');
 
     expect(controller.getPhoneNumber().getNationalNumber()).toBe('91123456789');

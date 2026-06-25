@@ -1,5 +1,5 @@
 import { NumberType, RegionCode } from '@telixon/core/engine';
-import { PhoneNumber, PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from './models';
+import { PhoneNumber, PossibilityResult, ResolvedPhoneNumber, ValidationError } from './models';
 import { formatE164 } from './query/format-e164';
 import { formatInternational } from './query/format-international';
 import { formatNational } from './query/format-national';
@@ -27,20 +27,20 @@ class PhoneNumberView implements PhoneNumber {
 
   private cachedRfc3966: string | null | undefined = undefined;
 
-  private cachedValidationResult: PhoneNumberValidationResult | undefined = undefined;
+  private cachedValidationResult: PossibilityResult | undefined = undefined;
 
   private cachedValidationError: ValidationError | null | undefined = undefined;
 
   private cachedIsValid: boolean | undefined = undefined;
 
-  private cachedNumberType: Exclude<NumberType, 'UNKNOWN'> | null | undefined = undefined;
+  private cachedNumberType: NumberType | undefined = undefined;
 
   constructor(private readonly resolved: ResolvedPhoneNumber) {}
 
   // libphonenumber isValidNumber: a number is valid when it resolves to a concrete type.
   isValid(): boolean {
     if (this.cachedIsValid === undefined) {
-      this.cachedIsValid = this.getNumberType() !== null;
+      this.cachedIsValid = this.getNumberType() !== 'UNKNOWN';
     }
 
     return this.cachedIsValid;
@@ -52,12 +52,12 @@ class PhoneNumberView implements PhoneNumber {
   }
 
   isPossible(): boolean {
-    const validationResult: PhoneNumberValidationResult = this.isPossibleWithReason();
+    const validationResult: PossibilityResult = this.isPossibleWithReason();
 
     return validationResult === 'IS_POSSIBLE' || validationResult === 'IS_POSSIBLE_LOCAL_ONLY';
   }
 
-  isPossibleWithReason(): PhoneNumberValidationResult {
+  isPossibleWithReason(): PossibilityResult {
     if (this.cachedValidationResult === undefined) {
       this.cachedValidationResult = isPossibleWithReason(this.resolved);
     }
@@ -73,7 +73,7 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedValidationError;
   }
 
-  getNumberType(): Exclude<NumberType, 'UNKNOWN'> | null {
+  getNumberType(): NumberType {
     if (this.cachedNumberType === undefined) {
       this.cachedNumberType = getNumberType(this.resolved);
     }

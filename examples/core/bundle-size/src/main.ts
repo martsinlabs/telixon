@@ -1,15 +1,15 @@
 import {
-  countrySupportsNumberTypes,
   createInternationalInputController,
   createNationalInputController,
+  EngineNotReadyError,
   ensureEngineReady,
-  getCallingCodeForCountry,
+  getCallingCodeForRegion,
   getPlaceholders,
   isEngineReady,
   isNationalPrefixOptional,
   parsePhoneNumber,
   REGION_CODES,
-  TelixonNotReadyError,
+  regionSupportsNumberTypes,
   type InputController,
   type NumberType,
   type PhoneNumber,
@@ -23,12 +23,12 @@ const REGION: RegionCode = 'US';
 const NUMBER_TYPE: NumberType = 'MOBILE';
 
 async function main(): Promise<void> {
-  // The API throws TelixonNotReadyError until the engine loads; touch the type so it ships.
+  // The API throws EngineNotReadyError until the engine loads; touch the type so it ships.
   let guard = 'ready';
   try {
     parsePhoneNumber(SAMPLE);
   } catch (error) {
-    guard = error instanceof TelixonNotReadyError ? 'guarded before ensureEngineReady' : 'unexpected';
+    guard = error instanceof EngineNotReadyError ? 'guarded before ensureEngineReady' : 'unexpected';
   }
 
   await ensureEngineReady();
@@ -47,7 +47,7 @@ function describeNumber(number: PhoneNumber): string[] {
     `numberType: ${String(number.getNumberType())}`,
     `nationalNumber: ${number.getNationalNumber()}`,
     `callingCode: ${String(number.getCallingCode())}`,
-    `country: ${String(number.getCountry())}`,
+    `region: ${String(number.getRegion())}`,
     `e164: ${String(number.formatE164())}`,
     `national: ${String(number.formatNational())}`,
     `international: ${String(number.formatInternational())}`,
@@ -60,8 +60,8 @@ function describeRegion(): string[] {
   return [
     `regions: ${REGION_CODES.length}`,
     `engineReady: ${isEngineReady()}`,
-    `callingCode(${REGION}): ${getCallingCodeForCountry(REGION)}`,
-    `supports ${NUMBER_TYPE}: ${countrySupportsNumberTypes(REGION, [NUMBER_TYPE])}`,
+    `callingCode(${REGION}): ${getCallingCodeForRegion(REGION)}`,
+    `supports ${NUMBER_TYPE}: ${regionSupportsNumberTypes(REGION, [NUMBER_TYPE])}`,
     `nationalPrefixOptional: ${isNationalPrefixOptional(REGION, NUMBER_TYPE)}`,
     `placeholders: ${JSON.stringify(getPlaceholders(REGION, NUMBER_TYPE))}`,
   ];
@@ -69,16 +69,16 @@ function describeRegion(): string[] {
 
 function driveControllers(): string[] {
   return [
-    `national: ${exerciseController(createNationalInputController({ country: REGION }))}`,
+    `national: ${exerciseController(createNationalInputController({ defaultRegion: REGION }))}`,
     `international: ${exerciseController(createInternationalInputController())}`,
   ];
 }
 
 // Calls every InputController member, so the controller implementation ships.
 function exerciseController(controller: InputController): string {
-  controller.setCountryFilter([REGION]);
+  controller.setRegionFilter([REGION]);
   controller.setNumberTypeFilter([NUMBER_TYPE]);
-  controller.setCountry(REGION);
+  controller.setRegion(REGION);
   let state = controller.setValue('');
   state = controller.insert(state.value, '2015550123', state.value.length, state.value.length);
   state = controller.deleteBackward(state.value, state.value.length, state.value.length);

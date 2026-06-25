@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "report": "vite build && tsx report.ts"
+    "report": "vite build && tsx report.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@telixon/core": "workspace:*"

@@ -9,13 +9,13 @@ import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-callin
 import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
 import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { selectNationalFormatIndex } from '../../number-resolver/utils/select-national-format';
-import { PhoneNumberValidationResult, ResolvedPhoneNumber, ValidationError } from '../models';
+import { PossibilityResult, ResolvedPhoneNumber, ValidationError } from '../models';
 import { getMinLength, getPossibleLengths } from './length-utils';
 
 /** Returns the highest-precedence validation error for the resolved number, or `null` when none apply. */
 export function getValidationError(
   resolved: ResolvedPhoneNumber,
-  reason: PhoneNumberValidationResult,
+  reason: PossibilityResult,
   valid: boolean,
 ): ValidationError | null {
   const {
@@ -30,7 +30,7 @@ export function getValidationError(
 
   if (nationalDigits.length === 0 && callingCode.length === 0) return { kind: 'EMPTY' };
 
-  if (reason === 'INVALID_COUNTRY_CODE') return { kind: 'INVALID_COUNTRY_CODE' };
+  if (reason === 'INVALID_CALLING_CODE') return { kind: 'INVALID_CALLING_CODE' };
 
   const regionIndex: number = resolvePrimaryRegionIndex(callingCodeState, defaultRegionIndex);
   const nationalMask: number = getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter);

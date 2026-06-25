@@ -9,14 +9,14 @@ const GB_FIXED_E164 = '+44' + getExampleNumber('GB', 'FIXED_LINE');
 
 describe('PhoneNumber.getRegion: national', () => {
   it('returns the configured region for a valid number', () => {
-    const controller = createNationalInputController({ region: 'US' });
+    const controller = createNationalInputController({ defaultRegion: 'US' });
     controller.setValue(US_MOBILE);
 
     expect(controller.getPhoneNumber().getRegion()).toBe('US');
   });
 
   it('returns the region for a geographic landline', () => {
-    const controller = createNationalInputController({ region: 'GB' });
+    const controller = createNationalInputController({ defaultRegion: 'GB' });
     controller.setValue(GB_FIXED_WITH_PREFIX);
 
     expect(controller.getPhoneNumber().getRegion()).toBe('GB');

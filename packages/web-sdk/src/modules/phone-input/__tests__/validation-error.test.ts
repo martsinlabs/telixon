@@ -19,7 +19,7 @@ describe('PhoneInput validationError', () => {
   it('is null for a fully valid number', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
     phone.setValue(US_MOBILE);
     expect(phone.getState().validationError).toBeNull();
 
@@ -30,7 +30,7 @@ describe('PhoneInput validationError', () => {
   it('reports TOO_SHORT while the user is still typing', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'US' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
     phone.setValue('212');
     expect(phone.getState().validationError?.kind).toBe('TOO_SHORT');
 
@@ -41,7 +41,7 @@ describe('PhoneInput validationError', () => {
   it('reports NATIONAL_PREFIX_MISSING for AE without the prefix typed', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'AE' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'AE' });
     phone.setValue(AE_MOBILE);
     expect(phone.getState().validationError).toEqual({
       kind: 'NATIONAL_PREFIX_MISSING',
@@ -55,7 +55,7 @@ describe('PhoneInput validationError', () => {
   it('clears once the national prefix is typed for AE', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'AE' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'AE' });
     phone.setValue(AE_MOBILE_WITH_PREFIX);
     expect(phone.getState().validationError).toBeNull();
 
@@ -66,7 +66,7 @@ describe('PhoneInput validationError', () => {
   it('delivers updated validationError to subscribers on state change', () => {
     const { input, cleanup } = attachInput();
 
-    const phone = createPhoneInput({ input, mode: 'national', region: 'AE' });
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'AE' });
     const seen: Array<unknown> = [];
     phone.subscribe((state) => seen.push(state.validationError?.kind ?? null));
 

@@ -19,7 +19,7 @@ import { flagEmoji } from './flag';
  */
 export type NationalPhoneFieldOptions = {
   mode: 'national';
-  region: RegionCode;
+  defaultRegion: RegionCode;
   initialValue?: string;
   showSelector?: boolean;
   regionFilter?: readonly RegionCode[];
@@ -133,7 +133,7 @@ function resolveShowSelector(options: PhoneFieldOptions): boolean {
 }
 
 function resolveInitialRegion(options: PhoneFieldOptions): RegionCode {
-  if (options.mode === 'national') return options.region;
+  if (options.mode === 'national') return options.defaultRegion;
   if (options.display === 'split') return options.defaultRegion;
   throw new Error('resolveInitialRegion: only called when a selector is rendered (national or split)');
 }
@@ -142,7 +142,7 @@ function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElemen
   if (options.mode === 'national') {
     return createPhoneInput({
       mode: 'national',
-      region: options.region,
+      defaultRegion: options.defaultRegion,
       input,
       ...(options.initialValue !== undefined && { initialValue: options.initialValue }),
     });

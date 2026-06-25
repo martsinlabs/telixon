@@ -44,7 +44,7 @@ describe('Input controllers resolve identically to parsePhoneNumber', () => {
       const controller: InputController =
         number.region === undefined
           ? createInternationalInputController({})
-          : createNationalInputController({ region: number.region });
+          : createNationalInputController({ defaultRegion: number.region });
 
       const state: InputState = typeInto(controller, number.input);
       const options = number.region === undefined ? undefined : { defaultRegion: number.region };

@@ -49,7 +49,7 @@ export function asYouTypeWithTelixon(input: string): string[] {
 
 // As asYouTypeWithTelixon, but through the national controller for a fixed region, to compare against Google in national mode.
 export function asYouTypeNationalWithTelixon(region: RegionCode, input: string): string[] {
-  const controller: InputController = createNationalInputController({ region });
+  const controller: InputController = createNationalInputController({ defaultRegion: region });
 
   let state: InputState = controller.currentState;
   const snapshots: string[] = [];

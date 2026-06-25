@@ -251,10 +251,10 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       return inputController.getPhoneNumber();
     },
 
-    setRegionFilter(countries: readonly RegionCode[] | null): void {
-      if (readonlyArraysEqual(countries, currentRegionFilter)) return;
-      currentRegionFilter = countries;
-      inputController.setRegionFilter(countries);
+    setRegionFilter(regions: readonly RegionCode[] | null): void {
+      if (readonlyArraysEqual(regions, currentRegionFilter)) return;
+      currentRegionFilter = regions;
+      inputController.setRegionFilter(regions);
       notify(buildState());
     },
 
