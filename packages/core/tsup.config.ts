@@ -19,7 +19,15 @@ export default defineConfig({
     'index.sync-init.node': 'src/index.sync-init.node.ts',
   },
   format: ['esm'],
-  dts: true,
+  // Types only for the entries the `exports` map resolves to. browser/edge share index.node's API types
+  // (only the runtime loader differs), so a second .d.ts would just duplicate them or get split into a
+  // hashed shared chunk. Two self-contained entries instead.
+  dts: {
+    entry: {
+      index: 'src/index.node.ts',
+      'index.sync-init': 'src/index.sync-init.node.ts',
+    },
+  },
   clean: true,
   splitting: false,
   sourcemap: true,

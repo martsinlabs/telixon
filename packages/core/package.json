@@ -27,7 +27,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.node.d.ts",
+      "types": "./dist/index.d.ts",
       "workerd": "./dist/index.edge.js",
       "edge-light": "./dist/index.edge.js",
       "worker": "./dist/index.edge.js",
@@ -36,13 +36,13 @@
       "default": "./dist/index.node.js"
     },
     "./sync-init": {
-      "types": "./dist/index.sync-init.node.d.ts",
+      "types": "./dist/index.sync-init.d.ts",
       "node": "./dist/index.sync-init.node.js",
       "default": "./dist/index.sync-init.js"
     }
   },
   "main": "./dist/index.node.js",
-  "types": "./dist/index.node.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
