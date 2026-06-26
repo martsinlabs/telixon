@@ -11,3 +11,4 @@ export type {
 } from './models';
 
 export { createRegionList } from './region-list';
+export { regionToFlagEmoji } from './utils/region-to-flag-emoji';

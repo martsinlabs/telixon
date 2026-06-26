@@ -40,6 +40,7 @@ phone.subscribe((state) => {
 
 - `createPhoneInput`: DOM-bound phone input controller (live formatting with a stable caret, history, validation surface).
 - `createRegionList`: headless region list state machine (search, filtering, localization).
+- `regionToFlagEmoji`: region code to its flag emoji (the pair of Unicode regional indicator symbols).
 
 Engine, parser, and formatter live in [`@telixon/core`](https://www.npmjs.com/package/@telixon/core).
 

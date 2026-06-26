@@ -1,10 +1,10 @@
-import type { PhoneInputState } from '@telixon/web-sdk';
+import { regionToFlagEmoji, type PhoneInputState } from '@telixon/web-sdk';
 import '../style.css';
 
 import { bootstrapResources } from '../shared/bootstrap';
 import { mustGet } from '../shared/must-get';
 import { renderNav } from '../shared/nav';
-import { createPhoneField, flagEmoji, type PhoneFieldHandle, type PhoneFieldOptions } from '../shared/phone-field';
+import { createPhoneField, type PhoneFieldHandle, type PhoneFieldOptions } from '../shared/phone-field';
 
 renderNav('variations');
 
@@ -42,7 +42,7 @@ function mountAndWire(key: string, options: PhoneFieldOptions): PhoneFieldHandle
 
   const chip = mustGet(`[data-info="${key}"]`, HTMLSpanElement);
   const paint = (state: PhoneInputState): void => {
-    chip.textContent = state.region === null ? 'n/a' : `${flagEmoji(state.region)}  ${state.region}`;
+    chip.textContent = state.region === null ? 'n/a' : `${regionToFlagEmoji(state.region)}  ${state.region}`;
   };
   field.subscribe(paint);
   paint(field.getState());

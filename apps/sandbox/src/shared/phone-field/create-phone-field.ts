@@ -2,6 +2,7 @@ import { getCallingCodeForRegion, type RegionCode } from '@telixon/core';
 import {
   createPhoneInput,
   createRegionList,
+  regionToFlagEmoji,
   type PhoneInput,
   type PhoneInputListener,
   type PhoneInputState,
@@ -11,7 +12,6 @@ import {
 } from '@telixon/web-sdk';
 import { isRegionId } from '../guards';
 import { buildPhoneFieldDom, type PhoneFieldDom } from './dom';
-import { flagEmoji } from './flag';
 
 /**
  * National-mode phone field. Region is chosen via the selector (or fixed when `showSelector: false`)
@@ -261,7 +261,7 @@ function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWirin
   }
 
   function updateRegionButton(region: RegionCode): void {
-    regionFlag!.textContent = flagEmoji(region);
+    regionFlag!.textContent = regionToFlagEmoji(region);
     regionDial!.textContent = `+${getCallingCodeForRegion(region)}`;
   }
 
@@ -281,7 +281,7 @@ function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWirin
 
     const flag: HTMLSpanElement = document.createElement('span');
     flag.className = 'option-flag';
-    flag.textContent = flagEmoji(option.region);
+    flag.textContent = regionToFlagEmoji(option.region);
 
     const name: HTMLSpanElement = document.createElement('span');
     name.className = 'option-name';
