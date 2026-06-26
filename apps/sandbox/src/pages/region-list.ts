@@ -1,44 +1,34 @@
 import type { NumberType, RegionCode } from '@telixon/core';
-import { createCountryList, type CountryList, type CountryListSort } from '@telixon/web-sdk';
+import { createRegionList, type RegionList, type RegionListSort } from '@telixon/web-sdk';
 import '../style.css';
 
 import {
   applyConfigBtn,
   applyFiltersBtn,
   clearFiltersBtn,
-  countryFilterEl,
   localeEl,
   numberTypeFilterEl,
   prioritizeEl,
   refreshBtn,
+  regionFilterEl,
   searchEl,
   sortEl,
   stateEl,
-} from '../country-list/elements';
-import { render } from '../country-list/view';
+} from '../region-list/elements';
+import { render } from '../region-list/view';
 import { bootstrapResources } from '../shared/bootstrap';
 import { createChipFilter } from '../shared/chip-filter';
 import { isRegionId } from '../shared/guards';
 import { renderNav } from '../shared/nav';
+import { NUMBER_TYPE_OPTIONS } from '../shared/number-type-options';
 
-renderNav('country-list');
+renderNav('region-list');
 
-const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, {
-  options: [
-    { value: 'FIXED_LINE', label: 'Fixed line' },
-    { value: 'MOBILE', label: 'Mobile' },
-    { value: 'FIXED_LINE_OR_MOBILE', label: 'Fixed line or mobile' },
-    { value: 'TOLL_FREE', label: 'Toll free' },
-    { value: 'PREMIUM_RATE', label: 'Premium rate' },
-    { value: 'VOIP', label: 'VoIP' },
-    { value: 'PAGER', label: 'Pager' },
-    { value: 'UAN', label: 'UAN' },
-  ],
-});
+const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, { options: NUMBER_TYPE_OPTIONS });
 
 stateEl.textContent = 'Loading…';
 
-let list: CountryList | null = null;
+let list: RegionList | null = null;
 
 void bootstrap();
 
@@ -50,15 +40,15 @@ refreshBtn.addEventListener('click', () => list?.refresh());
 
 applyFiltersBtn.addEventListener('click', () => {
   if (list === null) return;
-  list.setCountryFilter(parseCountries(countryFilterEl.value));
+  list.setRegionFilter(parseRegions(regionFilterEl.value));
   const selected = numberTypeFilter.getValues();
   list.setNumberTypeFilter(selected.length > 0 ? selected : null);
 });
 
 clearFiltersBtn.addEventListener('click', () => {
-  countryFilterEl.value = '';
+  regionFilterEl.value = '';
   numberTypeFilter.setValues([]);
-  list?.setCountryFilter(null);
+  list?.setRegionFilter(null);
   list?.setNumberTypeFilter(null);
 });
 
@@ -71,12 +61,12 @@ async function bootstrap(): Promise<void> {
 function buildList(): void {
   list?.destroy();
 
-  list = createCountryList({
+  list = createRegionList({
     locale: localeEl.value,
-    sort: sortEl.value as CountryListSort<undefined>,
-    prioritize: parseCountries(prioritizeEl.value) ?? [],
+    sort: sortEl.value as RegionListSort<undefined>,
+    prioritize: parseRegions(prioritizeEl.value) ?? [],
     searchQuery: searchEl.value,
-    countryFilter: parseCountries(countryFilterEl.value),
+    regionFilter: parseRegions(regionFilterEl.value),
     numberTypeFilter: resolveNumberTypeFilter(),
   });
 
@@ -89,7 +79,7 @@ function resolveNumberTypeFilter(): readonly NumberType[] | null {
   return selected.length > 0 ? selected : null;
 }
 
-function parseCountries(value: string): RegionCode[] | null {
+function parseRegions(value: string): RegionCode[] | null {
   const items: RegionCode[] = value
     .split(',')
     .map((s) => s.trim().toUpperCase())

@@ -27,24 +27,11 @@ import { bootstrapResources } from '../shared/bootstrap';
 import { createChipFilter } from '../shared/chip-filter';
 import { isRegionId } from '../shared/guards';
 import { renderNav } from '../shared/nav';
+import { NUMBER_TYPE_OPTIONS } from '../shared/number-type-options';
 
 renderNav('phone-input');
 
-const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, {
-  options: [
-    { value: 'FIXED_LINE', label: 'Fixed line' },
-    { value: 'MOBILE', label: 'Mobile' },
-    { value: 'FIXED_LINE_OR_MOBILE', label: 'Fixed line or mobile' },
-    { value: 'TOLL_FREE', label: 'Toll free' },
-    { value: 'PREMIUM_RATE', label: 'Premium rate' },
-    { value: 'SHARED_COST', label: 'Shared cost' },
-    { value: 'VOIP', label: 'VoIP' },
-    { value: 'PERSONAL_NUMBER', label: 'Personal number' },
-    { value: 'PAGER', label: 'Pager' },
-    { value: 'UAN', label: 'UAN' },
-    { value: 'VOICEMAIL', label: 'Voicemail' },
-  ],
-});
+const numberTypeFilter = createChipFilter<NumberType>(numberTypeFilterEl, { options: NUMBER_TYPE_OPTIONS });
 
 stateEl.textContent = 'Loading…';
 
@@ -107,14 +94,14 @@ applyFiltersBtn.addEventListener('click', () => {
   const ctrl = getCurrent();
   if (!ctrl) return;
 
-  const countries = parseRegionFilter(regionFilterEl.value);
+  const regions = parseRegionFilter(regionFilterEl.value);
   const selected = numberTypeFilter.getValues();
   const numberTypes = selected.length > 0 ? selected : null;
 
-  ctrl.phone.setRegionFilter(countries);
+  ctrl.phone.setRegionFilter(regions);
   ctrl.phone.setNumberTypeFilter(numberTypes);
   sync(ctrl);
-  record(`setRegionFilter(${JSON.stringify(countries)}) · setNumberTypeFilter(${JSON.stringify(numberTypes)})`);
+  record(`setRegionFilter(${JSON.stringify(regions)}) · setNumberTypeFilter(${JSON.stringify(numberTypes)})`);
 });
 
 clearFiltersBtn.addEventListener('click', () => {

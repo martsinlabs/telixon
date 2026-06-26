@@ -275,7 +275,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* ── Phone field (country selector + input) ──────────── */
+/* ── Phone field (region selector + input) ──────────── */
 
 .phone-field {
   position: relative;
@@ -326,7 +326,7 @@ body {
   }
 }
 
-.phone-field-country {
+.phone-field-region {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -343,7 +343,7 @@ body {
   transition: background 0.12s;
 }
 
-.phone-field-country:hover {
+.phone-field-region:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -428,7 +428,7 @@ body {
   max-height: 70dvh;
 }
 
-/* The country-list page list reserves its space and shows a placeholder until the engine is ready. */
+/* The region-list page list reserves its space and shows a placeholder until the engine is ready. */
 #options:empty::before {
   content: 'Loading…';
   padding: 6px 10px;

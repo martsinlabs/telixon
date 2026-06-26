@@ -1,13 +1,13 @@
 import { getCallingCodeForRegion, type RegionCode } from '@telixon/core';
 import {
-  createCountryList,
   createPhoneInput,
-  type CountryList,
-  type CountryListState,
-  type CountryOption,
+  createRegionList,
   type PhoneInput,
   type PhoneInputListener,
   type PhoneInputState,
+  type RegionList,
+  type RegionListState,
+  type RegionOption,
 } from '@telixon/web-sdk';
 import { isRegionId } from '../guards';
 import { buildPhoneFieldDom, type PhoneFieldDom } from './dom';
@@ -76,7 +76,7 @@ export type PhoneFieldHandle = {
 
 /**
  * Build a self-contained phone-input UI: a styled input bound to a Telixon `PhoneInput` controller,
- * with an optional region selector dropdown wired via `CountryList`.
+ * with an optional region selector dropdown wired via `RegionList`.
  *
  * The factory chooses the right `PhoneInput` configuration from the discriminated `options` union
  * and decides whether to render the selector based on the mode:
@@ -187,9 +187,9 @@ function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWirin
     throw new Error('wireSelector: called with a DOM that has no selector elements');
   }
 
-  const list: CountryList = createCountryList({
+  const list: RegionList = createRegionList({
     sort: 'alphabetical',
-    countryFilter: regionFilter ?? null,
+    regionFilter: regionFilter ?? null,
   });
 
   let selectedRegion: RegionCode = initialRegion;
@@ -265,23 +265,23 @@ function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWirin
     regionDial!.textContent = `+${getCallingCodeForRegion(region)}`;
   }
 
-  function renderOptions(state: CountryListState): void {
+  function renderOptions(state: RegionListState): void {
     options!.replaceChildren();
     for (const option of state.options) {
       options!.appendChild(renderOptionRow(option));
     }
   }
 
-  function renderOptionRow(option: CountryOption): HTMLLIElement {
+  function renderOptionRow(option: RegionOption): HTMLLIElement {
     const li: HTMLLIElement = document.createElement('li');
     li.className = 'option-row option-row--clickable';
     li.setAttribute('role', 'option');
-    li.setAttribute('aria-selected', String(option.country === selectedRegion));
-    if (option.country === selectedRegion) li.classList.add('option-row--active');
+    li.setAttribute('aria-selected', String(option.region === selectedRegion));
+    if (option.region === selectedRegion) li.classList.add('option-row--active');
 
     const flag: HTMLSpanElement = document.createElement('span');
     flag.className = 'option-flag';
-    flag.textContent = flagEmoji(option.country);
+    flag.textContent = flagEmoji(option.region);
 
     const name: HTMLSpanElement = document.createElement('span');
     name.className = 'option-name';
@@ -293,8 +293,8 @@ function wireSelector({ dom, phone, initialRegion, regionFilter }: SelectorWirin
 
     li.append(flag, name, dial);
     li.addEventListener('click', () => {
-      if (!isRegionId(option.country)) return;
-      selectRegion(option.country);
+      if (!isRegionId(option.region)) return;
+      selectRegion(option.region);
     });
 
     return li;

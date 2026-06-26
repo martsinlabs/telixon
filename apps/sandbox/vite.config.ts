@@ -79,7 +79,7 @@ export default defineConfig({
       input: {
         index: resolve(import.meta.dirname, 'index.html'),
         'phone-input': resolve(import.meta.dirname, 'phone-input.html'),
-        'country-list': resolve(import.meta.dirname, 'country-list.html'),
+        'region-list': resolve(import.meta.dirname, 'region-list.html'),
         variations: resolve(import.meta.dirname, 'variations.html'),
         'sync-init': resolve(import.meta.dirname, 'sync-init.html'),
         'async-init': resolve(import.meta.dirname, 'async-init.html'),

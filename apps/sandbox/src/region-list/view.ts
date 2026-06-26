@@ -1,7 +1,7 @@
-import type { CountryListState, CountryOption } from '@telixon/web-sdk';
+import type { RegionListState, RegionOption } from '@telixon/web-sdk';
 import { countEl, optionsEl, stateEl } from './elements';
 
-export function render(state: CountryListState): void {
+export function render(state: RegionListState): void {
   countEl.textContent = String(state.options.length);
 
   optionsEl.replaceChildren();
@@ -12,7 +12,7 @@ export function render(state: CountryListState): void {
   stateEl.textContent = JSON.stringify(
     {
       locale: state.locale,
-      countryFilter: state.countryFilter,
+      regionFilter: state.regionFilter,
       numberTypeFilter: state.numberTypeFilter,
       searchQuery: state.searchQuery,
       optionsCount: state.options.length,
@@ -22,13 +22,13 @@ export function render(state: CountryListState): void {
   );
 }
 
-function renderRow(option: CountryOption): HTMLLIElement {
+function renderRow(option: RegionOption): HTMLLIElement {
   const li: HTMLLIElement = document.createElement('li');
   li.className = 'option-row';
 
   const code: HTMLSpanElement = document.createElement('span');
   code.className = 'option-code';
-  code.textContent = option.country;
+  code.textContent = option.region;
 
   const name: HTMLSpanElement = document.createElement('span');
   name.className = 'option-name';

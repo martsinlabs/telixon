@@ -27,8 +27,8 @@
           <section class="card">
             <h2 class="variation-title">National</h2>
             <p class="hint">
-              <code>mode: 'national'</code>. Country is chosen via the selector and stays fixed. The input holds only
-              the national digits, formatted with the country's national mask (e.g. <code>(415) 555-0123</code>).
+              <code>mode: 'national'</code>. Region is chosen via the selector and stays fixed. The input holds only the
+              national digits, formatted with the region's national mask (e.g. <code>(415) 555-0123</code>).
             </p>
             <div data-mount="national"><div class="field-skeleton"></div></div>
             <div class="variation-meta">
@@ -41,7 +41,7 @@
             <h2 class="variation-title">International with plus</h2>
             <p class="hint">
               <code>display: { callingCodeInInput: true, plusPrefix: true }</code>. The user types the leading
-              <code>+</code>, calling code, then national digits (e.g. <code>+1 415-555-0123</code>). Country resolves
+              <code>+</code>, calling code, then national digits (e.g. <code>+1 415-555-0123</code>). Region resolves
               live from the calling code; no separate selector is shown.
             </p>
             <div data-mount="international-plus"><div class="field-skeleton"></div></div>

@@ -7,7 +7,7 @@ import { record, sync } from './view';
 
 export type { Controller, Mode } from './types';
 
-const DEFAULT_COUNTRY: RegionCode = 'US';
+const DEFAULT_REGION: RegionCode = 'US';
 
 let current: Controller | null = null;
 
@@ -29,7 +29,7 @@ export function attach(mode: Mode, value: string = initialValueEl.value): void {
 
 export function mount(mode: Mode, value: string): PhoneInput {
   const raw = regionEl.value.toUpperCase();
-  const region: RegionCode = isRegionId(raw) ? raw : DEFAULT_COUNTRY;
+  const region: RegionCode = isRegionId(raw) ? raw : DEFAULT_REGION;
   const strict = strictEl.checked;
 
   if (mode === 'national') {
