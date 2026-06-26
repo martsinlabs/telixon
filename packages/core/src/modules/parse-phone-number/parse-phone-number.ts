@@ -31,6 +31,11 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   });
 
   return createPhoneNumber(
-    toResolvedPhoneNumber(resolved.snapshot, defaultRegionIndex, resolved.nationalPrefixPresent),
+    toResolvedPhoneNumber(
+      resolved.snapshot,
+      defaultRegionIndex,
+      resolved.nationalPrefixPresent,
+      resolved.readAsNational,
+    ),
   );
 }

@@ -1,4 +1,4 @@
-import { getExampleNumber } from '@telixon/testing';
+import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '..';
 
@@ -179,8 +179,7 @@ describe('InternationalInputController caret across boundaries', () => {
     const state = controller.insert('+1 ', '', 1, 1);
 
     expect(state.value).toBe('+1 ');
-    expect(state.selectionStart).toBeGreaterThanOrEqual(0);
-    expect(state.selectionStart).toBeLessThanOrEqual(state.value.length);
+    expect(state.selectionStart).toBe(1);
   });
 });
 

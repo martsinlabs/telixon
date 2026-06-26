@@ -271,7 +271,12 @@ class InternationalInputController implements InputController {
     });
 
     return createPhoneNumber(
-      toResolvedPhoneNumber(resolved.snapshot, this.#defaultRegionIndex, resolved.nationalPrefixPresent),
+      toResolvedPhoneNumber(
+        resolved.snapshot,
+        this.#defaultRegionIndex,
+        resolved.nationalPrefixPresent,
+        resolved.readAsNational,
+      ),
     );
   }
 

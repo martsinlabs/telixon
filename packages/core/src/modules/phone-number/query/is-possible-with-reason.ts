@@ -19,6 +19,8 @@ export function isPossibleWithReason(resolved: ResolvedPhoneNumber): Possibility
   if (regionIndex < 0) return 'INVALID_CALLING_CODE';
 
   const length: number = nationalDigits.length;
+  // Beyond every valid national length; guard before containsLength, whose `1 << length` wraps past 31.
+  if (length >= 32) return 'TOO_LONG';
   const nationalMask: number = getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter);
 
   // Lengths valid only locally (never nationally) report as locally possible: libphonenumber testNumberLength.

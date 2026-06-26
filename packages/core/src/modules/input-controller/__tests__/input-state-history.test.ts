@@ -141,7 +141,7 @@ describe('InputStateHistory.redo / push truncation', () => {
 });
 
 describe('InputStateHistory.updateCurrentSelection', () => {
-  it('mutates the current entry without growing the stack', () => {
+  it('replaces the current entry selection without growing the stack', () => {
     const history = new InputStateHistory(makeState('123', null, 0));
     history.push(makeState('1234', null, 4));
 

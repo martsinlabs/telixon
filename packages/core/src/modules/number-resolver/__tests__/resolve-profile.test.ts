@@ -74,7 +74,7 @@ describe('resolveLatestConcreteRegionIndex', () => {
   });
 });
 
-describe('resolveFirstMatchingNumberTypeProfile', () => {
+describe('resolveProfile', () => {
   it('resolves AG from +1 268 even when preferred region is US', () => {
     const profile = resolveProfile(createResolver('1', '268'), 'US');
 
@@ -106,7 +106,7 @@ describe('resolveFirstMatchingNumberTypeProfile', () => {
   });
 });
 
-// Priority chain (non-strict): steps mirror the JSDoc on resolveFirstMatchingNumberTypeProfile.
+// Priority chain (non-strict): steps mirror the JSDoc on resolveProfile.
 describe('priority chain: non-strict', () => {
   // Step 1: anchored concrete exact wins before any other candidate.
   describe('Step 1: anchored concrete exact', () => {
@@ -160,17 +160,16 @@ describe('priority chain: non-strict', () => {
 
   // isAlive=false (dead state). Only terminal-prefix path is consulted.
   describe('dead-state recovery', () => {
-    it('once state dies, falls back to terminal-prefix anchor (CA from 310 UAN)', () => {
-      // 3101234 = CA UAN exact; appending an invalid digit drops the DFA to dead state, but the snapshot keeps the CA terminal-prefix history.
+    it('recovers a profile from terminal-prefix history once the state dies', () => {
+      // 3101234 is a 310 UAN terminal; appending an invalid digit drops the DFA to a dead state.
       const resolver = createResolver('1', '3101234');
       resolver.advance(0); // pushes into dead state on most NANP roll-outs
 
       const profile = resolveProfileRef(resolver.snapshot, getResourceProvider().regionKeyToIndex['US']!);
 
-      // Whatever the resolver returns must come from the terminal-prefix history (CA's UAN, the only concrete anchor), not a live DFA state.
-      if (profile !== null) {
-        expect(['CA', 'US']).toContain(getProfileRegion(profile));
-      }
+      // Recovery reads the terminal-prefix history, not a live DFA state; with US preferred the NANP anchor resolves to US.
+      expect(profile).not.toBeNull();
+      expect(getProfileRegion(profile!)).toBe('US');
     });
   });
 });
@@ -210,9 +209,8 @@ describe('filters', () => {
 
     const profile = resolveProfile(resolver, 'US');
 
-    if (profile !== null) {
-      expect(getProfileRegion(profile)).not.toBe('CA');
-    }
+    expect(profile).not.toBeNull();
+    expect(getProfileRegion(profile!)).not.toBe('CA');
   });
 
   it('numberTypeFilter restricted to mobile excludes fixedLine resolutions', () => {
@@ -225,8 +223,9 @@ describe('filters', () => {
 
     const profile = resolveProfile(resolver, 'US');
 
-    if (profile !== null && !isGeneralDesc(profile)) {
-      expect(getProfileType(profile)).not.toBe('fixedLine');
+    expect(profile).not.toBeNull();
+    if (!isGeneralDesc(profile!)) {
+      expect(getProfileType(profile!)).not.toBe('FIXED_LINE');
     }
   });
 

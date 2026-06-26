@@ -1,3 +1,4 @@
+import { __clearIddMatcherCache } from '../resolve-number';
 import { __clearFormatMaskCaches } from '../utils/format-masks';
 import { __clearNationalPrefixRulesCache } from '../utils/get-national-prefix-rules';
 
@@ -5,4 +6,5 @@ import { __clearNationalPrefixRulesCache } from '../utils/get-national-prefix-ru
 export function clearGlobalCaches(): void {
   __clearFormatMaskCaches();
   __clearNationalPrefixRulesCache();
+  __clearIddMatcherCache();
 }

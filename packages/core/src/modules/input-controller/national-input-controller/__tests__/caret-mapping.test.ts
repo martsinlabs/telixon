@@ -96,3 +96,25 @@ describe('national controller caret mapping', () => {
     });
   });
 });
+
+describe('national controller replace-selection (insert digits over a non-empty selection)', () => {
+  it('replaces the selected area code with the inserted digits', () => {
+    const controller = createNationalInputController({ defaultRegion: 'US' });
+    const typed = controller.insert('', '2015550123', 0, 0);
+    expect(typed.value).toBe('(201) 555-0123');
+
+    // Select "(201) " (the area-code group) and type "415".
+    const replaced = controller.insert(typed.value, '415', 0, 6);
+
+    expect(replaced.value).toBe('(415) 555-0123');
+  });
+
+  it('replaces a fully selected value with a new number', () => {
+    const controller = createNationalInputController({ defaultRegion: 'US' });
+    const typed = controller.insert('', '2015550123', 0, 0);
+
+    const replaced = controller.insert(typed.value, '4155550199', 0, typed.value.length);
+
+    expect(replaced.value).toBe('(415) 555-0199');
+  });
+});

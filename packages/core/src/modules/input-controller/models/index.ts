@@ -10,16 +10,16 @@ export interface InputState {
 }
 
 export interface InputControllerState extends InputState {
-  snapshot: NumberResolverSnapshot;
-  profileRef: NumberTypeProfileRef | null;
-  formatIndex: number | null;
-  nationalPrefixPresent: boolean;
+  readonly snapshot: NumberResolverSnapshot;
+  readonly profileRef: NumberTypeProfileRef | null;
+  readonly formatIndex: number | null;
+  readonly nationalPrefixPresent: boolean;
 }
 
 export interface InputChange {
-  insertText: string;
-  selectionStart: number;
-  selectionEnd: number;
+  readonly insertText: string;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
 }
 
 export type CaretIndex = number;

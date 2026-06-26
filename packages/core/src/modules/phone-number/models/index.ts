@@ -16,6 +16,7 @@ export type ValidationError =
   | { readonly kind: 'TOO_SHORT'; readonly minLength: number }
   | { readonly kind: 'TOO_LONG'; readonly maxLength: number }
   | { readonly kind: 'INVALID_LENGTH'; readonly possibleLengths: readonly number[] }
+  | { readonly kind: 'POSSIBLE_LOCAL_ONLY' }
   | { readonly kind: 'PATTERN_MISMATCH' }
   | { readonly kind: 'NATIONAL_PREFIX_MISSING'; readonly expectedPrefix: string };
 
@@ -28,6 +29,7 @@ export interface ResolvedPhoneNumber {
   readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
   readonly nationalPrefixPresent: boolean;
+  readonly readAsNational: boolean;
   readonly strict: boolean;
 }
 

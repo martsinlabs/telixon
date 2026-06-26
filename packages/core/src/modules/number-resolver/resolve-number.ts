@@ -5,14 +5,14 @@ import {
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { applyLeadingCountryCodeStrip } from './apply-leading-country-code-strip';
+import { applyLeadingCallingCodeStrip } from './apply-leading-calling-code-strip';
 import { applyNationalPrefixStrip } from './apply-national-prefix-strip';
 import { NumberResolverSnapshot } from './models';
 import { NumberResolver } from './number-resolver';
 import { resolvePrimaryRegionIndex } from './utils/resolve-primary-region-index';
 
 // The single parse pipeline shared by parsePhoneNumber and the input controllers. Walks the raw input
-// (non-digits ignored) and strips IDD prefix, redundant leading country code, and national prefix, so
+// (non-digits ignored) and strips IDD prefix, redundant leading calling code, and national prefix, so
 // every caller resolves a number identically.
 
 let cachedResolver: NumberResolver | null = null;
@@ -29,6 +29,11 @@ function getIddMatcher(regionIndex: number): RegExp | null {
   const matcher: RegExp | null = internationalPrefix === undefined ? null : new RegExp(`^(?:${internationalPrefix})`);
   iddMatcherCache.set(regionIndex, matcher);
   return matcher;
+}
+
+// Bench-only: reset the compiled IDD matcher memo so strict-cold scenarios measure true one-shot cost.
+export function __clearIddMatcherCache(): void {
+  iddMatcherCache.clear();
 }
 
 function collectDigits(input: string): string {
@@ -71,6 +76,8 @@ export interface ResolveNumberInput {
 export interface ResolvedNumberState {
   readonly snapshot: NumberResolverSnapshot;
   readonly nationalPrefixPresent: boolean;
+  // National-mode input (no leading '+', resolved against the default region); national-prefix checks apply only then.
+  readonly readAsNational: boolean;
 }
 
 export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
@@ -92,9 +99,9 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
   resolver.setNumberTypeFilter(numberTypeFilter);
   resolver.setStrict(strict);
 
-  // True once a redundant leading country code is dropped: from then on the number behaves as if dialled
+  // True once a redundant leading calling code is dropped: from then on the number behaves as if dialled
   // through that calling code, so the strip below uses its main region instead of the default region.
-  let leadingCountryCodeStripped = false;
+  let leadingCallingCodeStripped = false;
   if (readAsNational) {
     const callingCode: string = String(getMetadataRegionCallingCode(resourceProvider.engine, defaultRegionIndex));
     resolver.setCallingCode(callingCode);
@@ -102,7 +109,7 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
 
     // National digits that redundantly begin with the region's own calling code: drop it and re-walk.
     // The national-prefix strip still runs below, matching libphonenumber's second pass in parseHelper.
-    const leadingStripped: string | null = applyLeadingCountryCodeStrip(
+    const leadingStripped: string | null = applyLeadingCallingCodeStrip(
       resolver.getNationalNumber(),
       resolver.callingCodeState,
       callingCode,
@@ -111,19 +118,19 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     if (leadingStripped !== null) {
       resolver.setCallingCode(callingCode);
       walkInput(resolver, leadingStripped);
-      leadingCountryCodeStripped = true;
+      leadingCallingCodeStripped = true;
     }
   } else {
     resolver.reset();
     walkInput(resolver, iddRemainder !== null ? iddRemainder : input);
   }
 
-  // Strip the national prefix against the default region - but once a leading country code is extracted
+  // Strip the national prefix against the default region - but once a leading calling code is extracted
   // (or the input is international), against that calling code's main region (libphonenumber's region
   // switch in maybeExtractCountryCode). An incomplete '+' calling code has no region, so no strip.
   const callingCodeUsable: boolean = readAsNational || resolver.callingCodeCompleted;
   const stripRegionIndex: number =
-    readAsNational && !leadingCountryCodeStripped
+    readAsNational && !leadingCallingCodeStripped
       ? defaultRegionIndex
       : resolvePrimaryRegionIndex(resolver.callingCodeState, defaultRegionIndex);
   const nationalDigits: string = resolver.getNationalNumber();
@@ -142,5 +149,5 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     walkInput(resolver, stripped);
   }
 
-  return { snapshot: resolver.snapshot, nationalPrefixPresent };
+  return { snapshot: resolver.snapshot, nationalPrefixPresent, readAsNational };
 }

@@ -8,7 +8,7 @@ import { walkEndState } from './utils/walk-end-state';
 // libphonenumber maybeExtractCountryCode (FROM_NUMBER_WITHOUT_PLUS_SIGN): national digits that redundantly
 // begin with the region's own calling code. Strip it when the remainder parses better (matches the
 // region pattern where the full number did not, or the full number is too long); else null.
-export function applyLeadingCountryCodeStrip(
+export function applyLeadingCallingCodeStrip(
   nationalDigits: string,
   callingCodeState: number,
   callingCode: string,

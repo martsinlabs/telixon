@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { parsePhoneNumber } from '..';
 
-describe('parsePhoneNumber: leading country code (libphonenumber maybeExtractCountryCode FROM_NUMBER)', () => {
-  it('drops a redundant leading country code when the full number is too long', () => {
-    // RU national input dialled with its own country code: "7" + "8001234567".
+describe('parsePhoneNumber: leading calling code (libphonenumber maybeExtractCountryCode FROM_NUMBER)', () => {
+  it('drops a redundant leading calling code when the full number is too long', () => {
+    // RU national input dialled with its own calling code: "7" + "8001234567".
     const number = parsePhoneNumber('78001234567', { defaultRegion: 'RU' });
 
     expect(number.getRegion()).toBe('RU');
@@ -11,14 +11,14 @@ describe('parsePhoneNumber: leading country code (libphonenumber maybeExtractCou
   });
 
   it('strips the national prefix from the remainder with no length guard', () => {
-    // "1" (country code) + "1" (trunk prefix) + a short number: both leading ones drop.
+    // "1" (calling code) + "1" (trunk prefix) + a short number: both leading ones drop.
     const number = parsePhoneNumber('11660318596', { defaultRegion: 'US' });
 
     expect(number.getNationalNumber()).toBe('660318596');
     expect(number.isPossibleWithReason()).toBe('TOO_SHORT');
   });
 
-  it('keeps the country code on the resolved number while dropping it from the national part', () => {
+  it('keeps the calling code on the resolved number while dropping it from the national part', () => {
     const number = parsePhoneNumber('2422123456', { defaultRegion: 'CG' });
 
     expect(number.getCallingCode()).toBe('242');

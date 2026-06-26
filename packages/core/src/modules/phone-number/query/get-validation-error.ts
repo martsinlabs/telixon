@@ -26,6 +26,7 @@ export function getValidationError(
     regionFilter,
     numberTypeFilter,
     nationalPrefixPresent,
+    readAsNational,
   } = resolved;
 
   if (nationalDigits.length === 0 && callingCode.length === 0) return { kind: 'EMPTY' };
@@ -39,9 +40,13 @@ export function getValidationError(
   if (reason === 'TOO_LONG') return { kind: 'TOO_LONG', maxLength: getMaxLength(nationalMask) };
   if (reason === 'INVALID_LENGTH') return { kind: 'INVALID_LENGTH', possibleLengths: getPossibleLengths(nationalMask) };
 
+  // Possible only for local dialing (e.g. a subscriber number without its area code): incomplete, not a pattern fault.
+  if (reason === 'IS_POSSIBLE_LOCAL_ONLY') return { kind: 'POSSIBLE_LOCAL_ONLY' };
+
   if (!valid) return { kind: 'PATTERN_MISMATCH' };
 
-  if (!nationalPrefixPresent) {
+  // International input legitimately omits the trunk prefix; only national-mode input can be missing it.
+  if (readAsNational && !nationalPrefixPresent) {
     return detectNationalPrefixMissing(regionIndex, nationalDigits);
   }
 

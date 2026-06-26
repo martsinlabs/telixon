@@ -10,11 +10,11 @@ function walkTo(digits: string): NumberResolver {
   return resolver;
 }
 
-function matchAllCountries(): Uint8Array {
+function matchAllRegions(): Uint8Array {
   return new Uint8Array(getResourceProvider().regionIds.length).fill(1);
 }
 
-function matchNoCountries(): Uint8Array {
+function matchNoRegions(): Uint8Array {
   return new Uint8Array(getResourceProvider().regionIds.length);
 }
 
@@ -37,13 +37,13 @@ describe('stateMatchesFilters', () => {
       const state = walkTo('1').callingCodeState;
 
       expect(isInCallingCode(getResourceProvider().engine, state)).toBe(true);
-      expect(stateMatchesFilters(state, matchAllCountries(), null)).toBe(true);
+      expect(stateMatchesFilters(state, matchAllRegions(), null)).toBe(true);
     });
 
     it('returns false with a match-none region filter', () => {
       const state = walkTo('1').callingCodeState;
 
-      expect(stateMatchesFilters(state, matchNoCountries(), null)).toBe(false);
+      expect(stateMatchesFilters(state, matchNoRegions(), null)).toBe(false);
     });
 
     it('ignores the number-type filter at a calling-code state', () => {
@@ -57,13 +57,13 @@ describe('stateMatchesFilters', () => {
     it('returns true with match-all filters at a mid-walk state', () => {
       const resolver = walkTo('1416');
 
-      expect(stateMatchesFilters(resolver.state, matchAllCountries(), matchAllNumberTypes())).toBe(true);
+      expect(stateMatchesFilters(resolver.state, matchAllRegions(), matchAllNumberTypes())).toBe(true);
     });
 
     it('returns false when the region filter allows no region', () => {
       const resolver = walkTo('1416');
 
-      expect(stateMatchesFilters(resolver.state, matchNoCountries(), null)).toBe(false);
+      expect(stateMatchesFilters(resolver.state, matchNoRegions(), null)).toBe(false);
     });
 
     it('returns false when the number-type filter allows no type', () => {

@@ -1,4 +1,4 @@
-import { getExampleNumber } from '@telixon/testing';
+import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../international-input-controller';
 import { createNationalInputController } from '../national-input-controller';
@@ -40,13 +40,12 @@ describe('InputController.isPossibleWithReason: national', () => {
     expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('TOO_LONG');
   });
 
-  it('returns INVALID_LENGTH when all allowed types have no length matching', () => {
+  it('returns TOO_SHORT when the value is shorter than the filtered type allows', () => {
     const controller = createNationalInputController({ defaultRegion: 'DE' });
     controller.setNumberTypeFilter(['PAGER']);
     controller.setValue('030');
 
-    const result = controller.getPhoneNumber().isPossibleWithReason();
-    expect(['TOO_SHORT', 'INVALID_LENGTH']).toContain(result);
+    expect(controller.getPhoneNumber().isPossibleWithReason()).toBe('TOO_SHORT');
   });
 });
 
