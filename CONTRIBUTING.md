@@ -24,7 +24,6 @@ A pnpm monorepo. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full picture.
 ```
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
-packages/testing   @telixon/testing internal test fixtures (not published)
 apps/sandbox       internal dev workbench
 ```
 
@@ -74,7 +73,7 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
 
 ### Types
 
-- Branded types for domain primitives (phone number, country code, calling code).
+- String-literal unions for closed-set domain primitives (`RegionCode`, `NumberType`).
 - Discriminated unions over optional fields for variants.
 - `unknown` + type guards at all system boundaries (binary parsing, user input).
 - No `as` casts, no type widening. Fix the root cause.

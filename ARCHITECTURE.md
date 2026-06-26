@@ -63,7 +63,7 @@ Each layer adds one concern and depends only on layers beneath it.
 | 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`                      | core       | present |
 | 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                        | web-sdk    | planned |
 | 6     | `components`                  | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
-| 7     | user code                     | All markup, styles, country-selector wiring                           | a binding  | n/a     |
+| 7     | user code                     | All markup, styles, region-selector wiring                            | a binding  | n/a     |
 
 The split keeps the engine free of DOM, reactivity, and framework weight, and lets a caller enter at
 the level matching their need:
@@ -95,9 +95,9 @@ added once, in `web-sdk`, via `subscribe(listener)`; it is not baked into the en
 
 The engine is the original work and the differentiator.
 
-**It is a generated artifact, not hand-written source.** `core/src/engine` contains no `.ts` files. It
-is `index.js` + `index.d.ts` (the accessor API) plus binary layers, compiled from Google's
-libphonenumber metadata by a separate tool. Never hand-edit it; changes come from recompiling and
+**It is a generated artifact, not hand-written source.** `core/src/engine` contains no hand-written
+`.ts` source. It is `index.js` + `index.d.ts` (the accessor API) plus binary layers, compiled from
+Google's libphonenumber metadata by a separate tool. Never hand-edit it; changes come from recompiling and
 bumping provenance.
 
 **It is a family of deterministic finite-state automata, not per-region data.** Google publishes its
@@ -146,7 +146,7 @@ The pure-JS base64 + gunzip floor runs in any runtime and is byte-equality-teste
 The bundle-size story is code-and-data separation, not "ship fewer regions":
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The engine artifact is runtime data, out of the initial JS bundle (~119 KB gzipped across four
+- The engine artifact is runtime data, out of the initial JS bundle (~119 KB compressed across four
   content-hashed chunks, ~0.61 MB decompressed). The async entries load it lazily (cached after first
   load on the web); `@telixon/core/sync-init` carries it in the bundle.
 
@@ -166,9 +166,9 @@ There is one resolution core. Both entry shapes use it; neither duplicates query
 - `parsePhoneNumber(input, options)`: one-shot, for a complete string.
 - `createInternationalInputController` / `createNationalInputController`: incremental, per keystroke.
 
-The `PhoneNumber` query surface (`isValid`, `isPossible`, `isPossibleWithReason`, `getNumberType`,
-`getNationalNumber`, `getCallingCode`, `getRegion`, `formatE164`, `formatNational`, `formatInternational`,
-`formatRfc3966`) is pure reads over an already-resolved snapshot.
+The `PhoneNumber` query surface (`isValid`, `isValidForRegion`, `isPossible`, `isPossibleWithReason`,
+`getValidationError`, `getNumberType`, `getNationalNumber`, `getCallingCode`, `getRegion`, `formatE164`,
+`formatNational`, `formatInternational`, `formatRfc3966`) is pure reads over an already-resolved snapshot.
 
 ## Cross-cutting invariants
 
@@ -210,11 +210,11 @@ These keep modules independent and the dependency graph legible. They are enforc
 
 ## Naming
 
-The engine and the public API both speak in **regions** (`RegionCode`, `REGION_CODES`, `getRegion`, the
-`defaultRegion` config), matching libphonenumber and ECMAScript `Intl`, where a region is an ISO 3166-1 area that
-may not be a sovereign country. "Country" appears only as a UI label in the web-sdk country picker, the
-word users expect for that dropdown. The term "calling code" names the ITU E.164 dial prefix (the `+1`
-number), never the region; the two stay distinct everywhere, including internal names.
+The engine and the entire public API speak in **regions** (`RegionCode`, `REGION_CODES`, `getRegion`, the
+`defaultRegion` config, the web-sdk `RegionList`), matching libphonenumber and ECMAScript `Intl`, where a
+region is an ISO 3166-1 area that may not be a sovereign country. The term "calling code" names the ITU
+E.164 dial prefix (the `+1` number), never the region; "country code" survives only where we cite Google's
+own functions (e.g. `getCountryCodeForRegion`).
 
 ## Public API
 
@@ -224,8 +224,8 @@ number), never the region; the two stay distinct everywhere, including internal 
 
 ## Error handling
 
-- Pure functions never throw. Where failure is meaningful, return `null` or a typed
-  `{ ok: true; value } | { ok: false; error }` result.
+- Pure functions never throw. Where failure is meaningful, return `null` or a typed discriminated
+  union (such as `ValidationError`).
 - Throw only at unrecoverable system boundaries, such as corrupt binary metadata.
 - Never swallow an error silently.
 

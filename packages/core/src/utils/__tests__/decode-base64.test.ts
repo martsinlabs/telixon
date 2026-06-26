@@ -29,4 +29,9 @@ describe('decodeBase64', () => {
       expect(decodeBase64(base64), `length ${length}`).toEqual(reference(base64));
     }
   });
+
+  it('throws on input whose length is not a multiple of 4 (corrupt or unpadded)', () => {
+    expect(() => decodeBase64('T')).toThrow('multiple of 4');
+    expect(() => decodeBase64('TWF')).toThrow('multiple of 4');
+  });
 });

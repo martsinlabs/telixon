@@ -1,6 +1,8 @@
+import type { MethodResults } from '../oracle/types';
 import { CorpusCaseKind } from './corpus';
 
 // PhoneNumber query behaviors compared per number against the oracle (as-you-type is a per-keystroke axis, see as-you-type.ts, not a per-number method).
+// `satisfies` rejects any entry that is not a real comparison key; the completeness guard below rejects any key left out.
 export const COMPARED_METHODS = [
   'isValid',
   'isPossible',
@@ -13,9 +15,12 @@ export const COMPARED_METHODS = [
   'formatNational',
   'formatInternational',
   'formatRfc3966',
-] as const;
+] as const satisfies readonly (keyof MethodResults)[];
 
 export type MethodName = (typeof COMPARED_METHODS)[number];
+
+// Compile-time: every MethodResults key must be listed above, so a method silently dropped from the comparison fails typecheck.
+const _allMethodsCompared: Exclude<keyof MethodResults, MethodName> extends never ? true : never = true;
 
 // Where a mismatch came from: a corpus case kind, or the per-prefix possibility sweep.
 export type MismatchKind = CorpusCaseKind | 'possibility-prefix';

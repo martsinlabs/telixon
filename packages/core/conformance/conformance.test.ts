@@ -46,6 +46,7 @@ const EXPECTED_KINDS: readonly CorpusCaseKind[] = [
 describe('conformance vs Google libphonenumber', () => {
   it('covers the region set with a fully parseable example corpus', () => {
     expect(report.corpusSize).toBeGreaterThan(0);
+    expect(report.compared).toBeGreaterThan(0);
     expect(report.skipped).toBe(0);
     expect(report.regionsCovered).toBe(report.regionsTotal);
   });

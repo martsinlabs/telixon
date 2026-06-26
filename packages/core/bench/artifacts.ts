@@ -328,7 +328,7 @@ function renderRefreshLadder(report: KeystrokeLatencyReport | null): string {
     `<tbody>\n        ${rows}\n      </tbody></table>` +
     `<div class="frame-bar-caption">A higher refresh rate is a shorter frame and a stricter bar, so the headroom ` +
     `shrinks as the rate rises. Clearing the strictest rate clears every slower display. Reference scales only ` +
-    `&mdash; the benchmark runs headless.</div>`
+    `-- the benchmark runs headless.</div>`
   );
 }
 

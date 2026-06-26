@@ -18,7 +18,7 @@ divergence.
   drift.
 - **Exhaustive.** Every supported region and every public query method, on valid numbers, their
   display spellings (international, national, RFC3966), deterministic corruptions of them (truncated,
-  extended, digit-shifted, unassigned calling codes), and every digit prefix, plus as-you-type
+  extended, digit-shifted, unassigned calling codes), and every digit prefix, plus per-keystroke
   formatting.
 - **Reproducible.** `pnpm conformance` runs the gate locally.
 

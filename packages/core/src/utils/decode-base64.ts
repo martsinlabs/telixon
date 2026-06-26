@@ -10,6 +10,8 @@ const BASE64_LOOKUP: Uint8Array = (() => {
 // Pure-JS standard base64 decode (no `atob`/`Buffer`): runs on any JS runtime. Expects padded base64.
 export function decodeBase64(base64: string): Uint8Array<ArrayBuffer> {
   const length: number = base64.length;
+  if (length % 4 !== 0)
+    throw new Error(`decodeBase64: length ${length} is not a multiple of 4 (corrupt or unpadded input).`);
   let padding = 0;
   if (length > 0 && base64.charCodeAt(length - 1) === BASE64_PADDING) padding++;
   if (length > 1 && base64.charCodeAt(length - 2) === BASE64_PADDING) padding++;

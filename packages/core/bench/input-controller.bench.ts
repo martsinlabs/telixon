@@ -11,6 +11,7 @@ const controller: InputController = createInternationalInputController({ initial
 
 function typeFullNumber(numberString: string): { value: string; selectionEnd: number } {
   controller.setValue('');
+  controller.clearHistory(); // isolate each number: undo/redo benches must unwind only this number's keystrokes.
   let value: string = '';
   let selectionEnd: number = 0;
   for (let characterIndex = 0; characterIndex < numberString.length; characterIndex++) {
@@ -30,10 +31,11 @@ describe('input-controller: type-through full number (corpus pass)', () => {
   });
 });
 
-describe('input-controller: type-through + full PhoneNumber query suite per keystroke (corpus pass)', () => {
+describe('input-controller: type-through + core PhoneNumber query methods per keystroke (corpus pass)', () => {
   bench('insert + 7 query methods per keystroke', () => {
     for (const entry of CORPUS) {
       controller.setValue('');
+      controller.clearHistory();
       let value: string = '';
       let selectionEnd: number = 0;
       for (let characterIndex = 0; characterIndex < entry.e164.length; characterIndex++) {

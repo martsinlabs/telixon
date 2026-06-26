@@ -27,6 +27,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Build first so consumers (examples/core/bundle-size) typecheck against the built @telixon/core package.
+      - run: pnpm build
+
       - run: pnpm typecheck
 
       - run: pnpm lint
@@ -34,8 +37,6 @@ jobs:
       - run: pnpm format:check
 
       - run: pnpm test
-
-      - run: pnpm build
 
       # Validate published type entry points resolve correctly across modern
       # moduleResolution modes (node16, bundler). cjs-resolves-to-esm ignored:

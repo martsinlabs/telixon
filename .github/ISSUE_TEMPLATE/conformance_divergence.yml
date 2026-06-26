@@ -26,18 +26,19 @@ body:
       description: Which public method produced the divergent result?
       options:
         - isValid
+        - isValidForRegion
         - isPossible
         - isPossibleWithReason
         - getNumberType
         - getNationalNumber
         - getCallingCode
-        - getCountry
-        - getE164
-        - formatInternational
+        - getRegion
+        - formatE164
         - formatNational
-        - getURI
+        - formatInternational
+        - formatRfc3966
         - possibility prefix sweep
-        - as-you-type controller value
+        - input-controller value (per keystroke)
     validations:
       required: true
   - type: input

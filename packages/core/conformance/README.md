@@ -78,7 +78,7 @@ mismatches in `known-divergences.ts` (each with a reason). It fails on:
 - any mismatch **not** in the allowlist (a real regression), and
 - any allowlist entry that **no longer** occurs (a stale entry to remove).
 
-It also checks coverage: every case kind populated, zero skipped inputs, and most regions sampled.
+It also checks coverage: every case kind populated, zero skipped inputs, and every region covered.
 
 Mutated inputs Google refuses to parse have no method-level oracle. For those, the contract is
 agreement on rejection: Telixon, which never throws, must judge the same input not possible. A
