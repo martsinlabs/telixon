@@ -1,83 +1,87 @@
 import type { NumberType, RegionCode } from '@telixon/core';
-import { regionSupportsNumberTypes } from '@telixon/core';
+import { EngineNotReadyError, isEngineReady, regionSupportsNumberTypes } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import type {
-  CountryDataFactory,
-  CountryList,
-  CountryListListener,
-  CountryListOptions,
-  CountryListSort,
-  CountryListState,
-  CountryOption,
-  CountrySearchFn,
+  RegionDataFactory,
+  RegionList,
+  RegionListListener,
+  RegionListOptions,
+  RegionListSort,
+  RegionListState,
+  RegionOption,
+  RegionSearchFn,
 } from './models';
 import { computeBaseOptions } from './utils/base';
 import { defaultSearch } from './utils/search';
-import { resolveCountryListComparator } from './utils/sort';
+import { resolveRegionListComparator } from './utils/sort';
 
 const DEFAULT_LOCALE: string = 'en';
 
 /**
- * Create a headless country list controller.
+ * Create a headless region list controller.
  *
- * Pipeline on every state change: base set (cached per locale) -> countryFilter -> numberTypeFilter
+ * Pipeline on every state change: base set (cached per locale) -> regionFilter -> numberTypeFilter
  * -> searchFn -> sort -> prioritize -> emit. Mutators that don't change the underlying value skip
  * emission (no-op detection via shallow array equality and string equality).
  *
  * Generic `T` flows from the optional `dataFactory` return type; when omitted, `T` defaults to
  * `undefined` and the `data` slot is present but unused.
+ *
+ * Requires the engine to be ready (see `ensureEngineReady`); throws `EngineNotReadyError` otherwise.
  */
-export function createCountryList<T = undefined>(options: CountryListOptions<T> = {}): CountryList<T> {
-  const dataFactory: CountryDataFactory<T> | undefined = options.dataFactory;
-  const searchFn: CountrySearchFn<T> = options.searchFn ?? defaultSearch;
-  const sortConfig: CountryListSort<T> | undefined = options.sort;
+export function createRegionList<T = undefined>(options: RegionListOptions<T> = {}): RegionList<T> {
+  if (!isEngineReady()) throw new EngineNotReadyError();
+
+  const dataFactory: RegionDataFactory<T> | undefined = options.dataFactory;
+  const searchFn: RegionSearchFn<T> = options.searchFn ?? defaultSearch;
+  const sortConfig: RegionListSort<T> | undefined = options.sort;
   const prioritize: readonly RegionCode[] = options.prioritize ?? [];
 
   let locale: string = options.locale ?? DEFAULT_LOCALE;
-  let countryFilter: readonly RegionCode[] | null = options.countryFilter ?? null;
+  let regionFilter: readonly RegionCode[] | null = options.regionFilter ?? null;
   let numberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
   let searchQuery: string = options.searchQuery ?? '';
 
-  let baseSet: CountryOption<T>[] = computeBaseOptions(locale, dataFactory);
+  let baseSet: RegionOption<T>[] = computeBaseOptions(locale, dataFactory);
 
-  const listeners: Set<CountryListListener<T>> = new Set();
+  const listeners: Set<RegionListListener<T>> = new Set();
   let isDestroyed: boolean = false;
-  let cachedState: CountryListState<T> | null = null;
+  let cachedState: RegionListState<T> | null = null;
 
-  function runPipeline(): CountryOption<T>[] {
+  function runPipeline(): RegionOption<T>[] {
     const hasQuery: boolean = searchQuery.trim() !== '';
-    const hasCountryFilter: boolean = countryFilter !== null;
+    const hasRegionFilter: boolean = regionFilter !== null;
     const hasNumberTypeFilter: boolean = numberTypeFilter !== null;
 
-    let filtered: CountryOption<T>[];
-    if (!hasCountryFilter && !hasNumberTypeFilter && !hasQuery) {
+    let filtered: RegionOption<T>[];
+    if (!hasRegionFilter && !hasNumberTypeFilter && !hasQuery) {
       filtered = baseSet.slice();
     } else {
       filtered = [];
       for (const option of baseSet) {
-        if (hasCountryFilter && !countryFilter!.includes(option.country)) continue;
-        if (hasNumberTypeFilter && !regionSupportsNumberTypes(option.country, numberTypeFilter!)) continue;
+        if (hasRegionFilter && !regionFilter!.includes(option.region)) continue;
+        if (hasNumberTypeFilter && !regionSupportsNumberTypes(option.region, numberTypeFilter!)) continue;
         if (hasQuery && !searchFn(searchQuery, option)) continue;
         filtered.push(option);
       }
     }
 
-    filtered.sort(resolveCountryListComparator(sortConfig));
+    filtered.sort(resolveRegionListComparator(sortConfig));
 
     if (prioritize.length > 0) {
       const prioritizeSet: Set<RegionCode> = new Set(prioritize);
-      const byCountry: Map<RegionCode, CountryOption<T>> = new Map();
-      for (const option of filtered) byCountry.set(option.country, option);
+      const byRegion: Map<RegionCode, RegionOption<T>> = new Map();
+      for (const option of filtered) byRegion.set(option.region, option);
 
-      const prioritized: CountryOption<T>[] = [];
-      for (const region of prioritize) {
-        const option = byCountry.get(region);
+      const prioritized: RegionOption<T>[] = [];
+      for (const region of prioritizeSet) {
+        const option = byRegion.get(region);
         if (option) prioritized.push(option);
       }
 
-      const rest: CountryOption<T>[] = [];
+      const rest: RegionOption<T>[] = [];
       for (const option of filtered) {
-        if (!prioritizeSet.has(option.country)) rest.push(option);
+        if (!prioritizeSet.has(option.region)) rest.push(option);
       }
 
       filtered = prioritized.concat(rest);
@@ -86,12 +90,12 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
     return filtered;
   }
 
-  function buildState(): CountryListState<T> {
+  function buildState(): RegionListState<T> {
     if (cachedState !== null) return cachedState;
 
     cachedState = {
       options: runPipeline(),
-      countryFilter,
+      regionFilter,
       numberTypeFilter,
       searchQuery,
       locale,
@@ -104,16 +108,16 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
     cachedState = null;
     if (isDestroyed) return;
 
-    const state: CountryListState<T> = buildState();
+    const state: RegionListState<T> = buildState();
     for (const listener of listeners) listener(state);
   }
 
   return {
-    getState(): CountryListState<T> {
+    getState(): RegionListState<T> {
       return buildState();
     },
 
-    subscribe(listener: CountryListListener<T>): () => void {
+    subscribe(listener: RegionListListener<T>): () => void {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
@@ -136,9 +140,9 @@ export function createCountryList<T = undefined>(options: CountryListOptions<T> 
       emit();
     },
 
-    setCountryFilter(value: readonly RegionCode[] | null): void {
-      if (readonlyArraysEqual(value, countryFilter)) return;
-      countryFilter = value;
+    setRegionFilter(value: readonly RegionCode[] | null): void {
+      if (readonlyArraysEqual(value, regionFilter)) return;
+      regionFilter = value;
       emit();
     },
 

@@ -1,10 +1,5 @@
-import {
-  getCallingCodeForRegion,
-  getPlaceholders,
-  isNationalPrefixOptional,
-  NumberType,
-  RegionCode,
-} from '@telixon/core';
+import type { NumberType, RegionCode } from '@telixon/core';
+import { getCallingCodeForRegion, getPlaceholders, isNationalPrefixOptional } from '@telixon/core';
 import type { PhoneInputOptions } from '../models';
 
 /** Placeholder-relevant subset of `PhoneInputOptions`, captured at construction. */

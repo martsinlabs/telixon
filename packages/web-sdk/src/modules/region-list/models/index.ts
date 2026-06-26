@@ -1,37 +1,37 @@
 import type { NumberType, RegionCode } from '@telixon/core';
 
 /**
- * One entry in the rendered country list.
+ * One entry in the rendered region list.
  *
- * - `country`: ISO region code (e.g. `'US'`).
- * - `callingCode`: numeric country calling code as string (e.g. `'1'`).
- * - `displayName`: country name from `Intl.DisplayNames` for the active locale; falls back to the
+ * - `region`: ISO region code (e.g. `'US'`).
+ * - `callingCode`: numeric calling code as string (e.g. `'1'`).
+ * - `displayName`: region name from `Intl.DisplayNames` for the active locale; falls back to the
  *   ISO region code when the runtime can't produce a localized name.
- * - `data`: caller-defined payload produced by {@link CountryDataFactory}; `undefined` when no factory.
+ * - `data`: caller-defined payload produced by {@link RegionDataFactory}; `undefined` when no factory.
  */
-export type CountryOption<T = undefined> = {
-  country: RegionCode;
-  callingCode: string;
-  displayName: string;
-  data: T;
+export type RegionOption<T = undefined> = {
+  readonly region: RegionCode;
+  readonly callingCode: string;
+  readonly displayName: string;
+  readonly data: T;
 };
 
 /**
- * Input passed to the {@link CountryDataFactory}. Carries the already-computed base fields and the
+ * Input passed to the {@link RegionDataFactory}. Carries the already-computed base fields and the
  * active locale so the factory can produce derived values without recomputing them.
  */
-export type CountryDataFactoryInput = {
-  country: RegionCode;
-  callingCode: string;
-  displayName: string;
-  locale: string;
+export type RegionDataFactoryInput = {
+  readonly region: RegionCode;
+  readonly callingCode: string;
+  readonly displayName: string;
+  readonly locale: string;
 };
 
 /**
- * Producer for the `data` slot on each {@link CountryOption}. Invoked once per region per base
+ * Producer for the `data` slot on each {@link RegionOption}. Invoked once per region per base
  * recomputation (construction and on `localize`). Expected to be pure.
  */
-export type CountryDataFactory<T> = (input: CountryDataFactoryInput) => T;
+export type RegionDataFactory<T = undefined> = (input: RegionDataFactoryInput) => T;
 
 /**
  * Custom search predicate. Returns `true` to include `option` in the filtered result.
@@ -39,7 +39,7 @@ export type CountryDataFactory<T> = (input: CountryDataFactoryInput) => T;
  * The library short-circuits empty and whitespace-only queries and does not invoke this function.
  * The function receives the raw `query`; perform any normalization needed internally.
  */
-export type CountrySearchFn<T> = (query: string, option: CountryOption<T>) => boolean;
+export type RegionSearchFn<T = undefined> = (query: string, option: RegionOption<T>) => boolean;
 
 /**
  * Sort selector.
@@ -48,26 +48,26 @@ export type CountrySearchFn<T> = (query: string, option: CountryOption<T>) => bo
  * - `'callingCode'`: by numeric calling code, with `displayName` as tiebreaker.
  * - Function: custom comparator.
  */
-export type CountryListSort<T> =
+export type RegionListSort<T = undefined> =
   | 'alphabetical'
   | 'callingCode'
-  | ((a: CountryOption<T>, b: CountryOption<T>) => number);
+  | ((a: RegionOption<T>, b: RegionOption<T>) => number);
 
 /**
- * Construction options for {@link CountryList}.
+ * Construction options for {@link RegionList}.
  *
  * All fields are optional. `null` filters mean no restriction; `[]` filters mean explicitly empty
  * (kept distinct on purpose so callers can express "user-cleared filter" vs "intentionally narrowed
  * to zero results").
  */
-export type CountryListOptions<T = undefined> = {
-  dataFactory?: CountryDataFactory<T>;
-  countryFilter?: readonly RegionCode[] | null;
+export type RegionListOptions<T = undefined> = {
+  dataFactory?: RegionDataFactory<T>;
+  regionFilter?: readonly RegionCode[] | null;
   numberTypeFilter?: readonly NumberType[] | null;
   searchQuery?: string;
-  searchFn?: CountrySearchFn<T>;
+  searchFn?: RegionSearchFn<T>;
   locale?: string;
-  sort?: CountryListSort<T>;
+  sort?: RegionListSort<T>;
   prioritize?: readonly RegionCode[];
 };
 
@@ -76,32 +76,32 @@ export type CountryListOptions<T = undefined> = {
  *
  * `options` is the post-filter, post-sort, post-prioritize list as currently rendered.
  */
-export type CountryListState<T = undefined> = {
-  options: readonly CountryOption<T>[];
-  countryFilter: readonly RegionCode[] | null;
-  numberTypeFilter: readonly NumberType[] | null;
-  searchQuery: string;
-  locale: string;
+export type RegionListState<T = undefined> = {
+  readonly options: readonly RegionOption<T>[];
+  readonly regionFilter: readonly RegionCode[] | null;
+  readonly numberTypeFilter: readonly NumberType[] | null;
+  readonly searchQuery: string;
+  readonly locale: string;
 };
 
 /**
  * Subscriber callback. Receives the latest state on every emit.
  */
-export type CountryListListener<T> = (state: CountryListState<T>) => void;
+export type RegionListListener<T = undefined> = (state: RegionListState<T>) => void;
 
 /**
- * Headless country list controller. Produces a reactive, filtered, sorted, searched, localized list
- * of country options for pickers, dropdowns, and selector UIs.
+ * Headless region list controller. Produces a reactive, filtered, sorted, searched, localized list
+ * of region options for pickers, dropdowns, and selector UIs.
  *
  * The naming distinction is intentional: action verbs (`search`, `localize`) name user-driven
  * interactions; `set*` names declarative config mutations. No initial emit is fired on
  * construction. Call `getState()` after `subscribe` to read the bootstrap value.
  */
-export type CountryList<T = undefined> = {
+export type RegionList<T = undefined> = {
   /** Subscribe to state changes. Returns an unsubscribe function. */
-  subscribe(listener: CountryListListener<T>): () => void;
+  subscribe(listener: RegionListListener<T>): () => void;
   /** Read the current state without subscribing. */
-  getState(): CountryListState<T>;
+  getState(): RegionListState<T>;
 
   /** Update the search query and re-run the filter pipeline. No-op when the query is unchanged. */
   search(query: string): void;
@@ -110,7 +110,7 @@ export type CountryList<T = undefined> = {
   /** Recompute the base set (display names + `dataFactory`) and re-emit. Useful when external state read by `dataFactory` has changed. Always emits. */
   refresh(): void;
   /** Restrict the list to the given regions. `null` removes the restriction; `[]` matches nothing. No-op when the value is unchanged. */
-  setCountryFilter(value: readonly RegionCode[] | null): void;
+  setRegionFilter(value: readonly RegionCode[] | null): void;
   /** Restrict the list to regions supporting at least one of the given number types. `null` removes the restriction; `[]` matches nothing. No-op when the value is unchanged. */
   setNumberTypeFilter(value: readonly NumberType[] | null): void;
 

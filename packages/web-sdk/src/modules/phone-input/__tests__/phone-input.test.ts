@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { getExampleNumber } from '@telixon/testing';
+import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
 
@@ -715,6 +715,40 @@ describe('PhoneInput compositionend', () => {
     expect(digits(input.value)).toBe('5');
 
     phone.destroy();
+    cleanup();
+  });
+});
+
+describe('PhoneInput lifecycle', () => {
+  it('throws when a second PhoneInput attaches to the same element', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
+
+    expect(() => createPhoneInput({ input, mode: 'national', defaultRegion: 'US' })).toThrow();
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('allows re-attaching to the same element after destroy', () => {
+    const { input, cleanup } = attachInput();
+    createPhoneInput({ input, mode: 'national', defaultRegion: 'US' }).destroy();
+
+    expect(() => createPhoneInput({ input, mode: 'national', defaultRegion: 'US' }).destroy()).not.toThrow();
+
+    cleanup();
+  });
+
+  it('removes its event listeners on destroy', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
+    phone.destroy();
+
+    input.value = '';
+    dispatchBeforeInput(input, 'insertText', { data: US_MOBILE });
+    dispatchKeyDown(input, 'z', { ctrlKey: true });
+
+    expect(input.value).toBe('');
     cleanup();
   });
 });

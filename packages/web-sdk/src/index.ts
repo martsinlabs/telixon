@@ -1,2 +1,2 @@
-export * from './modules/country-list';
 export * from './modules/phone-input';
+export * from './modules/region-list';

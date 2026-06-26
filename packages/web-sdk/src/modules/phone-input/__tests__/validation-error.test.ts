@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { getExampleNumber } from '@telixon/testing';
+import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createPhoneInput } from '../phone-input';
 

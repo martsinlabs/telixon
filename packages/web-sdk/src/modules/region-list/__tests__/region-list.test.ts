@@ -2,17 +2,17 @@
 
 import { REGION_CODES } from '@telixon/core';
 import { describe, expect, it, vi } from 'vitest';
-import { createCountryList } from '../country-list';
-import type { CountryOption } from '../models';
+import type { RegionOption } from '../models';
+import { createRegionList } from '../region-list';
 
-describe('createCountryList: defaults', () => {
+describe('createRegionList: defaults', () => {
   it('emits options for every region with locale=en when no options are provided', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     const state = list.getState();
 
     expect(state.options.length).toBe(REGION_CODES.length);
     expect(state.locale).toBe('en');
-    expect(state.countryFilter).toBe(null);
+    expect(state.regionFilter).toBe(null);
     expect(state.numberTypeFilter).toBe(null);
     expect(state.searchQuery).toBe('');
 
@@ -20,58 +20,68 @@ describe('createCountryList: defaults', () => {
   });
 
   it('sets data to undefined on every option when no dataFactory is provided', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     for (const option of list.getState().options) {
       expect(option.data).toBe(undefined);
     }
     list.destroy();
   });
 
-  it('calls dataFactory with country, callingCode, displayName, and locale for each region', () => {
-    const factory = vi.fn((input) => ({ tag: `${input.country}-${input.locale}` }));
-    const list = createCountryList({ dataFactory: factory, locale: 'en' });
+  it('calls dataFactory with region, callingCode, displayName, and locale for each region', () => {
+    const factory = vi.fn((input) => ({ tag: `${input.region}-${input.locale}` }));
+    const list = createRegionList({ dataFactory: factory, locale: 'en' });
 
     expect(factory).toHaveBeenCalledTimes(REGION_CODES.length);
 
     const firstCall = factory.mock.calls[0]![0];
-    expect(firstCall).toHaveProperty('country');
+    expect(firstCall).toHaveProperty('region');
     expect(firstCall).toHaveProperty('callingCode');
     expect(firstCall).toHaveProperty('displayName');
     expect(firstCall.locale).toBe('en');
 
     list.destroy();
   });
+
+  it('stores the dataFactory return value on each option', () => {
+    const list = createRegionList({
+      dataFactory: (input) => ({ tag: `${input.region}-${input.locale}` }),
+      locale: 'en',
+    });
+    const usOption = list.getState().options.find((option) => option.region === 'US');
+    expect(usOption?.data).toEqual({ tag: 'US-en' });
+    list.destroy();
+  });
 });
 
-describe('createCountryList: filters', () => {
-  it('restricts options to those in countryFilter', () => {
-    const list = createCountryList({ countryFilter: ['US', 'UA'] });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries.sort()).toEqual(['UA', 'US']);
+describe('createRegionList: filters', () => {
+  it('restricts options to those in regionFilter', () => {
+    const list = createRegionList({ regionFilter: ['US', 'UA'] });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions.sort()).toEqual(['UA', 'US']);
     list.destroy();
   });
 
   it('restricts options to regions supporting the given numberTypeFilter', () => {
-    const list = createCountryList({ countryFilter: ['US', 'UA', 'GB'], numberTypeFilter: ['MOBILE'] });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries.length).toBeGreaterThan(0);
-    for (const c of countries) expect(['US', 'UA', 'GB']).toContain(c);
+    const list = createRegionList({ regionFilter: ['US', 'UA', 'GB'], numberTypeFilter: ['MOBILE'] });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions.length).toBeGreaterThan(0);
+    for (const c of regions) expect(['US', 'UA', 'GB']).toContain(c);
     list.destroy();
   });
 
-  it('combines countryFilter and numberTypeFilter with AND semantics', () => {
-    const list = createCountryList({ countryFilter: ['US'], numberTypeFilter: ['TOLL_FREE'] });
+  it('combines regionFilter and numberTypeFilter with AND semantics', () => {
+    const list = createRegionList({ regionFilter: ['US'], numberTypeFilter: ['TOLL_FREE'] });
     const state = list.getState();
     expect(state.options.length).toBe(1);
-    expect(state.options[0]!.country).toBe('US');
+    expect(state.options[0]!.region).toBe('US');
     list.destroy();
   });
 
-  it('treats null countryFilter as no restriction and [] as matches nothing', () => {
-    const allList = createCountryList({ countryFilter: null });
+  it('treats null regionFilter as no restriction and [] as matches nothing', () => {
+    const allList = createRegionList({ regionFilter: null });
     expect(allList.getState().options.length).toBe(REGION_CODES.length);
 
-    const noneList = createCountryList({ countryFilter: [] });
+    const noneList = createRegionList({ regionFilter: [] });
     expect(noneList.getState().options.length).toBe(0);
 
     allList.destroy();
@@ -79,54 +89,54 @@ describe('createCountryList: filters', () => {
   });
 });
 
-describe('createCountryList: default search', () => {
+describe('createRegionList: default search', () => {
   it('matches displayName case-insensitively', () => {
-    const list = createCountryList({ searchQuery: 'united states' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toContain('US');
+    const list = createRegionList({ searchQuery: 'united states' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toContain('US');
     list.destroy();
   });
 
   it('strips accents in displayName matching', () => {
-    const list = createCountryList({ searchQuery: 'cote' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toContain('CI');
+    const list = createRegionList({ searchQuery: 'cote' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toContain('CI');
     list.destroy();
   });
 
-  it('matches the country (ISO region) code', () => {
-    const list = createCountryList({ searchQuery: 'us' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toContain('US');
+  it('matches the region (ISO region) code', () => {
+    const list = createRegionList({ searchQuery: 'us' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toContain('US');
     list.destroy();
   });
 
   it('matches the callingCode without a leading +', () => {
-    const list = createCountryList({ searchQuery: '380' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toContain('UA');
+    const list = createRegionList({ searchQuery: '380' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toContain('UA');
     list.destroy();
   });
 
   it('matches the callingCode with a leading +', () => {
-    const list = createCountryList({ searchQuery: '+380' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toContain('UA');
+    const list = createRegionList({ searchQuery: '+380' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toContain('UA');
     list.destroy();
   });
 });
 
-describe('createCountryList: custom searchFn', () => {
+describe('createRegionList: custom searchFn', () => {
   it('invokes the custom searchFn with the raw query and option', () => {
-    const searchFn = vi.fn((query: string, option: CountryOption) => option.country === 'US' && query === 'foo');
-    const list = createCountryList({ searchFn, searchQuery: 'foo' });
+    const searchFn = vi.fn((query: string, option: RegionOption) => option.region === 'US' && query === 'foo');
+    const list = createRegionList({ searchFn, searchQuery: 'foo' });
 
-    const result = list.getState().options.map((o) => o.country);
+    const result = list.getState().options.map((o) => o.region);
 
     expect(searchFn).toHaveBeenCalled();
     const firstArgs = searchFn.mock.calls[0]!;
     expect(typeof firstArgs[0]).toBe('string');
-    expect(firstArgs[1]).toHaveProperty('country');
+    expect(firstArgs[1]).toHaveProperty('region');
     expect(result).toEqual(['US']);
 
     list.destroy();
@@ -134,7 +144,7 @@ describe('createCountryList: custom searchFn', () => {
 
   it('does not invoke the custom searchFn when the query is empty', () => {
     const searchFn = vi.fn(() => true);
-    const list = createCountryList({ searchFn, searchQuery: '' });
+    const list = createRegionList({ searchFn, searchQuery: '' });
 
     expect(searchFn).not.toHaveBeenCalled();
 
@@ -143,7 +153,7 @@ describe('createCountryList: custom searchFn', () => {
 
   it('does not invoke the custom searchFn when the query is whitespace-only', () => {
     const searchFn = vi.fn(() => true);
-    const list = createCountryList({ searchFn, searchQuery: '   \t  ' });
+    const list = createRegionList({ searchFn, searchQuery: '   \t  ' });
 
     expect(searchFn).not.toHaveBeenCalled();
 
@@ -151,9 +161,9 @@ describe('createCountryList: custom searchFn', () => {
   });
 });
 
-describe('createCountryList: sort', () => {
+describe('createRegionList: sort', () => {
   it('sorts alphabetically by displayName by default', () => {
-    const list = createCountryList({ countryFilter: ['US', 'UA', 'GB'] });
+    const list = createRegionList({ regionFilter: ['US', 'UA', 'GB'] });
     const names = list.getState().options.map((o) => o.displayName);
     const sorted = [...names].sort((a, b) => a.localeCompare(b));
     expect(names).toEqual(sorted);
@@ -161,37 +171,37 @@ describe('createCountryList: sort', () => {
   });
 
   it('sorts numerically by callingCode when sort=callingCode', () => {
-    const list = createCountryList({ countryFilter: ['US', 'UA', 'GB'], sort: 'callingCode' });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toEqual(['US', 'GB', 'UA']);
+    const list = createRegionList({ regionFilter: ['US', 'UA', 'GB'], sort: 'callingCode' });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toEqual(['US', 'GB', 'UA']);
     list.destroy();
   });
 
   it('uses a custom comparator function when provided', () => {
-    const list = createCountryList({
-      countryFilter: ['US', 'UA', 'GB'],
-      sort: (a, b) => b.country.localeCompare(a.country),
+    const list = createRegionList({
+      regionFilter: ['US', 'UA', 'GB'],
+      sort: (a, b) => b.region.localeCompare(a.region),
     });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries).toEqual(['US', 'UA', 'GB']);
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions).toEqual(['US', 'UA', 'GB']);
     list.destroy();
   });
 });
 
-describe('createCountryList: prioritize', () => {
+describe('createRegionList: prioritize', () => {
   it('places prioritized regions at the top in the given order', () => {
-    const list = createCountryList({
-      countryFilter: ['US', 'UA', 'GB', 'DE', 'FR'],
+    const list = createRegionList({
+      regionFilter: ['US', 'UA', 'GB', 'DE', 'FR'],
       prioritize: ['UA', 'US'],
     });
-    const countries = list.getState().options.map((o) => o.country);
-    expect(countries.slice(0, 2)).toEqual(['UA', 'US']);
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions.slice(0, 2)).toEqual(['UA', 'US']);
     list.destroy();
   });
 
   it('leaves the remaining options in sort order after prioritized ones', () => {
-    const list = createCountryList({
-      countryFilter: ['US', 'UA', 'GB', 'DE', 'FR'],
+    const list = createRegionList({
+      regionFilter: ['US', 'UA', 'GB', 'DE', 'FR'],
       prioritize: ['UA'],
     });
     const restDisplayNames = list
@@ -202,11 +212,22 @@ describe('createCountryList: prioritize', () => {
     expect(restDisplayNames).toEqual(restSorted);
     list.destroy();
   });
+
+  it('deduplicates repeated prioritized regions', () => {
+    const list = createRegionList({
+      regionFilter: ['US', 'UA', 'GB'],
+      prioritize: ['UA', 'UA', 'US'],
+    });
+    const regions = list.getState().options.map((o) => o.region);
+    expect(regions.filter((region) => region === 'UA')).toEqual(['UA']);
+    expect(regions.slice(0, 2)).toEqual(['UA', 'US']);
+    list.destroy();
+  });
 });
 
-describe('createCountryList: localize', () => {
+describe('createRegionList: localize', () => {
   it('recomputes displayName when locale changes', () => {
-    const list = createCountryList({ countryFilter: ['US'] });
+    const list = createRegionList({ regionFilter: ['US'] });
     const nameEn = list.getState().options[0]!.displayName;
 
     list.localize('fr');
@@ -220,7 +241,7 @@ describe('createCountryList: localize', () => {
 
   it('re-invokes dataFactory with the new locale', () => {
     const factory = vi.fn((input) => ({ tag: input.locale }));
-    const list = createCountryList({ dataFactory: factory, countryFilter: ['US'] });
+    const list = createRegionList({ dataFactory: factory, regionFilter: ['US'] });
 
     factory.mockClear();
     list.localize('fr');
@@ -231,10 +252,10 @@ describe('createCountryList: localize', () => {
   });
 });
 
-describe('createCountryList: refresh', () => {
+describe('createRegionList: refresh', () => {
   it('recomputes the base set, re-invoking dataFactory for every region', () => {
-    const factory = vi.fn((input) => ({ tag: input.country }));
-    const list = createCountryList({ dataFactory: factory });
+    const factory = vi.fn((input) => ({ tag: input.region }));
+    const list = createRegionList({ dataFactory: factory });
 
     factory.mockClear();
     list.refresh();
@@ -245,7 +266,7 @@ describe('createCountryList: refresh', () => {
   });
 
   it('emits to subscribers even when no state value has changed', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     const listener = vi.fn();
     list.subscribe(listener);
 
@@ -257,20 +278,20 @@ describe('createCountryList: refresh', () => {
   });
 });
 
-describe('createCountryList: no-op detection', () => {
-  it('does not emit when setCountryFilter is called with an equal array', () => {
-    const list = createCountryList({ countryFilter: ['US', 'UA'] });
+describe('createRegionList: no-op detection', () => {
+  it('does not emit when setRegionFilter is called with an equal array', () => {
+    const list = createRegionList({ regionFilter: ['US', 'UA'] });
     const listener = vi.fn();
     list.subscribe(listener);
 
-    list.setCountryFilter(['US', 'UA']);
+    list.setRegionFilter(['US', 'UA']);
 
     expect(listener).not.toHaveBeenCalled();
     list.destroy();
   });
 
   it('does not emit when search is called with the same query', () => {
-    const list = createCountryList({ searchQuery: 'us' });
+    const list = createRegionList({ searchQuery: 'us' });
     const listener = vi.fn();
     list.subscribe(listener);
 
@@ -281,7 +302,7 @@ describe('createCountryList: no-op detection', () => {
   });
 
   it('does not emit when localize is called with the same locale', () => {
-    const list = createCountryList({ locale: 'en' });
+    const list = createRegionList({ locale: 'en' });
     const listener = vi.fn();
     list.subscribe(listener);
 
@@ -292,9 +313,9 @@ describe('createCountryList: no-op detection', () => {
   });
 });
 
-describe('createCountryList: subscribe and destroy', () => {
+describe('createRegionList: subscribe and destroy', () => {
   it('emits synchronously to subscribers after a mutator', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     const listener = vi.fn();
     list.subscribe(listener);
 
@@ -307,7 +328,7 @@ describe('createCountryList: subscribe and destroy', () => {
   });
 
   it('returns an unsubscribe function that stops further notifications', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     const listener = vi.fn();
     const unsubscribe = list.subscribe(listener);
 
@@ -323,7 +344,7 @@ describe('createCountryList: subscribe and destroy', () => {
   });
 
   it('clears all listeners on destroy', () => {
-    const list = createCountryList();
+    const list = createRegionList();
     const listener = vi.fn();
     list.subscribe(listener);
 

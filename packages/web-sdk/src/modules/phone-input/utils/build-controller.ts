@@ -1,13 +1,14 @@
-import { createInternationalInputController, createNationalInputController, InputController } from '@telixon/core';
+import type { InputController } from '@telixon/core';
+import { createInternationalInputController, createNationalInputController } from '@telixon/core';
 import type { InternationalPhoneInputOptions, NationalPhoneInputOptions, PhoneInputOptions } from '../models';
 
 function createNationalController(options: NationalPhoneInputOptions): InputController {
   const {
     input: _input,
     mode: _mode,
-    regionFilter: _cf,
-    numberTypeFilter: _ntf,
-    placeholderNumberType: _pnt,
+    regionFilter: _regionFilter,
+    numberTypeFilter: _numberTypeFilter,
+    placeholderNumberType: _placeholderNumberType,
     ...config
   } = options;
 
@@ -18,9 +19,9 @@ function createInternationalController(options: InternationalPhoneInputOptions):
   const {
     input: _input,
     mode: _mode,
-    regionFilter: _cf,
-    numberTypeFilter: _ntf,
-    placeholderNumberType: _pnt,
+    regionFilter: _regionFilter,
+    numberTypeFilter: _numberTypeFilter,
+    placeholderNumberType: _placeholderNumberType,
     ...config
   } = options;
 

@@ -1,4 +1,4 @@
-import { InputController, NumberType, PhoneNumber, RegionCode } from '@telixon/core';
+import type { InputController, NumberType, PhoneNumber, RegionCode } from '@telixon/core';
 import { readonlyArraysEqual } from '../../utils/readonly-arrays-equal';
 import {
   isBackwardDeleteInputType,
@@ -30,16 +30,19 @@ function assertInputIsAvailable(input: HTMLInputElement): void {
  * Wires DOM events (`beforeinput`, `compositionend`, undo/redo keyboard shortcuts) to a Telixon
  * input controller and synchronizes the input value, caret, and resolved phone metadata.
  *
- * Throws if the element is not `type="text"` or `type="tel"`, or if another PhoneInput is already
- * attached to the same element. Call {@link PhoneInput.destroy} to release.
+ * Throws if the element is not `type="text"` or `type="tel"`, if another PhoneInput is already
+ * attached to the same element, or if the engine is not ready (`EngineNotReadyError`). Call
+ * {@link PhoneInput.destroy} to release.
  */
 export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   const { input } = options;
   assertSupportedInputType(input);
   assertInputIsAvailable(input);
-  ATTACHED_INPUTS.add(input);
 
+  // Build the controller first: it throws EngineNotReadyError when the engine is not ready, so the
+  // element must not be registered as attached until construction succeeds (else a retry would fail).
   const inputController: InputController = buildController(options);
+  ATTACHED_INPUTS.add(input);
   const placeholderConfig: PlaceholderConfig = buildPlaceholderConfig(options);
   const listeners: Set<PhoneInputListener> = new Set();
 

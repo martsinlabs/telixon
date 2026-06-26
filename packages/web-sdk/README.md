@@ -1,6 +1,6 @@
 # @telixon/web-sdk
 
-Headless DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core): `PhoneInput` and `CountryList` state machines for the web.
+Headless DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core): `PhoneInput` and `RegionList` state machines for the web.
 
 [![conformance](https://img.shields.io/endpoint?url=https://telixon.dev/parity-badge.json)](https://telixon.dev/parity.html)
 
@@ -25,7 +25,7 @@ const phone = createPhoneInput({
 });
 
 phone.subscribe((state) => {
-  // state.value, state.country, state.selectionStart, state.selectionEnd, state.validationError, state.placeholder
+  // state.value, state.region, state.selectionStart, state.selectionEnd, state.validationError, state.placeholder
 });
 ```
 
@@ -39,7 +39,7 @@ phone.subscribe((state) => {
 ## What's in this package
 
 - `createPhoneInput`: DOM-bound phone input controller (live formatting with a stable caret, history, validation surface).
-- `createCountryList`: headless country list state machine (search, filtering, selection).
+- `createRegionList`: headless region list state machine (search, filtering, localization).
 
 Engine, parser, and formatter live in [`@telixon/core`](https://www.npmjs.com/package/@telixon/core).
 
