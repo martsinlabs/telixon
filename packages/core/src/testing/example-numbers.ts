@@ -6,8 +6,8 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 export function getExampleNumber(region: RegionCode, type: MetadataNumberType): string {
   const provider = getResourceProvider();
 
-  const countryIndex: number | undefined = provider.regionKeyToIndex[region];
-  if (countryIndex === undefined) {
+  const regionIndex: number | undefined = provider.regionKeyToIndex[region];
+  if (regionIndex === undefined) {
     throw new Error(`getExampleNumber: unknown region "${region}"`);
   }
 
@@ -16,10 +16,10 @@ export function getExampleNumber(region: RegionCode, type: MetadataNumberType): 
     throw new Error(`getExampleNumber: unknown number type "${type}"`);
   }
 
-  const typeCount: number = getMetadataTypeCount(provider.engine, countryIndex);
+  const typeCount: number = getMetadataTypeCount(provider.engine, regionIndex);
   for (let typePosition = 0; typePosition < typeCount; typePosition++) {
-    if (getMetadataTypeId(provider.engine, countryIndex, typePosition) !== typeId) continue;
-    const example: string | undefined = getMetadataTypeExample(provider.engine, countryIndex, typePosition);
+    if (getMetadataTypeId(provider.engine, regionIndex, typePosition) !== typeId) continue;
+    const example: string | undefined = getMetadataTypeExample(provider.engine, regionIndex, typePosition);
     if (example !== undefined) return example;
   }
 

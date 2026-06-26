@@ -1,11 +1,10 @@
 {
   "name": "@telixon/web-sdk",
   "version": "0.1.0",
-  "description": "Headless DOM adapter for @telixon/core: PhoneInput and CountryList state machines for the web.",
+  "description": "Headless DOM adapter for @telixon/core: PhoneInput and RegionList state machines for the web.",
   "keywords": [
     "phone-input",
     "phone-number",
-    "country-picker",
     "phone-validation",
     "phone-formatter",
     "intl-phone",
@@ -44,9 +43,6 @@
   },
   "dependencies": {
     "@telixon/core": "workspace:*"
-  },
-  "devDependencies": {
-    "@telixon/testing": "workspace:*"
   },
   "packageManager": "pnpm@10.16.1",
   "engines": {
