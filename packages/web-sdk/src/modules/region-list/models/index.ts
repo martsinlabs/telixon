@@ -6,7 +6,8 @@ import type { NumberType, RegionCode } from '@telixon/core';
  * - `region`: ISO region code (e.g. `'US'`).
  * - `callingCode`: numeric calling code as string (e.g. `'1'`).
  * - `displayName`: region name from `Intl.DisplayNames` for the active locale; falls back to the
- *   ISO region code when the runtime can't produce a localized name.
+ *   ISO region code when the runtime can't produce a localized name. The exact string depends on the
+ *   runtime's ICU data, so it is not byte-stable across environments (Node/browser/ICU versions).
  * - `data`: caller-defined payload produced by {@link RegionDataFactory}; `undefined` when no factory.
  */
 export type RegionOption<T = undefined> = {
@@ -42,11 +43,14 @@ export type RegionDataFactory<T = undefined> = (input: RegionDataFactoryInput) =
 export type RegionSearchFn<T = undefined> = (query: string, option: RegionOption<T>) => boolean;
 
 /**
- * Sort selector.
+ * Sort selector. Built-in comparators collate `displayName` in the list's `locale` and break ties by
+ * region code, so they are total orders (stable run to run). Because `displayName` comes from
+ * `Intl.DisplayNames` and collation uses the runtime's ICU, the resulting order is locale/ICU dependent
+ * and not guaranteed identical across environments.
  *
- * - `'alphabetical'`: by `displayName.localeCompare`.
- * - `'callingCode'`: by numeric calling code, with `displayName` as tiebreaker.
- * - Function: custom comparator.
+ * - `'alphabetical'`: by `displayName`, then region code (default).
+ * - `'callingCode'`: by numeric calling code, then `displayName`, then region code.
+ * - Function: custom comparator (you own its determinism).
  */
 export type RegionListSort<T = undefined> =
   | 'alphabetical'

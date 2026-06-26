@@ -66,7 +66,7 @@ export function createRegionList<T = undefined>(options: RegionListOptions<T> = 
       }
     }
 
-    filtered.sort(resolveRegionListComparator(sortConfig));
+    filtered.sort(resolveRegionListComparator(sortConfig, locale));
 
     if (prioritize.length > 0) {
       const prioritizeSet: Set<RegionCode> = new Set(prioritize);

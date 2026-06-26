@@ -186,6 +186,14 @@ describe('createRegionList: sort', () => {
     expect(regions).toEqual(['US', 'UA', 'GB']);
     list.destroy();
   });
+
+  it('breaks calling-code ties by display name, deterministically (not input order)', () => {
+    // AG and AI share calling code '1'; in 'en' their names ('Antigua...', 'Anguilla') sort AI before AG,
+    // the reverse of their REGION_CODES order, proving the tie resolves by name, not array position.
+    const list = createRegionList({ regionFilter: ['AG', 'AI'], sort: 'callingCode', locale: 'en' });
+    expect(list.getState().options.map((o) => o.region)).toEqual(['AI', 'AG']);
+    list.destroy();
+  });
 });
 
 describe('createRegionList: prioritize', () => {
