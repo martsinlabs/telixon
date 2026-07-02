@@ -45,6 +45,7 @@ exact same Google source). The conformance corpus is derived from the examples i
 | `subject.ts`           | runs Telixon over an input                                    |
 | `compare.ts`           | diffs the two sides, aggregates per-method match rates        |
 | `prefix-sweep.ts`      | per-digit-prefix possibility comparison                       |
+| `valid-for-region.ts`  | corpus and per-case isValidForRegion set comparison           |
 | `report.ts`            | formats the report                                            |
 | `known-divergences.ts` | the allowlist of accepted mismatches + audit                  |
 | `conformance.test.ts`  | the gate                                                      |
@@ -83,6 +84,24 @@ It also checks coverage: every case kind populated, zero skipped inputs, and eve
 Mutated inputs Google refuses to parse have no method-level oracle. For those, the contract is
 agreement on rejection: Telixon, which never throws, must judge the same input not possible. A
 mutated input Telixon considers possible while Google rejects it at parse fails the gate.
+
+## isValidForRegion
+
+`valid-for-region.ts` compares `isValidForRegion` against Google's `isValidNumberForRegion` as its
+own axis, since the method takes a region argument. For each input, both sides report the subset of
+candidate regions the number is valid for, and the sets must match verbatim. Candidates are the
+regions sharing the input's calling code (the only regions where the answer is non-trivial) plus two
+fixed foreign probes confirming the cross-calling-code guard returns false on both sides.
+
+Two sweeps run in the gate:
+
+- **corpus**: every corpus case over its region cluster;
+- **case coverage**: one number per distinct engine case (lengths 1-15). `isValidForRegion` is a
+  pure function of the end state, the national length, and the region, so this sweep covers the
+  method's entire reachable domain.
+
+Inputs Google rejects at parse follow the rejection contract: Telixon must judge them valid for no
+candidate. Mismatches feed the same allowlist audit as every other axis.
 
 ## As-you-type
 

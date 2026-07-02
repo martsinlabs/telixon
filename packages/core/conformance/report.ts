@@ -1,5 +1,6 @@
 import { ConformanceReport, MethodReport, Mismatch } from './models';
 import { PrefixSweepReport } from './prefix-sweep';
+import { ValidForRegionSweep } from './valid-for-region';
 
 const NAME_WIDTH = 22;
 const MAX_SHOWN_PER_METHOD = 25;
@@ -40,6 +41,17 @@ export function formatConformanceReport(report: ConformanceReport): string {
     ...formatMismatchLines(rejection.mismatches),
     '',
     ...report.methods.flatMap(formatMethodLines),
+  ].join('\n');
+}
+
+// Renders one valid-for-region sweep: set parity on parseable inputs, valid-for-none agreement on the rest.
+export function formatValidForRegionReport(title: string, sweep: ValidForRegionSweep): string {
+  return [
+    `isValidForRegion vs Google isValidNumberForRegion (${title})`,
+    `  ${sweep.total} inputs · ${sweep.regionChecks} (input, region) checks`,
+    `  valid-region sets matching:             ${sweep.matched}/${sweep.compared} (${percent(sweep.compared === 0 ? 1 : sweep.matched / sweep.compared)})`,
+    `  google-rejected judged valid nowhere:   ${sweep.rejectionAgreed}/${sweep.rejectedByGoogle}`,
+    ...formatMismatchLines(sweep.mismatches),
   ].join('\n');
 }
 

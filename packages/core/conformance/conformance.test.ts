@@ -1,35 +1,55 @@
 import { getCallingCodeForRegion, REGION_CODES } from '@telixon/core';
+import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { buildCorpus, loadOracle } from '../oracle';
 import { exportArtifacts } from './artifacts';
 import { formatAsYouTypeMeasurement, internationalProbe, measureAsYouType, nationalProbe } from './as-you-type';
 import { buildConformanceReport } from './compare';
 import { buildConformanceCorpus, CorpusCaseKind } from './corpus';
+import { geographicDomain } from './enumeration-domain';
 import { auditMismatches } from './known-divergences';
 import { sweepPossibilityPrefixes } from './prefix-sweep';
-import { formatConformanceReport, formatPrefixSweepReport } from './report';
+import { formatConformanceReport, formatPrefixSweepReport, formatValidForRegionReport } from './report';
 import { evaluateWithTelixon } from './subject';
+import { sweepValidForRegion, sweepValidForRegionCases } from './valid-for-region';
+
+// The case sweep spans every distinct engine case; lengths 1-15 match the case-coverage gate.
+const CASE_SWEEP_MIN_LENGTH = 1;
+const CASE_SWEEP_MAX_LENGTH = 15;
 
 const oracle = await loadOracle();
 const examples = buildCorpus(oracle);
 const corpus = buildConformanceCorpus(oracle, examples);
 const report = buildConformanceReport(oracle, corpus);
 const prefixSweep = sweepPossibilityPrefixes(oracle, examples);
+const domain = geographicDomain(oracle);
+const validForRegion = sweepValidForRegion(oracle, corpus, domain);
+const validForRegionCases = sweepValidForRegionCases(
+  oracle,
+  getResourceProvider().engine,
+  domain,
+  CASE_SWEEP_MIN_LENGTH,
+  CASE_SWEEP_MAX_LENGTH,
+);
 const audit = auditMismatches([
   ...report.methods.flatMap((method) => method.mismatches),
   ...report.rejection.mismatches,
   ...prefixSweep.mismatches,
+  ...validForRegion.mismatches,
+  ...validForRegionCases.mismatches,
 ]);
 const aytInternational = measureAsYouType(oracle, examples, internationalProbe);
 const aytNational = measureAsYouType(oracle, examples, nationalProbe);
 
-// Surface the full table, the prefix sweep, and both as-you-type measurements in the run output.
+// Surface the full table, the sweeps, and both as-you-type measurements in the run output.
 console.log('\n' + formatConformanceReport(report));
 console.log('\n' + formatPrefixSweepReport(prefixSweep));
+console.log('\n' + formatValidForRegionReport('corpus', validForRegion));
+console.log('\n' + formatValidForRegionReport('one number per engine case', validForRegionCases));
 console.log('\n' + formatAsYouTypeMeasurement('International', aytInternational));
 console.log('\n' + formatAsYouTypeMeasurement('National', aytNational));
 
-exportArtifacts(report, prefixSweep, audit);
+exportArtifacts(report, prefixSweep, audit, validForRegion, validForRegionCases);
 
 const EXPECTED_KINDS: readonly CorpusCaseKind[] = [
   'example',
@@ -69,6 +89,19 @@ describe('possibility prefix sweep vs Google', () => {
   it('compares a non-trivial prefix set', () => {
     expect(prefixSweep.totalPrefixes).toBeGreaterThan(1000);
     expect(prefixSweep.compared).toBeGreaterThan(0);
+  });
+});
+
+describe('isValidForRegion vs Google isValidNumberForRegion', () => {
+  it('sweeps every corpus case over its calling-code cluster', () => {
+    expect(validForRegion.total).toBeGreaterThan(0);
+    expect(validForRegion.compared).toBeGreaterThan(0);
+    expect(validForRegion.regionChecks).toBeGreaterThan(validForRegion.total);
+  });
+
+  it('sweeps one number per engine case, covering the method domain exhaustively', () => {
+    expect(validForRegionCases.total).toBeGreaterThan(100_000);
+    expect(validForRegionCases.regionChecks).toBeGreaterThan(validForRegionCases.total);
   });
 });
 

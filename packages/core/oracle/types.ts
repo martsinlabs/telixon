@@ -39,6 +39,9 @@ export interface Oracle {
   evaluate(input: string, regionCode?: string): MethodResults | null;
   // Google's country calling code for a region, as a string ('0' for an unknown region).
   countryCallingCode(regionCode: string): string;
+  // The subset of `candidates` Google judges the number valid for (isValidNumberForRegion), joined
+  // by ',' in candidate order, or null when Google rejects the input at parse.
+  validForRegions(input: string, regionCode: string | undefined, candidates: readonly string[]): string | null;
   // Google's AsYouTypeFormatter snapshot after each input character of `input` (one entry per character).
   asYouType(regionCode: string, input: string): readonly string[];
   // The national-format digits a user types for `e164` (national prefix + NSN), or null if unparseable.

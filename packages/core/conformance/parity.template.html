@@ -63,10 +63,12 @@
       Engine and oracle pinned to
       <a href="https://github.com/google/libphonenumber/commit/{{commit}}">google/libphonenumber@{{shortCommit}}</a
       >.<br />
-      {{corpusSize}} cases · {{regionsCovered}}/{{regionsTotal}} regions · {{skipped}} skipped.<br />
+      {{corpusSize}} cases · {{compared}} compared · {{regionsCovered}}/{{regionsTotal}} regions · {{skipped}}
+      skipped.<br />
       Corpus: {{corpusByKind}}.<br />
       Google-rejected mutations judged not possible: {{rejection}}.<br />
       Possibility prefix sweep: {{prefixSweep}}.<br />
+      Valid-for-region case sweep (one number per engine case): {{validForRegionCases}}.<br />
       Allowlist: {{allowlist}}.<br />
       Generated {{runAt}}.
     </div>

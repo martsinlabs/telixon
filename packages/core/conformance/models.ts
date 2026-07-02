@@ -22,11 +22,15 @@ export type MethodName = (typeof COMPARED_METHODS)[number];
 // Compile-time: every MethodResults key must be listed above, so a method silently dropped from the comparison fails typecheck.
 const _allMethodsCompared: Exclude<keyof MethodResults, MethodName> extends never ? true : never = true;
 
-// Where a mismatch came from: a corpus case kind, or the per-prefix possibility sweep.
-export type MismatchKind = CorpusCaseKind | 'possibility-prefix';
+// Methods gated against the oracle: the per-number MethodResults surface plus the region-parameterized
+// isValidForRegion, which is compared as its own axis (see valid-for-region.ts).
+export type AuditedMethod = MethodName | 'isValidForRegion';
+
+// Where a mismatch came from: a corpus case kind, the per-prefix possibility sweep, or a valid-for-region sweep.
+export type MismatchKind = CorpusCaseKind | 'possibility-prefix' | 'valid-for-region' | 'valid-for-region-case';
 
 export interface Mismatch {
-  readonly method: MethodName;
+  readonly method: AuditedMethod;
   readonly kind: MismatchKind;
   readonly regionCode: string;
   // The exact input string both sides parsed.

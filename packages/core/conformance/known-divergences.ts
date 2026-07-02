@@ -1,7 +1,7 @@
-import { MethodName, Mismatch, MismatchKind } from './models';
+import { AuditedMethod, Mismatch, MismatchKind } from './models';
 
 export interface KnownDivergence {
-  readonly method: MethodName;
+  readonly method: AuditedMethod;
   readonly kind: MismatchKind;
   readonly regionCode: string;
   readonly input: string;

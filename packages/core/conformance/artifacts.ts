@@ -3,6 +3,7 @@ import { join, resolve } from 'path';
 import { DivergenceAudit } from './known-divergences';
 import { ConformanceReport } from './models';
 import { PrefixSweepReport } from './prefix-sweep';
+import { ValidForRegionSweep } from './valid-for-region';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -40,6 +41,20 @@ interface ParityPrefixSweep {
   readonly rejectionAgreed: number;
 }
 
+interface ParityValidForRegionSweep {
+  readonly total: number;
+  readonly compared: number;
+  readonly matched: number;
+  readonly rejectedByGoogle: number;
+  readonly rejectionAgreed: number;
+  readonly regionChecks: number;
+}
+
+interface ParityValidForRegion {
+  readonly corpus: ParityValidForRegionSweep;
+  readonly caseCoverage: ParityValidForRegionSweep;
+}
+
 interface ParityOverall {
   readonly matched: number;
   readonly total: number;
@@ -59,6 +74,7 @@ interface ParityData {
   readonly methods: readonly ParityMethod[];
   readonly rejection: ParityRejection;
   readonly prefixSweep: ParityPrefixSweep;
+  readonly validForRegion: ParityValidForRegion;
   readonly allowlist: ParityAllowlist;
 }
 
@@ -81,8 +97,14 @@ const METHOD_ROW_INDENT = '\n        ';
 // ── Public entry (I/O boundary) ──────────────────────────
 
 // Writes parity.json, parity-badge.json, parity.html into conformance/dist/; runs even if assertions fail so the dashboard always reflects current state.
-export function exportArtifacts(report: ConformanceReport, sweep: PrefixSweepReport, audit: DivergenceAudit): void {
-  const data = buildParityData(report, sweep, audit);
+export function exportArtifacts(
+  report: ConformanceReport,
+  sweep: PrefixSweepReport,
+  audit: DivergenceAudit,
+  validForRegion: ValidForRegionSweep,
+  validForRegionCases: ValidForRegionSweep,
+): void {
+  const data = buildParityData(report, sweep, audit, validForRegion, validForRegionCases);
   mkdirSync(ARTIFACT_DIR, { recursive: true });
   writeFileSync(join(ARTIFACT_DIR, 'parity.json'), JSON.stringify(data, null, 2));
   writeFileSync(join(ARTIFACT_DIR, 'parity-badge.json'), JSON.stringify(buildBadge(data), null, 2));
@@ -91,7 +113,31 @@ export function exportArtifacts(report: ConformanceReport, sweep: PrefixSweepRep
 
 // ── Pure builders ────────────────────────────────────────
 
-function buildParityData(report: ConformanceReport, sweep: PrefixSweepReport, audit: DivergenceAudit): ParityData {
+function toParitySweep(sweep: ValidForRegionSweep): ParityValidForRegionSweep {
+  return {
+    total: sweep.total,
+    compared: sweep.compared,
+    matched: sweep.matched,
+    rejectedByGoogle: sweep.rejectedByGoogle,
+    rejectionAgreed: sweep.rejectionAgreed,
+    regionChecks: sweep.regionChecks,
+  };
+}
+
+function buildParityData(
+  report: ConformanceReport,
+  sweep: PrefixSweepReport,
+  audit: DivergenceAudit,
+  validForRegion: ValidForRegionSweep,
+  validForRegionCases: ValidForRegionSweep,
+): ParityData {
+  // The methods table stays in corpus terms (one denominator across rows); the exhaustive case sweep renders as its own line.
+  const validForRegionRow: ParityMethod = {
+    method: 'isValidForRegion',
+    total: validForRegion.compared,
+    matched: validForRegion.matched,
+    matchRate: validForRegion.compared === 0 ? 1 : validForRegion.matched / validForRegion.compared,
+  };
   return {
     runAt: new Date().toISOString(),
     commit: report.commit,
@@ -103,13 +149,16 @@ function buildParityData(report: ConformanceReport, sweep: PrefixSweepReport, au
       regionsTotal: report.regionsTotal,
       byKind: report.composition.map(({ kind, cases }) => ({ kind, cases })),
     },
-    overall: sumOverall(report, sweep),
-    methods: report.methods.map((m) => ({
-      method: m.method,
-      total: m.total,
-      matched: m.matched,
-      matchRate: m.matchRate,
-    })),
+    overall: sumOverall(report, sweep, validForRegion, validForRegionCases),
+    methods: [
+      ...report.methods.map((m) => ({
+        method: m.method,
+        total: m.total,
+        matched: m.matched,
+        matchRate: m.matchRate,
+      })),
+      validForRegionRow,
+    ],
     rejection: { total: report.rejection.total, agreed: report.rejection.agreed },
     prefixSweep: {
       totalPrefixes: sweep.totalPrefixes,
@@ -118,18 +167,43 @@ function buildParityData(report: ConformanceReport, sweep: PrefixSweepReport, au
       rejectedByGoogle: sweep.rejectedByGoogle,
       rejectionAgreed: sweep.rejectionAgreed,
     },
+    validForRegion: {
+      corpus: toParitySweep(validForRegion),
+      caseCoverage: toParitySweep(validForRegionCases),
+    },
     allowlist: { unexpected: audit.unexpected.length, stale: audit.stale.length },
   };
 }
 
-// One headline number across every gated comparison: method checks, Google-rejected agreements, and the per-prefix possibility sweep.
-function sumOverall(report: ConformanceReport, sweep: PrefixSweepReport): ParityOverall {
+// One headline number across every gated comparison: method checks, Google-rejected agreements, the per-prefix possibility sweep, and both valid-for-region sweeps.
+function sumOverall(
+  report: ConformanceReport,
+  sweep: PrefixSweepReport,
+  validForRegion: ValidForRegionSweep,
+  validForRegionCases: ValidForRegionSweep,
+): ParityOverall {
   const methodTotals = report.methods.reduce(
     (acc, m) => ({ matched: acc.matched + m.matched, total: acc.total + m.total }),
     { matched: 0, total: 0 },
   );
-  const matched = methodTotals.matched + report.rejection.agreed + sweep.matched + sweep.rejectionAgreed;
-  const total = methodTotals.total + report.rejection.total + sweep.compared + sweep.rejectedByGoogle;
+  const matched =
+    methodTotals.matched +
+    report.rejection.agreed +
+    sweep.matched +
+    sweep.rejectionAgreed +
+    validForRegion.matched +
+    validForRegion.rejectionAgreed +
+    validForRegionCases.matched +
+    validForRegionCases.rejectionAgreed;
+  const total =
+    methodTotals.total +
+    report.rejection.total +
+    sweep.compared +
+    sweep.rejectedByGoogle +
+    validForRegion.compared +
+    validForRegion.rejectedByGoogle +
+    validForRegionCases.compared +
+    validForRegionCases.rejectedByGoogle;
   return { matched, total, matchRate: total === 0 ? 1 : matched / total };
 }
 
@@ -152,12 +226,14 @@ function renderHtml(data: ParityData): string {
     '{{commit}}': data.commit,
     '{{shortCommit}}': data.commit.slice(0, 7),
     '{{corpusSize}}': String(data.corpus.size),
+    '{{compared}}': String(data.corpus.compared),
     '{{regionsCovered}}': String(data.corpus.regionsCovered),
     '{{regionsTotal}}': String(data.corpus.regionsTotal),
     '{{skipped}}': String(data.corpus.skipped),
     '{{corpusByKind}}': renderCorpusByKind(data.corpus.byKind),
     '{{rejection}}': `${data.rejection.agreed}/${data.rejection.total}`,
     '{{prefixSweep}}': renderPrefixSweep(data.prefixSweep),
+    '{{validForRegionCases}}': renderValidForRegionSweep(data.validForRegion.caseCoverage),
     '{{allowlist}}': renderAllowlist(data.allowlist),
     '{{runAt}}': data.runAt,
     '{{methodRows}}': data.methods.map(renderMethodRow).join(METHOD_ROW_INDENT),
@@ -170,6 +246,11 @@ function renderCorpusByKind(byKind: readonly ParityKind[]): string {
 }
 
 function renderPrefixSweep(sweep: ParityPrefixSweep): string {
+  const rate = sweep.compared === 0 ? 1 : sweep.matched / sweep.compared;
+  return `${(rate * 100).toFixed(2)}% (${sweep.matched}/${sweep.compared}) · google-rejected agreed ${sweep.rejectionAgreed}/${sweep.rejectedByGoogle}`;
+}
+
+function renderValidForRegionSweep(sweep: ParityValidForRegionSweep): string {
   const rate = sweep.compared === 0 ? 1 : sweep.matched / sweep.compared;
   return `${(rate * 100).toFixed(2)}% (${sweep.matched}/${sweep.compared}) · google-rejected agreed ${sweep.rejectionAgreed}/${sweep.rejectedByGoogle}`;
 }

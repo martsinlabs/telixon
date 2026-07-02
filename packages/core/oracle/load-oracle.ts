@@ -59,6 +59,7 @@ interface OracleUtil {
   isPossibleNumber(number: OracleNumber): boolean;
   isPossibleNumberWithReason(number: OracleNumber): number;
   isValidNumber(number: OracleNumber): boolean;
+  isValidNumberForRegion(number: OracleNumber, regionCode: string): boolean;
   getCountryCodeForRegion(regionCode: string): number;
 }
 
@@ -198,6 +199,15 @@ export async function loadOracle(): Promise<Oracle> {
       };
     },
     countryCallingCode: (regionCode) => String(util.getCountryCodeForRegion(regionCode)),
+    validForRegions: (input, regionCode, candidates) => {
+      let parsed: OracleNumber;
+      try {
+        parsed = util.parse(input, regionCode);
+      } catch {
+        return null;
+      }
+      return candidates.filter((candidate) => util.isValidNumberForRegion(parsed, candidate)).join(',');
+    },
     asYouType: (regionCode, input) => {
       const formatter = new ph.AsYouTypeFormatter(regionCode);
       const snapshots: string[] = [];
