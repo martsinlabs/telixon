@@ -25,7 +25,7 @@ export function buildPlaceholderConfig(options: PhoneInputOptions): PlaceholderC
     return { mode: 'international', callingCodeInInput: false, numberType };
   }
 
-  return { mode: 'international', callingCodeInInput: true, plusPrefix: display.plusPrefix, numberType };
+  return { mode: 'international', callingCodeInInput: true, plusPrefix: display.plusPrefix !== 'none', numberType };
 }
 
 /** Compute the placeholder string for `(region, config)`, or `null` if unresolved. */

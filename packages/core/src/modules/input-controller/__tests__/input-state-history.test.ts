@@ -22,6 +22,7 @@ function makeState(value: string, region: RegionCode | null = null, selectionSta
     profileRef: null,
     formatIndex: null,
     nationalPrefixPresent: false,
+    plusErased: false,
   };
 }
 

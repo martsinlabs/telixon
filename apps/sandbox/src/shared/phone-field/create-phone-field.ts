@@ -160,7 +160,7 @@ function buildPhoneController(options: PhoneFieldOptions, input: HTMLInputElemen
 
   return createPhoneInput({
     mode: 'international',
-    display: { callingCodeInInput: true, plusPrefix: options.display === 'plus' },
+    display: { callingCodeInInput: true, plusPrefix: options.display === 'plus' ? 'fixed' : 'none' },
     input,
     ...(options.defaultRegion !== undefined && { defaultRegion: options.defaultRegion }),
     ...(options.initialValue !== undefined && { initialValue: options.initialValue }),

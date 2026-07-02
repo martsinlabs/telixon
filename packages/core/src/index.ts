@@ -6,6 +6,7 @@ export { createInternationalInputController } from './modules/input-controller/i
 export type {
   InternationalDisplayConfig,
   InternationalInputControllerConfig,
+  PlusPrefixMode,
 } from './modules/input-controller/international-input-controller';
 export type { InputController, InputState } from './modules/input-controller/models';
 export { createNationalInputController } from './modules/input-controller/national-input-controller';

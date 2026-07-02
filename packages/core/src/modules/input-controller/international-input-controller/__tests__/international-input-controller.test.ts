@@ -25,10 +25,10 @@ describe('InternationalInputController initial state', () => {
     expect(state.region).toBe('US');
   });
 
-  it('prefixes "+" when plusPrefix is true', () => {
+  it(`prefixes '+' when plusPrefix is 'fixed'`, () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
 
     expect(controller.currentState.value).toBe('+1 ');
@@ -71,7 +71,7 @@ describe('InternationalInputController formatting modes', () => {
   it('formats a full US number with "+" prefix when plusPrefix is enabled', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     const state = controller.setValue(US_MOBILE_INTL);
 
@@ -173,7 +173,7 @@ describe('InternationalInputController caret across boundaries', () => {
   it('caret placed inside the "+" prefix is preserved within the calling-code segment', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     // Value is "+1 ". Place caret right after "+" (position 1): inside calling code.
     const state = controller.insert('+1 ', '', 1, 1);
@@ -187,7 +187,7 @@ describe('InternationalInputController format selection', () => {
   // FI has two same-length formats with distinct leadingDigits; selection must match the prefix ('10' takes 2-3-..., not 3-3-...).
   it('selects the format by leading digits', () => {
     const controller = createInternationalInputController({
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     controller.setValue('+35810112345');
 

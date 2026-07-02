@@ -101,5 +101,6 @@ export function resolveNationalControllerState(
     profileRef: profile,
     formatIndex: appliedFormatIndex,
     nationalPrefixPresent: nationalPrefixTyped,
+    plusErased: false,
   };
 }
