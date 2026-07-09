@@ -52,9 +52,9 @@ export function resolveInternationalControllerState(
         selectedIndex,
       );
 
-      const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.International)
-        ? MASK_VARIANT.International
-        : MASK_VARIANT.National;
+      const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.INTERNATIONAL)
+        ? MASK_VARIANT.INTERNATIONAL
+        : MASK_VARIANT.NATIONAL;
       const mask: string | undefined = pickFormatMask(globalFormatIndex, variant, snapshot.nationalDigits.length);
 
       if (mask !== undefined) {

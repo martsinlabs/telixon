@@ -18,7 +18,7 @@ import {
   getStateFlags,
   getTypeMaskAtLength,
   hasExactMatch,
-  walkDigit,
+  stepDigit,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -76,7 +76,7 @@ function findScopeEntryAlongWalk(context: ResolveContext, regionIndex: number): 
   let state: number = context.callingCodeState;
   const digits: string = context.nationalDigits;
   for (let i = 0; i < digits.length; i++) {
-    state = walkDigit(context.engine, state, digits.charCodeAt(i) - 48);
+    state = stepDigit(context.engine, state, digits.charCodeAt(i) - 48);
     if (state === ENGINE_DEAD) break;
     const candidate: number = findScopeEntry(context.engine, state, regionIndex);
     if (candidate !== -1) entry = candidate;
@@ -330,7 +330,7 @@ function resolveAnchoredRegionIndex(context: ResolveContext, snapshot: NumberRes
   const terminalStates: number[] = [];
   let state: number = snapshot.callingCodeState;
   for (let i = 0; i < totalDigits; i++) {
-    state = walkDigit(context.engine, state, snapshot.nationalDigits.charCodeAt(i) - 48);
+    state = stepDigit(context.engine, state, snapshot.nationalDigits.charCodeAt(i) - 48);
     if (state === ENGINE_DEAD) break;
     if (filtersActive && !stateMatchesFilters(state, snapshot.regionFilter, snapshot.numberTypeFilter)) break;
     if (getStateFlags(context.engine, state) & STATE_FLAG_TERMINAL_PREFIX) terminalStates.push(state);

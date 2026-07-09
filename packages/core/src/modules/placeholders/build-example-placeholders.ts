@@ -40,12 +40,16 @@ export function buildExamplePlaceholders(
   const length: number = exampleNsn.length;
 
   if (nationalFormatIndex !== -1) {
-    const nationalMask: string | undefined = pickFormatMask(nationalFormatIndex, MASK_VARIANT.National, length);
+    const nationalMask: string | undefined = pickFormatMask(nationalFormatIndex, MASK_VARIANT.NATIONAL, length);
     if (nationalMask !== undefined) {
       placeholders.national = fill(nationalMask, exampleNsn, resourceProvider.placeholders);
     }
 
-    const prefixMask: string | undefined = pickFormatMask(nationalFormatIndex, MASK_VARIANT.NationalWithPrefix, length);
+    const prefixMask: string | undefined = pickFormatMask(
+      nationalFormatIndex,
+      MASK_VARIANT.NATIONAL_WITH_PREFIX,
+      length,
+    );
     if (prefixMask !== undefined) {
       placeholders.nationalWithPrefix = fill(
         prefixMask,
@@ -58,8 +62,8 @@ export function buildExamplePlaceholders(
 
   if (internationalFormatIndex !== -1) {
     const mask: string | undefined =
-      pickFormatMask(internationalFormatIndex, MASK_VARIANT.International, length) ??
-      pickFormatMask(internationalFormatIndex, MASK_VARIANT.National, length);
+      pickFormatMask(internationalFormatIndex, MASK_VARIANT.INTERNATIONAL, length) ??
+      pickFormatMask(internationalFormatIndex, MASK_VARIANT.NATIONAL, length);
     if (mask !== undefined) placeholders.international = fill(mask, exampleNsn, resourceProvider.placeholders);
   }
 

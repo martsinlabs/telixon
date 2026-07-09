@@ -15,7 +15,7 @@ export declare interface CallingCodeLayer {
     stateRegionOffset: Uint16Array;
     stateRegionCount: Uint8Array;
     regionIndexPool: Uint8Array;
-    statePrimaryRegion: Uint8Array;
+    stateMainRegion: Uint8Array;
     stateFlags: Uint8Array;
 }
 
@@ -61,10 +61,17 @@ export declare const ENGINE_MODULES: ReadonlyArray<{
 /**
  * @public
  * The walk core of an {@link Engine}: transitions, per-state flags, verdicts, scope, and exact
- * acceptance. Reached as `engine.core`; read it through the accessors (`walkDigit`, `getVerdict`, …).
+ * acceptance. Reached as `engine.core`; read it through the accessors (`stepDigit`, `getVerdict`, …).
+ *
+ * Glossary (other layer docs rely on these terms):
+ * - refMapping: index-to-key tables for regions, calling codes, and number types.
+ * - bundle: a palette entry shared by every state with identical scope + verdict + exact payloads.
+ * - profile: a state's id into the bundle palette.
+ * - terminal prefix: a prefix that is itself a complete, accepted number (no further digits needed).
+ * - group module: one of the four shipped `*.bin.js` modules, each packing several layers.
  */
 export declare interface EngineCore {
-    words: Uint32Array;
+    transitionWords: Uint32Array;
     profile: Uint16Array;
     bundleScopeOffset: Uint16Array;
     scopeRegion: Uint8Array;
@@ -125,7 +132,7 @@ export declare interface EngineLayers {
 
 /**
  * @public
- * The slice of {@link EngineCore} carried by `engine-exact.bin`.
+ * The slice of {@link EngineCore} carried in the `verdict.bin.js` module (layer key `exact`).
  */
 export declare type ExactSection = Pick<EngineCore, 'exactListOffset' | 'exactRegion' | 'exactVector' | 'vectorOffset' | 'vectorMasks'>;
 
@@ -211,7 +218,7 @@ export declare interface FormatSelectLayer {
     formatRangeLow: Uint8Array;
     formatRangeHigh: Uint8Array;
     formatFlags: Uint8Array;
-    callingCodeTrieRoot: Uint32Array;
+    callingCodeNodeRoot: Uint32Array;
     nodeSatisfiedMask: Uint32Array;
     nodeChildDigits: Uint16Array;
     nodeChildOffset: Uint16Array;
@@ -237,7 +244,7 @@ export declare type FormattingDirection = 'forward' | 'backward';
  * @public
  * Get primary region for calling code state.
  */
-export declare function getCallingCodePrimaryRegion(engine: Engine, state: number): number;
+export declare function getCallingCodeMainRegion(engine: Engine, state: number): number;
 
 /**
  * @public
@@ -392,7 +399,7 @@ export declare function getProfileLengthMask(engine: Engine, profileId: number):
 
 /**
  * @public
- * Union of total lengths reachable at the state; mask with `~((1 << consumed) - 1)` for the
+ * Union of total lengths reachable from the state; mask with `~((1 << consumed) - 1)` for the
  * still-reachable set.
  */
 export declare function getReachableLengthMask(engine: Engine, state: number): number;
@@ -533,7 +540,7 @@ export declare function hasVerdict(engine: Engine, state: number): boolean;
 
 /**
  * @public
- * True when no longer calling code can follow this state.
+ * True when the calling code cannot be extended past this state.
  */
 export declare function isCallingCodeComplete(engine: Engine, state: number): boolean;
 
@@ -574,9 +581,9 @@ export declare type IsViableNationalNumber = (nationalDigits: string) => boolean
  * Mask variants, in formatMaskStart order.
  */
 export declare const MASK_VARIANT: Readonly<{
-    readonly National: 0;
-    readonly International: 1;
-    readonly NationalWithPrefix: 2;
+    readonly NATIONAL: 0;
+    readonly INTERNATIONAL: 1;
+    readonly NATIONAL_WITH_PREFIX: 2;
 }>;
 
 /**
@@ -610,10 +617,10 @@ export declare interface MetadataTablesLayer {
     typeExampleRef: Uint16Array;
     exampleOffsets: Uint16Array;
     exampleNibbles: Uint8Array;
-    ccFormatStart: Uint16Array;
+    callingCodeFormatStart: Uint16Array;
     formatTemplateRef: Uint16Array;
     formatIntlRef: Uint16Array;
-    formatNpfrRef: Uint16Array;
+    formatPrefixRuleRef: Uint16Array;
     formatFlags: Uint8Array;
     formatMaskStart: Uint16Array;
     maskEntryLength: Uint8Array;
@@ -635,7 +642,7 @@ export declare interface NationalPrefixRules {
 
 /**
  * @public
- * Result of {@link normalizeNationalNumber}: a parse/validation view and an as-you-type display view.
+ * Result of {@link normalizeNationalNumber}: a parse/validation view and a display view for live input.
  */
 export declare interface NormalizedNationalNumber {
     normalizedDigits: string;
@@ -653,7 +660,7 @@ export declare function normalizeNationalNumber(digits: string, rules: NationalP
 
 /**
  * @public
- * Phone number type per libphonenumber `PhoneNumberType`, plus runtime-only `FIXED_LINE_OR_MOBILE` and `UNKNOWN`.
+ * Phone number type, value-identical to libphonenumber `PhoneNumberType`.
  */
 export declare type NumberType = 'FIXED_LINE' | 'MOBILE' | 'FIXED_LINE_OR_MOBILE' | 'TOLL_FREE' | 'PREMIUM_RATE' | 'SHARED_COST' | 'VOIP' | 'PERSONAL_NUMBER' | 'PAGER' | 'UAN' | 'VOICEMAIL' | 'UNKNOWN';
 
@@ -719,7 +726,7 @@ export declare interface RegionMasksLayer {
 export declare interface RegionSelectLayer {
     callingCodeSlotStart: Uint32Array;
     slotRegion: Uint16Array;
-    callingCodeTrieRoot: Uint32Array;
+    callingCodeNodeRoot: Uint32Array;
     nodeSatisfiedMask: Uint32Array;
     nodeChildDigits: Uint16Array;
     nodeChildOffset: Uint16Array;
@@ -728,7 +735,7 @@ export declare interface RegionSelectLayer {
 
 /**
  * @public
- * The slice of {@link EngineCore} carried by `engine-scope.bin`.
+ * The slice of {@link EngineCore} carried in the `scope.bin.js` module (layer key `scope`).
  */
 export declare type ScopeSection = Pick<EngineCore, 'bundleScopeOffset' | 'scopeRegion' | 'scopeNumberMask' | 'scopeTerminalMask' | 'scopeProfileStart' | 'profileIds' | 'formatMaskPool' | 'lengthMaskPool' | 'bundleExactList'>;
 
@@ -759,33 +766,39 @@ export declare function selectPartialFormat(engine: Engine, callingCode: number,
 
 /**
  * @public
- * Words flag bit: the state is inside a calling-code zone.
+ * Flag bit: the state is inside a calling-code zone.
  */
 export declare const STATE_FLAG_CALLING_CODE: number;
 
 /**
  * @public
- * Words flag bit: no longer calling code can follow this state.
+ * Flag bit: the calling code cannot be extended past this state.
  */
-export declare const STATE_FLAG_CALLING_CODE_TERMINAL: number;
+export declare const STATE_FLAG_CALLING_CODE_COMPLETE: number;
 
 /**
  * @public
- * Words flag bit: the state carries exact-acceptance entries.
+ * Flag bit: the state carries exact-acceptance entries.
  */
 export declare const STATE_FLAG_HAS_EXACT: number;
 
 /**
  * @public
- * Words flag bit: the state carries verdict records.
+ * Flag bit: the state carries verdict records.
  */
 export declare const STATE_FLAG_HAS_VERDICT: number;
 
 /**
  * @public
- * Words flag bit: a terminal prefix lies exactly at this state.
+ * Flag bit: a terminal prefix lies exactly at this state.
  */
 export declare const STATE_FLAG_TERMINAL_PREFIX: number;
+
+/**
+ * @public
+ * Advances the walk one digit from `state`, returning the next state or `ENGINE_DEAD` (no transition).
+ */
+export declare function stepDigit(engine: Engine, state: number, digit: number): number;
 
 /**
  * @public
@@ -801,9 +814,9 @@ export declare function toNumberTypes(metadataTypes: readonly MetadataNumberType
 
 /**
  * @public
- * The slice of {@link EngineCore} carried by `engine-trie.bin`.
+ * The slice of {@link EngineCore} carried in the `walk.bin.js` module (layer key `trie`).
  */
-export declare type TrieSection = Pick<EngineCore, 'words' | 'profile'>;
+export declare type TrieSection = Pick<EngineCore, 'transitionWords' | 'profile'>;
 
 /**
  * @public
@@ -855,7 +868,7 @@ export declare function verdictRegion(verdict: number): number;
 
 /**
  * @public
- * The slice of {@link EngineCore} carried by `engine-verdict.bin`.
+ * The slice of {@link EngineCore} carried in the `verdict.bin.js` module (layer key `verdict`).
  */
 export declare type VerdictSection = Pick<EngineCore, 'bundleVerdictVector' | 'bundleLengthsUnion' | 'scopeLengthTypeVector' | 'verdictVectors' | 'lengthTypeVectors'>;
 
@@ -864,11 +877,5 @@ export declare type VerdictSection = Pick<EngineCore, 'bundleVerdictVector' | 'b
  * Number type id of a verdict (refMapping index, 11 = FIXED_LINE_OR_MOBILE, 15 = UNKNOWN).
  */
 export declare function verdictType(verdict: number): number;
-
-/**
- * @public
- * Advances the walk one digit from `state`, returning the next state or `ENGINE_DEAD` (no transition).
- */
-export declare function walkDigit(engine: Engine, state: number, digit: number): number;
 
 export { }

@@ -1,4 +1,4 @@
-import { ENGINE_DEAD, walkDigit } from '@telixon/core/engine';
+import { ENGINE_DEAD, stepDigit } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { describe, expect, it } from 'vitest';
 import { loadOracle } from '../oracle';
@@ -54,7 +54,7 @@ describe('Airtight enumerator really is airtight', () => {
     const finalPosition = (national: string, fromPosition: number): number => {
       let position = fromPosition;
       for (let index = 0; index < national.length && position !== ENGINE_DEAD; index++) {
-        position = walkDigit(engine, position, national.charCodeAt(index) - 48);
+        position = stepDigit(engine, position, national.charCodeAt(index) - 48);
       }
       return position;
     };

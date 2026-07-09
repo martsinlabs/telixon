@@ -1,4 +1,4 @@
-import { ENGINE_DEAD, Engine, walkDigit } from '@telixon/core/engine';
+import { ENGINE_DEAD, Engine, stepDigit } from '@telixon/core/engine';
 import { decidingDigits, positionAfterCallingCode } from './number-reader';
 
 // The library sorts numbers into a finite set of cases (same reader position at the same length = same
@@ -26,7 +26,7 @@ export function buildCaseCoverage(
       const next = new Map<number, string>();
       for (const [position, path] of exampleByPosition[read - 1]!) {
         for (let digit = 0; digit < 10; digit++) {
-          const moved = walkDigit(engine, position, digit);
+          const moved = stepDigit(engine, position, digit);
           if (moved !== ENGINE_DEAD && !next.has(moved)) next.set(moved, path + digit);
         }
       }

@@ -30,8 +30,8 @@ export function formatNational(resolved: ResolvedPhoneNumber): string | null {
   const formatIndex: number = getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
   const usePrefixMasks: boolean =
     getFormatPrefixRule(resourceProvider.engine, formatIndex) !== undefined &&
-    hasMaskVariant(formatIndex, MASK_VARIANT.NationalWithPrefix);
-  const variant: number = usePrefixMasks ? MASK_VARIANT.NationalWithPrefix : MASK_VARIANT.National;
+    hasMaskVariant(formatIndex, MASK_VARIANT.NATIONAL_WITH_PREFIX);
+  const variant: number = usePrefixMasks ? MASK_VARIANT.NATIONAL_WITH_PREFIX : MASK_VARIANT.NATIONAL;
   const mask: string | undefined = pickFormatMask(formatIndex, variant, nationalDigits.length);
   if (mask === undefined) return nationalDigits;
 
