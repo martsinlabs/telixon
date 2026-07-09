@@ -47,15 +47,19 @@ Run from the repo root:
 
 ## Submitting changes
 
+`main` is protected: every change lands through a pull request, and merges are squash-only, so the
+pull request title becomes the commit subject on `main`.
+
 1. Branch off `main`.
 2. Make your change.
-3. Run and pass, in order: `pnpm test`, `pnpm lint`, `pnpm format`. Fix the root cause and re-run. Skip
-   only for pure documentation changes.
-4. Commit with a short, one-line subject: `type(scope): summary` (for example
-   `feat(core): add parsePhoneNumber`). Keep each commit focused.
-5. Push to your fork and open a pull request against `main`. Run `pnpm typecheck`; for engine or query
-   changes, also run `pnpm conformance`.
-6. Keep the PR small and single-purpose.
+3. Run and pass, in order: `pnpm test`, `pnpm lint`, `pnpm format`, `pnpm typecheck`. For engine or
+   query changes, also run `pnpm conformance`. Fix the root cause and re-run. Skip only for pure
+   documentation changes.
+4. Push to your fork and open a pull request against `main`. Give it a short, one-line conventional
+   title: `type(scope): summary` (for example `feat(core): add parsePhoneNumber`).
+5. The `verify`, `conformance`, `codspeed`, and `bundle` checks must pass on the pull request, with
+   the branch up to date with `main`.
+6. Keep the pull request small and single-purpose.
 
 Telixon has a single maintainer who reviews and merges.
 
