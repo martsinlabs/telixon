@@ -37,7 +37,7 @@ describe('PhoneInput placeholder', () => {
     const phone = createPhoneInput({
       input,
       mode: 'international',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
       defaultRegion: 'US',
     });
     expect(phone.getState().placeholder).toBe('+1 201-555-0123');
@@ -52,7 +52,7 @@ describe('PhoneInput placeholder', () => {
     const phone = createPhoneInput({
       input,
       mode: 'international',
-      display: { callingCodeInInput: true, plusPrefix: false },
+      display: { callingCodeInInput: true, plusPrefix: 'none' },
       defaultRegion: 'US',
     });
     expect(phone.getState().placeholder).toBe('1 201-555-0123');
@@ -82,7 +82,7 @@ describe('PhoneInput placeholder', () => {
     const phone = createPhoneInput({
       input,
       mode: 'international',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     expect(phone.getState().placeholder).toBeNull();
 

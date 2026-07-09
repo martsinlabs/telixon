@@ -20,7 +20,7 @@ export function formatInternational(resolved: ResolvedPhoneNumber): string | nul
     formatPosition >= 0
       ? pickFormatMask(
           getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition),
-          MASK_VARIANT.International,
+          MASK_VARIANT.INTERNATIONAL,
           nationalDigits.length,
         )
       : undefined;

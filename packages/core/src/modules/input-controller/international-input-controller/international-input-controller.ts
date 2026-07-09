@@ -30,6 +30,8 @@ class InternationalInputController implements InputController {
 
   #defaultCallingCode: string | null = null;
 
+  #plusErasable: boolean = false;
+
   constructor(private config: InternationalInputControllerConfig = {}) {
     if (this.config.defaultRegion) {
       this.#setDefaultRegion(this.config.defaultRegion);
@@ -39,15 +41,30 @@ class InternationalInputController implements InputController {
       this.#numberResolver.setStrict(true);
     }
 
+    const display = this.config.display;
+    this.#plusErasable = display !== undefined && display.callingCodeInInput && display.plusPrefix === 'erasable';
+
     const shouldShowCallingCode: boolean = this.config.display?.callingCodeInInput !== false;
     const insertText: string = config.initialValue ?? (shouldShowCallingCode ? (this.#defaultCallingCode ?? '') : '');
 
+    // An explicit plus-less initial value starts with the plus erased; the calling-code seed keeps the plus primer.
+    const initialPlusErased: boolean =
+      this.#plusErasable &&
+      config.initialValue !== undefined &&
+      config.initialValue !== '' &&
+      !config.initialValue.startsWith('+');
+
     this.#history = new InputStateHistory(
-      this.#resolveState('', {
-        insertText,
-        selectionStart: 0,
-        selectionEnd: 0,
-      }),
+      this.#resolveState(
+        '',
+        {
+          insertText,
+          selectionStart: 0,
+          selectionEnd: 0,
+        },
+        'forward',
+        initialPlusErased,
+      ),
       config.maxHistorySize,
     );
   }
@@ -74,6 +91,7 @@ class InternationalInputController implements InputController {
     value: string,
     change: InputChange,
     direction: 'forward' | 'backward' = 'forward',
+    plusErased: boolean = false,
   ): InputControllerState {
     const numberResolver: NumberResolver = this.#numberResolver;
 
@@ -84,11 +102,29 @@ class InternationalInputController implements InputController {
     const snapshot: NumberResolverSnapshot = numberResolver.snapshot;
     const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultRegionIndex);
 
-    return resolveInternationalControllerState(snapshot, caretIndex, profile, this.config.display, direction);
+    return resolveInternationalControllerState(
+      snapshot,
+      caretIndex,
+      profile,
+      this.config.display,
+      direction,
+      plusErased,
+    );
+  }
+
+  get #plusErased(): boolean {
+    return this.#history.current.plusErased;
+  }
+
+  // True when the deleted range covers the leading plus of the current value.
+  #erasesPlus(value: string, selectionStart: number, selectionEnd: number): boolean {
+    return this.#plusErasable && selectionStart === 0 && selectionEnd > 0 && value.startsWith('+');
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+
+    const plusRestored: boolean = selectionStart === 0 && text.startsWith('+');
 
     const nextState: InputControllerState = this.#resolveState(
       value,
@@ -98,6 +134,7 @@ class InternationalInputController implements InputController {
         selectionEnd,
       },
       'forward',
+      this.#plusErased && !plusRestored,
     );
 
     this.#history.push(nextState);
@@ -109,6 +146,15 @@ class InternationalInputController implements InputController {
     if (selectionStart === 0 && selectionEnd === 0) {
       this.#history.updateCurrentSelection(0, 0);
       return toInputStateWithSelection(this.#history.current, 0, 0);
+    }
+
+    // Backspace with the caret right after a visible erasable plus erases the plus and keeps the digits.
+    if (this.#plusErasable && selectionStart === 1 && selectionEnd === 1 && value.startsWith('+')) {
+      this.#history.updateCurrentSelection(1, 1);
+      this.#history.push(
+        this.#resolveState(value, { insertText: '', selectionStart: 1, selectionEnd: 1 }, 'backward', true),
+      );
+      return toInputState(this.#history.current);
     }
 
     if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
@@ -129,6 +175,7 @@ class InternationalInputController implements InputController {
         value,
         { insertText: '', selectionStart, selectionEnd },
         'backward',
+        this.#plusErased,
       );
 
       if (trimmedState.value.length < value.length) {
@@ -152,7 +199,9 @@ class InternationalInputController implements InputController {
       const position: number = findPreviousDigitPosition(value, selectionStart);
 
       if (position === -1) {
-        return toInputState(this.#resolveState(value, { insertText: '', selectionStart, selectionEnd }, 'backward'));
+        return toInputState(
+          this.#resolveState(value, { insertText: '', selectionStart, selectionEnd }, 'backward', this.#plusErased),
+        );
       }
 
       effectiveStart = position;
@@ -169,6 +218,7 @@ class InternationalInputController implements InputController {
         selectionEnd: effectiveEnd,
       },
       'backward',
+      this.#plusErased || this.#erasesPlus(value, selectionStart, selectionEnd),
     );
 
     this.#history.push(nextState);
@@ -177,6 +227,15 @@ class InternationalInputController implements InputController {
   }
 
   deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState {
+    // Forward delete with the caret on a visible erasable plus erases the plus and keeps the digits.
+    if (this.#plusErasable && selectionStart === 0 && selectionEnd === 0 && value.startsWith('+')) {
+      this.#history.updateCurrentSelection(0, 0);
+      this.#history.push(
+        this.#resolveState(value, { insertText: '', selectionStart: 0, selectionEnd: 0 }, 'forward', true),
+      );
+      return toInputState(this.#history.current);
+    }
+
     if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart)) {
       const nextDigit: number = findNextDigitPosition(value, selectionStart + 1);
       const pos: number = nextDigit === -1 ? selectionStart : nextDigit;
@@ -204,6 +263,7 @@ class InternationalInputController implements InputController {
         selectionEnd: effectiveEnd,
       },
       'forward',
+      this.#plusErased || this.#erasesPlus(value, selectionStart, selectionEnd),
     );
 
     this.#history.push(nextState);
@@ -212,11 +272,19 @@ class InternationalInputController implements InputController {
   }
 
   setValue(value: string): InputState {
-    const nextState: InputControllerState = this.#resolveState('', {
-      insertText: value,
-      selectionStart: 0,
-      selectionEnd: 0,
-    });
+    // With an erasable plus, the given string decides plus visibility; an empty string resets to the visible plus.
+    const plusErased: boolean = this.#plusErasable && value !== '' && !value.startsWith('+');
+
+    const nextState: InputControllerState = this.#resolveState(
+      '',
+      {
+        insertText: value,
+        selectionStart: 0,
+        selectionEnd: 0,
+      },
+      'forward',
+      plusErased,
+    );
 
     this.#history.push(nextState);
 
@@ -228,11 +296,16 @@ class InternationalInputController implements InputController {
 
     const { value } = this.#history.current;
 
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart: value.length,
-      selectionEnd: value.length,
-    });
+    const nextState: InputControllerState = this.#resolveState(
+      value,
+      {
+        insertText: '',
+        selectionStart: value.length,
+        selectionEnd: value.length,
+      },
+      'forward',
+      this.#plusErased,
+    );
 
     this.#history.push(nextState);
 
@@ -251,11 +324,16 @@ class InternationalInputController implements InputController {
 
   #recomputeState(): InputState {
     const { value, selectionStart, selectionEnd } = this.#history.current;
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart,
-      selectionEnd,
-    });
+    const nextState: InputControllerState = this.#resolveState(
+      value,
+      {
+        insertText: '',
+        selectionStart,
+        selectionEnd,
+      },
+      'forward',
+      this.#plusErased,
+    );
     this.#history.replaceCurrent(nextState);
     return toInputState(this.#history.current);
   }

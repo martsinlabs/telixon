@@ -1,14 +1,16 @@
 import { ENGINE_DEAD, Engine } from '@telixon/core/engine';
 import { decidingDigits, positionAfterCallingCode } from './number-reader';
 
-// Exhaustive enumeration: the outcome depends only on calling code, length, and the deciding digits, so
-// every combination of those at every length covers every distinct outcome. Each index = one number.
+// Past its deciding depth the engine stops reacting to digit values, so trying every deciding-digit
+// combination once per calling code and length, with a zero tail, covers every distinct case exactly
+// once. `sections` lists those runs back to back; an index writes its offset as the deciding digits.
 
-interface Block {
+// One run of consecutive indices: every deciding-digit combination for one calling code and length.
+interface Section {
   readonly callingCode: string;
-  readonly length: number;
-  readonly prefixLength: number;
-  readonly start: number;
+  readonly decidingDigitCount: number;
+  readonly zeroTail: string;
+  readonly firstIndex: number;
 }
 
 export interface AirtightEnumerator {
@@ -24,8 +26,7 @@ export function createAirtightEnumerator(
   minLength: number,
   maxLength: number,
 ): AirtightEnumerator {
-  const blocks: Block[] = [];
-  const starts: number[] = [];
+  const sections: Section[] = [];
   let total = 0;
   let callingCodeCount = 0;
 
@@ -33,35 +34,41 @@ export function createAirtightEnumerator(
     const afterCode = positionAfterCallingCode(engine, callingCode);
     if (afterCode === ENGINE_DEAD) continue;
     callingCodeCount++;
-    const deciding = decidingDigits(engine, afterCode, maxLength + 1);
+    const decidingDepth = decidingDigits(engine, afterCode, maxLength + 1);
 
-    for (let length = minLength; length <= maxLength; length++) {
-      const prefixLength = Math.min(length, deciding);
-      blocks.push({ callingCode, length, prefixLength, start: total });
-      starts.push(total);
-      total += 10 ** prefixLength;
+    for (let nationalLength = minLength; nationalLength <= maxLength; nationalLength++) {
+      const decidingDigitCount = Math.min(nationalLength, decidingDepth);
+      sections.push({
+        callingCode,
+        decidingDigitCount,
+        zeroTail: '0'.repeat(nationalLength - decidingDigitCount),
+        firstIndex: total,
+      });
+      total += 10 ** decidingDigitCount;
     }
   }
 
-  function findBlock(index: number): Block {
+  // The last section whose firstIndex is at or below the index; sections are contiguous, so it owns
+  // the index. The midpoint is biased up because the search converges on the last match.
+  function sectionContaining(index: number): Section {
     let low = 0;
-    let high = blocks.length - 1;
+    let high = sections.length - 1;
     while (low < high) {
-      const mid = (low + high + 1) >> 1;
-      if (starts[mid]! <= index) low = mid;
-      else high = mid - 1;
+      const middle = (low + high + 1) >> 1;
+      if (sections[middle]!.firstIndex <= index) low = middle;
+      else high = middle - 1;
     }
-    return blocks[low]!;
+    return sections[low]!;
   }
 
   return {
     total,
     callingCodeCount,
     at(index: number): string {
-      const block: Block = findBlock(index);
-      const prefix: string = (index - block.start).toString().padStart(block.prefixLength, '0');
-      const national: string = prefix + '0'.repeat(block.length - block.prefixLength);
-      return '+' + block.callingCode + national;
+      const section = sectionContaining(index);
+      const offset = index - section.firstIndex;
+      const decidingPart = offset.toString().padStart(section.decidingDigitCount, '0');
+      return '+' + section.callingCode + decidingPart + section.zeroTail;
     },
   };
 }

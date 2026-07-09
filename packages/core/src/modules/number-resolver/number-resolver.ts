@@ -2,9 +2,9 @@ import {
   ENGINE_DEAD,
   Engine,
   STATE_FLAG_CALLING_CODE,
-  STATE_FLAG_CALLING_CODE_TERMINAL,
+  STATE_FLAG_CALLING_CODE_COMPLETE,
   getStateFlags,
-  walkDigit,
+  stepDigit,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -41,7 +41,7 @@ export class NumberResolver {
       return;
     }
 
-    let state: number = walkDigit(this.engine, this._state, digit);
+    let state: number = stepDigit(this.engine, this._state, digit);
     const filtersActive: boolean = this._regionFilter !== null || this._numberTypeFilter !== null;
 
     if (
@@ -71,7 +71,7 @@ export class NumberResolver {
     if (stateWord & STATE_FLAG_CALLING_CODE) {
       this._callingCodeDigitString += digitChar;
       this._callingCodeState = state;
-      this._callingCodeCompleted = (stateWord & STATE_FLAG_CALLING_CODE_TERMINAL) !== 0;
+      this._callingCodeCompleted = (stateWord & STATE_FLAG_CALLING_CODE_COMPLETE) !== 0;
     } else {
       this._nationalDigitString += digitChar;
     }

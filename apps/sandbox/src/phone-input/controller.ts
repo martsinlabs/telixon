@@ -46,7 +46,7 @@ export function mount(mode: Mode, value: string): PhoneInput {
     mode: 'international',
     defaultRegion: region,
     strict,
-    display: { callingCodeInInput: true, plusPrefix: true },
+    display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     initialValue: value,
     input: phoneInputEl,
   });

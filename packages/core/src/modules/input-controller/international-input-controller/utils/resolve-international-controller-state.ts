@@ -16,7 +16,7 @@ import { selectInternationalFormatIndex } from '../../../number-resolver/utils/s
 import { CaretIndex, InputControllerState } from '../../models';
 import { InternationalDisplayConfig } from '../models';
 
-const DEFAULT_DISPLAY: InternationalDisplayConfig = { callingCodeInInput: true, plusPrefix: false };
+const DEFAULT_DISPLAY: InternationalDisplayConfig = { callingCodeInInput: true, plusPrefix: 'none' };
 
 export function resolveInternationalControllerState(
   snapshot: NumberResolverSnapshot,
@@ -24,6 +24,7 @@ export function resolveInternationalControllerState(
   profile: NumberTypeProfileRef | null,
   display: InternationalDisplayConfig = DEFAULT_DISPLAY,
   direction: FormattingDirection = 'forward',
+  plusErased: boolean = false,
 ): InputControllerState {
   const resourceProvider = getResourceProvider();
 
@@ -51,9 +52,9 @@ export function resolveInternationalControllerState(
         selectedIndex,
       );
 
-      const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.International)
-        ? MASK_VARIANT.International
-        : MASK_VARIANT.National;
+      const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.INTERNATIONAL)
+        ? MASK_VARIANT.INTERNATIONAL
+        : MASK_VARIANT.NATIONAL;
       const mask: string | undefined = pickFormatMask(globalFormatIndex, variant, snapshot.nationalDigits.length);
 
       if (mask !== undefined) {
@@ -92,7 +93,8 @@ export function resolveInternationalControllerState(
   let finalCaret: CaretIndex;
 
   if (display.callingCodeInInput) {
-    const plusPrefix: string = display.plusPrefix ? '+' : '';
+    const plusShown: boolean = display.plusPrefix === 'fixed' || (display.plusPrefix === 'erasable' && !plusErased);
+    const plusPrefix: string = plusShown ? '+' : '';
     const plusOffset: number = plusPrefix.length;
     const separator: string = snapshot.callingCodeCompleted ? ' ' : '';
     const separatorOffset: number = separator.length;
@@ -115,5 +117,6 @@ export function resolveInternationalControllerState(
     profileRef: profile,
     formatIndex,
     nationalPrefixPresent: false,
+    plusErased,
   };
 }

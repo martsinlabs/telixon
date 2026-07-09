@@ -14,6 +14,7 @@ export interface InputControllerState extends InputState {
   readonly profileRef: NumberTypeProfileRef | null;
   readonly formatIndex: number | null;
   readonly nationalPrefixPresent: boolean;
+  readonly plusErased: boolean;
 }
 
 export interface InputChange {

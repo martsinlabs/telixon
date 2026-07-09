@@ -69,8 +69,8 @@ export function resolveNationalControllerState(
 
       // Group whether or not the national prefix was typed (matching Google): prefix mask with it, plain national mask otherwise.
       const usePrefixMasks: boolean =
-        nationalPrefixTyped && hasMaskVariant(formatIndex, MASK_VARIANT.NationalWithPrefix);
-      const variant: number = usePrefixMasks ? MASK_VARIANT.NationalWithPrefix : MASK_VARIANT.National;
+        nationalPrefixTyped && hasMaskVariant(formatIndex, MASK_VARIANT.NATIONAL_WITH_PREFIX);
+      const variant: number = usePrefixMasks ? MASK_VARIANT.NATIONAL_WITH_PREFIX : MASK_VARIANT.NATIONAL;
       const mask: string | undefined = pickFormatMask(formatIndex, variant, displayDigits.length);
 
       if (mask !== undefined) {
@@ -101,5 +101,6 @@ export function resolveNationalControllerState(
     profileRef: profile,
     formatIndex: appliedFormatIndex,
     nationalPrefixPresent: nationalPrefixTyped,
+    plusErased: false,
   };
 }

@@ -41,7 +41,7 @@ describe('InternationalInputController.deleteBackward', () => {
   it('does not jump the caret over the "+" prefix when backspacing right after it', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     // Value is "+1 ". Place caret right after "+" (position 1).
     const state = controller.deleteBackward('+1 ', 1, 1);
@@ -79,5 +79,111 @@ describe('InternationalInputController.deleteForward', () => {
 
     // First national digit is dropped; remaining digits are calling code + NSN without first digit.
     expect(state.value.replace(/\D/g, '')).toBe('1' + US_MOBILE.slice(1));
+  });
+
+  it('keeps the "+" under forward delete at position 0 when plusPrefix is \'fixed\'', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
+    });
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const state = controller.deleteForward(seeded.value, 0, 0);
+
+    expect(state.value.startsWith('+')).toBe(true);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
+  });
+});
+
+describe("InternationalInputController with plusPrefix: 'erasable'", () => {
+  const createErasable = () =>
+    createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'erasable' },
+    });
+
+  it('erases the "+" under forward delete at position 0 and keeps the digits', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const state = controller.deleteForward(seeded.value, 0, 0);
+
+    expect(state.value.startsWith('+')).toBe(false);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
+    expect(state.selectionStart).toBe(0);
+  });
+
+  it('erases the "+" under backspace with the caret right after it and keeps the digits', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const state = controller.deleteBackward(seeded.value, 1, 1);
+
+    expect(state.value.startsWith('+')).toBe(false);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
+    expect(state.selectionStart).toBe(0);
+  });
+
+  it('erases the "+" together with digits when a deleted selection includes position 0', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    // Selection "+1 " removes the plus and the calling-code digit.
+    const state = controller.deleteBackward(seeded.value, 0, 3);
+
+    expect(state.value.startsWith('+')).toBe(false);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE);
+  });
+
+  it('reaches a truly empty value under select-all delete', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const state = controller.deleteBackward(seeded.value, 0, seeded.value.length);
+
+    expect(state.value).toBe('');
+  });
+
+  it('keeps the "+" erased while further digits are typed', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+1415555013');
+
+    const erased = controller.deleteForward(seeded.value, 0, 0);
+    const state = controller.insert(erased.value, '2', erased.value.length, erased.value.length);
+
+    expect(state.value.startsWith('+')).toBe(false);
+    expect(state.value.replace(/\D/g, '')).toBe('14155550132');
+  });
+
+  it('restores the "+" when a plus is inserted at position 0', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const erased = controller.deleteForward(seeded.value, 0, 0);
+    const state = controller.insert(erased.value, '+', 0, 0);
+
+    expect(state.value.startsWith('+')).toBe(true);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
+    expect(state.selectionStart).toBe(1);
+  });
+
+  it('restores the "+" on undo and re-erases it on redo', () => {
+    const controller = createErasable();
+    const seeded = controller.setValue('+' + US_MOBILE_INTL);
+
+    const erased = controller.deleteForward(seeded.value, 0, 0);
+    expect(erased.value.startsWith('+')).toBe(false);
+
+    expect(controller.undo().value.startsWith('+')).toBe(true);
+    expect(controller.redo().value.startsWith('+')).toBe(false);
+  });
+
+  it('derives plus visibility from the string given to setValue', () => {
+    const controller = createErasable();
+
+    expect(controller.setValue(US_MOBILE_INTL).value.startsWith('+')).toBe(false);
+    expect(controller.setValue('+' + US_MOBILE_INTL).value.startsWith('+')).toBe(true);
+    // An empty string resets to the visible plus primer.
+    expect(controller.setValue('').value).toBe('+');
   });
 });

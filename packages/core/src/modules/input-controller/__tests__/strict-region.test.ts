@@ -26,7 +26,7 @@ describe('InputController strict mode: the reported region stays the preferred r
     const controller = createInternationalInputController({
       defaultRegion: 'US',
       strict: true,
-      display: { callingCodeInInput: true, plusPrefix: true },
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
     });
     controller.setValue('+1' + CA_NUMBER);
 

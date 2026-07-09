@@ -35,7 +35,7 @@ export function evaluateWithTelixon(input: string, defaultRegion?: RegionCode): 
 // Telixon's live value after each input character, typed through the international controller (the real insert path), to compare against Google's formatter.
 export function asYouTypeWithTelixon(input: string): string[] {
   const controller: InputController = createInternationalInputController({
-    display: { callingCodeInInput: true, plusPrefix: true },
+    display: { callingCodeInInput: true, plusPrefix: 'fixed' },
   });
 
   let state: InputState = controller.currentState;
