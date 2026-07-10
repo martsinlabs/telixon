@@ -215,7 +215,7 @@ function buildBadge(data: ParityData): ShieldsBadge {
     schemaVersion: 1,
     label: 'conformance',
     message: `${percent}%`,
-    color: passing ? 'brightgreen' : data.overall.matchRate > 0.99 ? 'yellow' : 'red',
+    color: passing ? '26997b' : data.overall.matchRate > 0.99 ? 'yellow' : 'red',
   };
 }
 

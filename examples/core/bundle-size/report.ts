@@ -117,7 +117,7 @@ function buildBadge(data: BundleData): ShieldsBadge {
     schemaVersion: 1,
     label: 'initial bundle',
     message: `${formatBytes(data.initialGzip)} gzip`,
-    color: 'brightgreen',
+    color: '26997b',
   };
 }
 

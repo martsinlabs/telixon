@@ -33,7 +33,7 @@ export default [
     },
   },
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/engine/**', '**/.cache/**'],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/engine/**', '**/.cache/**', '**/.astro/**'],
   },
   prettier,
 ];

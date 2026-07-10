@@ -227,7 +227,7 @@ function buildBadge(): ShieldsBadge {
     schemaVersion: 1,
     label: 'benchmarks',
     message: 'live',
-    color: 'blue',
+    color: '26997b',
   };
 }
 
