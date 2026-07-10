@@ -68,12 +68,6 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.41.2
         version: 0.41.2(@astrojs/markdown-remark@7.2.0)(astro@7.0.5(@astrojs/markdown-remark@7.2.0)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.5.0)(rollup@4.60.1)(tsx@4.22.3)(yaml@2.9.0))(typescript@6.0.2)
-      '@telixon/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@telixon/web-sdk':
-        specifier: workspace:*
-        version: link:../../packages/web-sdk
       astro:
         specifier: ^7.0.5
         version: 7.0.5(@astrojs/markdown-remark@7.2.0)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.5.0)(rollup@4.60.1)(tsx@4.22.3)(yaml@2.9.0)

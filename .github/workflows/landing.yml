@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 
-# One docs pipeline per ref; abandon superseded preview runs, never a production deploy.
+# One landing pipeline per ref; abandon superseded preview runs, never a production deploy.
 concurrency:
   group: landing-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -41,7 +41,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: landing-dist
-          path: apps/docs/dist
+          path: apps/landing/dist
+          if-no-files-found: error
 
   deploy-preview:
     # Fork pull requests have no secrets; previews are for same-repo branches only.

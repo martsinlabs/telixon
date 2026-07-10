@@ -31,9 +31,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The landing page bundles @telixon/core and @telixon/web-sdk, so packages build first.
-      - run: pnpm build
-
       - run: pnpm --filter @telixon/docs build
 
       - run: pnpm --filter @telixon/docs check:links
@@ -42,6 +39,7 @@ jobs:
         with:
           name: docs-dist
           path: apps/docs/dist
+          if-no-files-found: error
 
   deploy-preview:
     # Fork pull requests have no secrets; previews are for same-repo branches only.
