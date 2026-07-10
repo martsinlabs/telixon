@@ -1,0 +1,101 @@
+name: Docs
+
+on:
+  pull_request:
+    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/docs.yml']
+  push:
+    branches: [main]
+    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/docs.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One docs pipeline per ref; abandon superseded preview runs, never a production deploy.
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The landing page bundles @telixon/core and @telixon/web-sdk, so packages build first.
+      - run: pnpm build
+
+      - run: pnpm --filter @telixon/docs build
+
+      - run: pnpm --filter @telixon/docs check:links
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-dist
+          path: apps/docs/dist
+
+  deploy-preview:
+    # Fork pull requests have no secrets; previews are for same-repo branches only.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-dist
+          path: dist
+
+      - uses: cloudflare/wrangler-action@v3
+        id: deploy
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=telixon-docs --branch=${{ github.head_ref }}
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.deployment-url }}';
+            const marker = '<!-- docs-preview -->';
+            const body = `${marker}\nDocs preview: ${url}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((comment) => comment.body.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
+
+  deploy-production:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: docs-production
+      url: https://docs.telixon.dev
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-dist
+          path: dist
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=telixon-docs --branch=main
