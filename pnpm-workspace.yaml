@@ -6,5 +6,9 @@ packages:
 ignoredBuiltDependencies:
   - esbuild
 
+overrides:
+  esbuild@>=0.27.3 <0.28.1: '>=0.28.1 <0.29'
+  yaml@>=2.0.0 <2.8.3: '>=2.8.3 <3'
+
 # Newly published package versions must age three days before install (supply-chain quarantine).
 minimumReleaseAge: 4320
