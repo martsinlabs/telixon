@@ -113,6 +113,8 @@ jobs:
         env:
           BENCH_TELIXON_ONLY: '1'
         with:
+          # Required as of CodSpeed action v4; simulation is the CPU-instrumented mode for standard runners.
+          mode: simulation
           run: pnpm bench
           token: ${{ secrets.CODSPEED_TOKEN }}
 
