@@ -24,14 +24,14 @@
   --sl-color-gray-1: #dfe2e4;
   --sl-color-gray-2: #b3b9be;
   --sl-color-gray-3: #9ba1a6;
-  --sl-color-gray-4: #666b71;
+  --sl-color-gray-4: #8a9198;
   --sl-color-gray-5: #272a2d;
   --sl-color-gray-6: #212225;
   --sl-color-gray-7: #18191b;
   --sl-color-black: #111113;
 
   --sl-color-accent-low: #0b3b2c;
-  --sl-color-accent: #26997b;
+  --sl-color-accent: var(--brand-solid);
   --sl-color-accent-high: #1fd8a4;
   --sl-color-text: var(--sl-color-gray-2);
   --sl-color-text-accent: #1fd8a4;
@@ -53,11 +53,10 @@
   /* The one hover fill for every interactive item: sidebar links, switcher, menus. */
   --tx-hover: rgba(255, 255, 255, 0.03);
   --tx-border-strong: rgba(255, 255, 255, 0.16);
-  --tx-green-dim: rgba(38, 153, 123, 0.14);
-  --tx-green-glow: rgba(38, 153, 123, 0.35);
+  --tx-green-dim: rgb(var(--brand) / 0.12);
   --tx-link-underline: rgba(31, 216, 164, 0.35);
-  --tx-scroll-thumb: rgba(255, 255, 255, 0.16);
-  --tx-selection: rgba(38, 153, 123, 0.35);
+  --tx-scroll-thumb: rgba(255, 255, 255, 0.4);
+  --tx-selection: rgb(var(--brand) / 0.35);
 }
 
 /* Light palette: #f7f8f8 canvas with a deep jade accent. */
@@ -66,19 +65,19 @@
   --sl-color-gray-1: #24282b;
   --sl-color-gray-2: #3d4347;
   --sl-color-gray-3: #5c6266;
-  --sl-color-gray-4: #7d838a;
+  --sl-color-gray-4: #676d73;
   --sl-color-gray-5: #d7dadc;
   --sl-color-gray-6: #e9ebec;
   --sl-color-gray-7: #f2f3f4;
   --sl-color-black: #f7f8f8;
 
   --sl-color-accent-low: #d6f1e3;
-  --sl-color-accent: #26997b;
+  --sl-color-accent: var(--brand-solid);
   --sl-color-accent-high: #1d3b31;
   --sl-color-text: var(--sl-color-gray-2);
-  --sl-color-text-accent: #208368;
+  --sl-color-text-accent: #1b7359;
   --sl-color-text-invert: #ffffff;
-  --sl-color-bg-accent: #26997b;
+  --sl-color-bg-accent: var(--brand-solid);
 
   --sl-color-bg: #f7f8f8;
   /* White header: a step above the off-white canvas, same logic as the elevated popover. */
@@ -94,11 +93,10 @@
   --tx-panel-2: rgba(0, 0, 0, 0.05);
   --tx-hover: rgba(0, 0, 0, 0.03);
   --tx-border-strong: rgba(0, 0, 0, 0.18);
-  --tx-green-dim: rgba(38, 153, 123, 0.13);
-  --tx-green-glow: rgba(38, 153, 123, 0.28);
-  --tx-link-underline: rgba(32, 131, 104, 0.35);
-  --tx-scroll-thumb: rgba(0, 0, 0, 0.2);
-  --tx-selection: rgba(38, 153, 123, 0.22);
+  --tx-green-dim: rgb(var(--brand) / 0.12);
+  --tx-link-underline: rgba(27, 115, 89, 0.35);
+  --tx-scroll-thumb: rgba(0, 0, 0, 0.45);
+  --tx-selection: rgb(var(--brand) / 0.22);
 }
 
 /* Selection and focus */
@@ -492,7 +490,7 @@ starlight-tabs a[role='tab'][aria-selected='true'] {
     background-color 0.15s ease;
 }
 .pagination-links a:hover {
-  border-color: rgba(38, 153, 123, 0.5);
+  border-color: rgb(var(--brand) / 0.5);
   background-color: var(--tx-hover);
 }
 .pagination-links .link-title {
