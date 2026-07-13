@@ -4,7 +4,7 @@ import { defineConfig } from 'astro/config';
 import { AVAILABLE_PACKAGES } from './src/package-registry';
 
 export default defineConfig({
-  site: 'https://docs.telixon.dev',
+  site: 'https://telixon.dev',
   integrations: [
     starlight({
       title: 'Telixon',

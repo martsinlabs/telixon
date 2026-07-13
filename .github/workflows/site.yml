@@ -1,19 +1,19 @@
-name: Landing
+name: Site
 
 on:
   pull_request:
-    paths: ['apps/landing/**', 'scripts/check-links.mjs', '.github/workflows/landing.yml']
+    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/site.yml']
   push:
     branches: [main]
-    paths: ['apps/landing/**', 'scripts/check-links.mjs', '.github/workflows/landing.yml']
+    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/site.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# One landing pipeline per ref; abandon superseded preview runs, never a production deploy.
+# One site pipeline per ref; abandon superseded preview runs, never a production deploy.
 concurrency:
-  group: landing-${{ github.ref }}
+  group: site-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -31,17 +31,17 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The live demos bundle @telixon/core and @telixon/web-sdk, so packages build first.
+      # The landing page bundles @telixon/core and @telixon/web-sdk, so packages build first.
       - run: pnpm build
 
-      - run: pnpm --filter @telixon/landing build
+      - run: pnpm --filter @telixon/docs build
 
-      - run: pnpm --filter @telixon/landing check:links
+      - run: pnpm --filter @telixon/docs check:links
 
       - uses: actions/upload-artifact@v4
         with:
-          name: landing-dist
-          path: apps/landing/dist
+          name: site-dist
+          path: apps/docs/dist
           if-no-files-found: error
 
   deploy-preview:
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: landing-dist
+          name: site-dist
           path: dist
 
       - uses: cloudflare/wrangler-action@v3
@@ -69,8 +69,8 @@ jobs:
         with:
           script: |
             const url = '${{ steps.deploy.outputs.deployment-url }}';
-            const marker = '<!-- landing-preview -->';
-            const body = `${marker}\nLanding preview: ${url}`;
+            const marker = '<!-- site-preview -->';
+            const body = `${marker}\nSite preview: ${url}`;
             const { data: comments } = await github.rest.issues.listComments({
               ...context.repo,
               issue_number: context.issue.number,
@@ -87,12 +87,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: landing-production
+      name: site-production
       url: https://telixon.dev
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: landing-dist
+          name: site-dist
           path: dist
 
       - uses: cloudflare/wrangler-action@v3
