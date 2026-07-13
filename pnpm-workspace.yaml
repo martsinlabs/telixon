@@ -5,3 +5,6 @@ packages:
 
 ignoredBuiltDependencies:
   - esbuild
+
+# Newly published package versions must age three days before install (supply-chain quarantine).
+minimumReleaseAge: 4320
