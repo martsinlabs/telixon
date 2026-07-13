@@ -1,6 +1,7 @@
 // @ts-check
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
+import { AVAILABLE_PACKAGES } from './src/package-registry';
 
 export default defineConfig({
   site: 'https://docs.telixon.dev',
@@ -36,16 +37,11 @@ export default defineConfig({
         // No social card image exists, so declare the plain summary card instead of the default large-image card.
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary' } },
       ],
-      sidebar: [
-        {
-          label: '@telixon/core',
-          items: [{ slug: 'core' }],
-        },
-        {
-          label: '@telixon/web-sdk',
-          items: [{ slug: 'web-sdk' }],
-        },
-      ],
+      // One group per available package, labeled by npm name; PackageSidebar matches on that label.
+      sidebar: AVAILABLE_PACKAGES.map((pkg) => ({
+        label: pkg.name,
+        items: [{ slug: pkg.base }],
+      })),
       components: {
         Sidebar: './src/components/PackageSidebar.astro',
         ThemeSelect: './src/components/ThemeToggle.astro',

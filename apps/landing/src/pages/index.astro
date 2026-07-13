@@ -1,8 +1,8 @@
 ---
-// Telixon landing page. Custom design outside the Starlight chrome; docs live under /core/ and /web-sdk/.
+// Telixon landing page, a standalone Astro app; the docs live at docs.telixon.dev.
 // Section order follows the claim-then-proof funnel: hero, verified, engine, input controller, DX, packages, get started.
 // Code blocks render through Expressive Code; the site-wide palette lives in ec.config.mjs.
-import { Code } from '@astrojs/starlight/components';
+import { Code } from 'astro-expressive-code/components';
 import logoDark from '../assets/logo-dark.svg';
 import logoLight from '../assets/logo-light.svg';
 
@@ -1264,7 +1264,7 @@ const closedTypesCode = `controller.setRegion('USA')
             >
             GitHub
           </a>
-          <a class="nav-btn" href="/core/">Docs</a>
+          <a class="nav-btn" href="https://docs.telixon.dev/core/">Docs</a>
           <a class="nav-btn nav-cta" href="#get-started">Get started</a>
         </div>
       </div>
@@ -1277,10 +1277,10 @@ const closedTypesCode = `controller.setRegion('USA')
           <h1>Phone number <span class="hl">toolkit</span> for JavaScript and TypeScript.</h1>
           <p class="sub">Parsing, validation, formatting, and a headless input controller. Zero dependencies.</p>
           <p class="hero-proof">
-            <a class="link-green" href="https://telixon.dev/parity.html" target="_blank" rel="noreferrer"
+            <a class="link-green" href="https://proof.telixon.dev/parity.html" target="_blank" rel="noreferrer"
               >100% geographic parity, verified against Google libphonenumber</a
             >
-            <a class="link-green" href="https://telixon.dev/benchmark.html" target="_blank" rel="noreferrer"
+            <a class="link-green" href="https://proof.telixon.dev/benchmark.html" target="_blank" rel="noreferrer"
               >About 4x faster parsing, measured in CI</a
             >
           </p>
@@ -1334,7 +1334,7 @@ const closedTypesCode = `controller.setRegion('USA')
               The rest of the API is synchronous.
             </p>
             <div class="cta-row">
-              <a class="btn btn-primary" href="/core/">
+              <a class="btn btn-primary" href="https://docs.telixon.dev/core/">
                 Open the docs
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
               </a>
@@ -1380,7 +1380,7 @@ const closedTypesCode = `controller.setRegion('USA')
             <p>
               Explore the results on the <a
                 class="link-green"
-                href="https://telixon.dev/parity.html"
+                href="https://proof.telixon.dev/parity.html"
                 target="_blank"
                 rel="noreferrer">live dashboard</a
               >.
@@ -1458,7 +1458,7 @@ const closedTypesCode = `controller.setRegion('USA')
         <p class="bench-note">
           Measured by the benchmark suite in the repository. Full, dated runs on the <a
             class="link-green"
-            href="https://telixon.dev/benchmark.html"
+            href="https://proof.telixon.dev/benchmark.html"
             target="_blank"
             rel="noreferrer">live benchmarks</a
           >.
@@ -1540,7 +1540,7 @@ const closedTypesCode = `controller.setRegion('USA')
           </div>
         </div>
         <p class="after-paths">
-          The full controller API lives in <a class="link-green" href="/web-sdk/">the docs</a>.
+          The full controller API lives in <a class="link-green" href="https://docs.telixon.dev/web-sdk/">the docs</a>.
         </p>
       </div>
     </section>
@@ -1629,7 +1629,7 @@ const closedTypesCode = `controller.setRegion('USA')
           Telixon is an ecosystem built around one core, with thin layers you add only where you need them.
         </p>
         <div class="stack">
-          <a class="slab" href="/core/">
+          <a class="slab" href="https://docs.telixon.dev/core/">
             <span class="name">@telixon/core</span>
             <span class="chip chip-today">Today</span>
             <span class="desc">
@@ -1637,7 +1637,7 @@ const closedTypesCode = `controller.setRegion('USA')
               workers; one import resolves to the right build for each.
             </span>
           </a>
-          <a class="slab" href="/web-sdk/">
+          <a class="slab" href="https://docs.telixon.dev/web-sdk/">
             <span class="name">@telixon/web-sdk</span>
             <span class="chip chip-today">Today</span>
             <span class="desc">The DOM layer for the input controller. You bring your own markup.</span>
@@ -1687,8 +1687,8 @@ const closedTypesCode = `controller.setRegion('USA')
         <div class="meta">Built on Google libphonenumber metadata. Apache 2.0 License.</div>
         <div class="links">
           <a href="https://github.com/martsinlabs/telixon">GitHub</a>
-          <a href="/core/">Docs</a>
-          <a href="https://telixon.dev/parity.html">telixon.dev</a>
+          <a href="https://docs.telixon.dev/core/">Docs</a>
+          <a href="https://proof.telixon.dev/parity.html">proof.telixon.dev</a>
         </div>
       </div>
     </footer>
