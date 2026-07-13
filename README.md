@@ -3,8 +3,8 @@
 Phone-number parser, formatter, and validator for JavaScript and TypeScript.
 
 [![ci](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml/badge.svg)](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml)
-[![conformance](https://img.shields.io/endpoint?url=https://telixon.dev/parity-badge.json)](https://telixon.dev/parity.html)
-[![benchmarks](https://img.shields.io/endpoint?url=https://telixon.dev/bench-badge.json)](https://telixon.dev/benchmark.html)
+[![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
+[![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/martsinlabs/telixon)
 
 ## Conformance
@@ -22,7 +22,7 @@ divergence.
   formatting.
 - **Reproducible.** `pnpm conformance` runs the gate locally.
 
-Live report: [telixon.dev/parity.html](https://telixon.dev/parity.html). Methodology:
+Live report: [proof.telixon.dev/parity.html](https://proof.telixon.dev/parity.html). Methodology:
 [conformance/README.md](packages/core/conformance/README.md).
 
 ## Engine
@@ -36,7 +36,7 @@ cheap.
 The metadata is runtime data loaded once, out of your JS bundle, so it never affects your initial
 bundle or load (in the browser you trigger the load with `ensureEngineReady()`). Details:
 [ARCHITECTURE.md](ARCHITECTURE.md). Measured bundle breakdown, reproducible from
-[examples/core/bundle-size](examples/core/bundle-size): [telixon.dev/bundle.html](https://telixon.dev/bundle.html).
+[examples/core/bundle-size](examples/core/bundle-size): [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
 
 ## Packages
 
