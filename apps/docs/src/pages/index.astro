@@ -3,8 +3,8 @@
 // Section order follows the claim-then-proof funnel: hero, verified, engine, input controller, DX, packages, get started.
 // Code blocks render through Expressive Code; the site-wide palette lives in ec.config.mjs.
 import { Code } from '@astrojs/starlight/components';
-import logoDark from '../assets/logo-dark.svg';
-import logoLight from '../assets/logo-light.svg';
+import BrandLogo from '../components/BrandLogo.astro';
+import '../styles/tokens.css';
 
 const quickstartCode = `import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
 
@@ -71,7 +71,7 @@ const closedTypesCode = `controller.setRegion('USA')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <title>Telixon, phone number toolkit for JavaScript and TypeScript</title>
@@ -102,22 +102,26 @@ const closedTypesCode = `controller.setRegion('USA')
               ? 'light'
               : 'dark';
         document.documentElement.dataset.theme = theme;
+        // Gates the reveal animation's hidden state: without scripting nothing is ever hidden.
+        document.documentElement.dataset.js = '';
       })();
     </script>
     <style is:inline>
       :root {
         --bg: #161618;
-        --panel: rgba(255, 255, 255, 0.025);
-        --panel-2: rgba(255, 255, 255, 0.045);
+        --panel: rgba(255, 255, 255, 0.03);
+        --panel-2: rgba(255, 255, 255, 0.055);
         --border: rgba(255, 255, 255, 0.08);
         --border-strong: rgba(255, 255, 255, 0.16);
         --text: #f2f3f4;
+        /* The wordmark runs harder than body text on purpose; it is not --text. */
+        --brand-ink: #ffffff;
         --muted: #9ba1a6;
-        --faint: #666b71;
-        --green: #26997b;
-        --green-bright: #1fd8a4;
-        --green-glow: rgba(38, 153, 123, 0.35);
-        --green-dim: rgba(38, 153, 123, 0.12);
+        --faint: #8a9198;
+        --green: var(--brand-solid);
+        --green-text: #1fd8a4;
+        --green-glow: rgb(var(--brand) / 0.35);
+        --green-dim: rgb(var(--brand) / 0.12);
         --radius: 14px;
         --container: 1120px;
         --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -125,12 +129,14 @@ const closedTypesCode = `controller.setRegion('USA')
 
         --card-shadow: 0 30px 80px -35px rgba(0, 0, 0, 0.8);
         --field-bg: rgba(0, 0, 0, 0.45);
-        --nav-bg: rgba(22, 22, 24, 0.78);
+        --field-border: rgba(255, 255, 255, 0.4);
+        --nav-bg: rgba(22, 22, 24, 0.86);
         --grid-dot: rgba(255, 255, 255, 0.05);
         --link-underline: rgba(31, 216, 164, 0.35);
-        --error: #e5484d;
-        --cta-bg: #058e69;
-        --cta-bg-hover: #07a077;
+        --error: #eb6668;
+        --cta-bg: var(--green);
+        --cta-bg-hover: color-mix(in srgb, var(--green) 86%, #ffffff);
+        --cta-fg: #161618;
         --surface: #212225;
         --surface-border: rgba(255, 255, 255, 0.08);
         --surface-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.5), 0 1px 4px -2px rgba(0, 0, 0, 0.3);
@@ -138,25 +144,29 @@ const closedTypesCode = `controller.setRegion('USA')
 
       [data-theme='light'] {
         --bg: #f7f8f8;
-        --panel: rgba(0, 0, 0, 0.035);
-        --panel-2: rgba(0, 0, 0, 0.06);
+        --panel: rgba(0, 0, 0, 0.03);
+        --panel-2: rgba(0, 0, 0, 0.05);
         --border: rgba(0, 0, 0, 0.09);
         --border-strong: rgba(0, 0, 0, 0.18);
         --text: #17191b;
+        --brand-ink: #161618;
         --muted: #4c5257;
-        --faint: #7d838a;
-        --green: #26997b;
-        --green-bright: #208368;
-        --green-glow: rgba(38, 153, 123, 0.28);
-        --green-dim: rgba(38, 153, 123, 0.12);
+        --faint: #676d73;
+        --green: var(--brand-solid);
+        /* Accent for text. --green may fill and border but never letter: it is 3.33:1 on this canvas. */
+        --green-text: #1b7359;
+        --green-glow: rgb(var(--brand) / 0.28);
+        --green-dim: rgb(var(--brand) / 0.12);
         --card-shadow: 0 24px 60px -32px rgba(20, 45, 32, 0.2);
         --field-bg: #ffffff;
-        --nav-bg: rgba(247, 248, 248, 0.85);
+        --field-border: rgba(0, 0, 0, 0.45);
+        --nav-bg: rgba(255, 255, 255, 0.88);
         --grid-dot: rgba(0, 0, 0, 0.06);
-        --link-underline: rgba(32, 131, 104, 0.35);
+        --link-underline: rgba(27, 115, 89, 0.35);
         --error: #ce2c31;
         --cta-bg: var(--green);
         --cta-bg-hover: color-mix(in srgb, var(--green) 86%, #0b1f15);
+        --cta-fg: #ffffff;
         --surface: #ffffff;
         --surface-border: rgba(0, 0, 0, 0.1);
         --surface-shadow: 0 10px 22px -14px rgba(20, 45, 32, 0.2), 0 2px 5px -3px rgba(20, 45, 32, 0.1);
@@ -191,8 +201,8 @@ const closedTypesCode = `controller.setRegion('USA')
         pointer-events: none;
         will-change: transform;
         background:
-          radial-gradient(720px 520px at 50% -80px, rgba(38, 153, 123, 0.16), transparent),
-          radial-gradient(1200px 760px at 50% -200px, rgba(38, 153, 123, 0.07), transparent);
+          radial-gradient(720px 520px at 50% -80px, rgb(var(--brand) / 0.16), transparent),
+          radial-gradient(1200px 760px at 50% -200px, rgb(var(--brand) / 0.07), transparent);
         /* The whole layer dissolves long before its own edge, so scrolling never reveals a seam. */
         -webkit-mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.45) 70%, transparent 92%);
         mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.45) 70%, transparent 92%);
@@ -229,7 +239,12 @@ const closedTypesCode = `controller.setRegion('USA')
       }
 
       ::selection {
-        background: rgba(38, 153, 123, 0.35);
+        background: var(--green-glow);
+      }
+      :focus-visible {
+        outline: 2px solid var(--green-text);
+        outline-offset: 2px;
+        border-radius: 2px;
       }
 
       /* ---------- Nav ---------- */
@@ -258,28 +273,12 @@ const closedTypesCode = `controller.setRegion('USA')
       .brand {
         display: flex;
         align-items: center;
+        color: var(--brand-ink);
       }
       .brand-logo {
+        display: block;
         height: 24px;
-        display: block;
-      }
-      .brand-logo-light {
-        display: none;
-      }
-      [data-theme='light'] .brand-logo-dark {
-        display: none;
-      }
-      [data-theme='light'] .brand-logo-light {
-        display: block;
-      }
-      .brand .dot {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: var(--green);
-        box-shadow:
-          0 0 14px var(--green-glow),
-          0 0 3px var(--green);
+        width: auto;
       }
       .nav-links {
         display: flex;
@@ -288,6 +287,8 @@ const closedTypesCode = `controller.setRegion('USA')
         color: var(--muted);
         font-size: 14.5px;
         font-weight: 500;
+        /* Drops the links onto the wordmark's baseline; centring the boxes only matches their centres. */
+        transform: translateY(2.25px);
       }
       .nav-links a {
         transition: color 0.15s ease;
@@ -304,10 +305,13 @@ const closedTypesCode = `controller.setRegion('USA')
       .nav-btn {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 7px;
         font-size: 13.5px;
         font-weight: 600;
         padding: 8px 14px;
+        min-height: 44px;
+        min-width: 44px;
         border-radius: 9px;
         border: 1px solid var(--border-strong);
         color: var(--text);
@@ -327,16 +331,18 @@ const closedTypesCode = `controller.setRegion('USA')
       .nav-cta {
         border: none;
         background: var(--cta-bg);
-        color: #ffffff;
+        color: var(--cta-fg);
         box-shadow: 0 1px 2px rgba(11, 40, 26, 0.16);
       }
       .nav-cta:hover {
         background: var(--cta-bg-hover);
-        color: #ffffff;
+        color: var(--cta-fg);
       }
 
       .theme-toggle {
         padding: 8px 10px;
+        min-height: 44px;
+        min-width: 44px;
         cursor: pointer;
         background: none;
         border: none;
@@ -378,7 +384,7 @@ const closedTypesCode = `controller.setRegion('USA')
         text-wrap: balance;
       }
       .hero h1 .hl {
-        background: linear-gradient(100deg, var(--green-bright), var(--green) 80%);
+        background: linear-gradient(100deg, var(--green-text), var(--green) 80%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -422,7 +428,7 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .btn-primary {
         background: var(--cta-bg);
-        color: #ffffff;
+        color: var(--cta-fg);
         box-shadow: 0 1px 2px rgba(11, 40, 26, 0.16);
       }
       .btn-primary:hover {
@@ -434,7 +440,7 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .btn-ghost:hover {
         border-color: var(--green);
-        color: var(--green-bright);
+        color: var(--green-text);
       }
 
       .hero-proof {
@@ -474,22 +480,27 @@ const closedTypesCode = `controller.setRegion('USA')
         font-size: 11px;
         font-weight: 600;
         letter-spacing: 0.06em;
-        color: var(--green-bright);
-        border: 1px solid rgba(38, 153, 123, 0.45);
+        color: var(--green-text);
+        border: 1px solid rgb(var(--brand) / 0.45);
         background: var(--green-dim);
         border-radius: 999px;
         padding: 3px 10px;
         opacity: 0;
-        transition: opacity 0.35s ease;
+        /* visibility, not opacity alone: opacity would leave the label in the accessibility tree. */
+        visibility: hidden;
+        transition:
+          opacity 0.35s ease,
+          visibility 0.35s;
       }
       .valid-pill.on {
         opacity: 1;
+        visibility: visible;
       }
       .demo-input {
         display: flex;
         align-items: center;
         background: var(--field-bg);
-        border: 1px solid var(--border-strong);
+        border: 1px solid var(--field-border);
         border-radius: 12px;
         padding: 0 14px;
         width: 100%;
@@ -498,13 +509,15 @@ const closedTypesCode = `controller.setRegion('USA')
           border-color 0.3s ease,
           box-shadow 0.3s ease;
       }
-      .demo-input:focus-within {
-        border-color: var(--border-strong);
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
-      }
       .demo-input.valid {
-        border-color: rgba(38, 153, 123, 0.55);
-        box-shadow: 0 0 0 3px rgba(38, 153, 123, 0.12);
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-dim);
+      }
+      /* Must follow .valid: equal specificity, and the seeded number is valid. */
+      .demo-input:focus-within,
+      .demo-input.valid:focus-within {
+        border-color: var(--green-text);
+        box-shadow: 0 0 0 3px var(--green-glow);
       }
       .demo-input .flag {
         margin-right: 12px;
@@ -521,7 +534,7 @@ const closedTypesCode = `controller.setRegion('USA')
         font-size: 17px;
         padding: 15px 0;
         min-width: 0;
-        caret-color: var(--green-bright);
+        caret-color: var(--green-text);
       }
       .demo-input input::placeholder {
         color: var(--faint);
@@ -576,7 +589,7 @@ const closedTypesCode = `controller.setRegion('USA')
         font-weight: 600;
       }
       .demo-rows .v.accent {
-        color: var(--green-bright);
+        color: var(--green-text);
       }
 
       /* ---------- Sections ---------- */
@@ -602,7 +615,7 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .lead code,
       .prose code {
-        color: var(--green-bright);
+        color: var(--green-text);
         font-family: var(--font-mono);
         font-size: 0.88em;
       }
@@ -628,18 +641,17 @@ const closedTypesCode = `controller.setRegion('USA')
         margin-bottom: 0;
       }
       .link-green {
-        color: var(--green-bright);
+        color: var(--green-text);
         border-bottom: 1px solid var(--link-underline);
         transition: border-color 0.15s ease;
       }
       .link-green:hover {
-        border-bottom-color: var(--green-bright);
+        border-bottom-color: var(--green-text);
       }
       .proof-card {
         position: relative;
         background: var(--surface);
         border: 1px solid var(--surface-border);
-        box-shadow: var(--surface-shadow);
         border-radius: 18px;
         padding: 32px 30px;
         box-shadow:
@@ -651,7 +663,7 @@ const closedTypesCode = `controller.setRegion('USA')
         font-weight: 800;
         letter-spacing: -0.04em;
         line-height: 1;
-        background: linear-gradient(100deg, var(--green-bright), var(--green));
+        background: linear-gradient(100deg, var(--green-text), var(--green));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -681,7 +693,7 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .proof-rows .v a {
         border-bottom: 1px solid var(--link-underline);
-        color: var(--green-bright);
+        color: var(--green-text);
       }
       .footnote {
         color: var(--faint);
@@ -705,13 +717,39 @@ const closedTypesCode = `controller.setRegion('USA')
         border-radius: 18px;
         padding: 34px 30px;
       }
+      .dfa-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
       .dfa-label {
         font-family: var(--font-mono);
         font-size: 11px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--faint);
-        margin: 0 0 18px;
+        margin: 0;
+      }
+      .dfa-replay {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--faint);
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition:
+          color 0.15s ease,
+          border-color 0.15s ease;
+      }
+      .dfa-replay:hover {
+        color: var(--green-text);
+        border-color: var(--green);
       }
       .walk-digits {
         font-family: var(--font-mono);
@@ -762,8 +800,8 @@ const closedTypesCode = `controller.setRegion('USA')
         animation: none;
       }
       .dcell.trail {
-        background: rgba(38, 153, 123, 0.14);
-        border-color: rgba(38, 153, 123, 0.35);
+        background: rgb(var(--brand) / 0.14);
+        border-color: rgb(var(--brand) / 0.35);
       }
       .dcell.hot {
         background: rgba(31, 216, 164, 0.3);
@@ -771,7 +809,7 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .dcell.on {
         background: rgba(31, 216, 164, 0.55);
-        border-color: var(--green-bright);
+        border-color: var(--green-text);
         box-shadow: 0 0 14px -3px var(--green-glow);
         animation: land 0.45s ease-out;
       }
@@ -789,9 +827,11 @@ const closedTypesCode = `controller.setRegion('USA')
       }
       .dfa-result {
         opacity: 0;
+        visibility: hidden;
         transform: translateY(4px);
         transition:
           opacity 0.35s ease,
+          visibility 0.35s,
           transform 0.35s ease;
         margin-top: 0;
         display: inline-flex;
@@ -799,18 +839,19 @@ const closedTypesCode = `controller.setRegion('USA')
         gap: 10px;
         font-family: var(--font-mono);
         font-size: 12.5px;
-        color: var(--green-bright);
-        border: 1px solid rgba(38, 153, 123, 0.4);
+        color: var(--green-text);
+        border: 1px solid rgb(var(--brand) / 0.4);
         background: var(--green-dim);
         border-radius: 9px;
         padding: 8px 14px;
       }
       .dfa-result.show {
         opacity: 1;
+        visibility: visible;
         transform: none;
       }
       .dfa-result .sep {
-        color: var(--faint);
+        color: var(--muted);
       }
       .bench-strip {
         display: grid;
@@ -829,7 +870,7 @@ const closedTypesCode = `controller.setRegion('USA')
         font-family: var(--font-mono);
         font-size: 30px;
         font-weight: 600;
-        color: var(--green-bright);
+        color: var(--green-text);
         line-height: 1.1;
         font-feature-settings: 'tnum';
       }
@@ -867,7 +908,7 @@ const closedTypesCode = `controller.setRegion('USA')
         font-size: 11.5px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--green);
+        color: var(--green-text);
         margin: 0 0 16px;
       }
       .steps-list {
@@ -880,7 +921,7 @@ const closedTypesCode = `controller.setRegion('USA')
         margin: 0 0 10px;
       }
       .steps-list li::marker {
-        color: var(--green);
+        color: var(--green-text);
         font-family: var(--font-mono);
         font-size: 13px;
       }
@@ -913,7 +954,7 @@ const closedTypesCode = `controller.setRegion('USA')
       .field-readout code {
         font-family: var(--font-mono);
         font-size: 13.5px;
-        color: var(--green-bright);
+        color: var(--green-text);
       }
       .field-readout code.empty {
         color: var(--faint);
@@ -934,7 +975,7 @@ const closedTypesCode = `controller.setRegion('USA')
         transition: border-color 0.2s ease;
       }
       .path:hover {
-        border-color: rgba(38, 153, 123, 0.35);
+        border-color: rgb(var(--brand) / 0.35);
       }
       .path h3 {
         margin: 0 0 8px;
@@ -948,7 +989,7 @@ const closedTypesCode = `controller.setRegion('USA')
         margin: 0 0 18px;
       }
       .path p code {
-        color: var(--green-bright);
+        color: var(--green-text);
         font-family: var(--font-mono);
         font-size: 0.88em;
       }
@@ -988,7 +1029,7 @@ const closedTypesCode = `controller.setRegion('USA')
           transform 0.2s ease;
       }
       .cell:hover {
-        border-color: rgba(38, 153, 123, 0.35);
+        border-color: rgb(var(--brand) / 0.35);
         transform: translateY(-3px);
       }
       .cell.wide {
@@ -1004,7 +1045,7 @@ const closedTypesCode = `controller.setRegion('USA')
         gap: 9px;
       }
       .cell h3 .tick {
-        color: var(--green);
+        color: var(--green-text);
         font-family: var(--font-mono);
         font-weight: 600;
       }
@@ -1046,7 +1087,7 @@ const closedTypesCode = `controller.setRegion('USA')
         margin-top: 14px;
       }
       a.slab:hover {
-        border-color: rgba(38, 153, 123, 0.4);
+        border-color: rgb(var(--brand) / 0.4);
         transform: translateX(4px);
       }
       .slab .name {
@@ -1064,8 +1105,8 @@ const closedTypesCode = `controller.setRegion('USA')
         justify-self: start;
       }
       .chip-today {
-        color: var(--green-bright);
-        border: 1px solid rgba(38, 153, 123, 0.45);
+        color: var(--green-text);
+        border: 1px solid rgb(var(--brand) / 0.45);
         background: var(--green-dim);
       }
       .chip-planned {
@@ -1100,7 +1141,7 @@ const closedTypesCode = `controller.setRegion('USA')
       /* Decorative prompt: generated content never reaches selection or the copy button payload. */
       .install .expressive-code .ec-line .code::before {
         content: '$';
-        color: var(--green-bright);
+        color: var(--green-text);
         margin-right: 12px;
       }
       .install .expressive-code pre,
@@ -1147,25 +1188,42 @@ const closedTypesCode = `controller.setRegion('USA')
       }
 
       /* ---------- Reveal on scroll ---------- */
-      .reveal {
+      /* Only script can hide a section, because only script can reveal it again. */
+      :root[data-js] .reveal {
         opacity: 0;
         transform: translateY(18px);
         transition:
           opacity 0.65s ease,
           transform 0.65s ease;
       }
-      .reveal.in {
+      :root[data-js] .reveal.in {
         opacity: 1;
         transform: none;
       }
+      /* Script hides these and script reveals them; printing never scrolls. */
+      @media print {
+        :root[data-js] .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
-        .reveal {
+        :root[data-js] .reveal {
           opacity: 1;
           transform: none;
           transition: none;
         }
-        .dcell {
+        /* .dcell.on outranks a bare .dcell, so it must be named here too. */
+        .dcell,
+        .dcell.on {
           animation: none;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+        .dfa-replay {
+          display: none;
         }
       }
 
@@ -1204,9 +1262,11 @@ const closedTypesCode = `controller.setRegion('USA')
         .bento {
           grid-template-columns: 1fr 1fr;
         }
-        .cell,
-        .cell.wide {
+        .cell {
           grid-column: span 1;
+        }
+        .cell.wide {
+          grid-column: span 2;
         }
         .slab {
           grid-template-columns: 1fr;
@@ -1226,6 +1286,43 @@ const closedTypesCode = `controller.setRegion('USA')
         .bento {
           grid-template-columns: 1fr;
         }
+        /* One column: span 2 would conjure a phantom second track. */
+        .cell.wide {
+          grid-column: span 1;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .nav .container {
+          gap: 12px;
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+        .nav-right {
+          gap: 6px;
+        }
+        .nav-btn-text {
+          display: none;
+        }
+        .brand-logo {
+          height: 20px;
+        }
+        .demo-rows {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto;
+          gap: 2px 0;
+        }
+        .demo-rows .v {
+          text-align: left;
+        }
+        .dfa-grid {
+          grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+        .dcell {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 1;
+        }
       }
     </style>
   </head>
@@ -1235,9 +1332,8 @@ const closedTypesCode = `controller.setRegion('USA')
     <!-- NAV -->
     <header class="nav" id="nav">
       <div class="container">
-        <a class="brand" href="/" aria-label="Telixon">
-          <img class="brand-logo brand-logo-dark" src={logoDark.src} alt="Telixon" />
-          <img class="brand-logo brand-logo-light" src={logoLight.src} alt="Telixon" />
+        <a class="brand" href="/">
+          <BrandLogo class="brand-logo" />
         </a>
         <nav class="nav-links">
           <a href="#verified">Proof</a>
@@ -1262,7 +1358,7 @@ const closedTypesCode = `controller.setRegion('USA')
                 d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
               ></path></svg
             >
-            GitHub
+            <span class="nav-btn-text">GitHub</span>
           </a>
           <a class="nav-btn" href="/core/">Docs</a>
           <a class="nav-btn nav-cta" href="#get-started">Get started</a>
@@ -1270,8 +1366,9 @@ const closedTypesCode = `controller.setRegion('USA')
       </div>
     </header>
 
-    <!-- 1 · HERO (owns: the claim, install, the live product) -->
-    <section class="hero">
+    <main>
+      <!-- 1 · HERO (owns: the claim, install, the live product) -->
+      <section class="hero">
       <div class="container hero-grid">
         <div>
           <h1>Phone number <span class="hl">toolkit</span> for JavaScript and TypeScript.</h1>
@@ -1310,7 +1407,7 @@ const closedTypesCode = `controller.setRegion('USA')
               aria-label="Try the phone input"
             />
           </div>
-          <div class="demo-rows">
+          <div class="demo-rows" aria-live="polite">
             <span class="k">Region</span><span class="v" id="hero-region"></span>
             <span class="k">Number type</span><span class="v" id="hero-type"></span>
             <span class="k">E.164</span><span class="v accent" id="hero-e164"></span>
@@ -1431,7 +1528,10 @@ const closedTypesCode = `controller.setRegion('USA')
             </p>
           </div>
           <div class="dfa">
-            <p class="dfa-label">One digit, one step</p>
+            <div class="dfa-head">
+              <p class="dfa-label">One digit, one step</p>
+              <button class="dfa-replay" id="walk-replay" type="button">Replay</button>
+            </div>
             <div class="walk-digits" id="walk-digits"></div>
             <div class="dfa-grid" id="dfa-grid" aria-hidden="true"></div>
             <div class="dfa-result" id="walk-result">
@@ -1517,10 +1617,11 @@ const closedTypesCode = `controller.setRegion('USA')
                 spellcheck="false"
                 readonly
                 value="011 15-2345-6789"
-                aria-label="Argentine mobile number"
               />
             </div>
-            <div class="field-readout"><span class="k">E.164</span><code id="ar-e164">+5491123456789</code></div>
+            <div class="field-readout" aria-live="polite">
+              <span class="k">E.164</span><code id="ar-e164">+5491123456789</code>
+            </div>
           </div>
         </div>
 
@@ -1680,6 +1781,7 @@ const closedTypesCode = `controller.setRegion('USA')
         </p>
       </div>
     </section>
+    </main>
 
     <!-- 8 · FOOTER (owns: attribution and legal) -->
     <footer>
@@ -1905,7 +2007,6 @@ const closedTypesCode = `controller.setRegion('USA')
         function walk(step) {
           if (step >= PATH.length) {
             result.classList.add('show');
-            setTimeout(loop, 3000);
             return;
           }
           if (step > 0) {
@@ -1923,14 +2024,32 @@ const closedTypesCode = `controller.setRegion('USA')
           }, 200);
         }
 
-        function loop() {
+        var pending = null;
+        function play() {
+          clearTimeout(pending);
           reset();
-          setTimeout(function () {
+          pending = setTimeout(function () {
             walk(0);
           }, 800);
         }
 
-        loop();
+        // One run per visit; the replay control owns every repeat.
+        var replay = document.getElementById('walk-replay');
+        if (replay) replay.addEventListener('click', play);
+
+        var seen = false;
+        var walkObserver = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting || seen) return;
+              seen = true;
+              walkObserver.unobserve(entry.target);
+              play();
+            });
+          },
+          { threshold: 0.4 },
+        );
+        walkObserver.observe(grid);
       })();
     </script>
   </body>

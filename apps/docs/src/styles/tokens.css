@@ -1,0 +1,5 @@
+/* Brand accent, shared by the landing and the docs. Raw channels, so every tint derives from it. */
+:root {
+  --brand: 38 153 123;
+  --brand-solid: rgb(var(--brand));
+}
