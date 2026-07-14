@@ -4,91 +4,117 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Telixon conformance · {{shortCommit}}</title>
+    <meta
+      name="description"
+      content="Telixon matches Google libphonenumber on {{methodsPerfect}} of {{methodsTotal}} methods across {{comparisons}} comparisons, with {{divergences}} divergences."
+    />
+    <link rel="canonical" href="https://proof.telixon.dev/parity.html" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        font:
-          16px/1.5 system-ui,
-          sans-serif;
-        max-width: 720px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-        color: #17191b;
-      }
-      h1 {
-        font-size: 1.4rem;
-        margin-bottom: 0.5rem;
-      }
-      .meta {
-        color: #4c5257;
-        font-size: 0.9rem;
-        margin-bottom: 1.5rem;
-      }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-      }
-      th,
-      td {
-        padding: 0.4rem 0.6rem;
-        border-bottom: 1px solid #eee;
-        text-align: left;
-      }
-      th:last-child,
-      td:last-child {
-        text-align: right;
-      }
-      .ok {
-        color: #058e69;
-        font-weight: 600;
-      }
-      code {
-        background: #f4f4f4;
-        padding: 0.1rem 0.3rem;
-        border-radius: 3px;
-        font-size: 0.9em;
-      }
-      footer {
-        margin-top: 2rem;
-        color: #7d838a;
-        font-size: 0.85rem;
-      }
-      a {
-        color: #208368;
-      }
+      {{theme}}
     </style>
   </head>
   <body>
-    <h1>Telixon conformance vs Google libphonenumber</h1>
-    <div class="meta">
-      Engine and oracle pinned to
-      <a href="https://github.com/google/libphonenumber/commit/{{commit}}">google/libphonenumber@{{shortCommit}}</a
-      >.<br />
-      {{corpusSize}} cases · {{compared}} compared · {{regionsCovered}}/{{regionsTotal}} regions · {{skipped}}
-      skipped.<br />
-      Corpus: {{corpusByKind}}.<br />
-      Google-rejected mutations judged not possible: {{rejection}}.<br />
-      Possibility prefix sweep: {{prefixSweep}}.<br />
-      Valid-for-region case sweep (one number per engine case): {{validForRegionCases}}.<br />
-      Allowlist: {{allowlist}}.<br />
-      Generated {{runAt}}.
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="home" href="https://telixon.dev/">
+          <svg viewBox="0 0 121 104" fill="none" aria-hidden="true">
+            <path
+              d="M103.054 5.99002C100.224 2.22002 95.7739 0 91.0539 0H28.514C23.794 0 19.354 2.22002 16.514 5.99002L3.00394 23.99C-1.15606 29.53 -0.976059 37.19 3.42394 42.54L19.0039 61.44L48.2739 96.78C54.2739 104.03 65.3939 104.02 71.3939 96.77L100.584 61.44L116.164 42.54C120.564 37.2 120.744 29.53 116.584 23.99L103.074 5.99002H103.054ZM94.8339 52.65L75.074 78.2C73.904 79.71 71.4939 78.88 71.4939 76.98V41.25H87.6139L87.6639 53.34L100.804 35.47C101.854 34.04 101.844 32.09 100.764 30.68L91.8339 18.93C91.0739 17.93 89.9039 17.35 88.6539 17.35H30.9139C29.6639 17.35 28.484 17.93 27.734 18.93L18.8039 30.68C17.7339 32.09 17.714 34.04 18.764 35.47L31.9039 53.34L31.9539 41.25H48.074V76.98C48.074 78.89 45.6539 79.71 44.4939 78.2L24.734 52.65L13.1139 37.8C10.9239 35 10.8439 31.09 12.9139 28.2L23.4139 13.58C24.9139 11.49 27.3339 10.25 29.9139 10.25H89.6439C92.2239 10.25 94.6339 11.49 96.1439 13.58L106.644 28.2C108.724 31.09 108.644 35 106.444 37.8L94.824 52.65H94.8339Z"
+              fill="url(#gem)"
+            />
+            <defs>
+              <linearGradient id="gem" x1="59.79" y1="-4.01" x2="59.79" y2="103.25" gradientUnits="userSpaceOnUse">
+                <stop offset="0.02" stop-color="#27B78D" />
+                <stop offset="0.44" stop-color="#25A581" />
+                <stop offset="1" stop-color="#22896D" />
+              </linearGradient>
+            </defs>
+          </svg>
+          Telixon
+        </a>
+        <span class="kind">Conformance</span>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <h1>Conformance against Google libphonenumber</h1>
+      <p class="note">
+        The engine and the oracle are pinned to the same commit, so the library is compared against the exact source it
+        was compiled from.
+      </p>
+
+      <section class="verdict">
+        <div class="verdict-value">{{divergences}}</div>
+        <div class="verdict-claim">divergences from Google libphonenumber</div>
+        <div class="verdict-rows">
+          <div><span>Methods at full parity</span><b>{{methodsPerfect}}/{{methodsTotal}}</b></div>
+          <div><span>Comparisons</span><b>{{comparisons}}</b></div>
+          <div><span>Regions covered</span><b>{{regionsCovered}}/{{regionsTotal}}</b></div>
+          <div><span>Cases skipped</span><b>{{skipped}}</b></div>
+          <div><span>Allowlisted divergences</span><b>{{allowlist}}</b></div>
+        </div>
+      </section>
+
+      <h2>Every method, every case</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Match</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{methodRows}}
+        </tbody>
+      </table>
+
+      <h2>Sweeps</h2>
+      <p class="note">
+        Two additional passes widen the corpus beyond the case list: every possibility prefix, and one number per engine
+        case checked for its region.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Sweep</th>
+            <th>Agreement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Possibility prefix</td>
+            <td>{{prefixSweep}}</td>
+          </tr>
+          <tr>
+            <td>Valid for region, one number per engine case</td>
+            <td>{{validForRegionCases}}</td>
+          </tr>
+          <tr>
+            <td>Google-rejected mutations judged not possible</td>
+            <td>{{rejection}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Corpus</h2>
+      <p class="fine">
+        Pinned to
+        <a href="https://github.com/google/libphonenumber/commit/{{commit}}">google/libphonenumber@{{shortCommit}}</a>.
+        {{corpusSize}} cases, of which {{compared}} were compared.<br />
+        By kind: {{corpusByKind}}.<br />
+        Generated {{runAt}}.
+      </p>
+
+      <footer>
+        Reproduce locally with <code>pnpm conformance</code>. Source:
+        <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/conformance">conformance harness</a>.
+      </footer>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Match</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{methodRows}}
-      </tbody>
-    </table>
-
-    <footer>
-      Reproduce locally: <code>pnpm conformance</code>.<br />
-      Source:
-      <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/conformance">conformance harness</a>.
-    </footer>
   </body>
 </html>
