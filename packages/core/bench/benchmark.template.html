@@ -15,284 +15,191 @@
     <meta name="twitter:title" content="{{ogTitle}}" />
     <meta name="twitter:description" content="{{ogDescription}}" />
     <link rel="canonical" href="https://proof.telixon.dev/benchmark.html" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        font:
-          16px/1.5 system-ui,
-          sans-serif;
-        max-width: 960px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-        color: #17191b;
-      }
-      h1 {
-        font-size: 1.4rem;
-        margin-bottom: 0.5rem;
-      }
-      h2 {
-        font-size: 1.1rem;
-        margin-top: 2rem;
-        margin-bottom: 0.25rem;
-      }
-      .meta,
-      .section-note {
-        color: #4c5257;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-      }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 0.92rem;
-        margin-bottom: 1rem;
-      }
-      .section-note p {
-        margin: 0;
-      }
-      .section-note p + p {
-        margin-top: 0.75rem;
-      }
-      .section-note strong {
-        color: #17191b;
-      }
-      th,
-      td {
-        padding: 0.4rem 0.6rem;
-        border-bottom: 1px solid #eee;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-      }
-      th:first-child,
-      td:first-child {
-        text-align: left;
-      }
-      thead th {
-        font-weight: 600;
-        border-bottom: 2px solid #ddd;
-      }
-      .win {
-        color: #058e69;
-        font-weight: 600;
-      }
-      .hero-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 0.75rem;
-        margin: 1rem 0;
-      }
-      .stat-card {
-        border: 1px solid #e5e5e5;
-        border-radius: 8px;
-        padding: 0.9rem 1rem;
-      }
-      .stat-value {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #058e69;
-        font-variant-numeric: tabular-nums;
-      }
-      .stat-label {
-        font-weight: 600;
-        margin-top: 0.1rem;
-      }
-      .stat-sub {
-        color: #4c5257;
-        font-size: 0.85rem;
-        margin-top: 0.15rem;
-      }
-      .frame-bar {
-        position: relative;
-        height: 28px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: #fafafa;
-        margin: 0.75rem 0 0.25rem;
-        overflow: hidden;
-      }
-      .frame-bar-fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        min-width: 2px;
-        background: #058e69;
-      }
-      .frame-bar-caption {
-        color: #4c5257;
-        font-size: 0.85rem;
-        margin-bottom: 1rem;
-      }
-      .loss {
-        color: #ce2c31;
-        font-weight: 600;
-      }
-      code {
-        background: #f4f4f4;
-        padding: 0.1rem 0.3rem;
-        border-radius: 3px;
-        font-size: 0.9em;
-      }
-      footer {
-        margin-top: 2rem;
-        color: #7d838a;
-        font-size: 0.85rem;
-      }
-      a {
-        color: #208368;
-      }
+      {{theme}}
     </style>
   </head>
-  <body>
-    <h1>Telixon benchmark vs libphonenumber-js, google-libphonenumber</h1>
-    <div class="meta">
-      Engine compiled from Google's libphonenumber source at
-      <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
-        >github.com/google/libphonenumber@{{shortCommit}}</a
-      >.<br />
-      Corpus: {{corpusSize}} phone numbers, one Google example per region per type (the example set the conformance
-      corpus is derived from).<br />
-      Compared against the npm packages
-      <a href="https://www.npmjs.com/package/libphonenumber-js/v/{{libphonenumberJsVersion}}"
-        >libphonenumber-js@{{libphonenumberJsVersion}}</a
-      >
-      and
-      <a href="https://www.npmjs.com/package/google-libphonenumber/v/{{googleLibphonenumberVersion}}"
-        >google-libphonenumber@{{googleLibphonenumberVersion}}</a
-      >
-      (a community wrapper around Google's libphonenumber JS source).<br />
-      Generated {{runAt}}.
+  <body class="wide">
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="home" href="https://telixon.dev/">
+          <svg viewBox="0 0 121 104" fill="none" aria-hidden="true">
+            <path
+              d="M103.054 5.99002C100.224 2.22002 95.7739 0 91.0539 0H28.514C23.794 0 19.354 2.22002 16.514 5.99002L3.00394 23.99C-1.15606 29.53 -0.976059 37.19 3.42394 42.54L19.0039 61.44L48.2739 96.78C54.2739 104.03 65.3939 104.02 71.3939 96.77L100.584 61.44L116.164 42.54C120.564 37.2 120.744 29.53 116.584 23.99L103.074 5.99002H103.054ZM94.8339 52.65L75.074 78.2C73.904 79.71 71.4939 78.88 71.4939 76.98V41.25H87.6139L87.6639 53.34L100.804 35.47C101.854 34.04 101.844 32.09 100.764 30.68L91.8339 18.93C91.0739 17.93 89.9039 17.35 88.6539 17.35H30.9139C29.6639 17.35 28.484 17.93 27.734 18.93L18.8039 30.68C17.7339 32.09 17.714 34.04 18.764 35.47L31.9039 53.34L31.9539 41.25H48.074V76.98C48.074 78.89 45.6539 79.71 44.4939 78.2L24.734 52.65L13.1139 37.8C10.9239 35 10.8439 31.09 12.9139 28.2L23.4139 13.58C24.9139 11.49 27.3339 10.25 29.9139 10.25H89.6439C92.2239 10.25 94.6339 11.49 96.1439 13.58L106.644 28.2C108.724 31.09 108.644 35 106.444 37.8L94.824 52.65H94.8339Z"
+              fill="url(#gem)"
+            />
+            <defs>
+              <linearGradient id="gem" x1="59.79" y1="-4.01" x2="59.79" y2="103.25" gradientUnits="userSpaceOnUse">
+                <stop offset="0.02" stop-color="#27B78D" />
+                <stop offset="0.44" stop-color="#25A581" />
+                <stop offset="1" stop-color="#22896D" />
+              </linearGradient>
+            </defs>
+          </svg>
+          Telixon
+        </a>
+        <span class="kind">Benchmark</span>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <h1>Benchmark vs libphonenumber-js and google-libphonenumber</h1>
+      <p class="note">
+        Engine compiled from Google's libphonenumber source at
+        <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
+          >github.com/google/libphonenumber@{{shortCommit}}</a
+        >.<br />
+        Corpus: {{corpusSize}} phone numbers, one Google example per region per type (the example set the conformance
+        corpus is derived from).<br />
+        Compared against the npm packages
+        <a href="https://www.npmjs.com/package/libphonenumber-js/v/{{libphonenumberJsVersion}}"
+          >libphonenumber-js@{{libphonenumberJsVersion}}</a
+        >
+        and
+        <a href="https://www.npmjs.com/package/google-libphonenumber/v/{{googleLibphonenumberVersion}}"
+          >google-libphonenumber@{{googleLibphonenumberVersion}}</a
+        >
+        (a community wrapper around Google's libphonenumber JS source).<br />
+        Generated {{runAt}}.
+      </p>
+
+      <h2 id="parse">Parse</h2>
+      <p class="note">Parse cost only.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Telixon (ops/s)</th>
+            <th>libphonenumber-js (ops/s)</th>
+            <th>google-libphonenumber (ops/s)</th>
+            <th>vs libphonenumber-js</th>
+            <th>vs google-libphonenumber</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{parseRows}}
+        </tbody>
+      </table>
+
+      <h2 id="strict-cold">Strict cold</h2>
+      <p class="note">Parse + one method call. Telixon module caches cleared per iteration.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Telixon (ops/s)</th>
+            <th>libphonenumber-js (ops/s)</th>
+            <th>google-libphonenumber (ops/s)</th>
+            <th>vs libphonenumber-js</th>
+            <th>vs google-libphonenumber</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{strictColdRows}}
+        </tbody>
+      </table>
+
+      <h2 id="cold">Cold</h2>
+      <p class="note">Parse + one method call. Caches retained across iterations.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Telixon (ops/s)</th>
+            <th>libphonenumber-js (ops/s)</th>
+            <th>google-libphonenumber (ops/s)</th>
+            <th>vs libphonenumber-js</th>
+            <th>vs google-libphonenumber</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{coldRows}}
+        </tbody>
+      </table>
+
+      <h2 id="warm">Warm</h2>
+      <p class="note">
+        Pre-parsed value, method called repeatedly. Where libphonenumber-js stores the value as a direct property after
+        parse (<code>nationalNumber</code>, <code>countryCallingCode</code>, <code>number</code>, <code>country</code>),
+        a property read is 1-4% faster than Telixon's cached method call.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Telixon (ops/s)</th>
+            <th>libphonenumber-js (ops/s)</th>
+            <th>google-libphonenumber (ops/s)</th>
+            <th>vs libphonenumber-js</th>
+            <th>vs google-libphonenumber</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{warmRows}}
+        </tbody>
+      </table>
+
+      <h2 id="input-controller">Input controller</h2>
+      <p class="note">
+        Telixon only: competitor formatters have no comparable API (no caret, no deletion, no undo, no per-keystroke
+        queries). One iteration is a <strong>full corpus pass</strong>: every digit of all {{corpusSize}} corpus
+        numbers, typed end to end through the controller. Read the mean column as "what typing the entire corpus costs";
+        single keystrokes are profiled in <a href="#keystroke-latency">the next section</a>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>ops/s</th>
+            <th>mean (ms)</th>
+            <th>p99 (ms)</th>
+            <th>±rme</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{inputControllerRows}}
+        </tbody>
+      </table>
+
+      <h2 id="keystroke-latency">Per-keystroke latency</h2>
+      <p class="note">
+        The number that decides whether an input feels instant: the cost of one keystroke, sampled individually (<code
+          >process.hrtime.bigint()</code
+        >
+        after warmup). For scale, the panel below measures that latency against one display frame across common refresh
+        rates (60-360 Hz); the benchmark itself runs headless, so it assumes no single display.
+      </p>
+      {{keystrokeHero}}
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>samples</th>
+            <th>mean</th>
+            <th>p50</th>
+            <th>p95</th>
+            <th>p99</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{keystrokeLatencyRows}}
+        </tbody>
+      </table>
+      <p class="note">Worst-case (p99) keystroke against one frame, at common display refresh rates:</p>
+      {{refreshLadder}}
+      <p class="note">{{keystrokeLatencyVerdict}}</p>
+
+      <footer>
+        Reproduce locally: <code>pnpm bench</code>.<br />
+        Source:
+        <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/bench">benchmark harness</a>.
+      </footer>
     </div>
-
-    <h2 id="parse">Parse</h2>
-    <div class="section-note">Parse cost only.</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Operation</th>
-          <th>Telixon (ops/s)</th>
-          <th>libphonenumber-js (ops/s)</th>
-          <th>google-libphonenumber (ops/s)</th>
-          <th>vs libphonenumber-js</th>
-          <th>vs google-libphonenumber</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{parseRows}}
-      </tbody>
-    </table>
-
-    <h2 id="strict-cold">Strict cold</h2>
-    <div class="section-note">Parse + one method call. Telixon module caches cleared per iteration.</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Telixon (ops/s)</th>
-          <th>libphonenumber-js (ops/s)</th>
-          <th>google-libphonenumber (ops/s)</th>
-          <th>vs libphonenumber-js</th>
-          <th>vs google-libphonenumber</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{strictColdRows}}
-      </tbody>
-    </table>
-
-    <h2 id="cold">Cold</h2>
-    <div class="section-note">Parse + one method call. Caches retained across iterations.</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Telixon (ops/s)</th>
-          <th>libphonenumber-js (ops/s)</th>
-          <th>google-libphonenumber (ops/s)</th>
-          <th>vs libphonenumber-js</th>
-          <th>vs google-libphonenumber</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{coldRows}}
-      </tbody>
-    </table>
-
-    <h2 id="warm">Warm</h2>
-    <div class="section-note">
-      Pre-parsed value, method called repeatedly. Where libphonenumber-js stores the value as a direct property after
-      parse (<code>nationalNumber</code>, <code>countryCallingCode</code>, <code>number</code>, <code>country</code>), a
-      property read is 1-4% faster than Telixon's cached method call.
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Telixon (ops/s)</th>
-          <th>libphonenumber-js (ops/s)</th>
-          <th>google-libphonenumber (ops/s)</th>
-          <th>vs libphonenumber-js</th>
-          <th>vs google-libphonenumber</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{warmRows}}
-      </tbody>
-    </table>
-
-    <h2 id="input-controller">Input controller</h2>
-    <div class="section-note">
-      Telixon only: competitor formatters have no comparable API (no caret, no deletion, no undo, no per-keystroke
-      queries). One iteration is a <strong>full corpus pass</strong>: every digit of all {{corpusSize}} corpus numbers,
-      typed end to end through the controller. Read the mean column as "what typing the entire corpus costs"; single
-      keystrokes are profiled in <a href="#keystroke-latency">the next section</a>.
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>ops/s</th>
-          <th>mean (ms)</th>
-          <th>p99 (ms)</th>
-          <th>±rme</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{inputControllerRows}}
-      </tbody>
-    </table>
-
-    <h2 id="keystroke-latency">Per-keystroke latency</h2>
-    <div class="section-note">
-      The number that decides whether an input feels instant: the cost of one keystroke, sampled individually (<code
-        >process.hrtime.bigint()</code
-      >
-      after warmup). For scale, the panel below measures that latency against one display frame across common refresh
-      rates (60-360 Hz); the benchmark itself runs headless, so it assumes no single display.
-    </div>
-    {{keystrokeHero}}
-    <table>
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>samples</th>
-          <th>mean</th>
-          <th>p50</th>
-          <th>p95</th>
-          <th>p99</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{keystrokeLatencyRows}}
-      </tbody>
-    </table>
-    <div class="section-note">Worst-case (p99) keystroke against one frame, at common display refresh rates:</div>
-    {{refreshLadder}}
-    <div class="section-note">{{keystrokeLatencyVerdict}}</div>
-
-    <footer>
-      Reproduce locally: <code>pnpm bench</code>.<br />
-      Source:
-      <a href="https://github.com/martsinlabs/telixon/tree/main/packages/core/bench">benchmark harness</a>.
-    </footer>
   </body>
 </html>
