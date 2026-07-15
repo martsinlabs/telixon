@@ -8,10 +8,13 @@ import { getResourceProvider } from '@telixon/core/resource-provider';
 import { MetadataPlaceholders } from '@telixon/core/resource-provider/models';
 import { pickFormatMask } from '../number-resolver/utils/format-masks';
 
-/** Example placeholder variants for one number type, all optional. */
+/** A region's example number for one type, in each format a field might use. Each is absent when the region has no such form. */
 export interface Placeholders {
+  /** National format, without the national (trunk) prefix. */
   readonly national?: string;
+  /** National format, with the national (trunk) prefix. */
   readonly nationalWithPrefix?: string;
+  /** International format, the digits after `+` and the calling code. */
   readonly international?: string;
 }
 

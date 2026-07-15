@@ -1,9 +1,12 @@
 import { RegionCode } from '@telixon/core/engine';
 
+/** Options for {@link parsePhoneNumber}. */
 export interface ParsePhoneNumberOptions {
-  // Assumed region for input without a leading '+'.
+  /** The region to resolve input against when it has no leading `+`. */
   defaultRegion?: RegionCode;
-  // Restrict validity (`isValid`/`getNumberType`) to `defaultRegion` (libphonenumber isValidNumberForRegion);
-  // `getRegion`, `isPossible`, and `format*` ignore it. No effect without `defaultRegion`; off by default.
+  /**
+   * Restricts `isValid` and `getNumberType` to `defaultRegion`. Other methods ignore it. No effect
+   * without `defaultRegion`; off by default.
+   */
   strict?: boolean;
 }
