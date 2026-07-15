@@ -383,6 +383,16 @@ class InternationalInputController implements InputController {
   }
 }
 
+/**
+ * Creates a headless {@link InputController} that resolves the region from the value. The calling
+ * code lives in the field unless `display.callingCodeInInput` is `false`, which requires
+ * `defaultRegion`.
+ *
+ * @example
+ * const controller = createInternationalInputController({});
+ * controller.setValue('+14155550132');
+ * // { value: '1 415-555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+ */
 export function createInternationalInputController(config: InternationalInputControllerConfig = {}): InputController {
   requireEngineReady();
 

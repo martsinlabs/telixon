@@ -12,7 +12,7 @@ import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-callin
 import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 import { selectNationalFormatIndex } from '../number-resolver/utils/select-national-format';
 
-/** True when the format matching the example number for `(region, type)` allows the national prefix to be omitted. */
+/** Whether a `(region, type)` number can be written without its national (trunk) prefix. */
 export function isNationalPrefixOptional(region: RegionCode, type: NumberType): boolean {
   const resourceProvider = getResourceProvider();
   const tables = resourceProvider.engine;

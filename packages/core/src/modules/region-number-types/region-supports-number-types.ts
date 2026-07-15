@@ -2,7 +2,12 @@ import { getRegionTypeCount, getRegionTypeId, NumberType, RegionCode } from '@te
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveMetadataTypes } from '../number-resolver/utils/resolve-metadata-types';
 
-// True if the region supports at least one of the given types (FIXED_LINE_OR_MOBILE matches FIXED_LINE or MOBILE; UNKNOWN/empty matches nothing). Requires ready resources.
+/**
+ * Whether `region` supports at least one of `types`. `FIXED_LINE_OR_MOBILE` matches either side;
+ * `UNKNOWN` and an empty list match nothing.
+ *
+ * @example regionSupportsNumberTypes('US', ['MOBILE']); // true
+ */
 export function regionSupportsNumberTypes(region: RegionCode, types: readonly NumberType[]): boolean {
   if (types.length === 0) return false;
 
