@@ -1,0 +1,56 @@
+---
+title: Verified
+description: Conformance, performance, and size, each measured on every push and reproducible.
+---
+
+Telixon measures three properties on every push: conformance with Google libphonenumber,
+performance, and payload size. Each section names the method and the command that reproduces it.
+
+## Conformance
+
+Every query method is compared with Google libphonenumber. The oracle is version-matched: it runs
+Google's own JavaScript source at the exact commit the engine's metadata was built from, so a
+mismatch is a real difference and never version drift.
+
+Three gates cover it: the full corpus, one number from every distinct case the library can
+produce, and a one-million-input sample. The current run stands at 315,988 comparisons with
+zero divergences: twelve methods, each matching on 11,232 of 11,232 corpus inputs, across all 245
+regions. `isValidForRegion` is set-compared per case, 692,672 region checks. The allowlist of
+accepted divergences is empty.
+
+Weekly, the airtight proof enumerates the complete geographic input domain: 1,838,775,900 inputs,
+split across ten shards.
+
+```sh
+pnpm conformance
+```
+
+The [parity dashboard](https://proof.telixon.dev/parity.html) publishes every run.
+
+## Performance
+
+The benchmark measures parsing and query throughput, cold and warm, plus per-keystroke controller
+latency. The comparison baseline is the google-libphonenumber npm package, a third-party wrapper
+of Google's port. Wall-time numbers depend on hardware, so this page quotes none.
+CodSpeed tracks instrumented regressions.
+
+```sh
+pnpm bench
+```
+
+The [benchmark dashboard](https://proof.telixon.dev/benchmark.html) publishes each run.
+
+## Size
+
+`size-limit` gates the entry sizes. The engine tables ship outside the entries. The
+async builds load them on demand; the sync entry embeds them.
+
+| Artifact                        | Measured        | Budget |
+| ------------------------------- | --------------- | ------ |
+| `@telixon/core` Node entry      | 18.79 kB brotli | 22 kB  |
+| `@telixon/core` browser entry   | 21.34 kB brotli | 22 kB  |
+| Engine tables, loaded on demand | 123 kB gzip     | none   |
+
+```sh
+pnpm size
+```

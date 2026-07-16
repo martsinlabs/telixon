@@ -6,6 +6,9 @@
 // in a version subfolder, registered via a future `archivedMajors` field. Sidebar groups must not
 // autogenerate from a package root, or they would swallow version subfolders.
 
+/** One sidebar entry: a page slug, or a labeled group of page slugs. */
+export type SidebarEntry = string | { readonly label: string; readonly items: readonly string[] };
+
 export interface DocsPackage {
   /** npm package name; doubles as the sidebar group label, matched exactly by the switcher. */
   readonly name: string;
@@ -13,12 +16,42 @@ export interface DocsPackage {
   readonly label: string;
   /** URL base of the package's docs tree; absent while the package is planned and has no docs. */
   readonly base?: string;
+  /** The package's sidebar: page slugs or labeled groups of slugs; a single root page when absent. */
+  readonly sidebar?: readonly SidebarEntry[];
   /** Official framework mark for planned rows; available rows use the gem. */
   readonly logo?: 'angular' | 'react' | 'vue' | 'stencil';
 }
 
 export const PACKAGES: readonly DocsPackage[] = [
-  { base: 'core', name: '@telixon/core', label: 'Core' },
+  {
+    base: 'core',
+    name: '@telixon/core',
+    label: 'Core',
+    sidebar: [
+      'core',
+      'core/how-it-works',
+      'core/load-the-engine',
+      {
+        label: 'Guides',
+        items: [
+          'core/guides/validate-user-input',
+          'core/guides/build-a-phone-input',
+          'core/guides/build-a-region-selector',
+        ],
+      },
+      {
+        label: 'Reference',
+        items: [
+          'core/reference/parse-phone-number',
+          'core/reference/phone-number',
+          'core/reference/validation-error',
+          'core/reference/input-controller',
+          'core/reference/region-data',
+        ],
+      },
+      'verified',
+    ],
+  },
   { base: 'web-sdk', name: '@telixon/web-sdk', label: 'Web SDK' },
   { name: '@telixon/web-anatomy', label: 'Web Anatomy' },
   { name: '@telixon/web-theme', label: 'Web Theme' },

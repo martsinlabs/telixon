@@ -1,0 +1,59 @@
+---
+title: How Telixon works
+description: Digits walk one automaton. Validity is an accepting state. The parser and the input controllers share the walk.
+---
+
+Google libphonenumber's metadata is compiled ahead of time into a single
+[deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)
+(DFA), stored as binary tables. Everything the API does is defined by that automaton.
+
+## Parsing
+
+Parsing is a walk over the automaton, one digit per step. The state the walk ends on determines
+the region, the number type, whether the number is valid, and how to format it.
+
+```ts
+const number = parsePhoneNumber('+1 (415) 555-0132');
+// the walk has already happened; every answer below derives from its end state
+
+number.getRegion(); // 'US'
+number.getNumberType(); // 'FIXED_LINE_OR_MOBILE'
+number.isValid(); // true
+```
+
+## Validity
+
+A number is valid when the walk ends on an accepting state. That is the whole definition.
+Everything else is a classified failure, returned as a typed value:
+
+```ts
+parsePhoneNumber('5550132', { defaultRegion: 'US' }).getValidationError();
+// { kind: 'POSSIBLE_LOCAL_ONLY' }
+```
+
+Seven digits form a US number that connects only inside its own area. The walk ends on a state that
+records exactly that. The eight variants are in
+[`ValidationError`](/core/reference/validation-error/).
+
+## Parser and controller consistency
+
+`parsePhoneNumber` walks the automaton once, over a whole string. An input controller walks it
+again on every keystroke, over the value as it stands. It is the same walk. A controller can hand
+you a `PhoneNumber` at any moment, mid-typing. Its answers agree with the parser's by construction.
+
+```ts
+const controller = createInternationalInputController();
+controller.setValue('+1 (415) 555-0132');
+
+controller.getPhoneNumber().formatE164(); // '+14155550132'
+parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
+```
+
+## Consequences
+
+- **[Parsing does not throw.](/core/reference/parse-phone-number/)** A walk always ends somewhere.
+  Where it ends is the result.
+- **[Formatting can return `null`.](/core/reference/phone-number/#formats)** A format is a property
+  of an accepting state. A number that never reached one has no format to give.
+- **[The engine loads first.](/core/load-the-engine/)** Without the tables there is nothing to
+  walk.

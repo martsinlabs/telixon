@@ -1,7 +1,122 @@
 ---
 title: Getting started
-description: Parse, validate, and format phone numbers in Node.js, browsers, and edge runtimes with @telixon/core.
+description: Install @telixon/core, load the engine, and parse a first phone number.
 ---
 
-`@telixon/core` parses, validates, and formats phone numbers in Node.js, browsers, and edge
-runtimes.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`@telixon/core` parses, validates, and formats phone numbers. The same engine drives phone-number
+fields. It runs in Node.js, browsers, Deno, Bun, and edge runtimes, with no dependencies.
+
+## Install
+
+<Tabs syncKey="pkg">
+
+<TabItem label="npm">
+
+```sh
+npm install @telixon/core
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm add @telixon/core
+```
+
+</TabItem>
+
+<TabItem label="Yarn">
+
+```sh
+yarn add @telixon/core
+```
+
+</TabItem>
+
+<TabItem label="Bun">
+
+```sh
+bun add @telixon/core
+```
+
+</TabItem>
+
+<TabItem label="Deno">
+
+```sh
+deno add npm:@telixon/core
+```
+
+</TabItem>
+
+</Tabs>
+
+## Parse a number
+
+One `await` at startup loads the engine. Everything after it is synchronous.
+[Load the engine](/core/load-the-engine/) covers the per-runtime builds and the synchronous entry.
+
+```ts
+import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
+
+await ensureEngineReady();
+
+const number = parsePhoneNumber('+1 (415) 555-0132');
+
+number.isValid(); // true
+number.getRegion(); // 'US'
+number.getNumberType(); // 'FIXED_LINE_OR_MOBILE'
+number.formatE164(); // '+14155550132'
+```
+
+A leading `+` reads as international. Anything else needs a
+[region to resolve against](/core/reference/parse-phone-number/#defaultregion):
+
+```ts
+parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).formatE164(); // '+14155550132'
+```
+
+## Inspect invalid input
+
+`parsePhoneNumber` [never throws](/core/reference/parse-phone-number/): bad input still comes back
+as a `PhoneNumber`, with a typed reason:
+
+```ts
+const wrongLength = parsePhoneNumber('+57 321 123 456');
+
+wrongLength.isValid(); // false
+wrongLength.getValidationError(); // { kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }
+```
+
+Colombia dials numbers of 8, 10, and 11 digits. Nine digits falls in a gap. The error carries the
+lengths that exist.
+
+[`ValidationError`](/core/reference/validation-error/) lists all eight variants.
+[Validate user input](/core/guides/validate-user-input/) turns them into messages.
+
+## Drive an input
+
+An input controller is the
+[same engine](/core/how-it-works/#parser-and-controller-consistency) called once per keystroke. It
+takes the field's value and caret, then returns the next ones. The field formats from the first digit:
+
+```ts
+import { createNationalInputController } from '@telixon/core';
+
+const controller = createNationalInputController({ defaultRegion: 'US' });
+
+controller.insert('', '4', 0, 0);
+// { value: '(4)', region: 'US', selectionStart: 2, selectionEnd: 2 }
+
+controller.insert('(4)', '155550132', 2, 2);
+// { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+
+controller.getPhoneNumber().formatE164(); // '+14155550132'
+```
+
+[Build a phone input](/core/guides/build-a-phone-input/) covers the field wiring.
+
+The model behind all of this is in [How Telixon works](/core/how-it-works/).

@@ -1,0 +1,117 @@
+---
+title: Build a phone input
+description: Wire a text field to a controller that formats live, moves the caret, and keeps history.
+---
+
+A phone input pairs a plain text field with an
+[`InputController`](/core/reference/input-controller/). The field emits edits; the controller
+returns the next state to write back.
+
+## Create the controller
+
+A single-region form takes a national controller. For a field that accepts any region, jump to
+[the international field](#the-international-field).
+
+```ts
+import { createNationalInputController } from '@telixon/core';
+
+const controller = createNationalInputController({ defaultRegion: 'US' });
+```
+
+## Wire the field
+
+Translate the field's `beforeinput` events into controller calls. Write each returned state back:
+
+```ts
+import type { InputState } from '@telixon/core';
+
+const input = document.querySelector('input')!;
+
+function apply(state: InputState) {
+  input.value = state.value;
+  input.setSelectionRange(state.selectionStart, state.selectionEnd);
+}
+
+input.addEventListener('beforeinput', (event) => {
+  event.preventDefault();
+  const value = input.value;
+  const start = input.selectionStart ?? 0;
+  const end = input.selectionEnd ?? 0;
+
+  if (event.inputType === 'deleteContentBackward') {
+    apply(controller.deleteBackward(value, start, end));
+  } else if (event.inputType === 'deleteContentForward') {
+    apply(controller.deleteForward(value, start, end));
+  } else {
+    const text = event.data ?? event.dataTransfer?.getData('text') ?? '';
+    apply(controller.insert(value, text, start, end));
+  }
+});
+```
+
+Typing `4155550132` leaves the field showing `(415) 555-0132`, with the caret after the last
+digit. A paste flows through the same handler. For a production binding, use
+[`@telixon/web-sdk`](/web-sdk/), the DOM adapter for controllers.
+
+## Undo and redo
+
+The controller already holds the [history](/core/reference/input-controller/#history); wire the
+keys to it:
+
+```ts
+input.addEventListener('keydown', (event) => {
+  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z') return;
+  event.preventDefault();
+  apply(event.shiftKey ? controller.redo() : controller.undo());
+});
+```
+
+## Read the number
+
+`getPhoneNumber` answers for the current value at any moment, mid-typing included:
+
+```ts
+controller.insert('', '4155550132', 0, 0);
+
+controller.getPhoneNumber().isValid(); // true
+controller.getPhoneNumber().formatE164(); // '+14155550132'
+```
+
+While the value is unfinished, prefer the tolerant checks; see
+[Validate user input](/core/guides/validate-user-input/).
+
+## The international field
+
+A field that takes numbers from anywhere switches to the international controller. The region
+follows the digits from the first keystroke:
+
+```ts
+import { createInternationalInputController } from '@telixon/core';
+
+const controller = createInternationalInputController();
+
+let state = controller.insert('', '1', 0, 0);
+// { value: '1 ', region: 'US', selectionStart: 2, selectionEnd: 2 }
+
+state = controller.insert(state.value, '4155550132', 2, 2);
+// { value: '1 415-555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+```
+
+The display modes, including the leading `+`, are under
+[`InternationalInputControllerConfig`](/core/reference/input-controller/#internationalinputcontrollerconfig).
+
+## Restrict number types
+
+A field for one kind of number filters the rest out. A support-line field takes only toll-free
+numbers:
+
+```ts
+const supportLine = createNationalInputController({ defaultRegion: 'US' });
+supportLine.setNumberTypeFilter(['TOLL_FREE']);
+
+supportLine.setValue('8002345678');
+supportLine.getPhoneNumber().isValid(); // true
+
+supportLine.setValue('4155550132');
+supportLine.getPhoneNumber().isValid(); // false
+```

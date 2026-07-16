@@ -1,0 +1,226 @@
+---
+title: InputController
+description: The two controller factories, their configs, InputState, and all fourteen members.
+---
+
+A state controller for a phone-number field. Every state-changing call returns the next
+[`InputState`](#inputstate) to write back. The controller holds the region, the filters, and the
+history.
+
+## createNationalInputController
+
+```ts
+function createNationalInputController(config: NationalInputControllerConfig): InputController;
+```
+
+Creates a controller for one region's national format. The calling code never appears in the field.
+
+```ts
+const controller = createNationalInputController({ defaultRegion: 'US' });
+
+controller.insert('', '4155550132', 0, 0);
+// { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+```
+
+### NationalInputControllerConfig
+
+| Field            | Type         | Meaning                                                          |
+| ---------------- | ------------ | ---------------------------------------------------------------- |
+| `defaultRegion`  | `RegionCode` | Required. The region the field formats for.                      |
+| `strict`         | `boolean`    | Restricts validity to `defaultRegion`, as in `parsePhoneNumber`. |
+| `initialValue`   | `string`     | Seeds the field with a starting value, outside the history.      |
+| `maxHistorySize` | `number`     | Bounds the undo and redo history.                                |
+
+## createInternationalInputController
+
+```ts
+function createInternationalInputController(config?: InternationalInputControllerConfig): InputController;
+```
+
+Creates a controller that resolves the region from the value. The calling code lives in the field
+unless `display.callingCodeInInput` is `false`, which requires `defaultRegion`.
+
+```ts
+const controller = createInternationalInputController();
+
+controller.setValue('+14155550132');
+// { value: '1 415-555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+```
+
+### InternationalInputControllerConfig
+
+`defaultRegion`, `strict`, `initialValue`, and `maxHistorySize` match
+[`NationalInputControllerConfig`](#nationalinputcontrollerconfig), with two differences.
+`defaultRegion` is required only when the calling code is kept out of the field. When the calling
+code is in the field, `defaultRegion` pre-fills the field with that region's code.
+
+`display`, an `InternationalDisplayConfig`, places the calling code:
+
+| `display`                                  | The field holds                                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| omitted                                    | Calling-code digits, with no `+` rendered                                            |
+| `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits, with the `+` under `plusPrefix`                                 |
+| `{ callingCodeInInput: false }`            | National digits; the region comes from `defaultRegion` and [`setRegion`](#setregion) |
+
+`plusPrefix`, a `PlusPrefixMode`, renders the leading `+`: `'none'` never, `'fixed'` always,
+`'erasable'` while the value carries one. Under `'erasable'`, backspace at the start removes it.
+
+## InputState
+
+```ts
+interface InputState {
+  readonly value: string;
+  readonly region: RegionCode | null;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
+}
+```
+
+The next value and caret to apply to the field. `value` is the formatted string. `region` is the
+region the value resolves to, or `null` when none does. The selection indices point into `value`.
+Within a shared calling code, `region` reports the resolved owner of the digits: a `604` number
+reports `CA` even in a US-configured field.
+
+## Edits
+
+All four take the field's value as an argument, so the controller works from what the field
+actually shows.
+
+### insert
+
+```ts
+insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState;
+```
+
+Replaces the selection from `selectionStart` to `selectionEnd` in `value` with `text`, then
+reformats. `text` can be one keystroke or a whole paste.
+
+### deleteBackward
+
+```ts
+deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
+```
+
+Deletes the selection, or the character before the caret when the selection is empty, then
+reformats. When that character is a formatting character, the deletion steps across it to the
+nearest digit.
+
+### deleteForward
+
+```ts
+deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
+```
+
+Mirrors [`deleteBackward`](#deletebackward) for the character after the caret.
+
+### setValue
+
+```ts
+setValue(value: string): InputState;
+```
+
+Replaces the whole value and reformats, as for a paste or a programmatic set.
+
+## Region and filters
+
+Every change here re-resolves the value already in the field.
+
+### setRegion
+
+```ts
+setRegion(region: RegionCode): InputState;
+```
+
+Switches to `region` and reformats the current digits the way that region writes them. Where the
+calling code lives in the field, the digits keep deciding the region. Where the field holds
+national digits only, the switch applies.
+
+### setRegionFilter
+
+```ts
+setRegionFilter(regions: readonly RegionCode[] | null): InputState;
+```
+
+Restricts which regions the value may resolve to, or `null` to allow all.
+
+### setNumberTypeFilter
+
+```ts
+setNumberTypeFilter(numberTypes: readonly NumberType[] | null): InputState;
+```
+
+Restricts which number types the value may resolve to, or `null` to allow all.
+
+## History
+
+The four edits and `setRegion` push a new entry onto the history. The two filters replace the
+current entry.
+
+### undo
+
+```ts
+undo(): InputState;
+```
+
+Steps back to the previous state in history. With nothing to undo, it returns the current state.
+
+### redo
+
+```ts
+redo(): InputState;
+```
+
+Steps forward again after an [`undo`](#undo).
+
+### canUndo
+
+```ts
+readonly canUndo: boolean;
+```
+
+Whether there is history to undo. `initialValue` seeds the field outside the history, so a freshly
+created controller reports `false`.
+
+### canRedo
+
+```ts
+readonly canRedo: boolean;
+```
+
+Whether there is history to redo.
+
+### clearHistory
+
+```ts
+clearHistory(): void;
+```
+
+Drops the undo and redo history.
+
+## Queries
+
+Reading changes nothing.
+
+### getPhoneNumber
+
+```ts
+getPhoneNumber(): PhoneNumber;
+```
+
+The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query, equal to
+`parsePhoneNumber` of the displayed value.
+
+### currentState
+
+```ts
+readonly currentState: InputState;
+```
+
+The value and caret as they stand.
+
+## Conformance
+
+The conformance suite types enumerated inputs through a controller, character by character,
+requiring the [`getPhoneNumber`](#getphonenumber) equality on every input. `parsePhoneNumber` is
+the Google-compared path, so the controllers are held to the same parity; see
+[Verified](/verified/#conformance).

@@ -40,9 +40,14 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary' } },
       ],
       // One group per available package, labeled by npm name; PackageSidebar matches on that label.
+      // The pages inside a group come from the registry's sidebar field.
       sidebar: AVAILABLE_PACKAGES.map((pkg) => ({
         label: pkg.name,
-        items: [{ slug: pkg.base }],
+        items: (pkg.sidebar ?? [pkg.base]).map((entry) =>
+          typeof entry === 'string'
+            ? { slug: entry }
+            : { label: entry.label, items: entry.items.map((slug) => ({ slug })) },
+        ),
       })),
       components: {
         Sidebar: './src/components/PackageSidebar.astro',

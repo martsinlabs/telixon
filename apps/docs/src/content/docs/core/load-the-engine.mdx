@@ -1,0 +1,101 @@
+---
+title: Load the engine
+description: Load the engine with ensureEngineReady, or synchronously with ensureEngineReadySync.
+---
+
+The engine is the compiled automaton. Every query and controller call reads it, so it must be in
+memory first. Loading is explicit: nothing loads when you import the package.
+
+## ensureEngineReady
+
+```ts
+function ensureEngineReady(): Promise<void>;
+```
+
+Call it once, before the first API call. It is idempotent: later calls resolve immediately and load
+nothing. You choose the moment.
+
+```ts
+import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
+
+await ensureEngineReady();
+
+parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
+```
+
+Concurrent calls share one in-flight load. A failed load rejects with the underlying error. The
+failure is not cached: the next call starts a fresh load.
+
+## EngineNotReadyError
+
+```ts
+class EngineNotReadyError extends Error {}
+```
+
+An API call before the engine is ready throws `EngineNotReadyError`. Once the engine is loaded, the
+query and controller APIs throw nothing.
+
+```ts
+import { EngineNotReadyError, parsePhoneNumber } from '@telixon/core';
+
+try {
+  parsePhoneNumber('+1 (415) 555-0132');
+} catch (error) {
+  error instanceof EngineNotReadyError; // true
+}
+```
+
+## isEngineReady
+
+```ts
+function isEngineReady(): boolean;
+```
+
+Whether the engine is loaded. Branch on it to avoid an `EngineNotReadyError`.
+
+```ts
+import { isEngineReady } from '@telixon/core';
+
+isEngineReady(); // false before ensureEngineReady() resolves
+```
+
+## Runtime builds
+
+The package name is the same everywhere. The runtime picks the build.
+
+| Runtime                  | Build resolved     |
+| ------------------------ | ------------------ |
+| Node.js                  | `index.node.js`    |
+| Deno, Bun                | `index.node.js`    |
+| Browsers and bundlers    | `index.browser.js` |
+| Workers, edge, `workerd` | `index.edge.js`    |
+
+The browser and edge builds import the tables as code-split modules, then inflate them with
+`DecompressionStream`. The Node build decodes with native zlib, off the event loop.
+`ensureEngineReady` is the same call everywhere.
+
+## ensureEngineReadySync
+
+```ts
+function ensureEngineReadySync(): void;
+```
+
+Initializes the engine synchronously, from tables embedded in the bundle. The cost is bundle size:
+the embedded tables are about [123 kB gzipped](/verified/#size). It lands only where this entry is imported.
+
+```ts
+import { ensureEngineReadySync } from '@telixon/core/sync-init';
+import { parsePhoneNumber } from '@telixon/core';
+
+ensureEngineReadySync();
+
+parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
+```
+
+Reach for this only where you cannot await: a synchronous constructor, a module-level default, a
+migration script. Everywhere else, prefer `ensureEngineReady`.
+
+## One engine per process
+
+`ensureEngineReady` and `ensureEngineReadySync` fill the same process-wide engine. Loading it in
+two places loads it once. There is no instance to pass around.
