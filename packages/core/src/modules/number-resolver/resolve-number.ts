@@ -46,7 +46,7 @@ function collectDigits(input: string): string {
 }
 
 // libphonenumber maybeStripInternationalPrefixAndNormalize: strip a leading IDD prefix and re-parse the
-// remainder. Not an IDD when the next digit is '0' (a national trunk digit, not a code).
+// remainder. Not an IDD when the next digit is '0', the national trunk digit.
 function stripIddPrefix(digits: string, matcher: RegExp): string | null {
   const match: RegExpExecArray | null = matcher.exec(digits);
   if (match === null || match[0].length === 0) return null;
@@ -100,7 +100,7 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
   resolver.setStrict(strict);
 
   // True once a redundant leading calling code is dropped: from then on the number behaves as if dialled
-  // through that calling code, so the strip below uses its main region instead of the default region.
+  // through that calling code, so the strip below prefers its main region over the default region.
   let leadingCallingCodeStripped = false;
   if (readAsNational) {
     const callingCode: string = String(getMetadataRegionCallingCode(resourceProvider.engine, defaultRegionIndex));

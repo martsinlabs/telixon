@@ -384,7 +384,7 @@ class InternationalInputController implements InputController {
 }
 
 /**
- * Creates a headless {@link InputController} that resolves the region from the value. The calling
+ * Creates an {@link InputController} that resolves the region from the value. The calling
  * code lives in the field unless `display.callingCodeInInput` is `false`, which requires
  * `defaultRegion`.
  *

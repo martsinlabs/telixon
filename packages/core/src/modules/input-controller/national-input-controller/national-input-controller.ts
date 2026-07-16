@@ -332,7 +332,7 @@ class NationalInputController implements InputController {
 }
 
 /**
- * Creates a headless {@link InputController} for one region's national format. The calling code
+ * Creates an {@link InputController} for one region's national format. The calling code
  * never appears in the field.
  *
  * @example

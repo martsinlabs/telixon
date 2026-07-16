@@ -29,7 +29,7 @@ export type ValidationError =
   | { readonly kind: 'TOO_LONG'; readonly maxLength: number }
   /** The length falls in a gap between valid lengths. `possibleLengths` lists the lengths that exist. */
   | { readonly kind: 'INVALID_LENGTH'; readonly possibleLengths: readonly number[] }
-  /** Valid only for dialling inside its own area, not as a full number. */
+  /** Valid only when dialled inside its own area. */
   | { readonly kind: 'POSSIBLE_LOCAL_ONLY' }
   /** The length is valid but the digits match no number that exists in the region. */
   | { readonly kind: 'PATTERN_MISMATCH' }
@@ -50,7 +50,7 @@ export interface ResolvedPhoneNumber {
 }
 
 /**
- * A parsed number: query its validity, region, and type, and format it. Returned by
+ * A parsed number: query its validity, region, and type; format it four ways. Returned by
  * {@link parsePhoneNumber} and by a controller's `getPhoneNumber`.
  */
 export interface PhoneNumber {
@@ -59,8 +59,8 @@ export interface PhoneNumber {
   /** Whether the number is valid for `region` specifically. Mirrors libphonenumber's isValidNumberForRegion. */
   isValidForRegion(region: RegionCode): boolean;
   /**
-   * Whether the calling code resolves and the length is one the region dials. Unlike
-   * {@link PhoneNumber.isValid}, the number itself is not checked.
+   * Whether the calling code resolves and the length is one the region dials. The digits
+   * themselves go unchecked, so a possible number can still be invalid.
    */
   isPossible(): boolean;
   /** The possibility check as a reason code, so a failed {@link PhoneNumber.isPossible} says why. */

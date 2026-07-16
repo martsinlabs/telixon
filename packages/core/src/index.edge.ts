@@ -8,7 +8,7 @@ export * from './index';
 const loader = new LazyResourceLoader(decodeLayerStream);
 
 /**
- * Loads the engine. Call it once before the first API call: it is idempotent, and nothing loads at
+ * Loads the engine. Call it once before the first API call: it is idempotent. Nothing loads at
  * import time. API calls made before it resolves throw {@link EngineNotReadyError}.
  *
  * @example

@@ -24,7 +24,7 @@ describe('getCallingCodeForRegion', () => {
   });
 
   it("returns '0' for an unknown region (Google getCountryCodeForRegion parity)", () => {
-    // 'ZZ' is Google's unknown-region code, not a supported RegionCode; cast to exercise the guard.
+    // 'ZZ' is Google's unknown-region code, outside the RegionCode union; cast to exercise the guard.
     expect(getCallingCodeForRegion('ZZ' as unknown as RegionCode)).toBe('0');
   });
 });

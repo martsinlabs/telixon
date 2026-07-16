@@ -43,7 +43,7 @@ export function resolveNationalControllerState(
     const formatRef = resolveFormatFromProfile(profile, displayDigits);
 
     if (snapshot.strict) {
-      // Strict never leaves the preferred region: report it, not the digit-resolved region (NANP shares a calling code).
+      // Strict never leaves the preferred region: report it even when the digits resolve elsewhere (NANP shares a calling code).
       region = resourceProvider.regionIds[regionIndex] ?? null;
     } else {
       // No specific region (possible but not valid): fall back to the calling code's primary region.

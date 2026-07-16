@@ -1,0 +1,56 @@
+---
+title: parsePhoneNumber
+description: The parsing entry point and its two options.
+---
+
+```ts
+function parsePhoneNumber(input: string, options?: ParsePhoneNumberOptions): PhoneNumber;
+```
+
+Parses a phone number to validate, format, and inspect it. A leading `+` reads as international;
+otherwise the digits resolve against `defaultRegion`. Spacing and punctuation are ignored. It never
+throws on bad input: the returned [`PhoneNumber`](/core/reference/phone-number/) reports why it is
+not valid.
+
+```ts
+parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
+parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
+```
+
+## ParsePhoneNumberOptions
+
+### defaultRegion
+
+```ts
+defaultRegion?: RegionCode;
+```
+
+The region input without a `+` resolves against. Without it, plus-less digits read as
+international, calling code first:
+
+```ts
+parsePhoneNumber('415-555-0132').getRegion(); // 'CH', 41 read as the calling code
+parsePhoneNumber('415-555-0132', { defaultRegion: 'US' }).getRegion(); // 'US'
+```
+
+### strict
+
+```ts
+strict?: boolean;
+```
+
+Restricts `isValid` and `getNumberType` to `defaultRegion`. Other methods ignore it. Without
+`defaultRegion` it has no effect. It is off by default.
+
+```ts
+const number = parsePhoneNumber('(604) 555-0132', { defaultRegion: 'US', strict: true });
+
+number.getRegion(); // 'CA'
+number.isValid(); // false
+number.getNumberType(); // 'UNKNOWN'
+```
+
+## Conformance
+
+Conformance for the returned `PhoneNumber`'s methods is on
+[`PhoneNumber`](/core/reference/phone-number/#conformance).

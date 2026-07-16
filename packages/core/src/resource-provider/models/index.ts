@@ -19,7 +19,7 @@ export abstract class ResourceProvider {
   // Region index to calling-code index (per-keystroke formatting path).
   abstract callingCodeIndexByRegion: Int16Array;
   abstract numberTypeNames: readonly MetadataNumberType[];
-  // 1 = the region declares leadingDigits (region disambiguation by prefix instead of by type).
+  // 1 = the region declares leadingDigits (region disambiguation by prefix).
   abstract regionHasLeadingDigits: Uint8Array;
   abstract placeholders: MetadataPlaceholders;
 

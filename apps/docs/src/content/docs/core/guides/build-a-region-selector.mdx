@@ -1,0 +1,78 @@
+---
+title: Build a region selector
+description: Pair a region dropdown with the phone field and keep the two in sync.
+---
+
+A region selector pairs a dropdown with the phone field. The dropdown sets the region. The field
+holds the national number.
+
+## List the regions
+
+[`REGION_CODES`](/core/reference/region-data/#region_codes) and
+[`getCallingCodeForRegion`](/core/reference/region-data/#getcallingcodeforregion) supply the
+dropdown rows. Display names come from the platform:
+
+```ts
+import { REGION_CODES, getCallingCodeForRegion } from '@telixon/core';
+
+const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+
+const options = REGION_CODES.map((region) => ({
+  region,
+  callingCode: getCallingCodeForRegion(region),
+  name: displayNames.of(region),
+}));
+// [{ region: 'AC', callingCode: '247', name: 'Ascension Island' }, ...]
+```
+
+When the product accepts only some number types, keep the list to regions that assign them:
+
+```ts
+import { regionSupportsNumberTypes } from '@telixon/core';
+
+const mobileRegions = REGION_CODES.filter((region) => regionSupportsNumberTypes(region, ['MOBILE']));
+```
+
+## Show a placeholder
+
+[`getPlaceholders`](/core/reference/region-data/#getplaceholders) turns the selected region into
+the field's placeholder:
+
+```ts
+import { getPlaceholders } from '@telixon/core';
+
+getPlaceholders('US', 'MOBILE')?.national; // '(201) 555-0123'
+```
+
+## Wire the dropdown to the field
+
+An international controller with the calling code kept out of the field takes its region from the
+dropdown. Call [`setRegion`](/core/reference/input-controller/#setregion) on the dropdown's
+`change` event and write the returned state back:
+
+```ts
+import { createInternationalInputController } from '@telixon/core';
+
+const field = createInternationalInputController({
+  defaultRegion: 'US',
+  display: { callingCodeInInput: false },
+});
+
+field.setRegion('CA');
+field.insert('', '6045550132', 0, 0);
+// { value: '604-555-0132', region: 'CA', selectionStart: 12, selectionEnd: 12 }
+
+field.getPhoneNumber().formatE164(); // '+16045550132'
+```
+
+The field shows national digits. The selected region supplies the calling code.
+
+## Pin the field to the selection
+
+[`setRegionFilter`](/core/reference/input-controller/#setregionfilter) pins resolution to the
+dropdown's choice. Digits from any other region stop validating:
+
+```ts
+field.setRegionFilter(['CA']);
+field.getPhoneNumber().isValid(); // true
+```

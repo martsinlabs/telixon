@@ -1,0 +1,55 @@
+---
+title: ValidationError
+description: The eight-variant discriminated union returned by getValidationError.
+---
+
+```ts
+type ValidationError =
+  | { kind: 'EMPTY' }
+  | { kind: 'INVALID_CALLING_CODE' }
+  | { kind: 'TOO_SHORT'; minLength: number }
+  | { kind: 'TOO_LONG'; maxLength: number }
+  | { kind: 'INVALID_LENGTH'; possibleLengths: readonly number[] }
+  | { kind: 'POSSIBLE_LOCAL_ONLY' }
+  | { kind: 'PATTERN_MISMATCH' }
+  | { kind: 'NATIONAL_PREFIX_MISSING'; expectedPrefix: string };
+```
+
+Why a number is not valid. Returned by
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror), which is `null` when the
+number is valid. The union is discriminated on `kind`, so a `switch` over it is exhaustive. When a
+variant is added, every `switch` that misses it stops compiling. The kinds mirror libphonenumber
+where applicable.
+
+## Variants
+
+Every row is a real input and its real result.
+
+| Input                                    | `getValidationError()`                                     | Meaning                                             |
+| ---------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| `''`                                     | `{ kind: 'EMPTY' }`                                        | No digits to resolve                                |
+| `'+999 123'`                             | `{ kind: 'INVALID_CALLING_CODE' }`                         | The digits begin with no known country calling code |
+| `'+1 21'`                                | `{ kind: 'TOO_SHORT', minLength: 10 }`                     | Fewer digits than the region's shortest number      |
+| `'+1 21255512345678'`                    | `{ kind: 'TOO_LONG', maxLength: 10 }`                      | More digits than the region's longest number        |
+| `'+57 321 123 456'`                      | `{ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }` | The length falls in a gap between valid lengths     |
+| `'5550132'` with `defaultRegion: 'US'`   | `{ kind: 'POSSIBLE_LOCAL_ONLY' }`                          | Valid only when dialled inside its own area         |
+| `'+1 1234567890'`                        | `{ kind: 'PATTERN_MISMATCH' }`                             | The length is valid and the digits match no number  |
+| `'501234567'` with `defaultRegion: 'AE'` | `{ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }` | A required national (trunk) prefix was missing      |
+
+## Carried data
+
+The four data-carrying variants name what would fix the input:
+
+```ts
+parsePhoneNumber('+1 21').getValidationError();
+// { kind: 'TOO_SHORT', minLength: 10 }
+
+parsePhoneNumber('+1 21255512345678').getValidationError();
+// { kind: 'TOO_LONG', maxLength: 10 }
+
+parsePhoneNumber('+57 321 123 456').getValidationError();
+// { kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }
+
+parsePhoneNumber('501234567', { defaultRegion: 'AE' }).getValidationError();
+// { kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }
+```

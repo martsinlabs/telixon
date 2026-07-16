@@ -1,0 +1,107 @@
+---
+title: Region data
+description: REGION_CODES, NUMBER_TYPES, and the four region query functions.
+---
+
+Static data and lookups about regions and number types: the building blocks for region dropdowns,
+placeholders, and input constraints.
+
+## REGION_CODES
+
+```ts
+const REGION_CODES: readonly RegionCode[];
+```
+
+Every region the engine knows, in alphabetical order. The current engine ships 245 regions.
+
+```ts
+REGION_CODES.slice(0, 3); // ['AC', 'AD', 'AE']
+REGION_CODES.includes('US'); // true
+```
+
+`RegionCode` is the union of exactly these codes, so a plain string needs narrowing before it is
+one:
+
+```ts
+function isRegionCode(value: string): value is RegionCode {
+  return (REGION_CODES as readonly string[]).includes(value);
+}
+```
+
+## NUMBER_TYPES
+
+```ts
+const NUMBER_TYPES: readonly NumberType[];
+```
+
+Every `NumberType` value, in a stable order:
+
+```ts
+NUMBER_TYPES;
+// ['FIXED_LINE', 'MOBILE', 'FIXED_LINE_OR_MOBILE', 'TOLL_FREE', 'PREMIUM_RATE', 'SHARED_COST',
+//  'VOIP', 'PERSONAL_NUMBER', 'PAGER', 'UAN', 'VOICEMAIL', 'UNKNOWN']
+```
+
+## getCallingCodeForRegion
+
+```ts
+function getCallingCodeForRegion(region: RegionCode): string;
+```
+
+The country calling code `region` dials under, without the `+`, or `'0'` for a region the engine
+does not know. Mirrors libphonenumber's `getCountryCodeForRegion`.
+
+```ts
+getCallingCodeForRegion('US'); // '1'
+getCallingCodeForRegion('AC'); // '247'
+```
+
+## getPlaceholders
+
+```ts
+function getPlaceholders(region: RegionCode, type: NumberType): Placeholders | null;
+```
+
+A region's example number for one type, in each format a field might use. It returns `null` when
+the region has no example for that type.
+
+```ts
+getPlaceholders('US', 'FIXED_LINE');
+// { national: '(201) 555-0123', nationalWithPrefix: '1 (201) 555-0123', international: '201-555-0123' }
+```
+
+### Placeholders
+
+| Field                | Meaning                                                         |
+| -------------------- | --------------------------------------------------------------- |
+| `national`           | National format, without the national (trunk) prefix            |
+| `nationalWithPrefix` | National format, with the national (trunk) prefix               |
+| `international`      | International format: the digits after `+` and the calling code |
+
+Each field is absent when the region has no such form.
+
+## isNationalPrefixOptional
+
+```ts
+function isNationalPrefixOptional(region: RegionCode, type: NumberType): boolean;
+```
+
+Whether a `(region, type)` number can be written without its national (trunk) prefix.
+
+```ts
+isNationalPrefixOptional('US', 'FIXED_LINE'); // true
+```
+
+## regionSupportsNumberTypes
+
+```ts
+function regionSupportsNumberTypes(region: RegionCode, types: readonly NumberType[]): boolean;
+```
+
+Whether `region` supports at least one of `types`. `FIXED_LINE_OR_MOBILE` matches either side;
+`UNKNOWN` and an empty list match nothing.
+
+```ts
+regionSupportsNumberTypes('US', ['MOBILE']); // true
+regionSupportsNumberTypes('US', ['PAGER']); // false
+```

@@ -1,0 +1,152 @@
+---
+title: PhoneNumber
+description: The thirteen query and format methods on a parsed number.
+---
+
+A parsed number, returned by [`parsePhoneNumber`](/core/reference/parse-phone-number/) and by a
+controller's [`getPhoneNumber`](/core/reference/input-controller/#getphonenumber). Thirteen methods
+query and format it. Every answer derives from the state resolved at parse time.
+
+The examples share one number:
+
+```ts
+const number = parsePhoneNumber('+1 (415) 555-0132');
+```
+
+## Validity
+
+### isValid
+
+Whether the number exists in its region's numbering plan.
+
+```ts
+number.isValid(); // true
+```
+
+### isValidForRegion
+
+Whether the number is valid for one region specifically. Mirrors libphonenumber's
+`isValidNumberForRegion`.
+
+```ts
+number.isValidForRegion('US'); // true
+number.isValidForRegion('CA'); // false
+```
+
+### isPossible
+
+Whether the calling code resolves and the length is one the region dials. The digits themselves go
+unchecked, so a possible number can still be invalid.
+
+```ts
+number.isPossible(); // true
+parsePhoneNumber('+1 123-456-7890').isPossible(); // true, ten digits is a US length
+```
+
+### isPossibleWithReason
+
+The possibility check as a [`PossibilityResult`](#possibilityresult) reason code, so a failed
+`isPossible` says why.
+
+```ts
+number.isPossibleWithReason(); // 'IS_POSSIBLE'
+parsePhoneNumber('+1 415').isPossibleWithReason(); // 'TOO_SHORT'
+```
+
+### getValidationError
+
+Why the number is not valid, or `null` when it is. One of the eight typed
+[`ValidationError`](/core/reference/validation-error/) variants.
+
+```ts
+number.getValidationError(); // null
+parsePhoneNumber('+1 415').getValidationError(); // { kind: 'TOO_SHORT', minLength: 10 }
+```
+
+### PossibilityResult
+
+The six reason codes `isPossibleWithReason` returns. Mirrors libphonenumber's `ValidationResult`.
+
+| Value                    | Meaning                                                        |
+| ------------------------ | -------------------------------------------------------------- |
+| `IS_POSSIBLE`            | The calling code resolves and the length is dialled nationally |
+| `IS_POSSIBLE_LOCAL_ONLY` | The length is dialled only inside its own area                 |
+| `INVALID_CALLING_CODE`   | The digits begin with no known calling code                    |
+| `TOO_SHORT`              | Fewer digits than the region's shortest number                 |
+| `TOO_LONG`               | More digits than the region's longest number                   |
+| `INVALID_LENGTH`         | The length falls in a gap between valid lengths                |
+
+## Identity
+
+### getRegion
+
+The region the number resolves to, or `null` when none does.
+
+```ts
+number.getRegion(); // 'US'
+```
+
+### getCallingCode
+
+The country calling code read from the digits, without the `+`, or `null` when there are none.
+
+```ts
+number.getCallingCode(); // '1'
+```
+
+### getNationalNumber
+
+The national significant number: digits only, with the national prefix stripped.
+
+```ts
+number.getNationalNumber(); // '4155550132'
+```
+
+### getNumberType
+
+The line type, such as `MOBILE` or `FIXED_LINE`. `UNKNOWN` when the number is not valid or the type
+is ambiguous. The full value list is [`NUMBER_TYPES`](/core/reference/region-data/#number_types).
+
+```ts
+number.getNumberType(); // 'FIXED_LINE_OR_MOBILE'
+parsePhoneNumber('+1 800 234 5678').getNumberType(); // 'TOLL_FREE'
+```
+
+## Formats
+
+Each format method returns `null` when the number is not valid:
+
+```ts
+parsePhoneNumber('+1 415').formatE164(); // null
+```
+
+### formatE164
+
+```ts
+number.formatE164(); // '+14155550132'
+```
+
+### formatNational
+
+```ts
+number.formatNational(); // '(415) 555-0132'
+```
+
+### formatInternational
+
+```ts
+number.formatInternational(); // '+1 415-555-0132'
+```
+
+### formatRfc3966
+
+```ts
+number.formatRfc3966(); // 'tel:+1-415-555-0132'
+```
+
+## Conformance
+
+Twelve of the thirteen methods have a libphonenumber counterpart, each compared with Google's
+implementation on every corpus input. `getValidationError` is Telixon's own surface, with no
+counterpart to compare. The numbers, the method, and the cadence are on
+[Verified](/verified/#conformance).
