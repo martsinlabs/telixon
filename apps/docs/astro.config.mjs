@@ -19,7 +19,8 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/martsinlabs/telixon' }],
       editLink: { baseUrl: 'https://github.com/martsinlabs/telixon/edit/main/apps/docs/' },
       lastUpdated: true,
-      customCss: ['./src/styles/theme.css'],
+      // tokens.css first: theme.css derives from the brand channels it declares.
+      customCss: ['./src/styles/tokens.css', './src/styles/theme.css'],
       head: [
         // Brand fonts, shared with the landing page; theme.css maps them onto --sl-font and --sl-font-mono.
         { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
@@ -28,7 +29,8 @@ export default defineConfig({
           tag: 'link',
           attrs: {
             rel: 'stylesheet',
-            href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
+            // Variable range: discrete faces would round the 650 and 750 weights up to 700 and 800.
+            href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono:wght@400;500;600&display=swap',
           },
         },
         // Browser chrome color per scheme; values mirror the docs canvas backgrounds.

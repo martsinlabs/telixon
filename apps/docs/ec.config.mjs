@@ -10,7 +10,7 @@ const telixonDark = new ExpressiveCodeTheme({
     'editor.foreground': '#e8eaec',
   },
   tokenColors: [
-    { scope: ['comment'], settings: { foreground: '#666b71' } },
+    { scope: ['comment'], settings: { foreground: '#7f858c' } },
     { scope: ['string', 'punctuation.definition.string'], settings: { foreground: '#1fd8a4' } },
     { scope: ['keyword.control', 'storage.type', 'storage.modifier'], settings: { foreground: '#79c0ff' } },
     { scope: ['storage.type.function.arrow'], settings: { foreground: '#e8eaec' } },
@@ -26,7 +26,7 @@ const telixonLight = new ExpressiveCodeTheme({
     'editor.foreground': '#17191b',
   },
   tokenColors: [
-    { scope: ['comment'], settings: { foreground: '#7d838a' } },
+    { scope: ['comment'], settings: { foreground: '#6b7177' } },
     { scope: ['string', 'punctuation.definition.string'], settings: { foreground: '#208368' } },
     { scope: ['keyword.control', 'storage.type', 'storage.modifier'], settings: { foreground: '#0969da' } },
     { scope: ['storage.type.function.arrow'], settings: { foreground: '#17191b' } },

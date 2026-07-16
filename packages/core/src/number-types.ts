@@ -1,5 +1,6 @@
 import { NumberType } from '@telixon/core/engine';
 
+/** Every {@link NumberType} value, in a stable order. */
 export const NUMBER_TYPES = [
   'FIXED_LINE',
   'MOBILE',

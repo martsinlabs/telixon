@@ -91,6 +91,8 @@ interface ShieldsBadge {
 const CONFORMANCE_DIR = resolve('packages/core/conformance');
 const ARTIFACT_DIR = join(CONFORMANCE_DIR, 'dist');
 const TEMPLATE = readFileSync(join(CONFORMANCE_DIR, 'parity.template.html'), 'utf8');
+// One stylesheet behind every proof page, so they and telixon.dev stay one visual system.
+const THEME = readFileSync(resolve('packages/core/proof-theme.css'), 'utf8');
 
 const METHOD_ROW_INDENT = '\n        ';
 
@@ -222,11 +224,20 @@ function buildBadge(data: ParityData): ShieldsBadge {
 // ── HTML rendering ───────────────────────────────────────
 
 function renderHtml(data: ParityData): string {
+  // data.overall already aggregates the method comparisons together with both sweeps.
+  const divergences = data.overall.total - data.overall.matched;
+  const methodsPerfect = data.methods.filter((method) => method.matchRate === 1).length;
+
   const tokens: Record<string, string> = {
+    '{{theme}}': THEME,
+    '{{divergences}}': formatCount(divergences),
+    '{{methodsPerfect}}': String(methodsPerfect),
+    '{{methodsTotal}}': String(data.methods.length),
+    '{{comparisons}}': formatCount(data.overall.total),
     '{{commit}}': data.commit,
     '{{shortCommit}}': data.commit.slice(0, 7),
-    '{{corpusSize}}': String(data.corpus.size),
-    '{{compared}}': String(data.corpus.compared),
+    '{{corpusSize}}': formatCount(data.corpus.size),
+    '{{compared}}': formatCount(data.corpus.compared),
     '{{regionsCovered}}': String(data.corpus.regionsCovered),
     '{{regionsTotal}}': String(data.corpus.regionsTotal),
     '{{skipped}}': String(data.corpus.skipped),
@@ -241,8 +252,12 @@ function renderHtml(data: ParityData): string {
   return Object.entries(tokens).reduce((html, [token, value]) => html.split(token).join(value), TEMPLATE);
 }
 
+function formatCount(value: number): string {
+  return value.toLocaleString('en-US');
+}
+
 function renderCorpusByKind(byKind: readonly ParityKind[]): string {
-  return byKind.map(({ kind, cases }) => `${kind}&nbsp;${cases}`).join(' · ');
+  return byKind.map(({ kind, cases }) => `${kind}&nbsp;${formatCount(cases)}`).join(' · ');
 }
 
 function renderPrefixSweep(sweep: ParityPrefixSweep): string {
@@ -256,8 +271,8 @@ function renderValidForRegionSweep(sweep: ParityValidForRegionSweep): string {
 }
 
 function renderAllowlist(allowlist: ParityAllowlist): string {
-  if (allowlist.unexpected === 0 && allowlist.stale === 0) return '<span class="ok">empty</span>';
-  return `${allowlist.unexpected} unexpected, ${allowlist.stale} stale`;
+  if (allowlist.unexpected === 0 && allowlist.stale === 0) return '<span class="ok">0</span>';
+  return `<span class="bad">${allowlist.unexpected} unexpected, ${allowlist.stale} stale</span>`;
 }
 
 function renderMethodRow(method: ParityMethod): string {

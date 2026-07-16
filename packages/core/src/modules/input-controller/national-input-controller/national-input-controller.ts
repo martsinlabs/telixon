@@ -331,6 +331,15 @@ class NationalInputController implements InputController {
   }
 }
 
+/**
+ * Creates a headless {@link InputController} for one region's national format. The calling code
+ * never appears in the field.
+ *
+ * @example
+ * const controller = createNationalInputController({ defaultRegion: 'US' });
+ * controller.insert('(415) 555-013', '2', 13, 13);
+ * // { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+ */
 export function createNationalInputController(config: NationalInputControllerConfig): InputController {
   requireEngineReady();
 

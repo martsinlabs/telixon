@@ -1,0 +1,325 @@
+/* Shared by every generated proof page, so the dashboards and telixon.dev stay one visual system. */
+
+:root {
+  --brand: 38 153 123;
+  --brand-solid: rgb(var(--brand));
+
+  /* The reading rail. Pages whose tables carry many columns opt into the wider one. */
+  --rail: 880px;
+
+  --bg: #f7f8f8;
+  --surface: #ffffff;
+  --surface-border: rgba(0, 0, 0, 0.1);
+  --surface-shadow: 0 10px 22px -14px rgba(20, 45, 32, 0.2), 0 2px 5px -3px rgba(20, 45, 32, 0.1);
+  --hairline: rgba(0, 0, 0, 0.09);
+  --text: #17191b;
+  --muted: #4c5257;
+  --faint: #676d73;
+  --accent: var(--brand-solid);
+  --accent-text: #1b7359;
+  --error: #ce2c31;
+  --well: #f2f3f4;
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161618;
+    --surface: #272a2d;
+    --surface-border: rgba(255, 255, 255, 0.12);
+    /* A black shadow cannot darken a near-black canvas, so the top edge carries the elevation. */
+    --surface-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 1px 2px rgba(0, 0, 0, 0.6), 0 20px 40px -24px rgba(0, 0, 0, 0.95);
+    --hairline: rgba(255, 255, 255, 0.08);
+    --text: #f2f3f4;
+    --muted: #9ba1a6;
+    --faint: #93999f;
+    --accent-text: #1fd8a4;
+    --error: #ef7275;
+    --well: #0b0d0e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.wide {
+  --rail: 1120px;
+}
+
+.wrap {
+  max-width: var(--rail);
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+}
+
+/* Full-bleed, so the rule reads as the edge of the bar rather than a line ruled under the logo. */
+.masthead {
+  border-bottom: 1px solid var(--hairline);
+}
+.masthead-inner {
+  max-width: var(--rail);
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.masthead a.home {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.masthead a.home svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.masthead .kind {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.verdict {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  box-shadow: var(--surface-shadow);
+  padding: 34px 32px;
+  margin-bottom: 40px;
+}
+.verdict-value {
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+.verdict-claim {
+  margin-top: 12px;
+  font-size: 17px;
+  color: var(--text);
+}
+.verdict-rows {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  display: grid;
+  gap: 9px;
+}
+.verdict-rows div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.verdict-rows b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+h2 {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 44px 0 6px;
+}
+p {
+  margin: 0 0 12px;
+}
+.note {
+  color: var(--muted);
+  font-size: 14px;
+}
+.fine {
+  color: var(--faint);
+  font-size: 13px;
+}
+
+a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--brand) / 0.35);
+  text-underline-offset: 0.2em;
+}
+a:hover {
+  text-decoration-color: currentColor;
+}
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  text-align: right;
+  padding: 0 12px 8px 0;
+  border-bottom: 1px solid var(--surface-border);
+}
+td {
+  text-align: right;
+  padding: 9px 12px 9px 0;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--muted);
+}
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+th:last-child,
+td:last-child {
+  padding-right: 0;
+}
+td code {
+  color: var(--text);
+}
+.ok,
+.win {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.bad {
+  color: var(--error);
+  font-weight: 600;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--well);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin: 22px 0 8px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  box-shadow: var(--surface-shadow);
+  padding: 18px 20px;
+}
+.stat-value {
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.stat-sub {
+  margin-top: 2px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+/* One frame, drawn to scale. The keystroke is too small to fill anything, so it is a tick, not a fill. */
+.frame-bar {
+  position: relative;
+  height: 34px;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--well);
+  margin: 22px 0 8px;
+  overflow: hidden;
+}
+.frame-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  min-width: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 12px 1px rgb(var(--brand) / 0.55);
+}
+.frame-bar-caption {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.loss {
+  color: var(--error);
+  font-weight: 600;
+}
+strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  color: var(--faint);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 32px 18px 64px;
+  }
+  .verdict {
+    padding: 26px 22px;
+  }
+  .verdict-value {
+    font-size: 56px;
+  }
+  table {
+    font-size: 13px;
+  }
+}

@@ -104,6 +104,8 @@ interface ShieldsBadge {
 const BENCH_DIR = dirname(fileURLToPath(import.meta.url));
 const ARTIFACT_DIR = join(BENCH_DIR, 'dist');
 const TEMPLATE_PATH = join(BENCH_DIR, 'benchmark.template.html');
+// One stylesheet behind every proof page, so they and telixon.dev stay one visual system.
+const THEME_PATH = join(BENCH_DIR, '..', 'proof-theme.css');
 const KEYSTROKE_LATENCY_PATH = join(ARTIFACT_DIR, 'keystroke-latency.json');
 const HOTPATH_FILE_SUFFIX = '/bench/hotpath.bench.ts';
 const INPUT_CONTROLLER_FILE_SUFFIX = '/bench/input-controller.bench.ts';
@@ -236,6 +238,7 @@ function buildBadge(): ShieldsBadge {
 function renderHtml(data: BenchData): string {
   const template: string = readFileSync(TEMPLATE_PATH, 'utf8');
   const tokens: Record<string, string> = {
+    '{{theme}}': readFileSync(THEME_PATH, 'utf8'),
     '{{commit}}': data.commit,
     '{{shortCommit}}': data.commit.slice(0, 7),
     '{{corpusSize}}': data.corpusSize.toLocaleString('en-US'),

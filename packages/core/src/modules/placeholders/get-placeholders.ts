@@ -27,7 +27,7 @@ function hasInternationalFormat(callingCodeIndex: number): boolean {
   return false;
 }
 
-/** Returns example placeholder variants for `(region, type)`, or `null` if none. Requires ready resources. */
+/** Example placeholder variants for `(region, type)`, or `null` when none exists. */
 export function getPlaceholders(region: RegionCode, type: NumberType): Placeholders | null {
   const resourceProvider = getResourceProvider();
   const tables = resourceProvider.engine;

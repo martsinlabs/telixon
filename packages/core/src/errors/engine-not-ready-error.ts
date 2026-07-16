@@ -1,3 +1,7 @@
+/**
+ * Thrown by any API call made before {@link ensureEngineReady} (or `ensureEngineReadySync`) has
+ * loaded the engine. Once it is loaded, the query and controller APIs throw nothing.
+ */
 export class EngineNotReadyError extends Error {
   readonly name = 'EngineNotReadyError';
 

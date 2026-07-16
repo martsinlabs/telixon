@@ -8,7 +8,17 @@ function isWhitespace(charCode: number): boolean {
   return charCode === 0x20 || charCode === 0x09 || charCode === 0x0a || charCode === 0x0d;
 }
 
-// Parses a number into a PhoneNumber (no controller): '+' is international, else national via defaultRegion.
+/**
+ * Parses a phone number to validate, format, and inspect it. A leading `+` reads as international;
+ * otherwise pass `defaultRegion`. Never throws on bad input: the returned {@link PhoneNumber} reports
+ * why it is not valid.
+ *
+ * @param input - The number in any common notation. Spacing and punctuation are ignored.
+ * @param options - `defaultRegion` for input without a `+`; `strict` to restrict validity to it.
+ * @example
+ * parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
+ * parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
+ */
 // Detects the leading-plus flag, then defers to the shared resolveNumber pipeline (which ignores non-digits).
 export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions = {}): PhoneNumber {
   requireEngineReady();
