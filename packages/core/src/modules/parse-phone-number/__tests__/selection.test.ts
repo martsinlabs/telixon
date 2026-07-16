@@ -2,7 +2,7 @@ import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { parsePhoneNumber } from '../parse-phone-number';
 
-// NANP (+1) shares one calling code across the US, Canada, and the Caribbean, so the region is decided by the number, not defaultRegion.
+// NANP (+1) shares one calling code across the US, Canada, and the Caribbean, so the number itself decides the region.
 const US_MOBILE = getExampleNumber('US', 'MOBILE');
 const CA_FIXED = getExampleNumber('CA', 'FIXED_LINE');
 const BS_FIXED = getExampleNumber('BS', 'FIXED_LINE');

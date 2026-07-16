@@ -133,7 +133,7 @@ describe('InternationalInputController region resolution', () => {
     expect(state.region).toBe('AG');
   });
 
-  // setRegion only updates the default-region anchor, not the input; region still derives from the current digits.
+  // setRegion only updates the default-region anchor; the region still derives from the current digits.
   it('setRegion keeps current value and region when digits still resolve elsewhere', () => {
     const controller = createInternationalInputController({ defaultRegion: 'US' });
     const state = controller.setRegion('GB');

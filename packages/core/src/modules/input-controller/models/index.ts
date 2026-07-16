@@ -6,7 +6,7 @@ import { PhoneNumber } from '../../phone-number/models';
 export interface InputState {
   /** The formatted string to place in the field. */
   readonly value: string;
-  /** The region the value resolves to (a national controller's own region counts), or `null` when none does. */
+  /** The region the value resolves to, or `null` when none does. */
   readonly region: RegionCode | null;
   /** Caret start, as an index into `value`. */
   readonly selectionStart: number;
@@ -31,10 +31,8 @@ export interface InputChange {
 export type CaretIndex = number;
 
 /**
- * A headless controller for a phone-number field. Every edit takes the current value and caret and
- * returns the next {@link InputState} to write back, reformatted and recorded in history. Holds the
- * region, filters, and history; never touches the DOM. Bind it to an `<input>` yourself, or let
- * `@telixon/web-sdk` do it.
+ * A state controller for a phone-number field. Every state-changing call returns the next
+ * {@link InputState} to write back. Holds the region, the filters, and the history.
  */
 export interface InputController {
   /** Replaces the selection from `selectionStart` to `selectionEnd` in `value` with `text`, then reformats. */

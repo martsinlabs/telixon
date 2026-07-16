@@ -47,7 +47,7 @@ describe('InternationalInputController.deleteBackward', () => {
     const state = controller.deleteBackward('+1 ', 1, 1);
 
     expect(state.value).toBe('+1 ');
-    // Caret stays anchored on the "+" side instead of snapping to position 0.
+    // Caret stays anchored on the "+" side, never snapping to position 0.
     expect(state.selectionStart).toBe(1);
     expect(state.selectionEnd).toBe(1);
   });

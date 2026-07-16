@@ -34,7 +34,7 @@ describe('PhoneNumber.getValidationError', () => {
   });
 
   it('returns INVALID_LENGTH when the length falls in a gap between valid lengths', () => {
-    // Colombia has 8-, 10-, and 11-digit national numbers; 9 digits is a gap.
+    // Colombia has national numbers of 8, 10, and 11 digits; 9 digits is a gap.
     const error = parsePhoneNumber('321123456', { defaultRegion: 'CO' }).getValidationError();
     expect(error).toEqual({ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] });
   });

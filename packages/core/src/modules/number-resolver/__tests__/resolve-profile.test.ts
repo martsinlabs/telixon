@@ -167,7 +167,7 @@ describe('priority chain: non-strict', () => {
 
       const profile = resolveProfileRef(resolver.snapshot, getResourceProvider().regionKeyToIndex['US']!);
 
-      // Recovery reads the terminal-prefix history, not a live DFA state; with US preferred the NANP anchor resolves to US.
+      // Recovery reads the terminal-prefix history; no live DFA state is consulted. With US preferred the NANP anchor resolves to US.
       expect(profile).not.toBeNull();
       expect(getProfileRegion(profile!)).toBe('US');
     });

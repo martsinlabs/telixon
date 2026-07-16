@@ -73,7 +73,7 @@ export function resolveInternationalControllerState(
     }
 
     if (snapshot.strict) {
-      // Strict never leaves the preferred region: report it, not the digit-resolved region (NANP shares a calling code).
+      // Strict never leaves the preferred region: report it even when the digits resolve elsewhere (NANP shares a calling code).
       region = resourceProvider.regionIds[regionIndex] ?? null;
     } else {
       region = resolveRegionCodeOrFallback(
