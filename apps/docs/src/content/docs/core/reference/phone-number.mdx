@@ -55,7 +55,7 @@ parsePhoneNumber('+1 415').isPossibleWithReason(); // 'TOO_SHORT'
 
 ### getValidationError
 
-Why the number is not valid, or `null` when it is. One of the eight typed
+The fault to correct, or `null` when none applies. One of the nine typed
 [`ValidationError`](/core/reference/validation-error/) variants.
 
 ```ts
@@ -114,7 +114,7 @@ parsePhoneNumber('+1 800 234 5678').getNumberType(); // 'TOLL_FREE'
 
 ## Formats
 
-Each format method returns `null` when the number is not valid:
+Each format method returns `null` when the number is not possible:
 
 ```ts
 parsePhoneNumber('+1 415').formatE164(); // null

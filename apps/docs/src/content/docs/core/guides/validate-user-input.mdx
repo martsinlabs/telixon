@@ -62,6 +62,8 @@ function describe(error: ValidationError): string {
       return 'The length is right, but no number with these digits exists in this region.';
     case 'NATIONAL_PREFIX_MISSING':
       return `Start the number with ${error.expectedPrefix}.`;
+    case 'NATIONAL_PREFIX_PRESENT':
+      return `Drop the leading ${error.prefix}.`;
   }
 }
 

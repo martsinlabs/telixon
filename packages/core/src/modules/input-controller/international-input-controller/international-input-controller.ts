@@ -339,23 +339,18 @@ class InternationalInputController implements InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
+    // Selector mode resolves the displayed digits literally behind the seeded calling code, exactly as the state pipeline walks them.
     const resolved: ResolvedNumberState = resolveNumber({
       input: this.#history.current.value,
-      hasLeadingPlus: this.config.display?.callingCodeInInput !== false,
+      hasLeadingPlus: true,
+      seedCallingCode: this.config.display?.callingCodeInInput === false ? this.#defaultCallingCode : null,
       defaultRegionIndex: this.#defaultRegionIndex,
       regionFilter: this.#numberResolver.regionFilter,
       numberTypeFilter: this.#numberResolver.numberTypeFilter,
       strict: this.config.strict === true,
     });
 
-    return createPhoneNumber(
-      toResolvedPhoneNumber(
-        resolved.snapshot,
-        this.#defaultRegionIndex,
-        resolved.nationalPrefixPresent,
-        resolved.readAsNational,
-      ),
-    );
+    return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex));
   }
 
   clearHistory(): void {

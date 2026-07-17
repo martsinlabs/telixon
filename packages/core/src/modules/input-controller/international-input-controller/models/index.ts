@@ -8,8 +8,8 @@ export type PlusPrefixMode = 'none' | 'fixed' | 'erasable';
 
 /**
  * Where the calling code lives. `callingCodeInInput: true`: the field holds calling-code digits
- * (`1 415…` resolves as US) and `plusPrefix` controls the `+`. `false`: the field holds national
- * digits only.
+ * (`1 415…` resolves as US) and `plusPrefix` controls the `+`. `false`: the field holds the
+ * international significant number and the selected region supplies the calling code.
  */
 export type InternationalDisplayConfig =
   | { readonly callingCodeInInput: false }

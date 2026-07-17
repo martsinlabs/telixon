@@ -13,7 +13,7 @@ import { resolvePrimaryRegionIndex } from './utils/resolve-primary-region-index'
 
 // The single parse pipeline shared by parsePhoneNumber and the input controllers. Walks the raw input
 // (non-digits ignored) and strips IDD prefix, redundant leading calling code, and national prefix, so
-// every caller resolves a number identically.
+// every caller resolves a number identically. A seeded calling code walks the input literally instead.
 
 let cachedResolver: NumberResolver | null = null;
 
@@ -67,6 +67,8 @@ export interface ResolveNumberInput {
   readonly input: string;
   // International input (had a leading '+', or an international controller); national otherwise.
   readonly hasLeadingPlus: boolean;
+  // Calling code held outside the field: the input is the international significant number, walked literally with no parse leniency.
+  readonly seedCallingCode: string | null;
   readonly defaultRegionIndex: number;
   readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
@@ -78,11 +80,29 @@ export interface ResolvedNumberState {
   readonly nationalPrefixPresent: boolean;
   // National-mode input (no leading '+', resolved against the default region); national-prefix checks apply only then.
   readonly readAsNational: boolean;
+  // The seeded literal read above; the national-prefix-present check applies only then.
+  readonly callingCodeSeeded: boolean;
 }
 
 export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
-  const { input, hasLeadingPlus, defaultRegionIndex, regionFilter, numberTypeFilter, strict } = params;
+  const { input, hasLeadingPlus, seedCallingCode, defaultRegionIndex, regionFilter, numberTypeFilter, strict } = params;
   const resourceProvider = getResourceProvider();
+
+  const resolver: NumberResolver = cachedResolver ?? (cachedResolver = new NumberResolver());
+  resolver.setRegionFilter(regionFilter);
+  resolver.setNumberTypeFilter(numberTypeFilter);
+  resolver.setStrict(strict);
+
+  if (seedCallingCode !== null) {
+    resolver.setCallingCode(seedCallingCode);
+    walkInput(resolver, input);
+    return {
+      snapshot: resolver.snapshot,
+      nationalPrefixPresent: false,
+      readAsNational: false,
+      callingCodeSeeded: true,
+    };
+  }
 
   // National-mode digits beginning with the region's IDD prefix are internationally dialled: strip the
   // prefix and parse the remainder as international (libphonenumber FROM_NUMBER_WITH_IDD).
@@ -93,11 +113,6 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
   }
 
   const readAsNational: boolean = !hasLeadingPlus && defaultRegionIndex !== -1 && iddRemainder === null;
-
-  const resolver: NumberResolver = cachedResolver ?? (cachedResolver = new NumberResolver());
-  resolver.setRegionFilter(regionFilter);
-  resolver.setNumberTypeFilter(numberTypeFilter);
-  resolver.setStrict(strict);
 
   // True once a redundant leading calling code is dropped: from then on the number behaves as if dialled
   // through that calling code, so the strip below prefers its main region over the default region.
@@ -149,5 +164,5 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     walkInput(resolver, stripped);
   }
 
-  return { snapshot: resolver.snapshot, nationalPrefixPresent, readAsNational };
+  return { snapshot: resolver.snapshot, nationalPrefixPresent, readAsNational, callingCodeSeeded: false };
 }

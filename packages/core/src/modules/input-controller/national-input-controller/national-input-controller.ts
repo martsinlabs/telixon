@@ -294,20 +294,14 @@ class NationalInputController implements InputController {
     const resolved: ResolvedNumberState = resolveNumber({
       input: this.#history.current.value,
       hasLeadingPlus: false,
+      seedCallingCode: null,
       defaultRegionIndex: this.#defaultRegionIndex,
       regionFilter: this.#numberResolver.regionFilter,
       numberTypeFilter: this.#numberResolver.numberTypeFilter,
       strict: this.config.strict === true,
     });
 
-    return createPhoneNumber(
-      toResolvedPhoneNumber(
-        resolved.snapshot,
-        this.#defaultRegionIndex,
-        resolved.nationalPrefixPresent,
-        resolved.readAsNational,
-      ),
-    );
+    return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex));
   }
 
   undo(): InputState {
