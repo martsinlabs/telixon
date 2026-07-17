@@ -54,6 +54,7 @@ export function resolveNationalControllerState(
         snapshot.callingCodeState,
         snapshot.endState,
         snapshot.nationalDigits,
+        snapshot.regionFilter,
         fallbackRegionIndex,
       );
     }

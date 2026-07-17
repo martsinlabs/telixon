@@ -1,7 +1,9 @@
 import { containsLength, isCallingCodeComplete } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
-import { getAllowedLengthMask } from '../../number-resolver/utils/get-allowed-length-mask';
-import { getAllowedLocalOnlyLengthMask } from '../../number-resolver/utils/get-allowed-local-only-length-mask';
+import {
+  PossibilityLengthMasks,
+  resolvePossibilityLengthMasks,
+} from '../../number-resolver/utils/resolve-possibility-length-masks';
 import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { PossibilityResult, ResolvedPhoneNumber } from '../models';
 import { validationResultFromLength } from './validation-result-from-length';
@@ -21,13 +23,23 @@ export function isPossibleWithReason(resolved: ResolvedPhoneNumber): Possibility
   const length: number = nationalDigits.length;
   // Beyond every valid national length; guard before containsLength, whose `1 << length` wraps past 31.
   if (length >= 32) return 'TOO_LONG';
-  const nationalMask: number = getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter);
+
+  const masks: PossibilityLengthMasks = resolvePossibilityLengthMasks(
+    callingCodeState,
+    defaultRegionIndex,
+    regionFilter,
+    numberTypeFilter,
+  );
+
+  // Active filters that leave no possible length at all exclude the whole calling code (Telixon extension).
+  if ((regionFilter !== null || numberTypeFilter !== null) && masks.national === 0 && masks.localOnly === 0) {
+    return 'INVALID_CALLING_CODE';
+  }
 
   // Lengths valid only locally (never nationally) report as locally possible: libphonenumber testNumberLength.
-  const localOnlyMask: number =
-    getAllowedLocalOnlyLengthMask(regionIndex, regionFilter, numberTypeFilter) & ~nationalMask;
+  const localOnlyMask: number = masks.localOnly & ~masks.national;
   if (containsLength(localOnlyMask, length)) return 'IS_POSSIBLE_LOCAL_ONLY';
 
-  if (nationalMask === 0) return 'INVALID_LENGTH';
-  return validationResultFromLength(nationalMask, length);
+  if (masks.national === 0) return 'INVALID_LENGTH';
+  return validationResultFromLength(masks.national, length);
 }

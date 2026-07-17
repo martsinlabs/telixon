@@ -80,6 +80,7 @@ export function resolveInternationalControllerState(
         snapshot.callingCodeState,
         snapshot.endState,
         snapshot.nationalDigits,
+        snapshot.regionFilter,
         regionIndex,
       );
     }

@@ -15,7 +15,7 @@ export type PossibilityResult =
   | 'INVALID_LENGTH';
 
 /**
- * Why a number is not valid, discriminated on `kind`. Four variants carry data. Returned by
+ * Why a number is not valid, discriminated on `kind`. Five variants carry data. Returned by
  * {@link PhoneNumber.getValidationError}; kinds mirror libphonenumber where applicable.
  */
 export type ValidationError =
@@ -34,7 +34,9 @@ export type ValidationError =
   /** The length is valid but the digits match no number that exists in the region. */
   | { readonly kind: 'PATTERN_MISMATCH' }
   /** A required national (trunk) prefix was not typed. `expectedPrefix` is the missing prefix. */
-  | { readonly kind: 'NATIONAL_PREFIX_MISSING'; readonly expectedPrefix: string };
+  | { readonly kind: 'NATIONAL_PREFIX_MISSING'; readonly expectedPrefix: string }
+  /** International-significant input begins with national-dialing digits (trunk prefix or carrier code). `prefix` is the exact leading digits to drop. */
+  | { readonly kind: 'NATIONAL_PREFIX_PRESENT'; readonly prefix: string };
 
 export interface ResolvedPhoneNumber {
   readonly nationalDigits: string;
@@ -46,6 +48,7 @@ export interface ResolvedPhoneNumber {
   readonly numberTypeFilter: BinaryFilter | null;
   readonly nationalPrefixPresent: boolean;
   readonly readAsNational: boolean;
+  readonly callingCodeSeeded: boolean;
   readonly strict: boolean;
 }
 
@@ -65,7 +68,7 @@ export interface PhoneNumber {
   isPossible(): boolean;
   /** The possibility check as a reason code, so a failed {@link PhoneNumber.isPossible} says why. */
   isPossibleWithReason(): PossibilityResult;
-  /** Why the number is not valid, or `null` when it is. One of eight typed variants. */
+  /** The fault to correct, or `null` when none applies. One of nine typed variants. */
   getValidationError(): ValidationError | null;
   /** The line type, such as `MOBILE` or `FIXED_LINE`. `UNKNOWN` when the number is not valid or the type is ambiguous. */
   getNumberType(): NumberType;
@@ -75,12 +78,12 @@ export interface PhoneNumber {
   getCallingCode(): string | null;
   /** The region the number resolves to, or `null` when none does. */
   getRegion(): RegionCode | null;
-  /** E.164, or `null` when the number is not valid. */
+  /** E.164, or `null` when the number is not possible. */
   formatE164(): string | null;
-  /** National format, or `null` when the number is not valid. */
+  /** National format, or `null` when the number is not possible. */
   formatNational(): string | null;
-  /** International format, or `null` when the number is not valid. */
+  /** International format, or `null` when the number is not possible. */
   formatInternational(): string | null;
-  /** RFC 3966 `tel:` URI, or `null` when the number is not valid. */
+  /** RFC 3966 `tel:` URI, or `null` when the number is not possible. */
   formatRfc3966(): string | null;
 }

@@ -65,7 +65,7 @@ field.insert('', '6045550132', 0, 0);
 field.getPhoneNumber().formatE164(); // '+16045550132'
 ```
 
-The field shows national digits. The selected region supplies the calling code.
+The field shows the digits after the calling code. The selected region supplies that code.
 
 ## Pin the field to the selection
 
@@ -76,3 +76,5 @@ dropdown's choice. Digits from any other region stop validating:
 field.setRegionFilter(['CA']);
 field.getPhoneNumber().isValid(); // true
 ```
+
+The full member list is in the [`InputController` reference](/core/reference/input-controller/).

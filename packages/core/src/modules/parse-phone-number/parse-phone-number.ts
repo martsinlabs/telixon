@@ -34,18 +34,12 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   const resolved: ResolvedNumberState = resolveNumber({
     input,
     hasLeadingPlus,
+    seedCallingCode: null,
     defaultRegionIndex,
     regionFilter: null,
     numberTypeFilter: null,
     strict: options.strict ?? false,
   });
 
-  return createPhoneNumber(
-    toResolvedPhoneNumber(
-      resolved.snapshot,
-      defaultRegionIndex,
-      resolved.nationalPrefixPresent,
-      resolved.readAsNational,
-    ),
-  );
+  return createPhoneNumber(toResolvedPhoneNumber(resolved, defaultRegionIndex));
 }

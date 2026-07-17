@@ -9,6 +9,7 @@ import {
   verdictIsDecided,
   verdictRegion,
 } from '@telixon/core/engine';
+import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveExactMatchedTypeIdMask } from './resolve-exact-matched-types';
 
@@ -42,11 +43,12 @@ function matchesRegion(
   return resolveExactMatchedTypeIdMask(endState, nationalDigits.length, regionIndex, null) !== 0;
 }
 
-// libphonenumber getRegionCodeForNumber: first region (main-first) the number matches, or null; fallback behind baked verdicts.
+// libphonenumber getRegionCodeForNumber: first region (main-first) the number matches, or null; a region filter narrows the scan.
 export function resolveRegionCode(
   callingCodeState: number,
   endState: number,
   nationalDigits: string,
+  regionFilter: BinaryFilter | null,
 ): RegionCode | null {
   if (callingCodeState === -1) return null;
 
@@ -54,11 +56,14 @@ export function resolveRegionCode(
   const regions: Uint8Array = getCallingCodeStateRegions(resourceProvider.engine, callingCodeState);
 
   if (regions.length === 1) {
-    return resourceProvider.regionIds[regions[0]!] ?? null;
+    const regionIndex: number = regions[0]!;
+    if (regionFilter !== null && regionFilter[regionIndex] === 0) return null;
+    return resourceProvider.regionIds[regionIndex] ?? null;
   }
 
   const exactRegions: number[] = collectExactRegions(endState, nationalDigits.length);
   for (const regionIndex of regions) {
+    if (regionFilter !== null && regionFilter[regionIndex] === 0) continue;
     if (matchesRegion(regionIndex, nationalDigits, endState, exactRegions)) {
       return resourceProvider.regionIds[regionIndex] ?? null;
     }
@@ -67,15 +72,16 @@ export function resolveRegionCode(
   return null;
 }
 
-// Verdict-first region resolution: one baked lookup at (endState, length), else the explicit resolution above.
+// Verdict-first region resolution: one baked lookup at (endState, length). Verdicts are unfiltered, so a region filter takes the explicit path.
 export function resolveRegionCodeFast(
   callingCodeState: number,
   endState: number,
   nationalDigits: string,
+  regionFilter: BinaryFilter | null,
 ): RegionCode | null {
   const length: number = nationalDigits.length;
 
-  if (length < VERDICT_LENGTH_COUNT) {
+  if (regionFilter === null && length < VERDICT_LENGTH_COUNT) {
     const verdict: number = getVerdict(getResourceProvider().engine, endState, length);
     if (verdictIsDecided(verdict)) {
       const regionIndex: number = verdictRegion(verdict);
@@ -84,5 +90,5 @@ export function resolveRegionCodeFast(
     }
   }
 
-  return resolveRegionCode(callingCodeState, endState, nationalDigits);
+  return resolveRegionCode(callingCodeState, endState, nationalDigits, regionFilter);
 }

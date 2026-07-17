@@ -56,11 +56,11 @@ code is in the field, `defaultRegion` pre-fills the field with that region's cod
 
 `display`, an `InternationalDisplayConfig`, places the calling code:
 
-| `display`                                  | The field holds                                                                      |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| omitted                                    | Calling-code digits, with no `+` rendered                                            |
-| `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits, with the `+` under `plusPrefix`                                 |
-| `{ callingCodeInInput: false }`            | National digits; the region comes from `defaultRegion` and [`setRegion`](#setregion) |
+| `display`                                  | The field holds                                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| omitted                                    | Calling-code digits, with no `+` rendered                                                                 |
+| `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits, with the `+` under `plusPrefix`                                                      |
+| `{ callingCodeInInput: false }`            | The international significant number; the region comes from `defaultRegion` and [`setRegion`](#setregion) |
 
 `plusPrefix`, a `PlusPrefixMode`, renders the leading `+`: `'none'` never, `'fixed'` always,
 `'erasable'` while the value carries one. Under `'erasable'`, backspace at the start removes it.
@@ -132,8 +132,8 @@ setRegion(region: RegionCode): InputState;
 ```
 
 Switches to `region` and reformats the current digits the way that region writes them. Where the
-calling code lives in the field, the digits keep deciding the region. Where the field holds
-national digits only, the switch applies.
+calling code lives in the field, the digits keep deciding the region. Where the field holds the
+international significant number, the switch applies.
 
 ### setRegionFilter
 
@@ -141,7 +141,10 @@ national digits only, the switch applies.
 setRegionFilter(regions: readonly RegionCode[] | null): InputState;
 ```
 
-Restricts which regions the value may resolve to, or `null` to allow all.
+Restricts which regions the value may resolve to, or `null` to allow all. Every
+[`PhoneNumber`](/core/reference/phone-number/) query answers within the allowed set. A filter that
+excludes every region of the value's calling code reports
+[`INVALID_CALLING_CODE`](/core/reference/validation-error/).
 
 ### setNumberTypeFilter
 
@@ -149,7 +152,9 @@ Restricts which regions the value may resolve to, or `null` to allow all.
 setNumberTypeFilter(numberTypes: readonly NumberType[] | null): InputState;
 ```
 
-Restricts which number types the value may resolve to, or `null` to allow all.
+Restricts which number types the value may resolve to, or `null` to allow all. A filter that
+leaves no possible length for the value's calling code reports
+[`INVALID_CALLING_CODE`](/core/reference/validation-error/).
 
 ## History
 
@@ -208,7 +213,10 @@ getPhoneNumber(): PhoneNumber;
 ```
 
 The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query, equal to
-`parsePhoneNumber` of the displayed value.
+`parsePhoneNumber` of the displayed value. With the calling code kept out of the field
+(`callingCodeInInput: false`), the digits resolve literally as the international significant
+number behind the selected region's calling code. A typed national (trunk) prefix there reports
+[`NATIONAL_PREFIX_PRESENT`](/core/reference/validation-error/).
 
 ### currentState
 

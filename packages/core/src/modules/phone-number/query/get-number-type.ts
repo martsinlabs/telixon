@@ -17,9 +17,9 @@ import { numberTypeForRegion } from './number-type-for-region';
 
 // Explicit resolution behind the baked verdicts: undecided inputs and filtered queries.
 function getNumberTypeResolved(resolved: ResolvedPhoneNumber): NumberType {
-  const { callingCodeState, nationalDigits, endState } = resolved;
+  const { callingCodeState, nationalDigits, endState, regionFilter } = resolved;
 
-  const region: RegionCode | null = resolveRegionCode(callingCodeState, endState, nationalDigits);
+  const region: RegionCode | null = resolveRegionCode(callingCodeState, endState, nationalDigits, regionFilter);
   if (!region) return 'UNKNOWN';
 
   const regionIndex: number | undefined = getResourceProvider().regionKeyToIndex[region];

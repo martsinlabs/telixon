@@ -1,13 +1,9 @@
-import { NumberResolverSnapshot } from '../number-resolver/models';
+import { ResolvedNumberState } from '../number-resolver/resolve-number';
 import { ResolvedPhoneNumber } from './models';
 
-// Builds the query view from one snapshot, so every method reads a consistent point-in-time capture.
-export function toResolvedPhoneNumber(
-  snapshot: NumberResolverSnapshot,
-  defaultRegionIndex: number,
-  nationalPrefixPresent: boolean,
-  readAsNational: boolean,
-): ResolvedPhoneNumber {
+// Builds the query view from one resolved state, so every method reads a consistent point-in-time capture.
+export function toResolvedPhoneNumber(resolved: ResolvedNumberState, defaultRegionIndex: number): ResolvedPhoneNumber {
+  const { snapshot } = resolved;
   return {
     nationalDigits: snapshot.nationalDigits,
     callingCode: snapshot.callingCodeDigits,
@@ -16,8 +12,9 @@ export function toResolvedPhoneNumber(
     defaultRegionIndex,
     regionFilter: snapshot.regionFilter,
     numberTypeFilter: snapshot.numberTypeFilter,
-    nationalPrefixPresent,
-    readAsNational,
+    nationalPrefixPresent: resolved.nationalPrefixPresent,
+    readAsNational: resolved.readAsNational,
+    callingCodeSeeded: resolved.callingCodeSeeded,
     strict: snapshot.strict,
   };
 }
