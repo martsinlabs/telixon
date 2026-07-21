@@ -143,6 +143,18 @@ describe('NumberResolver: filters', () => {
     expect(resolver.snapshot.numberTypeFilter).toBeNull();
   });
 
+  it('walks a seeded calling code past an excluding region filter', () => {
+    const resolver = new NumberResolver();
+    resolver.setRegionFilter(createRegionFilter(['US']));
+
+    resolver.setCallingCode('44');
+    advanceAll(resolver, '7400123456');
+
+    expect(resolver.getCallingCode()).toBe('44');
+    expect(resolver.callingCodeCompleted).toBe(true);
+    expect(resolver.getNationalNumber()).toBe('7400123456');
+  });
+
   it('setStrict toggles the strict flag in the snapshot', () => {
     const resolver = new NumberResolver();
 

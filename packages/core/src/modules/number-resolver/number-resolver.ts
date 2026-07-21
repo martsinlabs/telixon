@@ -33,6 +33,8 @@ export class NumberResolver {
 
   private _strict: boolean = false;
 
+  private _seedingCallingCode: boolean = false;
+
   advance(digit: number): void {
     const digitChar: string = String.fromCharCode(48 + digit);
 
@@ -42,7 +44,8 @@ export class NumberResolver {
     }
 
     let state: number = stepDigit(this.engine, this._state, digit);
-    const filtersActive: boolean = this._regionFilter !== null || this._numberTypeFilter !== null;
+    const filtersActive: boolean =
+      !this._seedingCallingCode && (this._regionFilter !== null || this._numberTypeFilter !== null);
 
     if (
       state !== ENGINE_DEAD &&
@@ -80,9 +83,12 @@ export class NumberResolver {
   setCallingCode(code: string): void {
     this.reset();
 
+    // The seeded code is a fixed premise, so it walks past the filters; exclusion still reports INVALID_CALLING_CODE.
+    this._seedingCallingCode = true;
     for (let i = 0; i < code.length; i++) {
       this.advance(code.charCodeAt(i) - 48);
     }
+    this._seedingCallingCode = false;
   }
 
   reset(): void {
