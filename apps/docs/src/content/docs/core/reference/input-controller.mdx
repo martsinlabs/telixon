@@ -77,7 +77,9 @@ interface InputState {
 ```
 
 The next value and caret to apply to the field. `value` is the formatted string. `region` is the
-region the value resolves to, or `null` when none does. The selection indices point into `value`.
+region the value resolves to, or `null` when none does. A field with no digits reports the
+configured default region, so clearing the value keeps the region stable. The selection indices
+point into `value`.
 Within a shared calling code, `region` reports the resolved owner of the digits: a `604` number
 reports `CA` even in a US-configured field.
 

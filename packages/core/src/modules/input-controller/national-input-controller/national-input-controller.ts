@@ -277,12 +277,16 @@ class NationalInputController implements InputController {
 
   #recomputeState(): InputState {
     const { value, selectionStart, selectionEnd } = this.#history.current;
+    // A pure re-render of the current value; the collapsed caret keeps the stored range out of the edit path.
     const nextState: InputControllerState = this.#resolveState(value, {
       insertText: '',
       selectionStart,
-      selectionEnd,
+      selectionEnd: selectionStart,
     });
-    this.#history.replaceCurrent(nextState);
+    // An unchanged render keeps the stored selection, so a filter call never moves the caret.
+    const renderedState: InputControllerState =
+      nextState.value === value ? { ...nextState, selectionStart, selectionEnd } : nextState;
+    this.#history.replaceCurrent(renderedState);
     return toInputState(this.#history.current);
   }
 
