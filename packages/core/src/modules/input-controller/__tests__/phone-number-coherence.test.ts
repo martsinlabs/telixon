@@ -33,6 +33,7 @@ const US_TOLL_FREE = getExampleNumber('US', 'TOLL_FREE');
 const BY_MOBILE = getExampleNumber('BY', 'MOBILE');
 const AU_MOBILE = getExampleNumber('AU', 'MOBILE');
 const GG_MOBILE = getExampleNumber('GG', 'MOBILE');
+const GB_MOBILE = getExampleNumber('GB', 'MOBILE');
 
 function queryAnswers(phoneNumber: PhoneNumber): Record<string, unknown> {
   const answers: Record<string, unknown> = {};
@@ -263,6 +264,42 @@ describe('Region filters keep every query coherent', () => {
 
     expectCoherent(gapNumber, 'selector', ['GG']);
     expect(gapNumber.getValidationError()).toEqual({ kind: 'INVALID_LENGTH', possibleLengths: [7, 9, 10] });
+  });
+
+  it('keeps the typed digits intact in selector mode while the filter excludes the selected region', () => {
+    const controller = createSelectorController('GB');
+    const typed = controller.setValue(GB_MOBILE);
+
+    const filtered = controller.setRegionFilter(['US']);
+    const phoneNumber = controller.getPhoneNumber();
+
+    expectCoherent(phoneNumber, 'selector', ['US']);
+    expect(filtered.value.replace(/\D/g, '')).toBe(GB_MOBILE);
+    expect(phoneNumber.getCallingCode()).toBe('44');
+    expect(phoneNumber.getNationalNumber()).toBe(GB_MOBILE);
+    expect(phoneNumber.getValidationError()?.kind).toBe('INVALID_CALLING_CODE');
+
+    const restored = controller.setRegionFilter(null);
+    expect(restored.value).toBe(typed.value);
+    expect(restored.region).toBe(typed.region);
+    expect(controller.getPhoneNumber().getValidationError()).toBeNull();
+  });
+
+  it('keeps the seeded calling code out of the national digits in national mode under an excluding filter', () => {
+    const controller = createNationalInputController({ defaultRegion: 'GB' });
+    const typed = controller.setValue(`0${GB_MOBILE}`);
+
+    controller.setRegionFilter(['US']);
+    const phoneNumber = controller.getPhoneNumber();
+
+    expectCoherent(phoneNumber, 'national');
+    expect(phoneNumber.getCallingCode()).toBe('44');
+    expect(phoneNumber.getNationalNumber()).toBe(GB_MOBILE);
+    expect(phoneNumber.getValidationError()?.kind).toBe('INVALID_CALLING_CODE');
+
+    const restored = controller.setRegionFilter(null);
+    expect(restored.value).toBe(typed.value);
+    expect(controller.getPhoneNumber().getValidationError()).toBeNull();
   });
 
   it('reports INVALID_CALLING_CODE when the filter excludes every region of the calling code', () => {
