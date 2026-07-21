@@ -25,6 +25,7 @@ export function resolveInternationalControllerState(
   display: InternationalDisplayConfig = DEFAULT_DISPLAY,
   direction: FormattingDirection = 'forward',
   plusErased: boolean = false,
+  defaultRegionIndex: number = -1,
 ): InputControllerState {
   const resourceProvider = getResourceProvider();
 
@@ -88,6 +89,9 @@ export function resolveInternationalControllerState(
     const primaryRegionIndex: number = resolvePrimaryRegionIndex(snapshot.callingCodeState, -1);
 
     region = resourceProvider.regionIds[primaryRegionIndex] ?? null;
+  } else if (snapshot.callingCodeDigits === '' && snapshot.nationalDigits === '') {
+    // A field with no digits reports the configured default region, matching the seeded modes.
+    region = resourceProvider.regionIds[defaultRegionIndex] ?? null;
   }
 
   let value: string;

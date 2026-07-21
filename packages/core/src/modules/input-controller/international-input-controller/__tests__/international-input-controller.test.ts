@@ -149,6 +149,27 @@ describe('InternationalInputController region resolution', () => {
     // No digits are added by setRegion alone: value stays empty.
     expect(state.value).toBe('');
   });
+
+  it('reports the default region while the field holds no digits', () => {
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
+
+    expect(controller.setValue('').region).toBe('US');
+    expect(controller.setValue('+').region).toBe('US');
+  });
+
+  it('reports null for an empty field without a default region', () => {
+    const controller = createInternationalInputController();
+
+    expect(controller.currentState.region).toBe(null);
+  });
+
+  it('keeps null once digits are present and resolve nothing', () => {
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
+    // '0' opens no calling code, so the walk dies with a digit in the field.
+    const state = controller.setValue('+0');
+
+    expect(state.region).toBe(null);
+  });
 });
 
 describe('InternationalInputController caret across boundaries', () => {

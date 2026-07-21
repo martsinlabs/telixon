@@ -6,7 +6,7 @@ import { PhoneNumber } from '../../phone-number/models';
 export interface InputState {
   /** The formatted string to place in the field. */
   readonly value: string;
-  /** The region the value resolves to, or `null` when none does. */
+  /** The region the value resolves to, or `null` when none does; a field with no digits reports the configured default region. */
   readonly region: RegionCode | null;
   /** Caret start, as an index into `value`. */
   readonly selectionStart: number;
