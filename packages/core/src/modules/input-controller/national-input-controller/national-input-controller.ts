@@ -15,7 +15,7 @@ import { createNumberTypeFilter, createRegionFilter } from '../../number-resolve
 import { getNationalPrefixRules } from '../../number-resolver/utils/get-national-prefix-rules';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
-import { InputChange, InputController, InputControllerState, InputState } from '../models';
+import { InputChange, InputController, InputState } from '../models';
 import {
   findNextDigitPosition,
   findPreviousDigitPosition,
@@ -24,8 +24,9 @@ import {
   toInputStateWithSelection,
 } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
-import { NationalInputControllerConfig } from './models';
+import { NationalControllerState, NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
+import { typedRangeForSelection } from './utils/digit-alignment';
 
 function hasTypedNationalPrefix(rawDigits: string, prefixRules: NationalPrefixRules | undefined): boolean {
   if (!prefixRules?.nationalPrefix) {
@@ -35,8 +36,17 @@ function hasTypedNationalPrefix(rawDigits: string, prefixRules: NationalPrefixRu
   return rawDigits.startsWith(prefixRules.nationalPrefix);
 }
 
+function collectDigits(text: string): string {
+  let digits = '';
+  for (let index = 0; index < text.length; index++) {
+    const charCode: number = text.charCodeAt(index);
+    if (charCode >= 48 && charCode <= 57) digits += text[index];
+  }
+  return digits;
+}
+
 class NationalInputController implements InputController {
-  #history!: InputStateHistory<InputControllerState>;
+  #history!: InputStateHistory<NationalControllerState>;
 
   #numberResolver: NumberResolver = new NumberResolver();
 
@@ -51,8 +61,9 @@ class NationalInputController implements InputController {
       this.#numberResolver.setStrict(true);
     }
 
+    const initialDigits: string = collectDigits(config.initialValue ?? '');
     this.#history = new InputStateHistory(
-      this.#resolveState('', { insertText: config.initialValue ?? '', selectionStart: 0, selectionEnd: 0 }),
+      this.#resolveFromTyped(initialDigits, initialDigits.length),
       config.maxHistorySize,
     );
   }
@@ -74,32 +85,28 @@ class NationalInputController implements InputController {
     }
   }
 
-  #resolveState(
-    value: string,
-    change: InputChange,
+  // Resolves the state from the typed digits. The rendered value is derived output and is never parsed back.
+  #resolveFromTyped(
+    typedDigits: string,
+    typedCaretIndex: number,
     direction: 'forward' | 'backward' = 'forward',
-  ): InputControllerState {
+  ): NationalControllerState {
     const numberResolver: NumberResolver = this.#numberResolver;
 
     this.#seedResolver();
 
-    const rawDigits: number[] = [];
-    const rawCaretIndex: number = resolveInput(value, change, (digit: number) => rawDigits.push(digit));
-
     const prefixRules: NationalPrefixRules | undefined = getNationalPrefixRules(this.#defaultRegionIndex);
 
-    const rawString: string = rawDigits.join('');
-
-    // normalizedDigits drive validation; displayDigits drive formatting (no untyped digit shown); caret stays in raw space.
-    let normalizedDigits: string = rawString;
-    let displayDigits: string = rawString;
-    if (rawString.length > 0 && prefixRules) {
-      const normalized = normalizeNationalNumber(rawString, prefixRules);
+    // normalizedDigits drive validation; displayDigits drive formatting (no untyped digit shown).
+    let normalizedDigits: string = typedDigits;
+    let displayDigits: string = typedDigits;
+    if (typedDigits.length > 0 && prefixRules) {
+      const normalized = normalizeNationalNumber(typedDigits, prefixRules);
       normalizedDigits = normalized.normalizedDigits;
       displayDigits = normalized.displayDigits;
     }
 
-    const nationalPrefixTyped: boolean = hasTypedNationalPrefix(rawString, prefixRules);
+    const nationalPrefixTyped: boolean = hasTypedNationalPrefix(typedDigits, prefixRules);
 
     for (let i = 0; i < normalizedDigits.length; i++) {
       numberResolver.advance(normalizedDigits.charCodeAt(i) - 48);
@@ -113,27 +120,56 @@ class NationalInputController implements InputController {
       profile,
       this.#defaultRegionIndex,
       nationalPrefixTyped,
-      rawString,
+      typedDigits,
       displayDigits,
-      rawCaretIndex,
+      typedCaretIndex,
+      prefixRules,
       direction,
     );
+  }
+
+  // An edit on our own rendering maps onto the stored typed digits. A foreign value (autofill) is parsed from scratch.
+  #resolveFromEdit(
+    value: string,
+    change: InputChange,
+    direction: 'forward' | 'backward' = 'forward',
+    isDelete: boolean = false,
+  ): NationalControllerState {
+    let nextState: NationalControllerState;
+
+    const current: NationalControllerState = this.#history.current;
+    if (value === current.value) {
+      const insertedDigits: string = collectDigits(change.insertText);
+      // An insert without digits keeps the selected digits, same as resolveInput.
+      const keepsSelection: boolean = change.insertText.length > 0 && insertedDigits.length === 0;
+      const selectionEnd: number = keepsSelection ? change.selectionStart : change.selectionEnd;
+      const range = typedRangeForSelection(
+        current.alignment,
+        current.rawDigits.length,
+        value,
+        change.selectionStart,
+        selectionEnd,
+      );
+      const typedDigits: string =
+        current.rawDigits.slice(0, range.start) + insertedDigits + current.rawDigits.slice(range.end);
+      nextState = this.#resolveFromTyped(typedDigits, range.start + insertedDigits.length, direction);
+    } else {
+      const digits: number[] = [];
+      const caretIndex: number = resolveInput(value, change, (digit: number) => digits.push(digit));
+      nextState = this.#resolveFromTyped(digits.join(''), caretIndex, direction);
+    }
+
+    // When a delete leaves the field empty, drop the hidden typed digits too.
+    if (isDelete && nextState.value === '' && nextState.rawDigits !== '') {
+      return this.#resolveFromTyped('', 0, direction);
+    }
+    return nextState;
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
-    const nextState: InputControllerState = this.#resolveState(
-      value,
-      {
-        insertText: text,
-        selectionStart,
-        selectionEnd,
-      },
-      'forward',
-    );
-
-    this.#history.push(nextState);
+    this.#history.push(this.#resolveFromEdit(value, { insertText: text, selectionStart, selectionEnd }, 'forward'));
 
     return toInputState(this.#history.current);
   }
@@ -154,10 +190,11 @@ class NationalInputController implements InputController {
 
       this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
-      const trimmedState: InputControllerState = this.#resolveState(
+      const trimmedState: NationalControllerState = this.#resolveFromEdit(
         value,
         { insertText: '', selectionStart, selectionEnd },
         'backward',
+        true,
       );
 
       if (trimmedState.value.length < value.length) {
@@ -178,7 +215,9 @@ class NationalInputController implements InputController {
       const position: number = findPreviousDigitPosition(value, selectionStart);
 
       if (position === -1) {
-        return toInputState(this.#resolveState(value, { insertText: '', selectionStart, selectionEnd }, 'backward'));
+        return toInputState(
+          this.#resolveFromEdit(value, { insertText: '', selectionStart, selectionEnd }, 'backward', true),
+        );
       }
 
       effectiveStart = position;
@@ -187,17 +226,14 @@ class NationalInputController implements InputController {
 
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
-    const nextState: InputControllerState = this.#resolveState(
-      value,
-      {
-        insertText: '',
-        selectionStart: effectiveStart,
-        selectionEnd: effectiveEnd,
-      },
-      'backward',
+    this.#history.push(
+      this.#resolveFromEdit(
+        value,
+        { insertText: '', selectionStart: effectiveStart, selectionEnd: effectiveEnd },
+        'backward',
+        true,
+      ),
     );
-
-    this.#history.push(nextState);
 
     return toInputState(this.#history.current);
   }
@@ -222,29 +258,29 @@ class NationalInputController implements InputController {
       effectiveEnd = position + 1;
     }
 
-    const nextState: InputControllerState = this.#resolveState(
-      value,
-      {
-        insertText: '',
-        selectionStart: effectiveStart,
-        selectionEnd: effectiveEnd,
-      },
-      'forward',
+    this.#history.push(
+      this.#resolveFromEdit(
+        value,
+        { insertText: '', selectionStart: effectiveStart, selectionEnd: effectiveEnd },
+        'forward',
+        true,
+      ),
     );
-
-    this.#history.push(nextState);
 
     return toInputState(this.#history.current);
   }
 
   setValue(value: string): InputState {
-    const nextState: InputControllerState = this.#resolveState('', {
-      insertText: value,
-      selectionStart: 0,
-      selectionEnd: 0,
-    });
+    // Re-setting the exact current value leaves the rendering untouched and only moves the caret to the end.
+    if (value === this.#history.current.value) {
+      const end: number = value.length;
+      this.#history.updateCurrentSelection(end, end);
+      return toInputStateWithSelection(this.#history.current, end, end);
+    }
 
-    this.#history.push(nextState);
+    // Any other string is parsed as new typed content.
+    const typedDigits: string = collectDigits(value);
+    this.#history.push(this.#resolveFromTyped(typedDigits, typedDigits.length));
 
     return toInputState(this.#history.current);
   }
@@ -252,15 +288,9 @@ class NationalInputController implements InputController {
   setRegion(region: RegionCode): InputState {
     this.#setRegion(region);
 
-    const { value } = this.#history.current;
+    const { rawDigits } = this.#history.current;
 
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart: value.length,
-      selectionEnd: value.length,
-    });
-
-    this.#history.push(nextState);
+    this.#history.push(this.#resolveFromTyped(rawDigits, rawDigits.length));
 
     return toInputState(this.#history.current);
   }
@@ -276,16 +306,14 @@ class NationalInputController implements InputController {
   }
 
   #recomputeState(): InputState {
-    const { value, selectionStart, selectionEnd } = this.#history.current;
-    // A pure re-render of the current value; the collapsed caret keeps the stored range out of the edit path.
-    const nextState: InputControllerState = this.#resolveState(value, {
-      insertText: '',
-      selectionStart,
-      selectionEnd: selectionStart,
-    });
-    // An unchanged render keeps the stored selection, so a filter call never moves the caret.
-    const renderedState: InputControllerState =
-      nextState.value === value ? { ...nextState, selectionStart, selectionEnd } : nextState;
+    const current: NationalControllerState = this.#history.current;
+    // Re-renders the stored typed digits under the new filters.
+    const nextState: NationalControllerState = this.#resolveFromTyped(current.rawDigits, current.rawCaretIndex);
+    // When the value did not change, keep the selection where it was.
+    const renderedState: NationalControllerState =
+      nextState.value === current.value
+        ? { ...nextState, selectionStart: current.selectionStart, selectionEnd: current.selectionEnd }
+        : nextState;
     this.#history.replaceCurrent(renderedState);
     return toInputState(this.#history.current);
   }
@@ -295,6 +323,7 @@ class NationalInputController implements InputController {
   }
 
   getPhoneNumber(): PhoneNumber {
+    // Queries resolve the displayed value, so getPhoneNumber always agrees with parsePhoneNumber of what the field shows.
     const resolved: ResolvedNumberState = resolveNumber({
       input: this.#history.current.value,
       hasLeadingPlus: false,

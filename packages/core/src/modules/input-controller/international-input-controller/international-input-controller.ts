@@ -47,12 +47,10 @@ class InternationalInputController implements InputController {
     const shouldShowCallingCode: boolean = this.config.display?.callingCodeInInput !== false;
     const insertText: string = config.initialValue ?? (shouldShowCallingCode ? (this.#defaultCallingCode ?? '') : '');
 
-    // An explicit plus-less initial value starts with the plus erased; the calling-code seed keeps the plus primer.
-    const initialPlusErased: boolean =
-      this.#plusErasable &&
-      config.initialValue !== undefined &&
-      config.initialValue !== '' &&
-      !config.initialValue.startsWith('+');
+    // Only an explicit '+' or the calling-code seed primes the plus; every plus-less start, the
+    // empty string included, begins with the plus erased so an empty field renders truly empty.
+    const seededPrimer: boolean = config.initialValue === undefined && insertText !== '';
+    const initialPlusErased: boolean = this.#plusErasable && !insertText.startsWith('+') && !seededPrimer;
 
     this.#history = new InputStateHistory(
       this.#resolveState(
@@ -273,8 +271,8 @@ class InternationalInputController implements InputController {
   }
 
   setValue(value: string): InputState {
-    // With an erasable plus, the given string decides plus visibility; an empty string resets to the visible plus.
-    const plusErased: boolean = this.#plusErasable && value !== '' && !value.startsWith('+');
+    // With an erasable plus, the given string decides plus visibility; an empty string resets to an empty field.
+    const plusErased: boolean = this.#plusErasable && !value.startsWith('+');
 
     const nextState: InputControllerState = this.#resolveState(
       '',

@@ -183,7 +183,37 @@ describe("InternationalInputController with plusPrefix: 'erasable'", () => {
 
     expect(controller.setValue(US_MOBILE_INTL).value.startsWith('+')).toBe(false);
     expect(controller.setValue('+' + US_MOBILE_INTL).value.startsWith('+')).toBe(true);
-    // An empty string resets to the visible plus primer.
-    expect(controller.setValue('').value).toBe('+');
+    // An empty string resets to a truly empty field.
+    expect(controller.setValue('').value).toBe('');
+  });
+
+  it('starts truly empty for a plus-less start and keeps the seeded primer', () => {
+    const emptyInitial = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'erasable' },
+      initialValue: '',
+    });
+    expect(emptyInitial.currentState.value).toBe('');
+
+    const noSeed = createInternationalInputController({
+      display: { callingCodeInInput: true, plusPrefix: 'erasable' },
+    });
+    expect(noSeed.currentState.value).toBe('');
+
+    // The calling-code seed still primes the visible plus.
+    const seeded = createErasable();
+    expect(seeded.currentState.value.startsWith('+1')).toBe(true);
+  });
+
+  it('renders a typed "+" immediately on an empty field', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'erasable' },
+      initialValue: '',
+    });
+
+    const state = controller.insert('', '+', 0, 0);
+
+    expect(state.value).toBe('+');
   });
 });
