@@ -18,8 +18,9 @@ type ValidationError =
 
 The fault to correct in the input. Returned by
 [`getValidationError`](/core/reference/phone-number/#getvalidationerror), which is `null` when
-none applies. The union is discriminated on `kind`, so a `switch` over it is exhaustive. When a
-variant is added, every `switch` that misses it stops compiling. The kinds mirror libphonenumber
+none applies. The union is discriminated on `kind`, so a `switch` narrows every variant. With a
+declared return type on the switching function, a newly added variant stops compiling until every
+`switch` handles it. The kinds mirror libphonenumber
 where applicable.
 
 ## Variants
@@ -40,9 +41,9 @@ Every row is a real input and its real result.
 
 `NATIONAL_PREFIX_PRESENT` comes only from a controller holding the calling code outside the field
 (`callingCodeInInput: false`), where the digits are the international significant number. It
-reports when the typed digits begin with national-dialing digits, the trunk prefix or a carrier
-code, that dropping would leave a valid number. `prefix` is the exact leading chunk to drop; a
-Belarusian number typed as `80 29…` reports `prefix: '80'`.
+reports when a number that is not valid as typed begins with a national-dialing chunk, the trunk
+prefix or a carrier code, whose removal leaves a valid number. `prefix` is the exact leading chunk
+to drop; a Belarusian number typed as `80 29…` reports `prefix: '80'`.
 
 ## Carried data
 

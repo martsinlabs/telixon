@@ -53,7 +53,7 @@ parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
 
 - **[Parsing does not throw.](/core/reference/parse-phone-number/)** A walk always ends somewhere.
   Where it ends is the result.
-- **[Formatting can return `null`.](/core/reference/phone-number/#formats)** A format is a property
-  of an accepting state. A number that never reached one has no format to give.
+- **[Formatting can return `null`.](/core/reference/phone-number/#formats)** The formats follow
+  possibility, so a number whose calling code or length can never work has no format to give.
 - **[The engine loads first.](/core/load-the-engine/)** Without the tables there is nothing to
   walk.
