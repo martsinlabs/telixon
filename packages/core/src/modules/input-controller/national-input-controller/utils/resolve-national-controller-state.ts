@@ -1,9 +1,12 @@
 import {
+  formatNumber,
   formatNumberWithRawCaret,
   FormattingDirection,
   getMetadataFormatIndex,
   getRegionNationalPrefix,
   MASK_VARIANT,
+  NationalPrefixRules,
+  PhoneNumberFormattingContext,
   RegionCode,
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -15,23 +18,27 @@ import { hasMaskVariant, pickFormatMask } from '../../../number-resolver/utils/f
 import { resolvePrimaryRegionIndex } from '../../../number-resolver/utils/resolve-primary-region-index';
 import { resolveRegionCodeOrFallback } from '../../../number-resolver/utils/resolve-region-code-or-fallback';
 import { selectNationalFormatIndex } from '../../../number-resolver/utils/select-national-format';
-import { CaretIndex, InputControllerState } from '../../models';
+import { NationalControllerState } from '../models';
+import { buildDigitAlignment, DigitAlignment } from './digit-alignment';
 
 export function resolveNationalControllerState(
   snapshot: NumberResolverSnapshot,
   profile: NumberTypeProfileRef | null,
   defaultRegionIndex: number,
   nationalPrefixTyped: boolean,
-  rawString: string,
+  typedDigits: string,
   displayDigits: string,
-  rawCaretIndex: CaretIndex,
+  typedCaretIndex: number,
+  prefixRules: NationalPrefixRules | undefined,
   direction: FormattingDirection = 'forward',
-): InputControllerState {
+): NationalControllerState {
   const resourceProvider = getResourceProvider();
+  const caretIndex: number = Math.max(0, Math.min(typedCaretIndex, typedDigits.length));
 
-  // Fallback (no matching format, e.g. just the national prefix) shows the typed digits; the format path below groups displayDigits.
-  let formattedNationalNumber: string = rawString;
-  let formattedNationalCaretIndex: number = rawCaretIndex;
+  // Fallback (no matching format, e.g. just the national prefix) shows the typed digits directly.
+  let formattedNationalNumber: string = typedDigits;
+  let formattedNationalCaretIndex: number = caretIndex;
+  let alignment: DigitAlignment | null = null;
   let region: RegionCode | null = null;
   let appliedFormatIndex: number | null = null;
 
@@ -79,14 +86,19 @@ export function resolveNationalControllerState(
           ? getRegionNationalPrefix(resourceProvider.engine, regionIndex)
           : undefined;
 
-        const { formatted, caretIndex: natCaretFormatted } = formatNumberWithRawCaret(
-          buildFormattingContext(mask, displayDigits, resourceProvider.placeholders, nationalPrefix),
-          rawCaretIndex,
-          direction,
+        const context: PhoneNumberFormattingContext = buildFormattingContext(
+          mask,
+          displayDigits,
+          resourceProvider.placeholders,
+          nationalPrefix,
         );
+        formattedNationalNumber = formatNumber(context, 0, direction).formatted;
+        alignment = buildDigitAlignment(typedDigits, context, formattedNationalNumber, prefixRules, direction);
 
-        formattedNationalNumber = formatted;
-        formattedNationalCaretIndex = natCaretFormatted;
+        // The engine places the caret by a rendered digit count; the alignment converts the typed caret into it.
+        const caretDigitCount: number =
+          alignment === null ? caretIndex : alignment.renderedDigitCountByTypedBoundary[caretIndex]!;
+        formattedNationalCaretIndex = formatNumberWithRawCaret(context, caretDigitCount, direction).caretIndex;
       }
     }
   } else if (defaultRegionIndex !== -1) {
@@ -103,5 +115,8 @@ export function resolveNationalControllerState(
     formatIndex: appliedFormatIndex,
     nationalPrefixPresent: nationalPrefixTyped,
     plusErased: false,
+    rawDigits: typedDigits,
+    rawCaretIndex: caretIndex,
+    alignment,
   };
 }

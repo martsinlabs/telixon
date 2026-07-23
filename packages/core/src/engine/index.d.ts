@@ -200,7 +200,7 @@ export declare function forEachScopeRegion(engine: Engine, state: number, callba
  * @public
  * Formats a phone number according to the provided formatting context.
  */
-export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number, direction?: FormattingDirection): FormattedWithCaret;
+export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number, direction?: FormattingDirection, collectDigitPositions?: boolean): FormattedWithCaret;
 
 /**
  * @public
@@ -232,6 +232,12 @@ export declare interface FormatSelectLayer {
 export declare interface FormattedWithCaret {
     formatted: string;
     caretIndex: number;
+    /**
+     * Present only when `formatNumber` is called with `collectDigitPositions`. One entry per display
+     * digit: `digitPositions[k]` is the index of the k-th display digit in `formatted`, or `-1` when the
+     * mask hides that digit. Length equals the display digit count (`context.nationalNumber.length`).
+     */
+    digitPositions?: number[];
 }
 
 /**
@@ -649,6 +655,12 @@ export declare interface NormalizedNationalNumber {
     caretIndex: number;
     displayDigits: string;
     displayCaretIndex: number;
+    /**
+     * Present only when `normalizeNationalNumber` is called with `collectDisplayBoundaries`. The display
+     * caret for every typed boundary: `displayCaretByTyped[t]` is the display caret for a caret at typed
+     * boundary `t`. Length `digits.length + 1`, monotonic non-decreasing, bounded by `displayDigits.length`.
+     */
+    displayCaretByTyped?: number[];
 }
 
 /**
@@ -656,7 +668,7 @@ export declare interface NormalizedNationalNumber {
  * Normalizes national digits and remaps the caret, returning parse and display views.
  * When `isViable` is given, a viable number is never stripped into a non-viable one.
  */
-export declare function normalizeNationalNumber(digits: string, rules: NationalPrefixRules, caretIndex?: number, isViable?: IsViableNationalNumber): NormalizedNationalNumber;
+export declare function normalizeNationalNumber(digits: string, rules: NationalPrefixRules, caretIndex?: number, isViable?: IsViableNationalNumber, collectDisplayBoundaries?: boolean): NormalizedNationalNumber;
 
 /**
  * @public
