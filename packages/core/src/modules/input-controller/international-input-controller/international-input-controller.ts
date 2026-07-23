@@ -271,6 +271,13 @@ class InternationalInputController implements InputController {
   }
 
   setValue(value: string): InputState {
+    // Re-setting the exact current value leaves the rendering untouched and only moves the caret to the end.
+    if (value === this.#history.current.value) {
+      const end: number = value.length;
+      this.#history.updateCurrentSelection(end, end);
+      return toInputStateWithSelection(this.#history.current, end, end);
+    }
+
     // With an erasable plus, the given string decides plus visibility; an empty string resets to an empty field.
     const plusErased: boolean = this.#plusErasable && !value.startsWith('+');
 

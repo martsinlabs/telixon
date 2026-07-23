@@ -109,6 +109,18 @@ describe('InternationalInputController formatting modes', () => {
     expect(state.region).toBe('GB');
     expect(state.value.replace(/\D/g, '')).toBe(GB_MOBILE_E164_DIGITS);
   });
+
+  it('re-setting the shown value is a fixed point after a delete trims the separator', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'FR',
+      display: { callingCodeInInput: false },
+    });
+    const seeded = controller.setValue('26');
+    const trimmed = controller.deleteBackward(seeded.value, seeded.value.length, seeded.value.length);
+
+    // The backward render dropped the trailing separator; re-setting that value keeps it dropped.
+    expect(controller.setValue(trimmed.value).value).toBe(trimmed.value);
+  });
 });
 
 describe('InternationalInputController region resolution', () => {
