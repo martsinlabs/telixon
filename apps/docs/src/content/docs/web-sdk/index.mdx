@@ -1,0 +1,114 @@
+---
+title: Getting started
+description: Install @telixon/web-sdk and bind a phone input and a region list to the DOM.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`@telixon/web-sdk` is the DOM adapter for [`@telixon/core`](/core/). It ships two headless state
+machines for the web, where [`PhoneInput`](/web-sdk/phone-input/) drives a real `<input>` and
+[`RegionList`](/web-sdk/region-list/) feeds region pickers.
+
+## Install
+
+<Tabs syncKey="pkg">
+
+<TabItem label="npm">
+
+```sh
+npm install @telixon/core @telixon/web-sdk
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm add @telixon/core @telixon/web-sdk
+```
+
+</TabItem>
+
+<TabItem label="Yarn">
+
+```sh
+yarn add @telixon/core @telixon/web-sdk
+```
+
+</TabItem>
+
+<TabItem label="Bun">
+
+```sh
+bun add @telixon/core @telixon/web-sdk
+```
+
+</TabItem>
+
+<TabItem label="Deno">
+
+```sh
+deno add npm:@telixon/core npm:@telixon/web-sdk
+```
+
+</TabItem>
+
+</Tabs>
+
+Your code imports both packages, since the engine loads through `@telixon/core` directly.
+
+## Load the engine
+
+Both machines read the engine, so [load it](/core/load-the-engine/) first:
+
+```ts
+import { ensureEngineReady } from '@telixon/core';
+
+await ensureEngineReady();
+```
+
+## Attach a phone input
+
+```ts
+import { createPhoneInput } from '@telixon/web-sdk';
+
+const input = document.querySelector('input')!;
+
+const phone = createPhoneInput({ mode: 'national', defaultRegion: 'US', input });
+
+phone.subscribe((state) => {
+  input.classList.toggle('invalid', state.validationError !== null);
+});
+```
+
+Typing `4155550132` leaves the field showing `(415) 555-0132`; the class drops at the tenth digit.
+The last emitted [state](/web-sdk/phone-input/#phoneinputstate):
+
+```ts
+// {
+//   value: '(415) 555-0132',
+//   region: 'US',
+//   selectionStart: 14,
+//   selectionEnd: 14,
+//   regionFilter: null,
+//   numberTypeFilter: null,
+//   placeholder: '(201) 555-0123',
+//   validationError: null,
+// }
+```
+
+## List the regions
+
+```ts
+import { createRegionList } from '@telixon/web-sdk';
+
+const regions = createRegionList();
+
+regions.getState().options[0];
+// { region: 'AF', callingCode: '93', displayName: 'Afghanistan', data: undefined }
+```
+
+The guides turn these into working fields with live demos:
+[Build a phone field](/web-sdk/guides/phone-field/),
+[Build a region picker](/web-sdk/guides/region-picker/), and
+[Build the complete field](/web-sdk/guides/complete-field/).

@@ -1,0 +1,11 @@
+---
+import DemoFrame from './DemoFrame.astro';
+import './demos/region-picker.css';
+import html from './demos/region-picker.html?raw';
+---
+
+<DemoFrame><Fragment set:html={html} /></DemoFrame>
+
+<script>
+  import './demos/region-picker.js';
+</script>

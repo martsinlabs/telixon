@@ -1,0 +1,54 @@
+#phone-field {
+  --surface: #ffffff;
+  --text: #1c1f1e;
+  --muted: #66716d;
+  --border: #c9d1ce;
+  --accent: #26997b;
+  --valid: #1d7a5f;
+  --error: #b3384f;
+
+  color: var(--text);
+}
+
+#phone-field label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+#phone-field input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--surface);
+  color: inherit;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#phone-field input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+#phone-field input::placeholder {
+  color: var(--muted);
+}
+
+#phone-field .phone-field-status {
+  margin: 0.5rem 0 0;
+  min-height: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+#phone-field .phone-field-status[data-tone='valid'] {
+  color: var(--valid);
+}
+
+#phone-field .phone-field-status[data-tone='error'] {
+  color: var(--error);
+}

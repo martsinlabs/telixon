@@ -19,6 +19,16 @@ export default [
     },
   },
   {
+    // Client-side demo scripts shipped by the docs app run in the browser.
+    files: ['apps/docs/src/components/demos/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+      },
+    },
+  },
+  {
     files: ['scripts/**/*.{mjs,js}', '**/*.config.{mjs,js}'],
     languageOptions: {
       globals: {

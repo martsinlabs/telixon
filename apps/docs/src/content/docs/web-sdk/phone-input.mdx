@@ -1,0 +1,211 @@
+---
+title: PhoneInput
+description: The phone-number controller attached to a DOM input.
+---
+
+A core [`InputController`](/core/reference/input-controller/) attached to a DOM `<input>`. It wires
+the field's events, writes each new value and caret back, and emits a
+[`PhoneInputState`](#phoneinputstate) snapshot to subscribers. No emit fires at construction. The
+initial state is applied straight to the DOM, so read it with [`getState`](#getstate).
+
+## createPhoneInput
+
+```ts
+function createPhoneInput(options: PhoneInputOptions): PhoneInput;
+```
+
+Attaches to an `<input type="text">` or `<input type="tel">`; any other type throws. A second
+attach to the same element throws. Before the engine is loaded it throws `EngineNotReadyError`; see
+[Load the engine](/core/load-the-engine/). [`destroy`](#destroy) releases the element.
+
+```ts
+const phone = createPhoneInput({
+  mode: 'national',
+  defaultRegion: 'US',
+  input: document.querySelector('input')!,
+});
+
+phone.getState().placeholder; // '(201) 555-0123'
+```
+
+## PhoneInputOptions
+
+A discriminated union on `mode`. `'national'` extends
+[`NationalInputControllerConfig`](/core/reference/input-controller/#nationalinputcontrollerconfig);
+`'international'` extends
+[`InternationalInputControllerConfig`](/core/reference/input-controller/#internationalinputcontrollerconfig).
+The adapter adds four fields:
+
+| Field                   | Type                            | Meaning                                                              |
+| ----------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| `input`                 | `PhoneInputElement`             | Required. The `<input>` to attach to, `type="text"` or `type="tel"`. |
+| `regionFilter`          | `readonly RegionCode[] \| null` | Region filter applied at construction.                               |
+| `numberTypeFilter`      | `readonly NumberType[] \| null` | Number-type filter applied at construction.                          |
+| `placeholderNumberType` | `NumberType`                    | The type the placeholder demonstrates; `'MOBILE'` by default.        |
+
+## PhoneInputState
+
+```ts
+type PhoneInputState = {
+  readonly value: string;
+  readonly region: RegionCode | null;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
+  readonly regionFilter: readonly RegionCode[] | null;
+  readonly numberTypeFilter: readonly NumberType[] | null;
+  readonly placeholder: string | null;
+  readonly validationError: ValidationError | null;
+};
+```
+
+`value`, `region`, and the selection mirror the core
+[`InputState`](/core/reference/input-controller/#inputstate). The two filters echo the active
+restrictions.
+
+`placeholder` is the example number for the resolved region, in the field's own display shape.
+While the value resolves no region, it falls back to the configured `defaultRegion`. It is `null`
+without a region to fall back to, or when the region's metadata carries no example for the
+configured type. It lives in the state only; the DOM `placeholder` attribute stays untouched, so
+render it yourself. A national US field gets `'(201) 555-0123'`. An international field with the
+calling code inside gets `'1 201-555-0123'`.
+
+`validationError` is
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror) for the current value. An
+empty national field reports `TOO_SHORT` under its region.
+
+## Covered events
+
+- Typing, including IME composition (`insertText`, `insertReplacementText`, `compositionend`)
+- Paste, drop, yank (`insertFromPaste`, `insertFromDrop`, `insertFromYank`)
+- Deletes, including cut and drag-out (`deleteContentBackward`, `deleteContentForward`,
+  `deleteByCut`, `deleteByDrag`, `deleteContent`)
+- Word deletes (`deleteWordBackward`, `deleteWordForward`): each consumes one digit group, skipping
+  adjacent formatting
+- Line deletes (`deleteSoftLineBackward`, `deleteHardLineForward`, `deleteEntireSoftLine`, and the
+  rest of the family)
+- Undo and redo: the native `historyUndo` and `historyRedo` input types, plus Cmd/Ctrl+Z,
+  Cmd/Ctrl+Shift+Z, and Cmd/Ctrl+Y
+
+## Members
+
+### subscribe
+
+```ts
+subscribe(listener: (state: PhoneInputState) => void): () => void;
+```
+
+Subscribes to state changes. Returns an unsubscribe function.
+
+### getState
+
+```ts
+getState(): PhoneInputState;
+```
+
+The current state, without subscribing.
+
+### setValue
+
+```ts
+setValue(value: string): void;
+```
+
+Replaces the value through the controller's
+[`setValue`](/core/reference/input-controller/#setvalue), writes the result back, then emits.
+Values written outside the event stream, browser autofill included, bypass the controller; push
+them through this method.
+
+### setRegion
+
+```ts
+setRegion(region: RegionCode): void;
+```
+
+Switches the region through the controller's
+[`setRegion`](/core/reference/input-controller/#setregion), then emits.
+
+### setRegionFilter
+
+```ts
+setRegionFilter(regions: readonly RegionCode[] | null): void;
+```
+
+Applies the [region filter](/core/reference/input-controller/#setregionfilter), then emits. An
+equal filter value is a no-op.
+
+### setNumberTypeFilter
+
+```ts
+setNumberTypeFilter(numberTypes: readonly NumberType[] | null): void;
+```
+
+Applies the [number-type filter](/core/reference/input-controller/#setnumbertypefilter), then
+emits. An equal filter value is a no-op.
+
+### undo
+
+```ts
+undo(): void;
+```
+
+Steps the controller [history](/core/reference/input-controller/#history) back, then emits. With
+nothing to undo, it is a no-op.
+
+### redo
+
+```ts
+redo(): void;
+```
+
+Steps the history forward again, then emits. With nothing to redo, it is a no-op.
+
+### canUndo
+
+```ts
+canUndo(): boolean;
+```
+
+Whether an undo step exists.
+
+### canRedo
+
+```ts
+canRedo(): boolean;
+```
+
+Whether a redo step exists.
+
+### clearHistory
+
+```ts
+clearHistory(): void;
+```
+
+Drops the undo and redo history, then emits.
+
+### getPhoneNumber
+
+```ts
+getPhoneNumber(): PhoneNumber;
+```
+
+The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query.
+
+```ts
+phone.getPhoneNumber().formatE164(); // '+14155550132'
+```
+
+### destroy
+
+```ts
+destroy(): void;
+```
+
+Detaches the DOM listeners, releases the element, and clears subscribers. Idempotent. After it, the
+field behaves as a plain input again.
+
+## Pair with a region picker
+
+A [`RegionList`](/web-sdk/region-list/) supplies the rows; the picker's selection hands its region
+to [`setRegion`](#setregion). The full wiring, with a popup and a live demo, is in
+[Build the complete field](/web-sdk/guides/complete-field/).

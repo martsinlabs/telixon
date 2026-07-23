@@ -1,0 +1,11 @@
+---
+import DemoFrame from './DemoFrame.astro';
+import './demos/complete-field.css';
+import html from './demos/complete-field.html?raw';
+---
+
+<DemoFrame><Fragment set:html={html} /></DemoFrame>
+
+<script>
+  import './demos/complete-field.js';
+</script>

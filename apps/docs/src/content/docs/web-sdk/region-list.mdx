@@ -1,0 +1,190 @@
+---
+title: RegionList
+description: The headless state machine behind region pickers.
+---
+
+A headless state machine for region pickers. It produces the option rows a dropdown renders and
+emits a [`RegionListState`](#regionliststate) snapshot on every change. Each change recomputes the
+options through one pipeline of region filter, number-type filter, search, sort, and prioritized
+pins. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
+
+## createRegionList
+
+```ts
+function createRegionList<T = undefined>(options?: RegionListOptions<T>): RegionList<T>;
+```
+
+Before the engine is loaded it throws `EngineNotReadyError`; see
+[Load the engine](/core/load-the-engine/).
+
+```ts
+const regions = createRegionList();
+
+regions.getState().options[0];
+// { region: 'AF', callingCode: '93', displayName: 'Afghanistan', data: undefined }
+```
+
+## RegionListOptions
+
+| Field              | Type                            | Meaning                                                                                                                |
+| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `dataFactory`      | `(input) => T`                  | Produces the `data` slot from the option's `region`, `callingCode`, and `displayName`; its return type flows into `T`. |
+| `regionFilter`     | `readonly RegionCode[] \| null` | Restricts the list to these regions.                                                                                   |
+| `numberTypeFilter` | `readonly NumberType[] \| null` | Keeps regions that assign at least one of these types.                                                                 |
+| `searchQuery`      | `string`                        | Initial search query.                                                                                                  |
+| `searchFn`         | `(query, option) => boolean`    | Custom search predicate; the default is described under [Search matching](#search-matching).                           |
+| `locale`           | `string`                        | Locale for display names; `'en'` by default.                                                                           |
+| `sort`             | `RegionListSort`                | `'alphabetical'` (default), `'callingCode'`, or a comparator.                                                          |
+| `prioritize`       | `readonly RegionCode[]`         | Regions pinned to the top, in the given order.                                                                         |
+
+For both filters, `null` lifts the restriction; `[]` matches nothing.
+
+## RegionOption
+
+```ts
+type RegionOption<T = undefined> = {
+  readonly region: RegionCode;
+  readonly callingCode: string;
+  readonly displayName: string;
+  readonly data: T;
+};
+```
+
+`displayName` comes from `Intl.DisplayNames` for the active locale, falling back to the region
+code. The exact string depends on the runtime's ICU data. `data` carries whatever the
+`dataFactory` produced.
+
+## RegionListState
+
+```ts
+type RegionListState<T = undefined> = {
+  readonly options: readonly RegionOption<T>[];
+  readonly regionFilter: readonly RegionCode[] | null;
+  readonly numberTypeFilter: readonly NumberType[] | null;
+  readonly searchQuery: string;
+  readonly locale: string;
+};
+```
+
+`options` is the list as currently rendered, with the filters, search, sort, and prioritization
+already applied.
+
+## Search matching
+
+The default predicate runs a contains match over the display name, the region code, and the
+calling code, with diacritics ignored, everything lowercased, and a leading `+` stripped from the
+query.
+
+```ts
+regions.search('united');
+
+regions
+  .getState()
+  .options.slice(0, 3)
+  .map((option) => option.region); // ['AE', 'GB', 'US']
+```
+
+Pass `searchFn` to replace the predicate; empty and whitespace-only queries short-circuit without
+calling it.
+
+## Sort and prioritize
+
+```ts
+createRegionList({ sort: 'callingCode' }).getState().options[0];
+// { region: 'AS', callingCode: '1', displayName: 'American Samoa', data: undefined }
+
+createRegionList({ prioritize: ['US', 'CA'] })
+  .getState()
+  .options.slice(0, 3)
+  .map((option) => option.region); // ['US', 'CA', 'AF']
+```
+
+The built-in comparators collate display names in the list's locale and break ties by region code.
+`prioritize` moves its regions to the top after sorting; the rest keep their order.
+
+## regionToFlagEmoji
+
+```ts
+function regionToFlagEmoji(region: RegionCode): string;
+```
+
+The region's flag emoji, built from the two Unicode regional indicator symbols for its letters. Platforms
+without flag emoji, notably Windows, render the two letters; for a flag on every platform, ship an
+SVG set keyed by the region code.
+
+```ts
+regionToFlagEmoji('US'); // '🇺🇸'
+
+createRegionList({ dataFactory: ({ region }) => regionToFlagEmoji(region) }).getState().options[0];
+// { region: 'AF', callingCode: '93', displayName: 'Afghanistan', data: '🇦🇫' }
+```
+
+## Members
+
+### subscribe
+
+```ts
+subscribe(listener: (state: RegionListState<T>) => void): () => void;
+```
+
+Subscribes to state changes. Returns an unsubscribe function.
+
+### getState
+
+```ts
+getState(): RegionListState<T>;
+```
+
+The current state, without subscribing.
+
+### search
+
+```ts
+search(query: string): void;
+```
+
+Updates the query and re-runs the pipeline. An unchanged query is a no-op.
+
+### localize
+
+```ts
+localize(locale: string): void;
+```
+
+Switches the locale, recomputes display names and `data`, then re-runs the pipeline. An unchanged
+locale is a no-op.
+
+### refresh
+
+```ts
+refresh(): void;
+```
+
+Recomputes the base set and emits, always. Use it when external state read by `dataFactory` has
+changed.
+
+### setRegionFilter
+
+```ts
+setRegionFilter(value: readonly RegionCode[] | null): void;
+```
+
+Replaces the region filter. An equal value is a no-op.
+
+### setNumberTypeFilter
+
+```ts
+setNumberTypeFilter(value: readonly NumberType[] | null): void;
+```
+
+Replaces the number-type filter, matched via
+[`regionSupportsNumberTypes`](/core/reference/region-data/#regionsupportsnumbertypes). An equal
+value is a no-op.
+
+### destroy
+
+```ts
+destroy(): void;
+```
+
+Clears all subscribers. Idempotent.
