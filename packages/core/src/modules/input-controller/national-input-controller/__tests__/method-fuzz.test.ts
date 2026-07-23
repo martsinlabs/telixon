@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createNationalInputController } from '..';
 import type { NumberType, RegionCode } from '../../../../engine';
 import { parsePhoneNumber } from '../../../parse-phone-number';
-import type { PhoneNumber } from '../../../phone-number';
 import {
   caretViolation,
   createRandom,
@@ -10,57 +9,22 @@ import {
   INSERT_PAYLOADS,
   methodResults,
   NUMBER_TYPES,
+  regionFilterViolation,
   REGIONS,
-  regionWithForeignCallingCode,
 } from '../../__tests__/fuzz-support';
 import type { InputState } from '../../models';
 
 // Calls every public controller method in a random order and re-checks the invariants after each
 // call. A session is seeded from its index. A failure prints the exact sequence that replays it.
 //
-// Invariants: the caret stays inside the value, undo then redo returns the same value, setValue of
-// the shown value changes nothing, and with no filter active getPhoneNumber answers exactly what
-// parsePhoneNumber answers for the shown value.
+// After every call a few things have to hold. The caret stays inside the value. Undo then redo
+// comes back to the same value. setValue of the value already shown changes nothing. While no
+// filter is set, getPhoneNumber answers exactly what parsePhoneNumber answers for that value.
 
 type Controller = ReturnType<typeof createNationalInputController>;
 
 const SESSIONS = 3000;
 const OPERATIONS_PER_SESSION = 40;
-
-/**
- * Checks two things about the region filter. Filtering to the region the number already resolved to
- * must change nothing. Filtering to a region with a different calling code must make it invalid.
- * Leaves the filter cleared on every path.
- */
-function regionFilterViolation(controller: Controller): string | null {
-  // Clearing first makes the baseline the unfiltered answer.
-  controller.setRegionFilter(null);
-  const before: PhoneNumber = controller.getPhoneNumber();
-  const resolvedRegion: RegionCode | null = before.getRegion();
-  const baseline: Record<string, string> = methodResults(before);
-  let violation: string | null = null;
-
-  if (resolvedRegion !== null) {
-    controller.setRegionFilter([resolvedRegion]);
-    const admittedDifference: string | null = firstMethodDifference(
-      methodResults(controller.getPhoneNumber()),
-      baseline,
-    );
-
-    const foreignRegion: RegionCode = regionWithForeignCallingCode(before.getCallingCode());
-    controller.setRegionFilter([foreignRegion]);
-    const survivesExclusion: boolean = controller.getPhoneNumber().isValid();
-
-    if (admittedDifference !== null) {
-      violation = `filter [${resolvedRegion}] changed the resolution: ${admittedDifference}`;
-    } else if (survivesExclusion) {
-      violation = `filter [${foreignRegion}] left a ${resolvedRegion} number valid`;
-    }
-  }
-
-  controller.setRegionFilter(null);
-  return violation;
-}
 
 function runSession(session: number): string | null {
   const random = createRandom(0x9e3779b9 ^ (session * 2654435761));

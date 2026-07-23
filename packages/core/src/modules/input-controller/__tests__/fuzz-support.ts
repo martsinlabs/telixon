@@ -3,8 +3,8 @@ import { getCallingCodeForRegion } from '../../calling-code-for-region';
 import type { PhoneNumber } from '../../phone-number';
 import type { InputState } from '../models';
 
-// Shared pieces for the controller fuzz tests. Both controllers owe the same structural
-// guarantees. Both are driven with the same regions and payloads.
+// Shared by the two controller fuzz tests. They check the same invariants and use the same regions
+// and payloads.
 
 // Regions chosen to cover the hard cases. AR writes extra digits into the display, BY and BR hide
 // a typed digit, US and CA share one calling code. The rest are ordinary formats.
@@ -73,7 +73,7 @@ export const COMPARED_METHODS = [
   'formatRfc3966',
 ] as const;
 
-/** Deterministic generator so any failure replays from its session index alone. */
+/** The same session index always produces the same run, which is how a failure gets replayed. */
 export function createRandom(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
@@ -106,7 +106,7 @@ export function caretViolation(state: InputState): string | null {
   return null;
 }
 
-/** A region whose calling code differs, so a number of `callingCode` cannot be valid under it. */
+/** Finds a region on some other calling code. A number on `callingCode` can never be valid there. */
 export function regionWithForeignCallingCode(callingCode: string | null): RegionCode {
   for (const region of REGIONS) {
     if (getCallingCodeForRegion(region) !== callingCode) return region;
@@ -121,4 +121,45 @@ export function digitsOf(value: string): string {
     if (code >= 48 && code <= 57) digits += value[index];
   }
   return digits;
+}
+
+/** The minimal controller surface the region-filter oracle needs. */
+export interface FilterableController {
+  getPhoneNumber(): PhoneNumber;
+  setRegionFilter(regions: readonly RegionCode[] | null): unknown;
+}
+
+/**
+ * If the filter still allows the region the number resolved to, nothing about the number should
+ * change. If it allows only a region on another calling code, the number should stop being valid.
+ * Clears the filter before returning.
+ */
+export function regionFilterViolation(controller: FilterableController): string | null {
+  // Clearing first makes the baseline the unfiltered answer.
+  controller.setRegionFilter(null);
+  const before: PhoneNumber = controller.getPhoneNumber();
+  const resolvedRegion: RegionCode | null = before.getRegion();
+  const baseline: Record<string, string> = methodResults(before);
+  let violation: string | null = null;
+
+  if (resolvedRegion !== null) {
+    controller.setRegionFilter([resolvedRegion]);
+    const admittedDifference: string | null = firstMethodDifference(
+      methodResults(controller.getPhoneNumber()),
+      baseline,
+    );
+
+    const foreignRegion: RegionCode = regionWithForeignCallingCode(before.getCallingCode());
+    controller.setRegionFilter([foreignRegion]);
+    const survivesExclusion: boolean = controller.getPhoneNumber().isValid();
+
+    if (admittedDifference !== null) {
+      violation = `filter [${resolvedRegion}] changed the resolution: ${admittedDifference}`;
+    } else if (survivesExclusion) {
+      violation = `filter [${foreignRegion}] left a ${resolvedRegion} number valid`;
+    }
+  }
+
+  controller.setRegionFilter(null);
+  return violation;
 }
