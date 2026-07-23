@@ -1,10 +1,10 @@
 ---
 title: Build a region selector
-description: Pair a region dropdown with the phone field and keep the two in sync.
+description: Pair a region dropdown with the phone field and drive the region from it.
 ---
 
-A region selector pairs a dropdown with the phone field. The dropdown sets the region. The field
-holds the national number.
+A region selector pairs a dropdown with the phone field, where the dropdown sets the region and
+the field holds the digits after the calling code.
 
 ## List the regions
 
@@ -46,8 +46,7 @@ getPlaceholders('US', 'MOBILE')?.national; // '(201) 555-0123'
 
 ## Wire the dropdown to the field
 
-An international controller with the calling code kept out of the field takes its region from the
-dropdown. Call [`setRegion`](/core/reference/input-controller/#setregion) on the dropdown's
+Keep the calling code out of the field and the controller takes its region from the dropdown. Call [`setRegion`](/core/reference/input-controller/#setregion) on the dropdown's
 `change` event and write the returned state back:
 
 ```ts

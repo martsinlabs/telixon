@@ -6,7 +6,7 @@ description: Install @telixon/core, load the engine, and parse a first phone num
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `@telixon/core` parses, validates, and formats phone numbers. The same engine drives phone-number
-fields. It runs in Node.js, browsers, Deno, Bun, and edge runtimes, with no dependencies.
+fields. The package runs in Node.js, browsers, Deno, Bun, and edge runtimes, with no dependencies.
 
 ## Install
 
@@ -81,7 +81,7 @@ parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).formatE164(); // '+1
 
 ## Inspect invalid input
 
-`parsePhoneNumber` [never throws](/core/reference/parse-phone-number/): bad input still comes back
+`parsePhoneNumber` [never throws](/core/reference/parse-phone-number/); bad input still comes back
 as a `PhoneNumber`, with a typed reason:
 
 ```ts

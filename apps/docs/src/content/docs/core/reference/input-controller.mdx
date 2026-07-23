@@ -24,12 +24,12 @@ controller.insert('', '4155550132', 0, 0);
 
 ### NationalInputControllerConfig
 
-| Field            | Type         | Meaning                                                          |
-| ---------------- | ------------ | ---------------------------------------------------------------- |
-| `defaultRegion`  | `RegionCode` | Required. The region the field formats for.                      |
-| `strict`         | `boolean`    | Restricts validity to `defaultRegion`, as in `parsePhoneNumber`. |
-| `initialValue`   | `string`     | Seeds the field with a starting value, outside the history.      |
-| `maxHistorySize` | `number`     | Bounds the undo and redo history.                                |
+| Field            | Type         | Meaning                                                                              |
+| ---------------- | ------------ | ------------------------------------------------------------------------------------ |
+| `defaultRegion`  | `RegionCode` | Required. The region the field formats for.                                          |
+| `strict`         | `boolean`    | Restricts validity to `defaultRegion`, as in `parsePhoneNumber`.                     |
+| `initialValue`   | `string`     | Seeds the field with a starting value, outside the history.                          |
+| `maxHistorySize` | `number`     | Bounds the undo and redo history; 150 entries by default, dropping the oldest first. |
 
 ## createInternationalInputController
 
@@ -62,8 +62,11 @@ code is in the field, `defaultRegion` pre-fills the field with that region's cod
 | `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits, with the `+` under `plusPrefix`                                                      |
 | `{ callingCodeInInput: false }`            | The international significant number; the region comes from `defaultRegion` and [`setRegion`](#setregion) |
 
-`plusPrefix`, a `PlusPrefixMode`, renders the leading `+`: `'none'` never, `'fixed'` always,
-`'erasable'` while the value carries one. Under `'erasable'`, backspace at the start removes it.
+`plusPrefix`, a `PlusPrefixMode`, renders the leading `+`, with `'none'` never showing it,
+`'fixed'` always, and `'erasable'` while the value carries one. Under `'erasable'`, backspace
+right after the `+` removes it. Every plus-less start, an empty or omitted `initialValue`
+included, begins with the plus erased, so an empty field renders truly empty; only the
+calling-code seed from `defaultRegion` keeps the visible plus.
 
 ## InputState
 
@@ -80,8 +83,8 @@ The next value and caret to apply to the field. `value` is the formatted string.
 region the value resolves to, or `null` when none does. A field with no digits reports the
 configured default region, so clearing the value keeps the region stable. The selection indices
 point into `value`.
-Within a shared calling code, `region` reports the resolved owner of the digits: a `604` number
-reports `CA` even in a US-configured field.
+Within a shared calling code, `region` reports the resolved owner of the digits, so a `604`
+number reports `CA` even in a US-configured field.
 
 ## Edits
 
@@ -104,8 +107,8 @@ deleteBackward(value: string, selectionStart: number, selectionEnd: number): Inp
 ```
 
 Deletes the selection, or the character before the caret when the selection is empty, then
-reformats. When that character is a formatting character, the deletion steps across it to the
-nearest digit.
+reformats. When that character is a formatting character, the call snaps the caret across it to
+the nearest digit without deleting; the next delete removes the digit itself.
 
 ### deleteForward
 
@@ -160,8 +163,8 @@ leaves no possible length for the value's calling code reports
 
 ## History
 
-The four edits and `setRegion` push a new entry onto the history. The two filters replace the
-current entry.
+The four edits and `setRegion` push a new entry onto the history when they change the state. The
+two filters replace the current entry.
 
 ### undo
 
@@ -215,9 +218,11 @@ getPhoneNumber(): PhoneNumber;
 ```
 
 The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query, equal to
-`parsePhoneNumber` of the displayed value. With the calling code kept out of the field
-(`callingCodeInInput: false`), the digits resolve literally as the international significant
-number behind the selected region's calling code. A typed national (trunk) prefix there reports
+`parsePhoneNumber` of the displayed value, with the national controller's `defaultRegion` and
+`strict` carried along. Active filters have no `parsePhoneNumber` equivalent and narrow the
+result further. With the calling code kept out of the field (`callingCodeInInput: false`), the
+digits resolve literally as the international significant number behind the selected region's
+calling code. A typed national (trunk) prefix there reports
 [`NATIONAL_PREFIX_PRESENT`](/core/reference/validation-error/).
 
 ### currentState

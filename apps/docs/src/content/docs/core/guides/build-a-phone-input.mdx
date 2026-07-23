@@ -22,10 +22,14 @@ const controller = createNationalInputController({ defaultRegion: 'US' });
 
 Translate the field's `beforeinput` events into controller calls. Write each returned state back:
 
+```html
+<input id="phone" type="tel" autocomplete="tel" />
+```
+
 ```ts
 import type { InputState } from '@telixon/core';
 
-const input = document.querySelector('input')!;
+const input = document.querySelector<HTMLInputElement>('#phone')!;
 
 function apply(state: InputState) {
   input.value = state.value;
@@ -50,8 +54,9 @@ input.addEventListener('beforeinput', (event) => {
 ```
 
 Typing `4155550132` leaves the field showing `(415) 555-0132`, with the caret after the last
-digit. A paste flows through the same handler. For a production binding, use
-[`@telixon/web-sdk`](/web-sdk/), the DOM adapter for controllers.
+digit. A paste flows through the same handler. This minimal handler stops at typing, paste, and
+plain deletes; word deletes, line deletes, and IME composition need branches of their own, which
+[`PhoneInput`](/web-sdk/phone-input/) from `@telixon/web-sdk` already wires for production.
 
 ## Undo and redo
 
@@ -60,9 +65,12 @@ keys to it:
 
 ```ts
 input.addEventListener('keydown', (event) => {
-  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z') return;
+  if (!event.metaKey && !event.ctrlKey) return;
+  const key = event.key.toLowerCase();
+  if (key !== 'z' && key !== 'y') return;
   event.preventDefault();
-  apply(event.shiftKey ? controller.redo() : controller.undo());
+  const isRedo = (key === 'z' && event.shiftKey) || key === 'y';
+  apply(isRedo ? controller.redo() : controller.undo());
 });
 ```
 
