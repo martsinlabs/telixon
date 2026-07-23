@@ -11,15 +11,14 @@ export interface PossibilityLengthMasks {
   readonly localOnly: number;
 }
 
-// Unfiltered, the masks read the calling code's main region (libphonenumber testNumberLength); a
-// region filter unions the allowed regions instead, so a number valid for an allowed region is always possible.
+// Unfiltered, the masks read the calling code's main region (libphonenumber testNumberLength).
 export function resolvePossibilityLengthMasks(
   callingCodeState: number,
   defaultRegionIndex: number,
   regionFilter: BinaryFilter | null,
   numberTypeFilter: BinaryFilter | null,
 ): PossibilityLengthMasks {
-  if (regionFilter === null || callingCodeState === -1) {
+  if ((regionFilter === null && numberTypeFilter === null) || callingCodeState === -1) {
     const regionIndex: number = resolvePrimaryRegionIndex(callingCodeState, defaultRegionIndex);
     return {
       national: getAllowedLengthMask(regionIndex, regionFilter, numberTypeFilter),
@@ -27,11 +26,14 @@ export function resolvePossibilityLengthMasks(
     };
   }
 
+  // Under a filter the union over the calling code's regions keeps a number possible wherever an
+  // allowed region admits it. Regions sharing a calling code do not carry the same number types,
+  // and the main region alone would call a type it lacks impossible for every region.
   const regions: Uint8Array = getCallingCodeStateRegions(getResourceProvider().engine, callingCodeState);
   let national = 0;
   let localOnly = 0;
   for (const regionIndex of regions) {
-    if (regionFilter[regionIndex] === 0) continue;
+    if (regionFilter !== null && regionFilter[regionIndex] === 0) continue;
     national |= getAllowedLengthMask(regionIndex, null, numberTypeFilter);
     localOnly |= getAllowedLocalOnlyLengthMask(regionIndex, null, numberTypeFilter);
   }

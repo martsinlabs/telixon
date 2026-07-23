@@ -62,3 +62,24 @@ describe('national controller: possible-but-not-valid numbers still group', () =
     },
   );
 });
+
+// A number-type filter that admits the number's own type must not turn it impossible or report the
+// calling code invalid. The possibility reason may sharpen from local-only to fully possible.
+describe('national controller: a number-type filter admitting the reported type stays consistent', () => {
+  it('keeps a resolved number possible and formattable under its own type', () => {
+    const controller = createNationalInputController({ defaultRegion: 'CA' });
+    controller.setValue('3101234');
+
+    const before = controller.getPhoneNumber();
+    expect(before.getNumberType()).toBe('UAN');
+    expect(before.isValid()).toBe(true);
+
+    controller.setNumberTypeFilter(['UAN']);
+    const after = controller.getPhoneNumber();
+
+    expect(after.isValid()).toBe(true);
+    expect(after.isPossible()).toBe(true);
+    expect(after.isPossibleWithReason()).not.toBe('INVALID_CALLING_CODE');
+    expect(after.formatE164()).toBe(before.formatE164());
+  });
+});
