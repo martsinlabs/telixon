@@ -5,12 +5,15 @@ import { getCallingCodeForRegion } from '../../../calling-code-for-region';
 import { parsePhoneNumber } from '../../../parse-phone-number';
 import {
   caretViolation,
+  consistencyViolation,
   createRandom,
   digitsOf,
+  filterMonotonicityViolation,
   firstMethodDifference,
   INSERT_PAYLOADS,
   methodResults,
   NUMBER_TYPES,
+  numberTypeFilterViolation,
   regionFilterViolation,
   REGIONS,
 } from '../../__tests__/fuzz-support';
@@ -138,6 +141,21 @@ function runSession(session: number): string | null {
           label = 'regionFilter oracle';
           if (violation !== null) return fail(`${label}: ${violation}`);
           regionFilterActive = false;
+          numberTypeFilterActive = false;
+          state = controller.currentState;
+        } else if (random() < 0.35) {
+          const first: RegionCode[] = Array.from({ length: 1 + upTo(2) }, () => pick(REGIONS));
+          const second: RegionCode[] = Array.from({ length: 1 + upTo(2) }, () => pick(REGIONS));
+          const violation: string | null = filterMonotonicityViolation<RegionCode>(
+            controller,
+            'region',
+            (values) => controller.setRegionFilter(values),
+            first,
+            second,
+          );
+          label = 'regionFilter monotonicity';
+          if (violation !== null) return fail(`${label}: ${violation}`);
+          regionFilterActive = false;
           state = controller.currentState;
         } else {
           const regions: RegionCode[] = Array.from({ length: 1 + upTo(3) }, () => pick(REGIONS));
@@ -149,10 +167,31 @@ function runSession(session: number): string | null {
       }
       default: {
         if (random() < 0.3) {
-          if (random() < 0.4) {
+          const roll: number = random();
+          if (roll < 0.3) {
             label = 'setNumberTypeFilter(null)';
             state = controller.setNumberTypeFilter(null);
             numberTypeFilterActive = false;
+          } else if (roll < 0.5) {
+            const violation: string | null = numberTypeFilterViolation(controller);
+            label = 'numberTypeFilter oracle';
+            if (violation !== null) return fail(`${label}: ${violation}`);
+            numberTypeFilterActive = false;
+            state = controller.currentState;
+          } else if (roll < 0.65) {
+            const first: NumberType[] = Array.from({ length: 1 + upTo(2) }, () => pick(NUMBER_TYPES));
+            const second: NumberType[] = Array.from({ length: 1 + upTo(2) }, () => pick(NUMBER_TYPES));
+            const violation: string | null = filterMonotonicityViolation<NumberType>(
+              controller,
+              'number type',
+              (values) => controller.setNumberTypeFilter(values),
+              first,
+              second,
+            );
+            label = 'numberTypeFilter monotonicity';
+            if (violation !== null) return fail(`${label}: ${violation}`);
+            numberTypeFilterActive = false;
+            state = controller.currentState;
           } else {
             const types: NumberType[] = Array.from({ length: 1 + upTo(3) }, () => pick(NUMBER_TYPES));
             label = `setNumberTypeFilter([${types.join(',')}])`;
@@ -183,6 +222,9 @@ function runSession(session: number): string | null {
 
     const caret: string | null = caretViolation(state);
     if (caret !== null) return fail(`${label} left ${caret}`);
+
+    const inconsistency: string | null = consistencyViolation(controller.getPhoneNumber());
+    if (inconsistency !== null) return fail(`${label} left the number ${inconsistency}`);
 
     if (selectorMode) {
       const literal = controller.getPhoneNumber();
