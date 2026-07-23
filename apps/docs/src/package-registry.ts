@@ -52,7 +52,22 @@ export const PACKAGES: readonly DocsPackage[] = [
       'verified',
     ],
   },
-  { base: 'web-sdk', name: '@telixon/web-sdk', label: 'Web SDK' },
+  {
+    base: 'web-sdk',
+    name: '@telixon/web-sdk',
+    label: 'Web SDK',
+    sidebar: [
+      'web-sdk',
+      {
+        label: 'Guides',
+        items: ['web-sdk/guides/phone-field', 'web-sdk/guides/region-picker', 'web-sdk/guides/complete-field'],
+      },
+      {
+        label: 'Reference',
+        items: ['web-sdk/phone-input', 'web-sdk/region-list'],
+      },
+    ],
+  },
   { name: '@telixon/web-anatomy', label: 'Web Anatomy' },
   { name: '@telixon/web-theme', label: 'Web Theme' },
   { name: '@telixon/web-components', label: 'Web Components', logo: 'stencil' },

@@ -1,0 +1,69 @@
+---
+title: Build the complete field
+description: A working phone field with a region picker wired to drive the region.
+---
+
+import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
+import CompleteFieldDemo from '../../../../components/CompleteFieldDemo.astro';
+import html from '../../../../components/demos/complete-field.html?raw';
+import css from '../../../../components/demos/complete-field.css?raw';
+import code from '../../../../components/demos/complete-field.js?raw';
+
+The [phone field](/web-sdk/guides/phone-field/) and the
+[region picker](/web-sdk/guides/region-picker/) combine into one control, with the calling code
+moved from the field into the region button. The button sits on the left, its searchable popup
+opens below, and the formatted number fills the field to the right.
+
+## Live demo
+
+Click the flag, type `canada` into the search, and pick the row. The button shows the Canadian
+flag with the same `+1` while the empty field's placeholder turns into a Canadian example. Type
+`6045550132` and the field formats to `604-555-0132` as the status reports `Valid: +16045550132`.
+Now reopen the picker and choose United States. The `604` digits still resolve to Canada, so the
+flag flips straight back.
+
+The keyboard drives all of it too. Clear the field, reopen the picker, type `united k`, and press
+Enter; the arrow keys walk the list the same way. With the United Kingdom selected, type
+`07400123456` with its national trunk zero. That zero does not belong after `+44`, so the status
+pinpoints `NATIONAL_PREFIX_PRESENT`.
+
+<CompleteFieldDemo />
+
+## The code
+
+The demo runs these exact files. One bordered field holds the region button and the phone input.
+The popup carries the search box and the list.
+[`callingCodeInInput: false`](/core/reference/input-controller/#internationalinputcontrollerconfig)
+keeps the calling code out of the input, so the selected region supplies it. A click on a row calls `select`, which updates the trigger,
+hands the region to [`setRegion`](/web-sdk/phone-input/#setregion), closes the popup, and returns
+focus to the input. The search box doubles as the keyboard cursor, where the arrow keys walk the
+rows through `aria-activedescendant` and Enter picks the active one. Escape closes the popup and
+hands focus back to the region button, while an outside press or focus moving out of the widget
+closes it too.
+
+The subscriber keeps the trigger on the resolved
+[`state.region`](/web-sdk/phone-input/#phoneinputstate), so digits that resolve to another region
+on the same calling code move the flag with them. The stylesheet is self-contained, so retune its
+custom properties to your design. Inside a framework component, call each machine's
+[`destroy`](/web-sdk/phone-input/#destroy) on unmount and remove the document-level press listener
+with them. Package installation and engine loading live in [Getting started](/web-sdk/).
+
+<Tabs syncKey="source">
+
+<TabItem label="HTML">
+  <Code lang="html" code={html} />
+</TabItem>
+
+<TabItem label="CSS">
+  <Code lang="css" code={css} />
+</TabItem>
+
+<TabItem label="JS">
+  <Code lang="js" code={code} />
+</TabItem>
+
+</Tabs>
+
+The two machines never learn about each other. All the wiring lives in the demo's own functions,
+where `select` hands the picked region to the phone while the subscriber moves the list highlight
+to follow the resolved digits.

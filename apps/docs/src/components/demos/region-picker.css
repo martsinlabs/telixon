@@ -1,0 +1,80 @@
+#region-picker {
+  --surface: #ffffff;
+  --text: #1c1f1e;
+  --muted: #66716d;
+  --border: #c9d1ce;
+  --accent: #26997b;
+
+  color: var(--text);
+}
+
+#region-picker label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+#region-picker input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--surface);
+  color: inherit;
+  font-size: 1rem;
+}
+
+#region-picker input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+#region-picker input::placeholder {
+  color: var(--muted);
+}
+
+#region-picker ul {
+  margin: 0.75rem 0 0;
+  padding: 0.375rem;
+  list-style: none;
+  max-height: 16rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+#region-picker li {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+#region-picker li:hover,
+#region-picker li[data-active='true'] {
+  background: rgb(38 153 123 / 0.08);
+}
+
+#region-picker li[aria-selected='true'] {
+  background: rgb(38 153 123 / 0.14);
+}
+
+#region-picker li .region-picker-code {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+#region-picker .region-picker-status {
+  margin: 0.5rem 0 0;
+  min-height: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}

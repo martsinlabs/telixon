@@ -1,0 +1,34 @@
+---
+// Frame for live guide demos: the page shows a demo's source files and runs the same files inside
+// this box. Each demo's stylesheet is self-contained with light values; the block below retunes
+// its custom properties for the site's dark theme.
+---
+
+<div class="demo-frame not-content">
+  <slot />
+</div>
+
+<style>
+  .demo-frame {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    background: #ffffff;
+  }
+
+  :global([data-theme='dark']) .demo-frame {
+    background: #1b1d1e;
+  }
+</style>
+
+<style is:global>
+  [data-theme='dark'] .demo-frame :is(#phone-field, #region-picker, #complete-field) {
+    --surface: #131516;
+    --text: var(--sl-color-white);
+    --muted: var(--sl-color-gray-3);
+    --border: var(--sl-color-gray-5);
+    --valid: var(--brand-solid);
+    --error: #e5484d;
+  }
+</style>

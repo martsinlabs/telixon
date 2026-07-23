@@ -1,0 +1,52 @@
+---
+title: Build a region picker
+description: A region picker built from one createRegionList call, a flag dataFactory, and a small render function.
+---
+
+import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
+import RegionPickerDemo from '../../../../components/RegionPickerDemo.astro';
+import html from '../../../../components/demos/region-picker.html?raw';
+import css from '../../../../components/demos/region-picker.css?raw';
+import code from '../../../../components/demos/region-picker.js?raw';
+
+[`createRegionList`](/web-sdk/region-list/#createregionlist) turns the engine's region data into
+picker rows. The library filters, searches, sorts, and prioritizes the list. Your `renderList`
+function draws the rows.
+
+## Live demo
+
+All 245 regions are in the list, with US, CA, and GB pinned on top. Search `united` and the list
+narrows to three rows. The match runs over names, region codes, and calling codes, so `+44` finds
+the United Kingdom too. Click a row and the status reports the selection, while the arrow keys
+walk the list from the search box and Enter picks the active row.
+
+<RegionPickerDemo />
+
+## The code
+
+The demo and the source are the same three files. The markup is a search input, an empty list, and a status line.
+`createRegionList` builds the rows, with [`prioritize`](/web-sdk/region-list/#regionlistoptions)
+pinning US, CA, and GB and a `dataFactory` putting a
+[flag emoji](/web-sdk/region-list/#regiontoflagemoji) in each option's `data` slot. The search box
+feeds [`search`](/web-sdk/region-list/#search). `renderList` rebuilds the rows from each emitted
+[state](/web-sdk/region-list/#regionliststate). Restyle by changing the custom properties in the
+stylesheet.
+
+<Tabs syncKey="source">
+
+<TabItem label="HTML">
+  <Code lang="html" code={html} />
+</TabItem>
+
+<TabItem label="CSS">
+  <Code lang="css" code={css} />
+</TabItem>
+
+<TabItem label="JS">
+  <Code lang="js" code={code} />
+</TabItem>
+
+</Tabs>
+
+The picker so far only reports the selection.
+[Build the complete field](/web-sdk/guides/complete-field/) wires it to a phone input.

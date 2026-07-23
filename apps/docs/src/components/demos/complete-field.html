@@ -1,0 +1,34 @@
+<div id="complete-field" class="phone-field">
+  <label for="phone-field-input">Phone number</label>
+  <div class="phone-field-control">
+    <button
+      class="phone-field-region"
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      aria-controls="phone-field-listbox"
+      aria-label="Select region"
+    >
+      <span class="phone-field-flag"></span>
+      <span class="phone-field-code"></span>
+      <svg class="phone-field-chevron" viewBox="0 0 10 6" aria-hidden="true">
+        <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </button>
+    <input id="phone-field-input" type="tel" />
+  </div>
+  <div class="phone-field-menu" hidden>
+    <input
+      class="phone-field-search"
+      type="text"
+      role="combobox"
+      aria-expanded="true"
+      aria-controls="phone-field-listbox"
+      aria-autocomplete="list"
+      aria-label="Search regions"
+      placeholder="Search regions"
+    />
+    <ul id="phone-field-listbox" role="listbox" aria-label="Regions"></ul>
+  </div>
+  <p class="phone-field-status"></p>
+</div>

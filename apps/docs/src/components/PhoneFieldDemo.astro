@@ -1,0 +1,11 @@
+---
+import DemoFrame from './DemoFrame.astro';
+import './demos/phone-field.css';
+import html from './demos/phone-field.html?raw';
+---
+
+<DemoFrame><Fragment set:html={html} /></DemoFrame>
+
+<script>
+  import './demos/phone-field.js';
+</script>
