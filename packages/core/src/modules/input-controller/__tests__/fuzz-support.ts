@@ -1,6 +1,7 @@
 import type { NumberType, RegionCode } from '../../../engine';
 import { getCallingCodeForRegion } from '../../calling-code-for-region';
 import type { PhoneNumber } from '../../phone-number';
+import { getPlaceholders } from '../../placeholders';
 import type { InputState } from '../models';
 
 // Shared by the two controller fuzz tests. They check the same invariants and use the same regions
@@ -98,6 +99,29 @@ export function firstMethodDifference(actual: Record<string, string>, expected: 
   return null;
 }
 
+// A filter that admits the number should not change what the number is or whether it is valid. The
+// possibility answer is left out on purpose. Regions on a shared calling code carry different
+// lengths, and the unfiltered check reads the main region while a filter reads the resolved one, so
+// a number possible under one is not always possible under the other. The valid-implies-possible
+// check below guards the possibility side instead.
+const POSSIBILITY_METHODS: ReadonlySet<string> = new Set(['isPossible', 'isPossibleWithReason']);
+
+function admittingFilterDifference(actual: Record<string, string>, expected: Record<string, string>): string | null {
+  for (const method of COMPARED_METHODS) {
+    if (POSSIBILITY_METHODS.has(method)) continue;
+    if (actual[method] !== expected[method]) return `${method} is ${actual[method]}, expected ${expected[method]}`;
+  }
+  return null;
+}
+
+/** A valid number is always possible. This must hold in every state, with or without a filter. */
+export function consistencyViolation(phoneNumber: PhoneNumber): string | null {
+  if (phoneNumber.isValid() && !phoneNumber.isPossible()) {
+    return `valid but not possible (${phoneNumber.getNationalNumber()})`;
+  }
+  return null;
+}
+
 export function caretViolation(state: InputState): string | null {
   const { value, selectionStart, selectionEnd } = state;
   if (!Number.isInteger(selectionStart) || !Number.isInteger(selectionEnd)) return 'caret is not an integer';
@@ -127,39 +151,101 @@ export function digitsOf(value: string): string {
 export interface FilterableController {
   getPhoneNumber(): PhoneNumber;
   setRegionFilter(regions: readonly RegionCode[] | null): unknown;
+  setNumberTypeFilter(numberTypes: readonly NumberType[] | null): unknown;
 }
 
 /**
- * If the filter still allows the region the number resolved to, nothing about the number should
- * change. If it allows only a region on another calling code, the number should stop being valid.
+ * A region filter that allows only a region on another calling code must make the number invalid.
+ * The filter is not asserted to leave an admitted number untouched. Regions on a shared calling
+ * code carry different lengths and prefixes, and the unfiltered answer reads the main region, so
+ * narrowing to the resolved region legitimately shifts the length, the format, and the digits.
  * Clears the filter before returning.
  */
 export function regionFilterViolation(controller: FilterableController): string | null {
-  // Clearing first makes the baseline the unfiltered answer.
+  // Clear both filters so the number is judged on its own, not on top of a leftover filter.
   controller.setRegionFilter(null);
+  controller.setNumberTypeFilter(null);
   const before: PhoneNumber = controller.getPhoneNumber();
   const resolvedRegion: RegionCode | null = before.getRegion();
-  const baseline: Record<string, string> = methodResults(before);
+  const callingCode: string | null = before.getCallingCode();
   let violation: string | null = null;
 
-  if (resolvedRegion !== null) {
-    controller.setRegionFilter([resolvedRegion]);
-    const admittedDifference: string | null = firstMethodDifference(
-      methodResults(controller.getPhoneNumber()),
-      baseline,
-    );
+  // A number that never cleared the calling-code stage names a region without resolving there.
+  const clearedCallingCode: boolean = String(before.isPossibleWithReason()) !== 'INVALID_CALLING_CODE';
 
-    const foreignRegion: RegionCode = regionWithForeignCallingCode(before.getCallingCode());
+  if (resolvedRegion !== null && callingCode !== null && clearedCallingCode) {
+    const foreignRegion: RegionCode = regionWithForeignCallingCode(callingCode);
     controller.setRegionFilter([foreignRegion]);
-    const survivesExclusion: boolean = controller.getPhoneNumber().isValid();
-
-    if (admittedDifference !== null) {
-      violation = `filter [${resolvedRegion}] changed the resolution: ${admittedDifference}`;
-    } else if (survivesExclusion) {
+    if (controller.getPhoneNumber().isValid()) {
       violation = `filter [${foreignRegion}] left a ${resolvedRegion} number valid`;
     }
   }
 
   controller.setRegionFilter(null);
+  controller.setNumberTypeFilter(null);
   return violation;
+}
+
+/**
+ * If the filter still allows the type the number reported, nothing about the number should change.
+ * A number reporting UNKNOWN is left alone, since no filter can name that type usefully. The reason
+ * may change. Narrowing to one type answers against that type's own lengths, so a length the region
+ * calls local-only can become fully possible.
+ * Clears the filter before returning.
+ */
+export function numberTypeFilterViolation(controller: FilterableController): string | null {
+  // Clear both filters so the type filter is measured on its own, not on top of a region filter.
+  controller.setRegionFilter(null);
+  controller.setNumberTypeFilter(null);
+  const before: PhoneNumber = controller.getPhoneNumber();
+  const reportedType: NumberType = before.getNumberType();
+  const baseline: Record<string, string> = methodResults(before);
+  let violation: string | null = null;
+
+  if (reportedType !== 'UNKNOWN') {
+    controller.setNumberTypeFilter([reportedType]);
+    const difference: string | null = admittingFilterDifference(methodResults(controller.getPhoneNumber()), baseline);
+    if (difference !== null) {
+      violation = `filter [${reportedType}] changed the resolution: ${difference}`;
+    }
+  }
+
+  controller.setRegionFilter(null);
+  controller.setNumberTypeFilter(null);
+  return violation;
+}
+
+/**
+ * Widening a filter can never take validity away. A number allowed by one set is still allowed by a
+ * set containing it, and a number both sets reject stays rejected by the two together.
+ * Clears the filter before returning.
+ */
+export function filterMonotonicityViolation<Value>(
+  controller: FilterableController,
+  kind: string,
+  apply: (values: readonly Value[] | null) => unknown,
+  first: readonly Value[],
+  second: readonly Value[],
+): string | null {
+  apply(first);
+  const underFirst: boolean = controller.getPhoneNumber().isValid();
+  apply(second);
+  const underSecond: boolean = controller.getPhoneNumber().isValid();
+  apply(first.concat(second));
+  const underUnion: boolean = controller.getPhoneNumber().isValid();
+  apply(null);
+
+  if (underUnion !== (underFirst || underSecond)) {
+    return `${kind} filter is valid=${underUnion} under [${first.join(',')}]+[${second.join(',')}], but valid=${underFirst} under the first and valid=${underSecond} under the second`;
+  }
+  return null;
+}
+
+/**
+ * A real number for the region and type, as bare digits. Random digits almost never land on a valid
+ * number, which leaves the type and filter checks with nothing to work on.
+ */
+export function exampleDigits(region: RegionCode, type: NumberType): string {
+  const placeholders = getPlaceholders(region, type);
+  return digitsOf(placeholders?.national ?? placeholders?.nationalWithPrefix ?? '');
 }
