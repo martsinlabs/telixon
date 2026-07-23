@@ -154,6 +154,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+#complete-field li.phone-field-empty {
+  justify-content: center;
+  color: var(--muted);
+  cursor: default;
+  pointer-events: none;
+}
+
 #complete-field .phone-field-status {
   margin: 0.5rem 0 0;
   min-height: 1.25rem;

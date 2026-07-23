@@ -42,6 +42,14 @@ function renderTrigger() {
 
 // Full rebuild when the search changes the option set.
 function renderList(state) {
+  if (state.options.length === 0) {
+    const empty = document.createElement('li');
+    empty.className = 'phone-field-empty';
+    empty.textContent = 'No matches';
+    list.replaceChildren(empty);
+    return;
+  }
+
   list.replaceChildren(
     ...state.options.map((option) => {
       const row = document.createElement('li');
