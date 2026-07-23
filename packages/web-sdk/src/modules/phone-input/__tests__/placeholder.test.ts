@@ -90,6 +90,28 @@ describe('PhoneInput placeholder', () => {
     cleanup();
   });
 
+  it('falls back to defaultRegion when the value resolves no region', () => {
+    const { input, cleanup } = attachInput();
+
+    const phone = createPhoneInput({
+      input,
+      mode: 'international',
+      display: { callingCodeInInput: true, plusPrefix: 'erasable' },
+      defaultRegion: 'US',
+    });
+    expect(phone.getState().placeholder).toBe('+1 201-555-0123');
+
+    input.setSelectionRange(0, input.value.length);
+    input.dispatchEvent(
+      new InputEvent('beforeinput', { inputType: 'deleteContentBackward', bubbles: true, cancelable: true }),
+    );
+    expect(phone.getState().value).toBe('');
+    expect(phone.getState().placeholder).toBe('+1 201-555-0123');
+
+    phone.destroy();
+    cleanup();
+  });
+
   it('placeholderNumberType option overrides the default MOBILE type', () => {
     const { input, cleanup } = attachInput();
 

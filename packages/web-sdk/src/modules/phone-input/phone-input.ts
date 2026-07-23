@@ -50,16 +50,19 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   let currentRegionFilter: readonly RegionCode[] | null = options.regionFilter ?? null;
   let currentNumberTypeFilter: readonly NumberType[] | null = options.numberTypeFilter ?? null;
 
-  let cachedPlaceholderRegion: RegionCode | null = inputController.currentState.region;
+  // The placeholder follows the resolved region; an unresolved value falls back to `defaultRegion`.
+  const placeholderFallbackRegion: RegionCode | null = options.defaultRegion ?? null;
+  let cachedPlaceholderRegion: RegionCode | null = inputController.currentState.region ?? placeholderFallbackRegion;
   let cachedPlaceholder: string | null = resolvePlaceholder(cachedPlaceholderRegion, placeholderConfig);
 
   if (currentRegionFilter !== null) inputController.setRegionFilter(currentRegionFilter);
   if (currentNumberTypeFilter !== null) inputController.setNumberTypeFilter(currentNumberTypeFilter);
 
   function currentPlaceholder(region: RegionCode | null): string | null {
-    if (region === cachedPlaceholderRegion) return cachedPlaceholder;
-    cachedPlaceholderRegion = region;
-    cachedPlaceholder = resolvePlaceholder(region, placeholderConfig);
+    const effectiveRegion: RegionCode | null = region ?? placeholderFallbackRegion;
+    if (effectiveRegion === cachedPlaceholderRegion) return cachedPlaceholder;
+    cachedPlaceholderRegion = effectiveRegion;
+    cachedPlaceholder = resolvePlaceholder(effectiveRegion, placeholderConfig);
     return cachedPlaceholder;
   }
 
