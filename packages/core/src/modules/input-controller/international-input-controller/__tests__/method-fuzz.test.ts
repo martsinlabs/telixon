@@ -1,76 +1,54 @@
 import { describe, expect, it } from 'vitest';
-import { createNationalInputController } from '..';
+import { createInternationalInputController } from '..';
 import type { NumberType, RegionCode } from '../../../../engine';
 import { parsePhoneNumber } from '../../../parse-phone-number';
-import type { PhoneNumber } from '../../../phone-number';
 import {
   caretViolation,
   createRandom,
+  digitsOf,
   firstMethodDifference,
   INSERT_PAYLOADS,
   methodResults,
   NUMBER_TYPES,
   REGIONS,
-  regionWithForeignCallingCode,
 } from '../../__tests__/fuzz-support';
 import type { InputState } from '../../models';
+import type { PlusPrefixMode } from '../models';
 
 // Calls every public controller method in a random order and re-checks the invariants after each
 // call. A session is seeded from its index. A failure prints the exact sequence that replays it.
 //
-// Invariants: the caret stays inside the value, undo then redo returns the same value, setValue of
-// the shown value changes nothing, and with no filter active getPhoneNumber answers exactly what
-// parsePhoneNumber answers for the shown value.
+// The two display modes answer different questions. With the calling code in the field the value
+// carries it, and getPhoneNumber must equal parsePhoneNumber of that value. In selector mode the
+// field holds only the significant number, and getPhoneNumber reads it literally, so the check
+// there is that the reported national number is exactly the digits on screen.
 
-type Controller = ReturnType<typeof createNationalInputController>;
+type Controller = ReturnType<typeof createInternationalInputController>;
 
 const SESSIONS = 3000;
 const OPERATIONS_PER_SESSION = 40;
 
-/**
- * Checks two things about the region filter. Filtering to the region the number already resolved to
- * must change nothing. Filtering to a region with a different calling code must make it invalid.
- * Leaves the filter cleared on every path.
- */
-function regionFilterViolation(controller: Controller): string | null {
-  // Clearing first makes the baseline the unfiltered answer.
-  controller.setRegionFilter(null);
-  const before: PhoneNumber = controller.getPhoneNumber();
-  const resolvedRegion: RegionCode | null = before.getRegion();
-  const baseline: Record<string, string> = methodResults(before);
-  let violation: string | null = null;
-
-  if (resolvedRegion !== null) {
-    controller.setRegionFilter([resolvedRegion]);
-    const admittedDifference: string | null = firstMethodDifference(
-      methodResults(controller.getPhoneNumber()),
-      baseline,
-    );
-
-    const foreignRegion: RegionCode = regionWithForeignCallingCode(before.getCallingCode());
-    controller.setRegionFilter([foreignRegion]);
-    const survivesExclusion: boolean = controller.getPhoneNumber().isValid();
-
-    if (admittedDifference !== null) {
-      violation = `filter [${resolvedRegion}] changed the resolution: ${admittedDifference}`;
-    } else if (survivesExclusion) {
-      violation = `filter [${foreignRegion}] left a ${resolvedRegion} number valid`;
-    }
-  }
-
-  controller.setRegionFilter(null);
-  return violation;
-}
+const PLUS_PREFIXES: readonly PlusPrefixMode[] = ['none', 'fixed', 'erasable'];
 
 function runSession(session: number): string | null {
-  const random = createRandom(0x9e3779b9 ^ (session * 2654435761));
+  const random = createRandom(0x85ebca6b ^ (session * 2246822519));
   const pick = <Item>(items: readonly Item[]): Item => items[Math.floor(random() * items.length)]!;
   const upTo = (bound: number): number => Math.floor(random() * bound);
 
+  const selectorMode: boolean = random() < 0.35;
   let region: RegionCode = pick(REGIONS);
-  const strict: boolean = random() < 0.25;
-  const controller: Controller = createNationalInputController({ defaultRegion: region, strict });
-  const history: string[] = [`new(${region}, strict=${strict})`];
+  const plusPrefix: PlusPrefixMode = pick(PLUS_PREFIXES);
+
+  const controller: Controller = selectorMode
+    ? createInternationalInputController({ defaultRegion: region, display: { callingCodeInInput: false } })
+    : createInternationalInputController({ display: { callingCodeInInput: true, plusPrefix } });
+
+  const opening: string = selectorMode ? `selector(${region})` : `callingCode(plus=${plusPrefix})`;
+  const history: string[] = [`new ${opening}`];
+  // getPhoneNumber resolves with hasLeadingPlus and a default region together. parsePhoneNumber
+  // cannot express that pair, since its defaultRegion option makes it read the value as a national
+  // number instead. Once setRegion anchors the controller, the parser stops being a valid oracle.
+  let comparableToParser = true;
   let regionFilterActive = false;
   let numberTypeFilterActive = false;
 
@@ -83,7 +61,7 @@ function runSession(session: number): string | null {
     let state: InputState;
     let label: string;
 
-    switch (upTo(13)) {
+    switch (upTo(12)) {
       case 0:
       case 1: {
         const payload: string = pick(INSERT_PAYLOADS);
@@ -118,7 +96,7 @@ function runSession(session: number): string | null {
         break;
       }
       case 7: {
-        const digits: string = Array.from({ length: upTo(14) }, () => String(upTo(10))).join('');
+        const digits: string = Array.from({ length: upTo(15) }, () => String(upTo(10))).join('');
         label = `setValue(${JSON.stringify(digits)})`;
         state = controller.setValue(digits);
         break;
@@ -134,21 +112,16 @@ function runSession(session: number): string | null {
       }
       case 9: {
         region = pick(REGIONS);
+        comparableToParser = false;
         label = `setRegion(${region})`;
         state = controller.setRegion(region);
         break;
       }
       case 10: {
-        if (random() < 0.35) {
+        if (random() < 0.4) {
           label = 'setRegionFilter(null)';
           state = controller.setRegionFilter(null);
           regionFilterActive = false;
-        } else if (random() < 0.5) {
-          const violation: string | null = regionFilterViolation(controller);
-          label = 'regionFilter oracle';
-          if (violation !== null) return fail(`${label}: ${violation}`);
-          regionFilterActive = false;
-          state = controller.currentState;
         } else {
           const regions: RegionCode[] = Array.from({ length: 1 + upTo(3) }, () => pick(REGIONS));
           label = `setRegionFilter([${regions.join(',')}])`;
@@ -157,20 +130,20 @@ function runSession(session: number): string | null {
         }
         break;
       }
-      case 11: {
-        if (random() < 0.35) {
-          label = 'setNumberTypeFilter(null)';
-          state = controller.setNumberTypeFilter(null);
-          numberTypeFilterActive = false;
-        } else {
-          const types: NumberType[] = Array.from({ length: 1 + upTo(3) }, () => pick(NUMBER_TYPES));
-          label = `setNumberTypeFilter([${types.join(',')}])`;
-          state = controller.setNumberTypeFilter(types);
-          numberTypeFilterActive = true;
-        }
-        break;
-      }
       default: {
+        if (random() < 0.3) {
+          if (random() < 0.4) {
+            label = 'setNumberTypeFilter(null)';
+            state = controller.setNumberTypeFilter(null);
+            numberTypeFilterActive = false;
+          } else {
+            const types: NumberType[] = Array.from({ length: 1 + upTo(3) }, () => pick(NUMBER_TYPES));
+            label = `setNumberTypeFilter([${types.join(',')}])`;
+            state = controller.setNumberTypeFilter(types);
+            numberTypeFilterActive = true;
+          }
+          break;
+        }
         if (random() < 0.2) {
           label = 'clearHistory()';
           controller.clearHistory();
@@ -194,11 +167,23 @@ function runSession(session: number): string | null {
     const caret: string | null = caretViolation(state);
     if (caret !== null) return fail(`${label} left ${caret}`);
 
-    // parsePhoneNumber knows nothing about filters. Only compare while none is set.
-    if (!regionFilterActive && !numberTypeFilterActive) {
+    if (selectorMode) {
+      // The literal read never rewrites what the field shows.
+      const reported: string = controller.getPhoneNumber().getNationalNumber();
+      if (reported !== digitsOf(state.value)) {
+        return fail(`${label} reported ${reported} for a field showing ${JSON.stringify(state.value)}`);
+      }
+      continue;
+    }
+
+    // getPhoneNumber reads the field as an international number, with the calling code inside it.
+    // That is exactly what parsePhoneNumber does with no options. Three cases are left out. Filters
+    // narrow validity the parser knows nothing about. An empty field resolves to nothing by design.
+    // An anchored region is covered by the comment on comparableToParser.
+    if (comparableToParser && !regionFilterActive && !numberTypeFilterActive && digitsOf(state.value) !== '') {
       const difference: string | null = firstMethodDifference(
         methodResults(controller.getPhoneNumber()),
-        methodResults(parsePhoneNumber(state.value, { defaultRegion: region, strict })),
+        methodResults(parsePhoneNumber(state.value)),
       );
       if (difference !== null) {
         return fail(`${label} left getPhoneNumber disagreeing with parsePhoneNumber: ${difference}`);
@@ -209,7 +194,7 @@ function runSession(session: number): string | null {
   return null;
 }
 
-describe('national controller method fuzz', () => {
+describe('international controller method fuzz', () => {
   it('holds its invariants across randomised method combinations', () => {
     const failures: string[] = [];
     for (let session = 0; session < SESSIONS && failures.length === 0; session++) {
