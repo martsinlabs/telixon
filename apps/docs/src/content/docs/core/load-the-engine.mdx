@@ -4,7 +4,7 @@ description: Load the engine with ensureEngineReady, or synchronously with ensur
 ---
 
 The engine is the compiled automaton. Every query and controller call reads it, so it must be in
-memory first. Loading is explicit: nothing loads when you import the package.
+memory first. Loading is explicit, so nothing loads when you import the package.
 
 ## ensureEngineReady
 
@@ -12,7 +12,7 @@ memory first. Loading is explicit: nothing loads when you import the package.
 function ensureEngineReady(): Promise<void>;
 ```
 
-Call it once, before the first API call. It is idempotent: later calls resolve immediately and load
+Call it once, before the first API call. It is idempotent, so later calls resolve immediately and load
 nothing. You choose the moment.
 
 ```ts
@@ -24,7 +24,7 @@ parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
 ```
 
 Concurrent calls share one in-flight load. A failed load rejects with the underlying error. The
-failure is not cached: the next call starts a fresh load.
+failure is not cached, so the next call starts a fresh load.
 
 ## EngineNotReadyError
 
@@ -71,8 +71,8 @@ The package name is the same everywhere. The runtime picks the build.
 | Workers, edge, `workerd` | `index.edge.js`    |
 
 The browser and edge builds import the tables as code-split modules, then inflate them with
-`DecompressionStream`. The Node build decodes with native zlib, off the event loop.
-`ensureEngineReady` is the same call everywhere.
+`DecompressionStream`, falling back to a pure-JS inflater where the API is missing. The Node build
+decodes with native zlib, off the event loop. `ensureEngineReady` is the same call everywhere.
 
 ## ensureEngineReadySync
 
@@ -80,8 +80,9 @@ The browser and edge builds import the tables as code-split modules, then inflat
 function ensureEngineReadySync(): void;
 ```
 
-Initializes the engine synchronously, from tables embedded in the bundle. The cost is bundle size:
-the embedded tables are about [123 kB gzipped](/verified/#size). It lands only where this entry is imported.
+Initializes the engine synchronously, from tables embedded in the bundle. The cost is bundle size, with
+the embedded tables at about [122 kB gzipped](/verified/#size). That weight lands only where this
+entry is imported.
 
 ```ts
 import { ensureEngineReadySync } from '@telixon/core/sync-init';
@@ -92,8 +93,8 @@ ensureEngineReadySync();
 parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
 ```
 
-Reach for this only where you cannot await: a synchronous constructor, a module-level default, a
-migration script. Everywhere else, prefer `ensureEngineReady`.
+Reach for this only where you cannot await, such as a synchronous constructor, a module-level
+default, or a migration script. Everywhere else, prefer `ensureEngineReady`.
 
 ## One engine per process
 

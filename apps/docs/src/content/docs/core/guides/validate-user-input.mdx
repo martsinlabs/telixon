@@ -3,16 +3,18 @@ title: Validate user input
 description: Tolerant feedback while the user types and an exact message on submit.
 ---
 
-A phone field needs two kinds of feedback: tolerant while the user types, exact on submit. The
-possibility checks give the first. `getValidationError` gives the second.
+A phone field needs feedback that stays tolerant while the user types and turns exact on submit.
+The possibility checks give the first. `getValidationError` gives the second.
 
 ## While the user types
 
-Most values in a field are unfinished, so treat a short number as neutral. Two failures are worth
-flagging immediately, because more typing cannot fix them: a calling code that does not exist and a
-number that is already too long.
+Most values in a field are unfinished, so treat a short number as neutral. A calling code that
+does not exist and a number that is already too long are worth flagging immediately, because more
+typing cannot fix either.
 
 ```ts
+import { parsePhoneNumber } from '@telixon/core';
+
 function feedbackWhileTyping(input: string): string | null {
   const number = parsePhoneNumber(input, { defaultRegion: 'US' });
   if (number.isValid()) return null;
@@ -42,7 +44,7 @@ user can act on. The [carried payloads](/core/reference/validation-error/#carrie
 message name the fix:
 
 ```ts
-import type { ValidationError } from '@telixon/core';
+import { parsePhoneNumber, type ValidationError } from '@telixon/core';
 
 function describe(error: ValidationError): string {
   switch (error.kind) {

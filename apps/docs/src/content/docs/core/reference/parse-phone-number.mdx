@@ -8,9 +8,12 @@ function parsePhoneNumber(input: string, options?: ParsePhoneNumberOptions): Pho
 ```
 
 Parses a phone number to validate, format, and inspect it. A leading `+` reads as international;
-otherwise the digits resolve against `defaultRegion`. Spacing and punctuation are ignored. It never
-throws on bad input: the returned [`PhoneNumber`](/core/reference/phone-number/) reports why it is
-not valid.
+otherwise the digits resolve against `defaultRegion`, with the region's IDD prefix, a redundant
+leading calling code, and the national prefix all recognized and stripped. Spacing and punctuation
+are ignored. It never throws on bad input; the returned
+[`PhoneNumber`](/core/reference/phone-number/) reports why it is not valid. Like every entry
+point, it requires a [loaded engine](/core/load-the-engine/) and throws `EngineNotReadyError`
+before that.
 
 ```ts
 parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
@@ -39,8 +42,10 @@ parsePhoneNumber('415-555-0132', { defaultRegion: 'US' }).getRegion(); // 'US'
 strict?: boolean;
 ```
 
-Restricts `isValid` and `getNumberType` to `defaultRegion`. Other methods ignore it. Without
-`defaultRegion` it has no effect. It is off by default.
+Restricts validity to `defaultRegion`, so `isValid`, `getNumberType`, and
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror) all follow it while the
+possibility checks and the formats ignore it. Without `defaultRegion` it has no effect. It is off
+by default.
 
 ```ts
 const number = parsePhoneNumber('(604) 555-0132', { defaultRegion: 'US', strict: true });
