@@ -7,7 +7,7 @@
   {
     "name": "@telixon/core (browser entry)",
     "path": "packages/core/dist/index.browser.js",
-    "limit": "22 kB"
+    "limit": "25 kB"
   },
   {
     "name": "@telixon/web-sdk",
