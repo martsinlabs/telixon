@@ -107,9 +107,11 @@ and number type. Region disambiguation and format selection run on dedicated fin
 automata that emit a value (a region, a format index) at the end of the walk instead of a yes/no.
 Resolving a number is therefore a linear-time table walk, deterministic and backtracking-free, which is
 what makes per-keystroke resolution cheap. The recognition automaton is global and unified: one number
-is matched against every region at once, with no per-region data to load. The only regular expression
-left at runtime is the per-territory national-prefix rewrite, a bounded capture-group transform applied
-once per parse. The engine ships as four embedded modules carrying nine binary layers:
+is matched against every region at once, with no per-region data to load. Two regular expressions
+survive at runtime, both anchored prefix transforms built from the metadata. The per-territory
+national-prefix rewrite is a bounded capture-group transform; the IDD strip removes a dialled
+international prefix before the digits are resolved. Each matches a short leading prefix, never the
+number as a whole. The engine ships as four embedded modules carrying nine binary layers:
 
 ```
 walk.bin.js      recognition DFA state graph, calling-code dispatch, region disambiguation

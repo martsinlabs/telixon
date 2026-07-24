@@ -131,7 +131,7 @@ importers:
         version: 1.13.3
 
   packages/web-sdk:
-    dependencies:
+    devDependencies:
       '@telixon/core':
         specifier: workspace:*
         version: link:../core

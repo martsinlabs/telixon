@@ -8,6 +8,15 @@
   accent-color: var(--sl-color-accent);
 }
 
+/* Code renders every glyph as typed: JetBrains Mono's calt ligatures would fuse !== and =>. */
+code,
+pre,
+kbd,
+samp {
+  font-variant-ligatures: none;
+  font-feature-settings: 'calt' 0;
+}
+
 /* Type scale: calmer than the Starlight defaults, tuned for reference reading. */
 :root {
   --sl-text-h1: 2.125rem;
