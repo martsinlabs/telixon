@@ -2,7 +2,7 @@
 
 Headless DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core): `PhoneInput` and `RegionList` state machines for the web.
 
-[![conformance](https://img.shields.io/endpoint?url=https://telixon.dev/parity-badge.json)](https://telixon.dev/parity.html)
+[![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 
 ## Install
 
