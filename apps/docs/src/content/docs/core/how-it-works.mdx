@@ -5,7 +5,7 @@ description: Digits walk one automaton. Validity is an accepting state. The pars
 
 Google libphonenumber's metadata is compiled ahead of time into a single
 [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)
-(DFA), stored as binary tables. Everything the API does is defined by that automaton.
+(DFA), stored as binary tables. Every answer about a phone number comes from that automaton.
 
 ## Parsing
 
@@ -14,7 +14,7 @@ the region, the number type, whether the number is valid, and how to format it.
 
 ```ts
 const number = parsePhoneNumber('+1 (415) 555-0132');
-// the walk has already happened; every answer below derives from its end state
+// the walk has already happened
 
 number.getRegion(); // 'US'
 number.getNumberType(); // 'FIXED_LINE_OR_MOBILE'
@@ -38,8 +38,8 @@ records exactly that. The nine variants are in
 ## Parser and controller consistency
 
 `parsePhoneNumber` walks the automaton once, over a whole string. An input controller walks it
-again on every keystroke, over the value as it stands. It is the same walk. A controller can hand
-you a `PhoneNumber` at any moment, mid-typing. Its answers agree with the parser's by construction.
+again on every keystroke, over the value as it stands. It is the same walk, which makes their
+answers agree by construction. A controller can hand you a `PhoneNumber` at any moment, mid-typing.
 
 ```ts
 const controller = createInternationalInputController();
@@ -51,9 +51,9 @@ parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
 
 ## Consequences
 
-- **[Parsing does not throw.](/core/reference/parse-phone-number/)** A walk always ends somewhere.
-  Where it ends is the result.
+- **[Bad input does not throw.](/core/reference/parse-phone-number/)** A walk always ends
+  somewhere. Where it ends is the result.
 - **[Formatting can return `null`.](/core/reference/phone-number/#formats)** The formats follow
-  possibility, so a number whose calling code or length can never work has no format to give.
+  possibility. A number whose calling code or length can never work has no format to give.
 - **[The engine loads first.](/core/load-the-engine/)** Without the tables there is nothing to
   walk.

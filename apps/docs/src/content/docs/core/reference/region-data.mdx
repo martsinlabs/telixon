@@ -19,8 +19,7 @@ REGION_CODES.slice(0, 3); // ['AC', 'AD', 'AE']
 REGION_CODES.includes('US'); // true
 ```
 
-`RegionCode` is the union of exactly these codes, so a plain string needs narrowing before it is
-one:
+`RegionCode` is the union of exactly these codes. Narrow a plain string before using it as one:
 
 ```ts
 function isRegionCode(value: string): value is RegionCode {
@@ -49,7 +48,7 @@ function getCallingCodeForRegion(region: RegionCode): string;
 ```
 
 The country calling code `region` dials under, without the `+`, or `'0'` for a region the engine
-does not know. Mirrors libphonenumber's `getCountryCodeForRegion`.
+does not know. Mirrors Google libphonenumber's `getCountryCodeForRegion`.
 
 ```ts
 getCallingCodeForRegion('US'); // '1'
@@ -76,7 +75,7 @@ getPlaceholders('US', 'FIXED_LINE');
 | -------------------- | --------------------------------------------------------------- |
 | `national`           | National format, without the national (trunk) prefix            |
 | `nationalWithPrefix` | National format, with the national (trunk) prefix               |
-| `international`      | International format: the digits after `+` and the calling code |
+| `international`      | International format, the digits after `+` and the calling code |
 
 Each field is absent when the region has no such form.
 

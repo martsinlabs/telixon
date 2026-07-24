@@ -1,16 +1,15 @@
 ---
-title: Validate user input
+title: Validate a phone number
 description: Tolerant feedback while the user types and an exact message on submit.
 ---
 
-A phone field needs feedback that stays tolerant while the user types and turns exact on submit.
-The possibility checks give the first. `getValidationError` gives the second.
+The possibility checks stay tolerant while the user types. `getValidationError` names the exact
+fault on submit.
 
 ## While the user types
 
-Most values in a field are unfinished, so treat a short number as neutral. A calling code that
-does not exist and a number that is already too long are worth flagging immediately, because more
-typing cannot fix either.
+Flag only the failures that more typing cannot fix. A calling code that does not exist and a number
+that is already too long qualify; a short number is still on its way.
 
 ```ts
 import { parsePhoneNumber } from '@telixon/core';
@@ -39,9 +38,9 @@ The six reason codes are under
 
 ## On submit
 
-Require [`isValid`](/core/reference/phone-number/#isvalid) and turn the failure into a message the
-user can act on. The [carried payloads](/core/reference/validation-error/#carried-data) let each
-message name the fix:
+Require [`isValid`](/core/reference/phone-number/#isvalid), then turn the failure into a message.
+The [carried payloads](/core/reference/validation-error/) let each message name the
+fix:
 
 ```ts
 import { parsePhoneNumber, type ValidationError } from '@telixon/core';
@@ -75,6 +74,9 @@ if (!number.isValid()) {
 }
 ```
 
+To restrict validity to the form's own region at parse time, use
+[`strict`](/core/reference/parse-phone-number/#strict).
+
 ## Store the number
 
 Store the canonical E.164 string. It parses back with no options:
@@ -83,6 +85,3 @@ Store the canonical E.164 string. It parses back with no options:
 parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).formatE164(); // '+14155550132'
 parsePhoneNumber('+14155550132').isValid(); // true
 ```
-
-To restrict validity to the form's own region at parse time, use
-[`strict`](/core/reference/parse-phone-number/#strict).

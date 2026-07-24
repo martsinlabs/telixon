@@ -25,7 +25,7 @@ number.isValid(); // true
 
 ### isValidForRegion
 
-Whether the number is valid for one region specifically. Mirrors libphonenumber's
+Whether the number is valid for one region specifically. Mirrors Google libphonenumber's
 `isValidNumberForRegion`.
 
 ```ts
@@ -36,7 +36,7 @@ number.isValidForRegion('CA'); // false
 ### isPossible
 
 Whether the calling code resolves and the length is one the region dials. The digits themselves go
-unchecked, so a possible number can still be invalid.
+unchecked. A possible number can still be invalid.
 
 ```ts
 number.isPossible(); // true
@@ -45,7 +45,7 @@ parsePhoneNumber('+1 123-456-7890').isPossible(); // true, ten digits is a US le
 
 ### isPossibleWithReason
 
-The possibility check as a [`PossibilityResult`](#possibilityresult) reason code, so a failed
+The possibility check as a [`PossibilityResult`](#possibilityresult) reason code. A failed
 `isPossible` says why.
 
 ```ts
@@ -57,7 +57,7 @@ parsePhoneNumber('+1 415').isPossibleWithReason(); // 'TOO_SHORT'
 
 The fault to correct, or `null` when none applies. One of the nine typed
 [`ValidationError`](/core/reference/validation-error/) variants. A valid number can still carry
-the `NATIONAL_PREFIX_MISSING` advisory, so gate on [`isValid`](#isvalid) for validity and read the
+the `NATIONAL_PREFIX_MISSING` advisory. Gate on [`isValid`](#isvalid) for validity and read the
 error for guidance.
 
 ```ts
@@ -65,9 +65,10 @@ number.getValidationError(); // null
 parsePhoneNumber('+1 415').getValidationError(); // { kind: 'TOO_SHORT', minLength: 10 }
 ```
 
-### PossibilityResult
+## PossibilityResult
 
-The six reason codes `isPossibleWithReason` returns. Mirrors libphonenumber's `ValidationResult`.
+The six reason codes `isPossibleWithReason` returns. Mirrors Google libphonenumber's
+`ValidationResult`.
 
 | Value                    | Meaning                                                        |
 | ------------------------ | -------------------------------------------------------------- |
@@ -90,7 +91,8 @@ number.getRegion(); // 'US'
 
 ### getCallingCode
 
-The country calling code read from the digits, without the `+`, or `null` when there are none.
+The country calling code read from the digits, without the `+`, or `null` when the digits carry
+none.
 
 ```ts
 number.getCallingCode(); // '1'
@@ -106,8 +108,9 @@ number.getNationalNumber(); // '4155550132'
 
 ### getNumberType
 
-The line type, such as `MOBILE` or `FIXED_LINE`. `UNKNOWN` when the number is not valid or the type
-is ambiguous. The full value list is [`NUMBER_TYPES`](/core/reference/region-data/#number_types).
+The line type, such as `MOBILE` or `FIXED_LINE`, or `FIXED_LINE_OR_MOBILE` where a region assigns
+both. `UNKNOWN` means the number is not valid. The full value list is
+[`NUMBER_TYPES`](/core/reference/region-data/#number_types).
 
 ```ts
 number.getNumberType(); // 'FIXED_LINE_OR_MOBILE'
@@ -156,7 +159,7 @@ number.formatRfc3966(); // 'tel:+1-415-555-0132'
 
 ## Conformance
 
-Twelve of the thirteen methods have a libphonenumber counterpart, each compared with Google's
-implementation on every corpus input. `getValidationError` is Telixon's own surface, with no
+Twelve of the thirteen methods have a Google libphonenumber counterpart, each compared with
+Google's implementation on every corpus input. `getValidationError` is Telixon's own surface, with no
 counterpart to compare. The numbers, the method, and the cadence are on
 [Verified](/verified/#conformance).

@@ -18,10 +18,10 @@ type ValidationError =
 
 The fault to correct in the input. Returned by
 [`getValidationError`](/core/reference/phone-number/#getvalidationerror), which is `null` when
-none applies. The union is discriminated on `kind`, so a `switch` narrows every variant. With a
+none applies. Five of the nine variants carry data that names the fix. Since the union is
+discriminated on `kind`, a `switch` narrows every variant. With a
 declared return type on the switching function, a newly added variant stops compiling until every
-`switch` handles it. The kinds mirror libphonenumber
-where applicable.
+`switch` handles it. The kinds mirror Google libphonenumber where applicable.
 
 ## Variants
 
@@ -30,7 +30,7 @@ Every row is a real input and its real result.
 | Input                                                         | `getValidationError()`                                     | Meaning                                                       |
 | ------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------- |
 | `''`                                                          | `{ kind: 'EMPTY' }`                                        | No digits to resolve                                          |
-| `'+999 123'`                                                  | `{ kind: 'INVALID_CALLING_CODE' }`                         | The digits begin with no known country calling code           |
+| `'+999 123'`                                                  | `{ kind: 'INVALID_CALLING_CODE' }`                         | The digits begin with no known calling code                   |
 | `'+1 21'`                                                     | `{ kind: 'TOO_SHORT', minLength: 10 }`                     | Fewer digits than the region's shortest number                |
 | `'+1 21255512345678'`                                         | `{ kind: 'TOO_LONG', maxLength: 10 }`                      | More digits than the region's longest number                  |
 | `'+57 321 123 456'`                                           | `{ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }` | The length falls in a gap between valid lengths               |
@@ -43,30 +43,15 @@ Every row is a real input and its real result.
 (`callingCodeInInput: false`), where the digits are the international significant number. It
 reports when a number that is not valid as typed begins with a national-dialing chunk, the trunk
 prefix or a carrier code, whose removal leaves a valid number. `prefix` is the exact leading chunk
-to drop; a Belarusian number typed as `80 29…` reports `prefix: '80'`.
-
-## Carried data
-
-The five data-carrying variants name what would fix the input:
+to drop; a Belarusian number typed as `80 29…` reports `prefix: '80'`. Reproducing it takes a
+controller rather than `parsePhoneNumber`:
 
 ```ts
-parsePhoneNumber('+1 21').getValidationError();
-// { kind: 'TOO_SHORT', minLength: 10 }
-
-parsePhoneNumber('+1 21255512345678').getValidationError();
-// { kind: 'TOO_LONG', maxLength: 10 }
-
-parsePhoneNumber('+57 321 123 456').getValidationError();
-// { kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }
-
-parsePhoneNumber('501234567', { defaultRegion: 'AE' }).getValidationError();
-// { kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }
-
-const field = createInternationalInputController({
+const controller = createInternationalInputController({
   defaultRegion: 'AE',
   display: { callingCodeInInput: false },
 });
-field.setValue('0501234567');
-field.getPhoneNumber().getValidationError();
+controller.setValue('0501234567');
+controller.getPhoneNumber().getValidationError();
 // { kind: 'NATIONAL_PREFIX_PRESENT', prefix: '0' }
 ```

@@ -3,8 +3,10 @@ title: Load the engine
 description: Load the engine with ensureEngineReady, or synchronously with ensureEngineReadySync.
 ---
 
-The engine is the compiled automaton. Every query and controller call reads it, so it must be in
-memory first. Loading is explicit, so nothing loads when you import the package.
+import size from '../../../generated/size.json';
+
+The engine is the compiled automaton that every query and controller reads. Importing the package
+does not load it.
 
 ## ensureEngineReady
 
@@ -12,8 +14,8 @@ memory first. Loading is explicit, so nothing loads when you import the package.
 function ensureEngineReady(): Promise<void>;
 ```
 
-Call it once, before the first API call. It is idempotent, so later calls resolve immediately and load
-nothing. You choose the moment.
+Call it once, before the first API call. It is idempotent; a later call resolves immediately while
+concurrent calls share one in-flight load.
 
 ```ts
 import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
@@ -23,8 +25,8 @@ await ensureEngineReady();
 parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
 ```
 
-Concurrent calls share one in-flight load. A failed load rejects with the underlying error. The
-failure is not cached, so the next call starts a fresh load.
+A failed load rejects with the underlying error, leaving nothing cached. The next call starts a
+fresh load.
 
 ## EngineNotReadyError
 
@@ -59,30 +61,15 @@ import { isEngineReady } from '@telixon/core';
 isEngineReady(); // false before ensureEngineReady() resolves
 ```
 
-## Runtime builds
-
-The package name is the same everywhere. The runtime picks the build.
-
-| Runtime                  | Build resolved     |
-| ------------------------ | ------------------ |
-| Node.js                  | `index.node.js`    |
-| Deno, Bun                | `index.node.js`    |
-| Browsers and bundlers    | `index.browser.js` |
-| Workers, edge, `workerd` | `index.edge.js`    |
-
-The browser and edge builds import the tables as code-split modules, then inflate them with
-`DecompressionStream`, falling back to a pure-JS inflater where the API is missing. The Node build
-decodes with native zlib, off the event loop. `ensureEngineReady` is the same call everywhere.
-
 ## ensureEngineReadySync
 
 ```ts
 function ensureEngineReadySync(): void;
 ```
 
-Initializes the engine synchronously, from tables embedded in the bundle. The cost is bundle size, with
-the embedded tables at about [122 kB gzipped](/verified/#size). That weight lands only where this
-entry is imported.
+Initializes the engine synchronously, from tables embedded in the bundle. Those tables add about
+[{size.engineTables} gzipped](/verified/#size), a weight that lands only where this entry is
+imported.
 
 ```ts
 import { ensureEngineReadySync } from '@telixon/core/sync-init';
@@ -94,9 +81,27 @@ parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
 ```
 
 Reach for this only where you cannot await, such as a synchronous constructor, a module-level
-default, or a migration script. Everywhere else, prefer `ensureEngineReady`.
+default, or a migration script.
+
+## Runtime builds
+
+The package name is the same everywhere. The runtime picks the build behind `@telixon/core`.
+
+| Runtime                  | Build resolved     |
+| ------------------------ | ------------------ |
+| Node.js                  | `index.node.js`    |
+| Deno, Bun                | `index.node.js`    |
+| Browsers and bundlers    | `index.browser.js` |
+| Workers, edge, `workerd` | `index.edge.js`    |
+
+Under `ensureEngineReady`, the browser and edge builds import the tables as code-split modules,
+then inflate them with `DecompressionStream`, falling back to a pure-JS inflater where the API is
+missing. The Node build decodes with native zlib, off the event loop.
+
+`@telixon/core/sync-init` resolves two builds of its own. Node decodes with native zlib; every
+other runtime uses the pure-JS inflater.
 
 ## One engine per process
 
-`ensureEngineReady` and `ensureEngineReadySync` fill the same process-wide engine. Loading it in
-two places loads it once. There is no instance to pass around.
+`ensureEngineReady` and `ensureEngineReadySync` fill the same process-wide engine. There is no
+instance to pass around.

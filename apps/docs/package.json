@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "astro build",
+    "build": "node ../../scripts/generate-size.mjs && astro build",
     "check:links": "node ../../scripts/check-links.mjs dist",
     "dev": "astro dev",
     "preview": "astro preview",

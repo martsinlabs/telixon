@@ -34,7 +34,7 @@ export const PACKAGES: readonly DocsPackage[] = [
       {
         label: 'Guides',
         items: [
-          'core/guides/validate-user-input',
+          'core/guides/validate-a-phone-number',
           'core/guides/build-a-phone-input',
           'core/guides/build-a-region-selector',
         ],

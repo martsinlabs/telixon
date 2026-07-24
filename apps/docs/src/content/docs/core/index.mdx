@@ -5,8 +5,9 @@ description: Install @telixon/core, load the engine, and parse a first phone num
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-`@telixon/core` parses, validates, and formats phone numbers. The same engine drives phone-number
-fields. The package runs in Node.js, browsers, Deno, Bun, and edge runtimes, with no dependencies.
+`@telixon/core` parses, validates, and formats phone numbers, while its input controllers give a
+flexible API for entering them. All of it runs in Node.js, browsers, Deno, Bun, and edge runtimes,
+with no dependencies.
 
 ## Install
 
@@ -81,8 +82,8 @@ parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).formatE164(); // '+1
 
 ## Inspect invalid input
 
-`parsePhoneNumber` [never throws](/core/reference/parse-phone-number/); bad input still comes back
-as a `PhoneNumber`, with a typed reason:
+Bad input [never throws](/core/reference/parse-phone-number/). It comes back as a `PhoneNumber`
+carrying a typed reason:
 
 ```ts
 const wrongLength = parsePhoneNumber('+57 321 123 456');
@@ -95,7 +96,7 @@ Colombia dials numbers of 8, 10, and 11 digits. Nine digits falls in a gap. The 
 lengths that exist.
 
 [`ValidationError`](/core/reference/validation-error/) lists all nine variants.
-[Validate user input](/core/guides/validate-user-input/) turns them into messages.
+[Validate a phone number](/core/guides/validate-a-phone-number/) turns them into messages.
 
 ## Drive an input
 
