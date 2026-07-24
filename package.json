@@ -26,14 +26,14 @@
     "typecheck:conformance": "tsc --noEmit -p packages/core/conformance/tsconfig.json"
   },
   "devDependencies": {
-    "@codspeed/vitest-plugin": "^5.5.0",
+    "@codspeed/vitest-plugin": "^5.7.1",
     "@eslint/js": "^10.0.1",
     "@size-limit/file": "^12.1.0",
     "@types/node": "^26.1.1",
     "cpy-cli": "^7.0.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.11.1",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-packagejson": "^3.0.2",
