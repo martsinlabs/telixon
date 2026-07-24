@@ -15,6 +15,12 @@ const telixonDark = new ExpressiveCodeTheme({
     { scope: ['keyword.control', 'storage.type', 'storage.modifier'], settings: { foreground: '#79c0ff' } },
     { scope: ['storage.type.function.arrow'], settings: { foreground: '#e8eaec' } },
     { scope: ['entity.name.function', 'support.function'], settings: { foreground: '#d2a8ff' } },
+    { scope: ['constant.numeric', 'keyword.other.unit', 'constant.other.color'], settings: { foreground: '#1fd8a4' } },
+    { scope: ['entity.name.tag'], settings: { foreground: '#79c0ff' } },
+    { scope: ['entity.other.attribute-name'], settings: { foreground: '#d2a8ff' } },
+    { scope: ['support.type.property-name.css'], settings: { foreground: '#79c0ff' } },
+    { scope: ['variable.css'], settings: { foreground: '#d2a8ff' } },
+    { scope: ['punctuation.definition.tag'], settings: { foreground: '#7f858c' } },
   ],
 });
 
@@ -31,6 +37,12 @@ const telixonLight = new ExpressiveCodeTheme({
     { scope: ['keyword.control', 'storage.type', 'storage.modifier'], settings: { foreground: '#0969da' } },
     { scope: ['storage.type.function.arrow'], settings: { foreground: '#17191b' } },
     { scope: ['entity.name.function', 'support.function'], settings: { foreground: '#8250df' } },
+    { scope: ['constant.numeric', 'keyword.other.unit', 'constant.other.color'], settings: { foreground: '#208368' } },
+    { scope: ['entity.name.tag'], settings: { foreground: '#0969da' } },
+    { scope: ['entity.other.attribute-name'], settings: { foreground: '#8250df' } },
+    { scope: ['support.type.property-name.css'], settings: { foreground: '#0969da' } },
+    { scope: ['variable.css'], settings: { foreground: '#8250df' } },
+    { scope: ['punctuation.definition.tag'], settings: { foreground: '#6b7177' } },
   ],
 });
 

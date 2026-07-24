@@ -41,8 +41,11 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "devDependencies": {
     "@telixon/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@telixon/core": "workspace:^"
   },
   "packageManager": "pnpm@10.16.1",
   "engines": {

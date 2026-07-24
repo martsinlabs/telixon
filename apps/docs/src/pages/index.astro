@@ -1325,6 +1325,10 @@ const closedTypesCode = `controller.setRegion('USA')
         .demo-rows .v {
           text-align: left;
         }
+        /* The error value is a flex row, which text-align cannot move. */
+        .demo-rows .v.has-error {
+          justify-content: flex-start;
+        }
         .dfa-grid {
           grid-template-columns: repeat(12, minmax(0, 1fr));
         }
