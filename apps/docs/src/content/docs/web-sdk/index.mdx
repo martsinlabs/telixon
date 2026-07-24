@@ -59,7 +59,8 @@ Your code imports both packages, since the engine loads through `@telixon/core` 
 
 ## Load the engine
 
-Both machines run on the engine. [Load it](/core/load-the-engine/) before you create either one:
+Creating either machine before the engine is [loaded](/core/load-the-engine/) throws
+`EngineNotReadyError`:
 
 ```ts
 import { ensureEngineReady } from '@telixon/core';

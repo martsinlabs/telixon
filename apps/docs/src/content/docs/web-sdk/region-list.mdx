@@ -66,8 +66,7 @@ type RegionListState<T = undefined> = {
 };
 ```
 
-`options` is the list as currently rendered, with the filters, search, sort, and prioritization
-already applied.
+`options` is the list as currently rendered, with the pipeline already applied.
 
 ## Search matching
 
@@ -108,9 +107,9 @@ The built-in comparators collate display names in the list's locale and break ti
 function regionToFlagEmoji(region: RegionCode): string;
 ```
 
-The region's flag emoji, built from the two Unicode regional indicator symbols for its letters. Platforms
-without flag emoji, notably Windows, render the two letters; for a flag on every platform, ship an
-SVG set keyed by the region code.
+The region's flag emoji, built from the two Unicode regional indicator symbols for its letters.
+Platforms without flag emoji, notably Windows, render the two letters; for a flag on every
+platform, ship an SVG set keyed by the region code.
 
 ```ts
 regionToFlagEmoji('US'); // '🇺🇸'
@@ -160,8 +159,8 @@ locale is a no-op.
 refresh(): void;
 ```
 
-Recomputes the base set and emits, always. Use it when external state read by `dataFactory` has
-changed.
+Recomputes the base set and emits unconditionally. Use it when external state read by `dataFactory`
+has changed.
 
 ### setRegionFilter
 

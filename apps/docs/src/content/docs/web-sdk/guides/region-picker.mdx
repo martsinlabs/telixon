@@ -10,13 +10,13 @@ import css from '../../../../components/demos/region-picker.css?raw';
 import code from '../../../../components/demos/region-picker.js?raw';
 
 [`createRegionList`](/web-sdk/region-list/#createregionlist) turns the engine's region data into
-picker rows. The `RegionList` filters, searches, sorts, and prioritizes the list. Your `renderList`
-function draws the rows.
+picker rows. The `RegionList` filters, searches, sorts, and prioritizes the list, while your
+`renderList` function draws the rows.
 
 ## Live demo
 
 All 245 regions are in the list, with US, CA, and GB pinned on top. Search `united` and the list
-narrows to three rows. The match runs over names, region codes, and calling codes, so `+44` finds
+narrows to three rows. The match runs over names, region codes, and calling codes; `+44` finds
 the United Kingdom too. Click a row and the status reports the selection, while the arrow keys
 walk the list from the search box and Enter picks the active row.
 
@@ -24,8 +24,9 @@ walk the list from the search box and Enter picks the active row.
 
 ## The code
 
-The demo and the source are the same three files. The markup is a search input, an empty list, and a status line.
-`createRegionList` builds the rows, with [`prioritize`](/web-sdk/region-list/#regionlistoptions)
+The demo and the source are the same three files. The markup is a search input, an empty list, and
+a status line. `createRegionList` builds the rows, with
+[`prioritize`](/web-sdk/region-list/#regionlistoptions)
 pinning US, CA, and GB and a `dataFactory` putting a
 [flag emoji](/web-sdk/region-list/#regiontoflagemoji) in each option's `data` slot. The search box
 feeds [`search`](/web-sdk/region-list/#search). `renderList` rebuilds the rows from each emitted
