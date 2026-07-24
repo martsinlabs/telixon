@@ -6,7 +6,7 @@ description: The phone-number controller attached to a DOM input.
 A core [`InputController`](/core/reference/input-controller/) attached to a DOM `<input>`. It wires
 the field's events, writes each new value and caret back, and emits a
 [`PhoneInputState`](#phoneinputstate) snapshot to subscribers. No emit fires at construction. The
-initial state is applied straight to the DOM, so read it with [`getState`](#getstate).
+initial state is applied straight to the DOM. Read it with [`getState`](#getstate).
 
 ## createPhoneInput
 
@@ -65,8 +65,8 @@ restrictions.
 `placeholder` is the example number for the resolved region, in the field's own display shape.
 While the value resolves no region, it falls back to the configured `defaultRegion`. It is `null`
 without a region to fall back to, or when the region's metadata carries no example for the
-configured type. It lives in the state only; the DOM `placeholder` attribute stays untouched, so
-render it yourself. A national US field gets `'(201) 555-0123'`. An international field with the
+configured type. It lives in the state only. The DOM `placeholder` attribute stays untouched, and
+you render it yourself. A national US field gets `'(201) 555-0123'`. An international field with the
 calling code inside gets `'1 201-555-0123'`.
 
 `validationError` is

@@ -20,7 +20,7 @@ function renderStatus(state) {
   }
 
   if (state.validationError === null) {
-    status.textContent = 'Valid: ' + phone.getPhoneNumber().formatE164();
+    status.textContent = 'Valid: ' + state.region + ' ' + phone.getPhoneNumber().formatE164();
     status.dataset.tone = 'valid';
     return;
   }

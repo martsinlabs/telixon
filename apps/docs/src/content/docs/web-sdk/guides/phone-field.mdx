@@ -9,23 +9,20 @@ import html from '../../../../components/demos/phone-field.html?raw';
 import css from '../../../../components/demos/phone-field.css?raw';
 import code from '../../../../components/demos/phone-field.js?raw';
 
-[`createPhoneInput`](/web-sdk/phone-input/#createphoneinput) attaches to a plain `<input>`; this
-guide runs it as an international field. The library handles the events, the caret, and the
-history while your `renderStatus` function draws the rest.
+[`createPhoneInput`](/web-sdk/phone-input/#createphoneinput) binds a plain `<input>` to a core
+input controller; this guide runs it as an international field. The `PhoneInput` handles the events,
+the caret, and the history while your `renderStatus` function draws the rest.
 
 ## Live demo
 
-The empty field shows the `+1 201-555-0123` placeholder. Type
-`+14155550132` and watch each keystroke reformat in place until the field reads `+1 415-555-0132`
-and the status reports `Valid: +14155550132`. Select everything and delete it. The erasable plus
-goes with the digits and the placeholder returns. Now type `+442071838750` and the same field
-becomes the United Kingdom's `+44 20 7183 8750`, because the calling code decides the region.
+Type `+14155550132`. The field formats it live to `+1 415-555-0132` and the status reads
+`Valid: US +14155550132`. Type `+442071838750` instead and it switches to the UK
+`+44 20 7183 8750`, since the calling code picks the region.
 
-Every editing habit is covered too. Edit in the middle of the value and the caret stays on the
-digit you touched while the groups reflow. Paste a number in any notation. Deletion works
-backward, forward, and a word at a time. Whenever the value falls short, the status reports a
-typed `TOO_SHORT` error. Every edit lands in the field's own history. Undo and redo work with the
-native shortcuts, Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z.
+The rest behaves the way a real field should. The caret holds its digit through a mid-value edit
+while the groups reflow. Paste accepts any notation. Deletion runs backward, forward, or a word at
+a time. Undo and redo use Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z. A value that falls short reads
+`TOO_SHORT`.
 
 <PhoneFieldDemo />
 
@@ -35,8 +32,8 @@ The demo and the source are the same three files. The markup is an input with a 
 placeholder and a status line. The script is one `createPhoneInput` call in international mode,
 where the [erasable plus](/core/reference/input-controller/#internationalinputcontrollerconfig)
 renders only while the value carries one. `renderStatus` draws the status from each emitted
-[state](/web-sdk/phone-input/#phoneinputstate). The library writes the value and the caret
-itself. Restyle by changing the custom properties in the stylesheet.
+[state](/web-sdk/phone-input/#phoneinputstate). The machine writes the value and the caret
+itself.
 
 <Tabs syncKey="source">
 

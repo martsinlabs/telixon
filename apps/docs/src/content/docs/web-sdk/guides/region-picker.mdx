@@ -10,7 +10,7 @@ import css from '../../../../components/demos/region-picker.css?raw';
 import code from '../../../../components/demos/region-picker.js?raw';
 
 [`createRegionList`](/web-sdk/region-list/#createregionlist) turns the engine's region data into
-picker rows. The library filters, searches, sorts, and prioritizes the list. Your `renderList`
+picker rows. The `RegionList` filters, searches, sorts, and prioritizes the list. Your `renderList`
 function draws the rows.
 
 ## Live demo
@@ -29,8 +29,7 @@ The demo and the source are the same three files. The markup is a search input, 
 pinning US, CA, and GB and a `dataFactory` putting a
 [flag emoji](/web-sdk/region-list/#regiontoflagemoji) in each option's `data` slot. The search box
 feeds [`search`](/web-sdk/region-list/#search). `renderList` rebuilds the rows from each emitted
-[state](/web-sdk/region-list/#regionliststate). Restyle by changing the custom properties in the
-stylesheet.
+[state](/web-sdk/region-list/#regionliststate).
 
 <Tabs syncKey="source">
 
