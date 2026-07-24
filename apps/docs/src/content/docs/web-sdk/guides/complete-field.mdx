@@ -10,16 +10,15 @@ import css from '../../../../components/demos/complete-field.css?raw';
 import code from '../../../../components/demos/complete-field.js?raw';
 
 This guide wires the [phone field](/web-sdk/guides/phone-field/) and the
-[region picker](/web-sdk/guides/region-picker/) into one widget. The phone input runs in selector
-mode, which keeps the calling code in the region button on the left rather than the field. The
-searchable popup opens below the button, and the formatted number fills the field to the right.
+[region picker](/web-sdk/guides/region-picker/) into one widget, where the picker supplies the
+calling code and the input holds the rest.
 
 ## Live demo
 
-Open the picker, search `canada`, and pick it. The button shows the Canadian flag on `+1`, and the
-empty field's placeholder becomes a Canadian example. Type `6045550132` and the field reads `604-555-0132` with
-the status `Valid: +16045550132`. Reopen the picker and choose United States. `604` still belongs
-to Canada, which flips the flag straight back.
+Open the picker, search `canada`, and pick it. The button shows the Canadian flag on `+1`, with the
+empty field's placeholder now a Canadian example. Type `6045550132` and the field shows
+`604-555-0132` with the status `Valid: +16045550132`. Reopen the picker and choose United States.
+`604` still belongs to Canada, which flips the flag straight back.
 
 The keyboard works throughout. Search `united k` and press Enter, or walk the rows with the arrow
 keys. Select the United Kingdom and type `07400123456`. The leading zero is a trunk prefix with no
@@ -29,21 +28,23 @@ place after `+44`. The status reads `NATIONAL_PREFIX_PRESENT`.
 
 ## The code
 
-The demo runs these exact files. One bordered field holds the region button and the phone input.
-The popup carries the search box and the list.
+The demo and the source are the same three files. The markup is the region button, the input, and a
+popup with the search box and the list.
 [`callingCodeInInput: false`](/core/reference/input-controller/#internationalinputcontrollerconfig)
-keeps the calling code out of the input, leaving the selected region to supply it. A click on a row
-calls `select`, which updates the button, hands the region to
-[`setRegion`](/web-sdk/phone-input/#setregion), closes the popup, and returns focus to the input. The search box doubles as the keyboard cursor, where the arrow keys walk the
-rows through `aria-activedescendant` and Enter picks the active one. Escape closes the popup and
-hands focus back to the region button, while an outside press or focus moving out of the widget
-closes it too.
+keeps the calling code out of the input, leaving the selected region to supply it.
 
-The subscriber follows the resolved
+The wiring runs both ways. A click on a row calls `select`, which updates the button, hands the
+region to [`setRegion`](/web-sdk/phone-input/#setregion), closes the popup, and returns focus to
+the input. Coming back, the subscriber follows the resolved
 [`state.region`](/web-sdk/phone-input/#phoneinputstate), moving the flag when the digits land in
-another region on the same calling code. Inside a framework component, call each machine's
-[`destroy`](/web-sdk/phone-input/#destroy) on unmount and remove the document-level press listener
-with them. Package installation and engine loading live in [Getting started](/web-sdk/).
+another region on the same calling code.
+
+The search box doubles as the keyboard cursor, where the arrow keys walk the rows through
+`aria-activedescendant` and Enter picks the active one. Escape closes the popup and hands focus
+back to the region button, while an outside press or focus moving out of the widget closes it too.
+
+Inside a framework component, call each machine's [`destroy`](/web-sdk/phone-input/#destroy) on
+unmount and remove the document-level press listener with them.
 
 <Tabs syncKey="source">
 
@@ -61,6 +62,4 @@ with them. Package installation and engine loading live in [Getting started](/we
 
 </Tabs>
 
-The two machines never learn about each other. All the wiring lives in the demo's own functions,
-where `select` hands the picked region to the phone while the subscriber moves the flag to follow
-the resolved digits.
+The two machines never learn about each other. All the wiring lives in the demo's own functions.
