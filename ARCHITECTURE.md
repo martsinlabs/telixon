@@ -182,7 +182,7 @@ supported region, on valid numbers, display spellings, deterministic corruptions
 prefix, and fails CI on any divergence outside an explicit allowlist. The oracle loads Google's
 source at **the same commit the engine was compiled from**, so there is no metadata version drift: a
 mismatch is always a real engine difference, never a stale reference. The current baseline is on the
-[live dashboard](https://telixon.dev/parity.html). See
+[live dashboard](https://proof.telixon.dev/parity.html). See
 [conformance/README.md](packages/core/conformance/README.md).
 
 ### Performance

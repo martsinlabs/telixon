@@ -69,7 +69,7 @@ The header shows the shared commit, coverage, and the corpus composition by case
 example or display-variant inputs the oracle could not parse; must be zero). One line per method:
 match rate and `(matched / total)`. Any mismatch prints an indented line: `expected` is Google,
 `actual` is Telixon. The prefix sweep prints its own block after the table. Live numbers are on the
-[dashboard](https://telixon.dev/parity.html).
+[dashboard](https://proof.telixon.dev/parity.html).
 
 ## Gate
 
@@ -113,7 +113,7 @@ progressively. This is a measurement printed in the run, not a gate.
 
 ## Baseline
 
-Latest: [live dashboard](https://telixon.dev/parity.html).
+Latest: [live dashboard](https://proof.telixon.dev/parity.html).
 Reproduce locally: `pnpm conformance`.
 
 ## Corpus

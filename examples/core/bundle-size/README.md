@@ -29,7 +29,7 @@ pnpm --filter @telixon/example-core-bundle-size build
 ```
 
 Vite prints the chunk sizes. `pnpm --filter @telixon/example-core-bundle-size report` additionally writes
-`report/bundle.html` (the published [telixon.dev/bundle.html](https://telixon.dev/bundle.html) page).
+`report/bundle.html` (the published [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html) page).
 
 ## How the numbers are measured
 
