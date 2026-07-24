@@ -65,7 +65,7 @@ code is in the field, `defaultRegion` pre-fills the field with that region's cod
 `plusPrefix`, a `PlusPrefixMode`, renders the leading `+`, with `'none'` never showing it,
 `'fixed'` always, and `'erasable'` while the value carries one. Under `'erasable'`, backspace
 right after the `+` removes it. Every plus-less start, an empty or omitted `initialValue`
-included, begins with the plus erased, so an empty field renders truly empty; only the
+included, begins with the plus erased, leaving an empty field truly empty; only the
 calling-code seed from `defaultRegion` keeps the visible plus.
 
 ## InputState
@@ -79,17 +79,18 @@ interface InputState {
 }
 ```
 
-The next value and caret to apply to the field. `value` is the formatted string. `region` is the
-region the value resolves to, or `null` when none does. A field with no digits reports the
-configured default region, so clearing the value keeps the region stable. The selection indices
-point into `value`.
-Within a shared calling code, `region` reports the resolved owner of the digits, so a `604`
-number reports `CA` even in a US-configured field.
+The next value and caret to apply to the field. `value` is the formatted string; the selection
+indices point into it.
+
+`region` is the region the value resolves to, or `null` when none does. Within a shared calling
+code it reports the resolved owner of the digits, where a `604` number comes back as `CA` even in a
+US-configured field. A field with no digits reports the configured default region, keeping the
+region stable when the value is cleared.
 
 ## Edits
 
-All four take the field's value as an argument, so the controller works from what the field
-actually shows.
+All four take the field's value as an argument, keeping the controller working from what the
+field actually shows.
 
 ### insert
 
@@ -180,7 +181,7 @@ Steps back to the previous state in history. With nothing to undo, it returns th
 redo(): InputState;
 ```
 
-Steps forward again after an [`undo`](#undo).
+Steps forward again after an [`undo`](#undo). With nothing to redo, it returns the current state.
 
 ### canUndo
 
@@ -188,8 +189,8 @@ Steps forward again after an [`undo`](#undo).
 readonly canUndo: boolean;
 ```
 
-Whether there is history to undo. `initialValue` seeds the field outside the history, so a freshly
-created controller reports `false`.
+Whether there is history to undo. `initialValue` seeds the field outside the history, leaving a
+freshly created controller at `false`.
 
 ### canRedo
 
@@ -219,10 +220,12 @@ getPhoneNumber(): PhoneNumber;
 
 The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query, equal to
 `parsePhoneNumber` of the displayed value, with the national controller's `defaultRegion` and
-`strict` carried along. Active filters have no `parsePhoneNumber` equivalent and narrow the
-result further. With the calling code kept out of the field (`callingCodeInInput: false`), the
-digits resolve literally as the international significant number behind the selected region's
-calling code. A typed national (trunk) prefix there reports
+`strict` carried along. Active filters have no `parsePhoneNumber` equivalent and narrow the result
+further.
+
+With the calling code kept out of the field (`callingCodeInInput: false`), the digits resolve
+literally as the international significant number behind the selected region's calling code. A
+typed national (trunk) prefix there reports
 [`NATIONAL_PREFIX_PRESENT`](/core/reference/validation-error/).
 
 ### currentState
@@ -236,6 +239,6 @@ The value and caret as they stand.
 ## Conformance
 
 The conformance suite types enumerated inputs through a controller, character by character,
-requiring the [`getPhoneNumber`](#getphonenumber) equality on every input. `parsePhoneNumber` is
-the Google-compared path, so the controllers are held to the same parity; see
+requiring the [`getPhoneNumber`](#getphonenumber) equality on every input. Since `parsePhoneNumber`
+is the Google-compared path, the controllers are held to the same parity; see
 [Verified](/verified/#conformance).

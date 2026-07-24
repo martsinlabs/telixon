@@ -3,23 +3,26 @@ title: Verified
 description: Conformance, performance, and size, each measured on every push and reproducible.
 ---
 
-Telixon measures three properties on every push: conformance with Google libphonenumber,
-performance, and payload size. Each section names the method and the command that reproduces it.
+import size from '../../generated/size.json';
+
+Telixon measures conformance with Google libphonenumber, performance, and payload size on every
+push. Each section names the method and the command that reproduces it.
 
 ## Conformance
 
-Every query method is compared with Google libphonenumber. The oracle is version-matched: it runs
-Google's own JavaScript source at the exact commit the engine's metadata was built from, so a
-mismatch is a real difference and never version drift.
+Twelve of the thirteen [`PhoneNumber`](/core/reference/phone-number/) methods have a Google
+libphonenumber counterpart; every one of them is compared against it. The oracle is version-matched, running Google's own JavaScript source at
+the exact commit the engine's metadata was built from. Every mismatch it reports is a real
+behavioral difference.
 
-Three gates cover it: the full corpus, one number from every distinct case the library can
-produce, and a one-million-input sample. The current run stands at 315,988 comparisons with
-zero divergences: twelve methods, each matching on 11,232 of 11,232 corpus inputs, across all 245
-regions. `isValidForRegion` is set-compared per case, 692,672 region checks. The allowlist of
-accepted divergences is empty.
+The gate runs two sweeps. The full corpus compares the twelve methods on 11,232 inputs each, across
+all 245 regions, while case coverage compares one number from every distinct case the library can
+produce. Together they stand at 315,988 comparisons with zero divergences. `isValidForRegion` is
+set-compared per case, with 692,672 region checks in the case-coverage sweep alone. The allowlist
+of accepted divergences is empty.
 
-Weekly, the airtight proof enumerates the complete geographic input domain: 1,838,775,900 inputs,
-split across ten shards.
+On top of the gate, every push runs a one-million-input parity sample. Weekly, the airtight proof
+enumerates the complete geographic input domain of 1,838,775,900 inputs, split across ten shards.
 
 ```sh
 pnpm conformance
@@ -30,8 +33,8 @@ The [parity dashboard](https://proof.telixon.dev/parity.html) publishes every ru
 ## Performance
 
 The benchmark measures parsing and query throughput, cold and warm, plus per-keystroke controller
-latency. The comparison baseline is the google-libphonenumber npm package, a third-party wrapper
-of Google's port. Wall-time numbers depend on hardware, so this page quotes none.
+latency. The reference baseline is the google-libphonenumber npm package, a third-party wrapper
+of Google's port. Since wall-time numbers depend on hardware, this page quotes none.
 CodSpeed tracks instrumented regressions.
 
 ```sh
@@ -42,14 +45,16 @@ The [benchmark dashboard](https://proof.telixon.dev/benchmark.html) publishes ea
 
 ## Size
 
-`size-limit` gates the entry sizes. The engine tables ship outside the entries. The
-async builds load them on demand; the sync entry embeds them.
+`size-limit` gates the entry sizes. The engine tables ship outside them, loaded on demand by the
+async builds and embedded by the sync entry. Their figure below is the gzip payload inside the
+embedded modules.
 
-| Artifact                        | Measured        | Budget |
-| ------------------------------- | --------------- | ------ |
-| `@telixon/core` Node entry      | 18.79 kB brotli | 22 kB  |
-| `@telixon/core` browser entry   | 21.34 kB brotli | 22 kB  |
-| Engine tables, loaded on demand | 123 kB gzip     | none   |
+| Artifact                        | Measured                     | Budget                     |
+| ------------------------------- | ---------------------------- | -------------------------- |
+| `@telixon/core` Node entry      | {size.nodeEntry.measured}    | {size.nodeEntry.budget}    |
+| `@telixon/core` browser entry   | {size.browserEntry.measured} | {size.browserEntry.budget} |
+| `@telixon/web-sdk`              | {size.webSdk.measured}       | {size.webSdk.budget}       |
+| Engine tables, loaded on demand | {size.engineTables} gzip     | none                       |
 
 ```sh
 pnpm size

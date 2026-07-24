@@ -1,6 +1,6 @@
 ---
 title: parsePhoneNumber
-description: The parsing entry point and its two options.
+description: The parsing entry point, with defaultRegion and strict.
 ---
 
 ```ts
@@ -22,13 +22,20 @@ parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
 
 ## ParsePhoneNumberOptions
 
+```ts
+interface ParsePhoneNumberOptions {
+  defaultRegion?: RegionCode;
+  strict?: boolean;
+}
+```
+
 ### defaultRegion
 
 ```ts
 defaultRegion?: RegionCode;
 ```
 
-The region input without a `+` resolves against. Without it, plus-less digits read as
+The region that a number without a `+` resolves against. Without it, those digits read as
 international, calling code first:
 
 ```ts
@@ -42,7 +49,7 @@ parsePhoneNumber('415-555-0132', { defaultRegion: 'US' }).getRegion(); // 'US'
 strict?: boolean;
 ```
 
-Restricts validity to `defaultRegion`, so `isValid`, `getNumberType`, and
+Restricts validity to `defaultRegion`. `isValid`, `getNumberType`, and
 [`getValidationError`](/core/reference/phone-number/#getvalidationerror) all follow it while the
 possibility checks and the formats ignore it. Without `defaultRegion` it has no effect. It is off
 by default.
