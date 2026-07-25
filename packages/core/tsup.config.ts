@@ -30,7 +30,7 @@ export default defineConfig({
   },
   clean: true,
   splitting: false,
-  sourcemap: true,
+  sourcemap: false,
   treeshake: true,
   target: 'node18',
   esbuildPlugins: [externalEmbedded],
