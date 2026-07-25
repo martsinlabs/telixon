@@ -30,7 +30,7 @@ number.formatInternational(); // "+1 201-555-0123"
 
 Initialization is explicit and asynchronous by default; an API call before it throws `EngineNotReadyError`. `await ensureEngineReady()` from `@telixon/core` loads the engine on demand (a dynamic import, code-split into ~119 KB of lazy chunks in the browser) and decodes it off the main thread. For synchronous initialization, `ensureEngineReadySync()` from `@telixon/core/sync-init` bundles the engine and decodes it in-process (native `node:zlib` in Node, pure-JS elsewhere); in global scope on edge it readies the engine once per isolate, outside per-request CPU accounting. Both entries share one process-wide engine, which decompresses to ~0.61 MB of binary tables.
 
-Full rationale and numbers: [Initialization docs](https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md). Measured bundle breakdown: [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
+Full rationale and numbers: [Load the engine](https://telixon.dev/core/load-the-engine/). Measured bundle breakdown: [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
 
 ## Highlights
 
