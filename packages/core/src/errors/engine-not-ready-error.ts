@@ -18,7 +18,7 @@ export class EngineNotReadyError extends Error {
         '',
         "For synchronous initialization, import ensureEngineReadySync from '@telixon/core/sync-init'.",
         '',
-        'Docs: https://github.com/martsinlabs/telixon/blob/main/docs/initialization.md',
+        'Docs: https://telixon.dev/core/load-the-engine/',
       ].join('\n'),
     );
   }

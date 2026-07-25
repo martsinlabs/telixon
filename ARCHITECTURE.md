@@ -159,7 +159,7 @@ provider is process-wide, so either entry readies one engine and the rest of the
 environment-agnostic. Initialization is explicit: `await ensureEngineReady()` is the default,
 `ensureEngineReadySync()` from `@telixon/core/sync-init` is the synchronous path, and an API call before
 either throws `EngineNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
-detail: [Initialization](docs/initialization.md).
+detail: [Load the engine](https://telixon.dev/core/load-the-engine/).
 
 ## Resolution
 
