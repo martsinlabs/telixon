@@ -36,8 +36,11 @@ export default defineConfig({
         // Browser chrome color per scheme; values mirror the docs canvas backgrounds.
         { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#161618' } },
         { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f7f8f8' } },
-        // No social card image exists, so declare the plain summary card instead of the default large-image card.
-        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary' } },
+        // Social card, shared with the landing page. og:image needs an absolute URL.
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://telixon.dev/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1280' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '640' } },
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
       // One group per available package, labeled by npm name; PackageSidebar matches on that label.
       // The pages inside a group come from the registry's sidebar field.
