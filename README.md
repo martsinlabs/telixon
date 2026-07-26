@@ -1,71 +1,110 @@
-# Telixon
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/src/assets/logo-dark.svg" />
+    <img src="apps/docs/src/assets/logo-light.svg" alt="Telixon" width="300" />
+  </picture>
+</p>
 
-Phone-number parser, formatter, and validator for JavaScript and TypeScript.
+<p align="center">
+  Phone-number parser, formatter, and validator for JavaScript and TypeScript.
+</p>
 
-[![ci](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml/badge.svg)](https://github.com/martsinlabs/telixon/actions/workflows/ci.yml)
-[![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
-[![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
-[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/martsinlabs/telixon)
+<p align="center">
+  <a href="https://github.com/martsinlabs/telixon/actions/workflows/ci.yml"><img src="https://github.com/martsinlabs/telixon/actions/workflows/ci.yml/badge.svg" alt="ci" /></a>
+  <a href="https://proof.telixon.dev/parity.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json" alt="conformance" /></a>
+  <a href="https://proof.telixon.dev/benchmark.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json" alt="benchmarks" /></a>
+  <a href="https://proof.telixon.dev/bundle.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/bundle-badge.json" alt="initial bundle" /></a>
+  <a href="https://codspeed.io/martsinlabs/telixon"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed" /></a>
+</p>
+
+## Quick start
+
+```bash
+npm install @telixon/core
+```
+
+```ts
+import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
+
+await ensureEngineReady();
+
+const number = parsePhoneNumber('+1 (415) 555-0132');
+
+number.isValid(); // true
+number.getRegion(); // 'US'
+number.formatE164(); // '+14155550132'
+```
+
+The same engine drives a phone field, formatting on every keystroke and holding the caret:
+
+```ts
+import { createNationalInputController } from '@telixon/core';
+
+const controller = createNationalInputController({ defaultRegion: 'US' });
+
+controller.insert('', '415', 0, 0);
+// { value: '(415) ', region: 'US', selectionStart: 6, selectionEnd: 6 }
+
+controller.insert('(415) ', '5550132', 6, 6);
+// { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+```
+
+Full documentation is at [telixon.dev](https://telixon.dev), with live demos for the
+[phone field](https://telixon.dev/web-sdk/guides/phone-field/),
+[region picker](https://telixon.dev/web-sdk/guides/region-picker/), and
+[complete field](https://telixon.dev/web-sdk/guides/complete-field/).
+
+## Highlights
+
+- **Compiled to one automaton.** Google publishes its metadata as regular expressions; Telixon
+  compiles them ahead of time into a single deterministic finite automaton. Resolving a number is
+  one linear-time walk, and the state it ends on carries validity, type, region, and format.
+- **No third-party dependencies.** `@telixon/core` installs nothing beyond itself.
+- **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
+  export conditions.
+- **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
+  and the full query surface mid-typing.
+- **TypeScript-first.** Region codes and number types are closed unions; a typo fails to compile.
 
 ## Conformance
 
-Telixon's behavior is verified against Google libphonenumber at the same commit the engine was
-compiled from. The conformance gate runs in CI on every push and pull request and fails on any
-divergence.
+Every query method with a Google libphonenumber counterpart is compared against it, across all 245
+regions. The oracle runs Google's own source at the commit
+[PROVENANCE.json](packages/core/src/engine/PROVENANCE.json) pins for the engine, which rules out
+version drift. The gate runs in CI on every push and pull request. Any divergence fails the build.
 
-- **Version-matched.** [PROVENANCE.json](packages/core/src/engine/PROVENANCE.json) pins the upstream
-  commit; the oracle loads Google's source at that exact commit, so there is no metadata version
-  drift.
-- **Exhaustive.** Every supported region and every public query method, on valid numbers, their
-  display spellings (international, national, RFC3966), deterministic corruptions of them (truncated,
-  extended, digit-shifted, unassigned calling codes), and every digit prefix, plus per-keystroke
-  formatting.
-- **Reproducible.** `pnpm conformance` runs the gate locally.
-
-Live report: [proof.telixon.dev/parity.html](https://proof.telixon.dev/parity.html). Methodology:
-[conformance/README.md](packages/core/conformance/README.md).
-
-## Engine
-
-The engine compiles Google's libphonenumber metadata, which Google publishes as regular expressions,
-into deterministic finite-state automata. Validity and number typing are decided by a recognition DFA;
-region disambiguation and format selection run on finite-state transducers. Every query is a
-linear-time, backtracking-free walk over these tables, which is what keeps per-keystroke resolution
-cheap.
-
-The metadata is runtime data loaded once, out of your JS bundle, so it never affects your initial
-bundle or load (in the browser you trigger the load with `ensureEngineReady()`). Details:
-[ARCHITECTURE.md](ARCHITECTURE.md). Measured bundle breakdown, reproducible from
-[examples/core/bundle-size](examples/core/bundle-size): [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
+Run it locally with `pnpm conformance`. The [live report](https://proof.telixon.dev/parity.html)
+publishes every run; the [methodology](packages/core/conformance/README.md) covers the corpus. Found
+a divergence the gate misses?
+[Report it](https://github.com/martsinlabs/telixon/issues/new?template=conformance_divergence.yml).
 
 ## Packages
 
-| Package               | Status  | Role                                  |
-| --------------------- | ------- | ------------------------------------- |
-| `@telixon/core`       | shipped | engine and phone-number logic         |
-| `@telixon/web-sdk`    | shipped | headless DOM adapter                  |
-| `@telixon/components` | planned | drop-in Web Component (`<tel-input>`) |
-| `@telixon/angular`    | planned | Angular binding                       |
-| `@telixon/react`      | planned | React binding (hook + component)      |
-| `@telixon/vue`        | planned | Vue binding                           |
-
-Install and usage live in each package's README:
-
-- [`@telixon/core`](packages/core/README.md): parse, format, validate.
-- [`@telixon/web-sdk`](packages/web-sdk/README.md): headless DOM input controller.
+| Package                                          | Status  | Role                                  |
+| ------------------------------------------------ | ------- | ------------------------------------- |
+| [`@telixon/core`](packages/core/README.md)       | shipped | parsing, formatting, validation       |
+| [`@telixon/web-sdk`](packages/web-sdk/README.md) | shipped | headless DOM input controller         |
+| `@telixon/components`                            | planned | drop-in Web Component (`<tel-input>`) |
+| `@telixon/angular`                               | planned | Angular binding                       |
+| `@telixon/react`                                 | planned | React binding (hook + component)      |
+| `@telixon/vue`                                   | planned | Vue binding                           |
 
 ## Status
 
-Pre-1.0. The engine and the conformance baseline are functional and CI-gated; the framework bindings
-and the component layer are not yet implemented (see [ARCHITECTURE.md](ARCHITECTURE.md)). APIs may
-change before 1.0.
+`@telixon/core` and `@telixon/web-sdk` are stable at 1.0. Their public APIs follow semantic
+versioning; a breaking change requires a major release.
 
-## Links
+## Support
 
-- [ARCHITECTURE.md](ARCHITECTURE.md): system architecture
-- [CONTRIBUTING.md](CONTRIBUTING.md): setup, workflow, engineering standards
-- [conformance/README.md](packages/core/conformance/README.md): parity report and methodology
-- [bench/README.md](packages/core/bench/README.md): benchmark methodology and live dashboard
+Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
+follow [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Setup, workflow, and the engineering standards are in [CONTRIBUTING.md](CONTRIBUTING.md). The system
+design is in [ARCHITECTURE.md](ARCHITECTURE.md), and benchmark methodology is in
+[bench/README.md](packages/core/bench/README.md).
 
 ## License
 
