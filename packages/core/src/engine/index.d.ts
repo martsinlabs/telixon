@@ -430,6 +430,12 @@ export declare function getRegionNationalPrefix(engine: Engine, regionIndex: num
 
 /**
  * @public
+ * preferredExtnPrefix of a region (the prefix its numbers write before an extension), or undefined.
+ */
+export declare function getRegionPreferredExtnPrefix(engine: Engine, regionIndex: number): string | undefined;
+
+/**
+ * @public
  * preferredInternationalPrefix of a region (the canonical fixed prefix), or undefined.
  */
 export declare function getRegionPreferredInternationalPrefix(engine: Engine, regionIndex: number): string | undefined;
@@ -614,6 +620,7 @@ export declare interface MetadataTablesLayer {
     regionLeadingDigitsRef: Uint16Array;
     regionInternationalPrefixRef: Uint16Array;
     regionPreferredInternationalPrefixRef: Uint16Array;
+    regionPreferredExtnPrefixRef: Uint16Array;
     regionUnionNational: Uint32Array;
     regionUnionLocalOnly: Uint32Array;
     regionTypeOffset: Uint16Array;

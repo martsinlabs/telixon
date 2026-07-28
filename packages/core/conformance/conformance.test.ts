@@ -56,6 +56,9 @@ const EXPECTED_KINDS: readonly CorpusCaseKind[] = [
   'international-display',
   'national-display',
   'rfc3966-uri',
+  'extension-explicit-label',
+  'extension-ambiguous-label',
+  'extension-rfc3966',
   'whitespace-padded',
   'truncated',
   'extended',
@@ -74,6 +77,12 @@ describe('conformance vs Google libphonenumber', () => {
   it('exercises every corpus case kind', () => {
     const populatedKinds = report.composition.filter(({ cases }) => cases > 0).map(({ kind }) => kind);
     expect([...populatedKinds].sort()).toEqual([...EXPECTED_KINDS].sort());
+  });
+
+  it('compares real extension values on both sides, never undefined', () => {
+    const expected = oracle.evaluate('+1 415 555 0132 ext. 22')!;
+    expect(expected.getExtension).toBe('22');
+    expect(evaluateWithTelixon('+1 415 555 0132 ext. 22').getExtension).toBe('22');
   });
 
   it('matches the oracle except for the known-divergence allowlist', () => {

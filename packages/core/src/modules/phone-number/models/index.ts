@@ -50,6 +50,7 @@ export interface ResolvedPhoneNumber {
   readonly readAsNational: boolean;
   readonly callingCodeSeeded: boolean;
   readonly strict: boolean;
+  readonly extension: string | null;
 }
 
 /**
@@ -76,6 +77,8 @@ export interface PhoneNumber {
   getNationalNumber(): string;
   /** The country calling code read from the digits, without the `+`, or `null` when there are none. */
   getCallingCode(): string | null;
+  /** The extension captured at parse, as typed (`ext.`, `x`, `;ext=`, and similar notations), or `null` when none was present. */
+  getExtension(): string | null;
   /** The region the number resolves to, or `null` when none does. */
   getRegion(): RegionCode | null;
   /** E.164, or `null` when the number is not possible. */

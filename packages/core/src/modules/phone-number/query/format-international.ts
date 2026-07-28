@@ -4,10 +4,11 @@ import { buildFormattingContext } from '../../number-resolver/utils/build-format
 import { pickFormatMask } from '../../number-resolver/utils/format-masks';
 import { selectInternationalFormatIndex } from '../../number-resolver/utils/select-international-format';
 import { ResolvedPhoneNumber } from '../models';
+import { appendExtensionSuffix } from './format-extension-suffix';
 import { isPossible } from './is-possible';
 
-// INTERNATIONAL format, or null until possible. Groups via the engine per-length mask, like the controller.
-export function formatInternational(resolved: ResolvedPhoneNumber): string | null {
+// INTERNATIONAL format without the extension suffix; formatRfc3966 builds its URI from this base.
+export function formatInternationalBase(resolved: ResolvedPhoneNumber): string | null {
   const { nationalDigits, callingCode } = resolved;
   if (!isPossible(resolved)) return null;
 
@@ -31,4 +32,10 @@ export function formatInternational(resolved: ResolvedPhoneNumber): string | nul
     buildFormattingContext(mask, nationalDigits, resourceProvider.placeholders),
   ).formatted;
   return `+${callingCode} ${formatted}`;
+}
+
+// INTERNATIONAL format, or null until possible. Groups via the engine per-length mask, like the controller.
+export function formatInternational(resolved: ResolvedPhoneNumber): string | null {
+  const base: string | null = formatInternationalBase(resolved);
+  return base === null ? null : appendExtensionSuffix(base, resolved);
 }
