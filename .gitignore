@@ -4,3 +4,4 @@ dist
 examples/core/bundle-size/report
 packages/core/oracle/.cache
 .DS_Store
+.claude/settings.local.json
