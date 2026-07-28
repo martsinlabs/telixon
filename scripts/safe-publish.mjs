@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Atomically removes dev-only fields from the current package.json, runs
-// `pnpm publish` with all passed-through args, then restores the source file
-// regardless of outcome. Run from the package directory you want to ship.
+// Removes dev-only fields from the current package.json, runs `pnpm publish` with all passed-through
+// args, then restores the source file on success, on failure, and on interrupt. Run from the package
+// directory you want to ship.
 //
 // Stripped fields (none are consumer-facing):
 //   - devDependencies   (tests, conformance, benchmarks; consumers do not install)
@@ -12,7 +12,7 @@
 // Usage (in CI):
 //   node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
 
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -31,18 +31,34 @@ writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
 console.log(`safe-publish: stripped ${stripped.length ? stripped.join(', ') : '(no fields)'}`);
 
-let exitCode = 1;
-try {
-  const result = spawnSync('pnpm', ['publish', ...process.argv.slice(2)], {
-    stdio: 'inherit',
-    shell: false,
-  });
-  exitCode = result.status ?? 1;
-} catch (error) {
-  console.error('safe-publish: pnpm publish crashed:', error);
-} finally {
+// Writes back the original bytes, keeping formatting and key order. Safe to call more than once.
+let restored = false;
+function restoreSource() {
+  if (restored) return;
+  restored = true;
   writeFileSync(pkgPath, original);
   console.log('safe-publish: source package.json restored');
 }
 
-process.exit(exitCode);
+// Async spawn keeps the event loop free; a blocking one would defer these handlers until the child
+// exits, which is exactly when an interrupt needs them.
+const child = spawn('pnpm', ['publish', ...process.argv.slice(2)], { stdio: 'inherit', shell: false });
+
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(signal, () => {
+    child.kill(signal);
+    restoreSource();
+    process.exit(1);
+  });
+}
+
+child.on('error', (error) => {
+  console.error('safe-publish: pnpm publish failed to start:', error);
+  restoreSource();
+  process.exit(1);
+});
+
+child.on('close', (code) => {
+  restoreSource();
+  process.exit(code ?? 1);
+});
