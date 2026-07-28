@@ -28,7 +28,7 @@ function assertInputIsAvailable(input: HTMLInputElement): void {
  * Attach a headless phone input controller to a DOM `<input>` element.
  *
  * Wires DOM events (`beforeinput`, `compositionend`, undo/redo keyboard shortcuts) to a Telixon
- * input controller and synchronizes the input value, caret, and resolved phone metadata.
+ * input controller and synchronizes the input value, selection, and resolved phone metadata.
  *
  * Throws if the element is not `type="text"` or `type="tel"`, if another PhoneInput is already
  * attached to the same element, or if the engine is not ready (`EngineNotReadyError`). Call

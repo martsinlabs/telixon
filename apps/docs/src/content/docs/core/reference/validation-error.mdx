@@ -34,7 +34,7 @@ Every row is a real input and its real result.
 | `'+1 21'`                                                     | `{ kind: 'TOO_SHORT', minLength: 10 }`                     | Fewer digits than the region's shortest number                |
 | `'+1 21255512345678'`                                         | `{ kind: 'TOO_LONG', maxLength: 10 }`                      | More digits than the region's longest number                  |
 | `'+57 321 123 456'`                                           | `{ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }` | The length falls in a gap between valid lengths               |
-| `'5550132'` with `defaultRegion: 'US'`                        | `{ kind: 'POSSIBLE_LOCAL_ONLY' }`                          | Valid only when dialled inside its own area                   |
+| `'5550132'` with `defaultRegion: 'US'`                        | `{ kind: 'POSSIBLE_LOCAL_ONLY' }`                          | Valid only when dialed inside its own area                    |
 | `'+1 1234567890'`                                             | `{ kind: 'PATTERN_MISMATCH' }`                             | The length is valid and the digits match no number            |
 | `'501234567'` with `defaultRegion: 'AE'`                      | `{ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }` | A required national (trunk) prefix was missing                |
 | `'0501234567'` in an `AE` field with the calling code outside | `{ kind: 'NATIONAL_PREFIX_PRESENT', prefix: '0' }`         | The trunk prefix was typed where international input omits it |

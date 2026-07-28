@@ -20,39 +20,51 @@ import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
 await ensureEngineReady(); // load the engine once; the API is synchronous afterward
 
 const number = parsePhoneNumber('+12015550123');
+
 number.isValid(); // true
-number.getRegion(); // "US"
-number.formatE164(); // "+12015550123"
-number.formatInternational(); // "+1 201-555-0123"
+number.getRegion(); // 'US'
+number.formatE164(); // '+12015550123'
+number.formatInternational(); // '+1 201-555-0123'
 ```
 
-## Initialization
+Input controllers take the field's value and selection, then return the formatted value and the caret to write back:
 
-Initialization is explicit and asynchronous by default; an API call before it throws `EngineNotReadyError`. `await ensureEngineReady()` from `@telixon/core` loads the engine on demand (a dynamic import, code-split into ~119 KB of lazy chunks in the browser) and decodes it off the main thread. For synchronous initialization, `ensureEngineReadySync()` from `@telixon/core/sync-init` bundles the engine and decodes it in-process (native `node:zlib` in Node, pure-JS elsewhere); in global scope on edge it readies the engine once per isolate, outside per-request CPU accounting. Both entries share one process-wide engine, which decompresses to ~0.61 MB of binary tables.
+```ts
+import { createNationalInputController } from '@telixon/core';
 
-Full rationale and numbers: [Load the engine](https://telixon.dev/core/load-the-engine/). Measured bundle breakdown: [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
+const controller = createNationalInputController({ defaultRegion: 'US' });
+
+controller.insert('', '4155550132', 0, 0);
+// { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+
+// Deleting the selected '5) 55' drops its digits and reflows what remains.
+controller.deleteBackward('(415) 555-0132', 3, 8);
+// { value: '(415) 013-2', region: 'US', selectionStart: 3, selectionEnd: 3 }
+```
+
+Full documentation is at [telixon.dev/core](https://telixon.dev/core/).
 
 ## Highlights
 
-- **Conformance-verified.** Every public query method matches Google libphonenumber at the pinned commit recorded in [PROVENANCE.json](https://github.com/martsinlabs/telixon/blob/main/packages/core/src/engine/PROVENANCE.json). The gate runs in CI on every push.
-- **Synchronous hot path.** Once the engine is ready, every public API call returns directly, with no Promise allocation. The input path runs on every keystroke.
-- **Deterministic finite-state engine.** Validation, number typing, region resolution, and format selection are linear-time walks over automata compiled from the metadata, not regex passes: backtracking-free.
-- **Engine out of the bundle, on your terms.** The metadata is compressed runtime data, never live JS objects in your bundle, and stays out of your initial bundle by default. You choose when to pay the one-time load cost (at startup, on entering a route with a phone field, or behind `requestIdleCallback`), so it never blocks a route transition or animation.
+- **Conformance-verified.** Every query method with a Google libphonenumber counterpart is compared
+  against it in CI, on every push.
+- **One deterministic finite automaton.** Google publishes its metadata as regular expressions;
+  Telixon compiles them ahead of time into one automaton. A single linear-time walk yields validity,
+  number type, region, and format.
+- **No third-party dependencies.** The package installs nothing beyond itself.
+- **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
+  export conditions.
 
-## What's in this package
+## Support
 
-- `parsePhoneNumber` and the `PhoneNumber` query view (`isValid`, `isPossible`, `getNumberType`, `getRegion`, `formatE164`, `formatNational`, `formatInternational`, `formatRfc3966`, and more).
-- `createInternationalInputController` and `createNationalInputController`: full per-keystroke input controllers (insert and delete at any position, caret tracking, undo/redo, and the complete query surface). The DOM-binding wrapper `createPhoneInput` lives in [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk).
-- Region and number-type helpers: `getCallingCodeForRegion`, `regionSupportsNumberTypes`, `getPlaceholders`, `isNationalPrefixOptional`.
-- `ensureEngineReady`, `isEngineReady`, and `ensureEngineReadySync` (from `@telixon/core/sync-init`): engine initialization and readiness.
+Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
+follow [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md).
 
-## Project
+## Contributing
 
-Architecture, conformance methodology, benchmarks, and the project roadmap live at the [project README](https://github.com/martsinlabs/telixon).
-
-## Status
-
-Pre-release. APIs may change before 1.0.
+Setup, workflow, and the engineering standards are in
+[CONTRIBUTING.md](https://github.com/martsinlabs/telixon/blob/main/CONTRIBUTING.md).
 
 ## License
 

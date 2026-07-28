@@ -21,8 +21,9 @@ produce. Together they stand at 315,988 comparisons with zero divergences. `isVa
 set-compared per case, with 692,672 region checks in the case-coverage sweep alone. The allowlist
 of accepted divergences is empty.
 
-On top of the gate, every push runs a one-million-input parity sample. Weekly, the airtight proof
-enumerates the complete geographic input domain of 1,838,775,900 inputs, split across ten shards.
+On top of the gate, every push runs a one-million-input parity sample. Weekly, the
+[airtight proof](https://github.com/martsinlabs/telixon/actions/workflows/fuzz.yml) enumerates the
+complete geographic input domain of 1,838,775,900 inputs, split across ten shards.
 
 ```sh
 pnpm conformance
@@ -34,8 +35,8 @@ The [parity dashboard](https://proof.telixon.dev/parity.html) publishes every ru
 
 The benchmark measures parsing and query throughput, cold and warm, plus per-keystroke controller
 latency. The reference baseline is the google-libphonenumber npm package, a third-party wrapper
-of Google's port. Since wall-time numbers depend on hardware, this page quotes none.
-CodSpeed tracks instrumented regressions.
+of Google's port. Wall-time numbers depend on hardware. CodSpeed tracks the instrumented
+regressions.
 
 ```sh
 pnpm bench
@@ -45,17 +46,18 @@ The [benchmark dashboard](https://proof.telixon.dev/benchmark.html) publishes ea
 
 ## Size
 
-`size-limit` gates the entry sizes. The engine tables ship outside them, loaded on demand by the
-async builds and embedded by the sync entry. Their figure below is the gzip payload inside the
-embedded modules.
+`size-limit` gates the entry sizes.
 
-| Artifact                        | Measured                     | Budget                     |
-| ------------------------------- | ---------------------------- | -------------------------- |
-| `@telixon/core` Node entry      | {size.nodeEntry.measured}    | {size.nodeEntry.budget}    |
-| `@telixon/core` browser entry   | {size.browserEntry.measured} | {size.browserEntry.budget} |
-| `@telixon/web-sdk`              | {size.webSdk.measured}       | {size.webSdk.budget}       |
-| Engine tables, loaded on demand | {size.engineTables} gzip     | none                       |
+| Artifact                      | Measured                     | Budget                     |
+| ----------------------------- | ---------------------------- | -------------------------- |
+| `@telixon/core` Node entry    | {size.nodeEntry.measured}    | {size.nodeEntry.budget}    |
+| `@telixon/core` browser entry | {size.browserEntry.measured} | {size.browserEntry.budget} |
+| `@telixon/web-sdk`            | {size.webSdk.measured}       | {size.webSdk.budget}       |
 
 ```sh
 pnpm size
 ```
+
+The engine tables ship outside these entries, loaded on demand by the async builds and embedded by
+the sync entry. The [bundle report](https://proof.telixon.dev/bundle.html) measures them from a real
+production build, chunk by chunk.

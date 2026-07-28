@@ -40,13 +40,15 @@ function renderTrigger() {
   code.textContent = '+' + selected.callingCode;
 }
 
+// Shown when the search matches nothing.
+const emptyRow = document.createElement('li');
+emptyRow.className = 'phone-field-empty';
+emptyRow.textContent = 'No matches';
+
 // Full rebuild when the search changes the option set.
 function renderList(state) {
   if (state.options.length === 0) {
-    const empty = document.createElement('li');
-    empty.className = 'phone-field-empty';
-    empty.textContent = 'No matches';
-    list.replaceChildren(empty);
+    list.replaceChildren(emptyRow);
     return;
   }
 
@@ -136,7 +138,7 @@ function applySelection(region) {
   markSelected(region);
 }
 
-// Under a shared calling code the digits decide the region, so follow it.
+// Under a shared calling code the digits decide the region; follow it.
 function followResolvedRegion(region) {
   if (region === null || region === selected.region) return;
   applySelection(region);
@@ -200,7 +202,7 @@ root.addEventListener('keydown', (event) => {
     trigger.focus();
   }
 });
-// Dismiss on the press itself, so releasing a text-selection drag outside never closes the popup.
+// Dismiss on the press itself. Releasing a text-selection drag outside then leaves the popup open.
 // In a framework component, remove this document listener on unmount, next to each machine's destroy.
 function dismissOnOutsidePress(event) {
   if (!popup.hidden && !root.contains(event.target)) closePopup();
@@ -211,7 +213,7 @@ root.addEventListener('focusout', (event) => {
   if (!popup.hidden && event.relatedTarget && !root.contains(event.relatedTarget)) closePopup();
 });
 
-// A new option set moves the cursor to the first row, so Enter picks the top match.
+// A new option set moves the cursor to the first row, which lets Enter pick the top match.
 regions.subscribe((state) => {
   renderList(state);
   setActive(state.options.length > 0 ? state.options[0].region : null);
@@ -221,7 +223,7 @@ phone.subscribe((state) => {
   renderStatus(state);
 });
 
-// The subscriptions fire only on later changes, so render the initial state manually.
+// The subscriptions fire only on later changes; render the initial state manually.
 renderTrigger();
 renderList(regions.getState());
 renderStatus(phone.getState());

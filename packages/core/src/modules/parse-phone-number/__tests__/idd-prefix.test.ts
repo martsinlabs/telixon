@@ -6,7 +6,7 @@ const GB_FIXED = getExampleNumber('GB', 'FIXED_LINE');
 
 describe('parsePhoneNumber: IDD prefix stripping (libphonenumber FROM_NUMBER_WITH_IDD)', () => {
   it('strips the region IDD prefix and parses the remainder as international', () => {
-    // Dialled from Germany (IDD "00") to a UK number: "00" + "44" + national.
+    // Dialed from Germany (IDD "00") to a UK number: "00" + "44" + national.
     const number = parsePhoneNumber('0044' + GB_FIXED, { defaultRegion: 'DE' });
 
     expect(number.getCallingCode()).toBe('44');

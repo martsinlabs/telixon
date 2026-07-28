@@ -1,46 +1,38 @@
 ---
 title: Validate a phone number
-description: Tolerant feedback while the user types and an exact message on submit.
+description: The possibility check, the typed validation error, and the canonical form.
 ---
 
-The possibility checks stay tolerant while the user types. `getValidationError` names the exact
-fault on submit.
+`isValid` is the verdict. `isPossibleWithReason` weighs the calling code and the length while
+leaving the digits alone, which lets an incomplete number pass. `getValidationError` names the exact
+fault behind a failed `isValid`, carrying the numbers that describe it.
 
-## While the user types
+## Possibility
 
-Flag only the failures that more typing cannot fix. A calling code that does not exist and a number
-that is already too long qualify; a short number is still on its way.
+An unfinished number comes back `TOO_SHORT`. A number whose digits belong to no assigned range
+still comes back `IS_POSSIBLE`, because the check never reads them.
 
 ```ts
 import { parsePhoneNumber } from '@telixon/core';
 
-function feedbackWhileTyping(input: string): string | null {
-  const number = parsePhoneNumber(input, { defaultRegion: 'US' });
-  if (number.isValid()) return null;
-
-  switch (number.isPossibleWithReason()) {
-    case 'INVALID_CALLING_CODE':
-      return 'That country code does not exist.';
-    case 'TOO_LONG':
-      return 'This number has too many digits.';
-    default:
-      return null;
-  }
+function reason(input: string) {
+  return parsePhoneNumber(input, { defaultRegion: 'US' }).isPossibleWithReason();
 }
 
-feedbackWhileTyping('+1 415'); // null, still typing
-feedbackWhileTyping('+999 123'); // 'That country code does not exist.'
-feedbackWhileTyping('+1 21255512345678'); // 'This number has too many digits.'
+reason('+1 415'); // 'TOO_SHORT'
+reason('+999 123'); // 'INVALID_CALLING_CODE'
+reason('+1 21255512345678'); // 'TOO_LONG'
+reason('+1 999 555 0132'); // 'IS_POSSIBLE', while isValid() is false
 ```
 
 The six reason codes are under
 [`PossibilityResult`](/core/reference/phone-number/#possibilityresult).
 
-## On submit
+## Validation error
 
-Require [`isValid`](/core/reference/phone-number/#isvalid), then turn the failure into a message.
-The [carried payloads](/core/reference/validation-error/) let each message name the
-fix:
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror) returns `null` for a valid
+number. Otherwise it returns one of nine kinds, each
+[carrying the numbers](/core/reference/validation-error/) behind the fault:
 
 ```ts
 import { parsePhoneNumber, type ValidationError } from '@telixon/core';
@@ -50,36 +42,39 @@ function describe(error: ValidationError): string {
     case 'EMPTY':
       return 'Enter a phone number.';
     case 'INVALID_CALLING_CODE':
-      return 'That country code does not exist.';
+      return 'No country uses this calling code.';
     case 'TOO_SHORT':
-      return `Too short. This number needs ${error.minLength} digits.`;
+      return `Too short. Use at least ${error.minLength} digits.`;
     case 'TOO_LONG':
-      return `Too long. This number takes at most ${error.maxLength} digits.`;
+      return `Too long. Use at most ${error.maxLength} digits.`;
     case 'INVALID_LENGTH':
       return `Wrong length. Valid lengths are ${error.possibleLengths.join(', ')}.`;
     case 'POSSIBLE_LOCAL_ONLY':
-      return 'That number only works when dialled locally.';
+      return 'Add the area code.';
     case 'PATTERN_MISMATCH':
-      return 'The length is right, but no number with these digits exists in this region.';
+      return 'This number does not exist in this region.';
     case 'NATIONAL_PREFIX_MISSING':
       return `Start the number with ${error.expectedPrefix}.`;
     case 'NATIONAL_PREFIX_PRESENT':
-      return `Drop the leading ${error.prefix}.`;
+      return `Remove the leading ${error.prefix}.`;
   }
 }
 
 const number = parsePhoneNumber('+1 415');
 if (!number.isValid()) {
-  describe(number.getValidationError()!); // 'Too short. This number needs 10 digits.'
+  describe(number.getValidationError()!); // 'Too short. Use at least 10 digits.'
 }
 ```
 
-To restrict validity to the form's own region at parse time, use
+The error answers for the value as it stands, which means a half-typed number reports `TOO_SHORT`
+the same way a finished wrong one does.
+
+To restrict validity to a single region at parse time, use
 [`strict`](/core/reference/parse-phone-number/#strict).
 
-## Store the number
+## Canonical form
 
-Store the canonical E.164 string. It parses back with no options:
+`formatE164` produces the canonical string. It parses back with no options:
 
 ```ts
 parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).formatE164(); // '+14155550132'

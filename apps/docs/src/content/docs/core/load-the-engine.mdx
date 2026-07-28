@@ -1,12 +1,10 @@
 ---
 title: Load the engine
-description: Load the engine with ensureEngineReady, or synchronously with ensureEngineReadySync.
+description: Explicit initialization with ensureEngineReady, or synchronously with ensureEngineReadySync.
 ---
 
-import size from '../../../generated/size.json';
-
-The engine is the compiled automaton that every query and controller reads. Importing the package
-does not load it.
+Every query and every controller runs on the engine. It ships in separate modules, outside the
+initial bundle. You load it wherever it fits your app's flow.
 
 ## ensureEngineReady
 
@@ -53,7 +51,7 @@ try {
 function isEngineReady(): boolean;
 ```
 
-Whether the engine is loaded. Branch on it to avoid an `EngineNotReadyError`.
+Whether the engine is loaded. It returns `false` where a query would throw `EngineNotReadyError`.
 
 ```ts
 import { isEngineReady } from '@telixon/core';
@@ -67,9 +65,9 @@ isEngineReady(); // false before ensureEngineReady() resolves
 function ensureEngineReadySync(): void;
 ```
 
-Initializes the engine synchronously, from tables embedded in the bundle. Those tables add about
-[{size.engineTables} gzipped](/verified/#size), a weight that lands only where this entry is
-imported.
+Initializes the engine synchronously, from tables embedded in the bundle. That weight lands only
+where this entry is imported; the [bundle report](https://proof.telixon.dev/bundle.html) measures
+it chunk by chunk.
 
 ```ts
 import { ensureEngineReadySync } from '@telixon/core/sync-init';
@@ -80,12 +78,12 @@ ensureEngineReadySync();
 parsePhoneNumber('+1 (415) 555-0132').isValid(); // true
 ```
 
-Reach for this only where you cannot await, such as a synchronous constructor, a module-level
-default, or a migration script.
+It covers the places that cannot await, such as a synchronous constructor, a module-level default,
+or a migration script.
 
 ## Runtime builds
 
-The package name is the same everywhere. The runtime picks the build behind `@telixon/core`.
+The runtime picks the build behind `@telixon/core`.
 
 | Runtime                  | Build resolved     |
 | ------------------------ | ------------------ |

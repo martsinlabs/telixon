@@ -4,14 +4,15 @@ const REGIONAL_INDICATOR_BASE: number = 0x1f1e6; // U+1F1E6 REGIONAL INDICATOR S
 const LETTER_A: number = 65; // 'A'.charCodeAt(0)
 
 /**
- * Convert an ISO region code to its flag emoji: the two Unicode regional indicator symbols for its
- * letters. `regionToFlagEmoji('US')` returns the United States flag (U+1F1FA U+1F1F8).
+ * Convert an ISO region code to its flag emoji, built from the two Unicode regional indicator
+ * symbols for its letters. `regionToFlagEmoji('US')` returns the United States flag
+ * (U+1F1FA U+1F1F8).
  *
- * Rendering is the platform's choice: systems with flag-emoji support (iOS, macOS, Android, most
+ * Rendering belongs to the platform. Systems with flag-emoji support (iOS, macOS, Android, most
  * Linux) show a flag; systems without it (notably Windows) show the two letters. For a flag on every
- * platform, render an SVG set keyed by the region code instead.
+ * platform, render an SVG set keyed by the region code.
  *
- * Every {@link RegionCode} is two ASCII letters, so the result is always a valid regional indicator
+ * Every {@link RegionCode} is two ASCII letters, which keeps the result a valid regional indicator
  * pair.
  */
 export function regionToFlagEmoji(region: RegionCode): string {

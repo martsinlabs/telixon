@@ -14,13 +14,15 @@ const regions = createRegionList({
 
 let selected = 'US';
 
+// Shown when the search matches nothing.
+const emptyRow = document.createElement('li');
+emptyRow.className = 'region-picker-empty';
+emptyRow.textContent = 'No matches';
+
 // Full rebuild when the search changes the option set.
 function renderList(state) {
   if (state.options.length === 0) {
-    const empty = document.createElement('li');
-    empty.className = 'region-picker-empty';
-    empty.textContent = 'No matches';
-    list.replaceChildren(empty);
+    list.replaceChildren(emptyRow);
     return;
   }
 
@@ -109,12 +111,12 @@ list.addEventListener('click', (event) => {
   if (row) select(row.dataset.region);
 });
 
-// A new option set moves the cursor to the first row, so Enter picks the top match.
+// A new option set moves the cursor to the first row, which lets Enter pick the top match.
 regions.subscribe((state) => {
   renderList(state);
   setActive(state.options.length > 0 ? state.options[0].region : null);
 });
 
-// The subscription fires only on later changes, so render the initial state manually.
+// The subscription fires only on later changes; render the initial state manually.
 renderList(regions.getState());
 status.textContent = 'Selected: United States (+1)';

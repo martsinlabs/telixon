@@ -13,7 +13,7 @@ packages/
   angular/    # (planned)
   react/      # (planned)
   vue/        # (planned)
-  components/ # (planned)
+  web-components/ # (planned)
 ```
 
 ### Core package

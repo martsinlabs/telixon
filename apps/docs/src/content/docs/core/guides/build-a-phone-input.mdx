@@ -1,9 +1,9 @@
 ---
 title: Build a phone input
-description: Wire a text field to a controller that formats live, moves the caret, and keeps history.
+description: Wire a phone field to a controller that formats live, moves the caret, and keeps history.
 ---
 
-A phone input pairs a plain text field with an
+A phone input pairs a plain `<input>` with an
 [`InputController`](/core/reference/input-controller/). The field emits edits; the controller
 returns the next state to write back.
 
@@ -85,8 +85,8 @@ controller.getPhoneNumber().isValid(); // true
 controller.getPhoneNumber().formatE164(); // '+14155550132'
 ```
 
-While the value is unfinished, prefer the tolerant checks; see
-[Validate a phone number](/core/guides/validate-a-phone-number/).
+The full query surface is available on that number, including the possibility check and the typed
+validation error; see [Validate a phone number](/core/guides/validate-a-phone-number/).
 
 ## The international field
 

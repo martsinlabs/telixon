@@ -3,7 +3,7 @@ import { parsePhoneNumber } from '..';
 
 describe('parsePhoneNumber: leading calling code (libphonenumber maybeExtractCountryCode FROM_NUMBER)', () => {
   it('drops a redundant leading calling code when the full number is too long', () => {
-    // RU national input dialled with its own calling code: "7" + "8001234567".
+    // RU national input dialed with its own calling code: "7" + "8001234567".
     const number = parsePhoneNumber('78001234567', { defaultRegion: 'RU' });
 
     expect(number.getRegion()).toBe('RU');

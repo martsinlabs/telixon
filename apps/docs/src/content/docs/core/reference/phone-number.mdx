@@ -70,14 +70,14 @@ parsePhoneNumber('+1 415').getValidationError(); // { kind: 'TOO_SHORT', minLeng
 The six reason codes `isPossibleWithReason` returns. Mirrors Google libphonenumber's
 `ValidationResult`.
 
-| Value                    | Meaning                                                        |
-| ------------------------ | -------------------------------------------------------------- |
-| `IS_POSSIBLE`            | The calling code resolves and the length is dialled nationally |
-| `IS_POSSIBLE_LOCAL_ONLY` | The length is dialled only inside its own area                 |
-| `INVALID_CALLING_CODE`   | The digits begin with no known calling code                    |
-| `TOO_SHORT`              | Fewer digits than the region's shortest number                 |
-| `TOO_LONG`               | More digits than the region's longest number                   |
-| `INVALID_LENGTH`         | The length falls in a gap between valid lengths                |
+| Value                    | Meaning                                                       |
+| ------------------------ | ------------------------------------------------------------- |
+| `IS_POSSIBLE`            | The calling code resolves and the length is dialed nationally |
+| `IS_POSSIBLE_LOCAL_ONLY` | The length is dialed only inside its own area                 |
+| `INVALID_CALLING_CODE`   | The digits begin with no known calling code                   |
+| `TOO_SHORT`              | Fewer digits than the region's shortest number                |
+| `TOO_LONG`               | More digits than the region's longest number                  |
+| `INVALID_LENGTH`         | The length falls in a gap between valid lengths               |
 
 ## Identity
 

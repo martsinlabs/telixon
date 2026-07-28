@@ -100,9 +100,8 @@ lengths that exist.
 
 ## Drive an input
 
-An input controller is the
-[same engine](/core/how-it-works/#parser-and-controller-consistency) called once per keystroke. It
-takes the field's value and caret, then returns the next ones. The field formats from the first digit:
+An input controller takes the field's value and selection, then returns the formatted value and the
+caret to write back. Formatting starts at the first digit:
 
 ```ts
 import { createNationalInputController } from '@telixon/core';
