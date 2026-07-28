@@ -173,9 +173,9 @@
   <body>
     <h1>@telixon/core bundle size</h1>
     <div class="meta">
-      What @telixon/core actually adds to a consumer's initial download, measured from a real Vite production build. The
-      app exercises the entire public API, including the input controller, so the initial figure is the ceiling;
-      tree-shaking trims a typical app below it.<br />
+      What @telixon/core adds to a consumer's initial download, measured from a real Vite production build. The app
+      imports the entire public API, including the input controller, which makes the initial figure a ceiling for any
+      real application.<br />
       Engine compiled from Google's libphonenumber source at
       <a href="https://github.com/google/libphonenumber/commit/{{commit}}"
         >github.com/google/libphonenumber@{{shortCommit}}</a
@@ -187,20 +187,18 @@
       <div class="stat-card">
         <div class="stat-value">{{initialGzip}}</div>
         <div class="stat-label">initial bundle</div>
-        <div class="stat-sub">the entry chunk, gzipped: the entire public API plus the loader, no metadata</div>
+        <div class="stat-sub">the entry chunk gzipped, holding the public API and the loader with no metadata</div>
       </div>
       <div class="stat-card">
         <div class="stat-value muted">{{engineGzip}}</div>
         <div class="stat-label">engine, {{engineChunkCount}} lazy chunks</div>
-        <div class="stat-sub">
-          fetched by <code>ensureEngineReady()</code> after first paint, not in the initial bundle
-        </div>
+        <div class="stat-sub">fetched by <code>ensureEngineReady()</code> after first paint</div>
       </div>
       <div class="stat-card">
         <div class="stat-value muted">{{inlinedGzip}}</div>
         <div class="stat-label">what an analyzer reports</div>
         <div class="stat-sub">
-          bundlephobia and Import Cost inline the lazy chunks, so they show initial plus engine as one number
+          bundlephobia and Import Cost inline the lazy chunks, reporting initial plus engine as one number
         </div>
       </div>
     </div>
@@ -218,8 +216,8 @@
     <h2 id="chunks">Chunks</h2>
     <div class="section-note">
       Every JavaScript file the build emitted, gzipped at level 9 and brotli-compressed at quality 11. The engine's four
-      base64-of-gzip modules are referenced through dynamic <code>import()</code>, so the bundler splits each into its
-      own lazy chunk instead of inlining it into the entry.
+      base64-of-gzip modules are referenced through dynamic <code>import()</code>, which makes the bundler split each
+      into its own lazy chunk.
     </div>
     <table>
       <thead>
@@ -236,17 +234,16 @@
       </tbody>
     </table>
 
-    <h2 id="why">Why the analyzer number is higher</h2>
+    <h2 id="why">How analyzers count this</h2>
     <div class="section-note">
       <p>
-        Tools like bundlephobia and the Import Cost editor extension estimate size by inlining every
-        <code>import()</code> back into the entry, because they cannot model how a real bundler code-splits an
-        application. For a library that ships its data through lazy chunks, that collapses the initial bundle and the
-        on-demand engine into a single figure ({{inlinedGzip}}).
+        bundlephobia and the Import Cost editor extension estimate size by inlining every <code>import()</code> back
+        into the entry, since neither models code-splitting. For a library that ships its data through lazy chunks, that
+        collapses the initial bundle and the on-demand engine into one figure ({{inlinedGzip}}).
       </p>
       <p>
         A production bundler keeps the split. The engine layers download in parallel, off the critical path, when
-        <code>ensureEngineReady()</code> runs. The number that reaches a user on first paint is the entry chunk:
+        <code>ensureEngineReady()</code> runs. The entry chunk is what reaches a user on first paint, at
         <strong>{{initialGzip}} gzipped</strong>.
       </p>
     </div>
@@ -257,8 +254,8 @@ cd telixon &amp;&amp; pnpm install
 pnpm --filter @telixon/core build
 pnpm --filter @telixon/example-core-bundle-size build</code></pre>
     <div class="section-note">
-      The build prints the same chunk sizes you see above. No bundler configuration hides anything: the engine is split
-      because it is loaded through dynamic <code>import()</code>, which is how a real consumer's bundler treats it.
+      The build prints the same chunk sizes as the table above. The engine splits because it loads through dynamic
+      <code>import()</code>, exactly as it does in a consumer's build.
     </div>
 
     <footer>

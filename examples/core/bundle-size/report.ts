@@ -92,7 +92,7 @@ function measureChunk(file: string): Chunk {
     file,
     role: ENGINE_CHUNK_PATTERN.test(file) ? 'engine' : 'initial',
     raw: bytes.byteLength,
-    // Maximum compression on both, so the figures are the smallest a server could transfer.
+    // Maximum compression on both; the figures are the smallest a server could transfer.
     gzip: gzipSync(bytes, { level: 9 }).byteLength,
     brotli: brotliCompressSync(bytes, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 } }).byteLength,
   };
