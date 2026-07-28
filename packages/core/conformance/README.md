@@ -16,14 +16,14 @@ Full report with sample mismatches:
 npx vitest run --config vitest.conformance.config.ts --disableConsoleIntercept
 ```
 
-Excluded from `pnpm test`, so the unit suite stays fast and offline.
+Excluded from `pnpm test`, which keeps the unit suite fast and offline.
 
 ## Version-matched oracle
 
 Google publishes no npm package. Its JS port lives as Closure-coupled source in the repo. The oracle
 fetches that source at the **same commit the engine was built from** (`src/engine/PROVENANCE.json`)
-and runs it on `google-closure-library`. Sources are cached under `.cache/<commit>/`, so only the
-first run needs network.
+and runs it on `google-closure-library`. Sources are cached under `.cache/<commit>/`, leaving only
+the first run in need of network.
 
 Because the oracle and the engine share one commit, there is **no metadata version drift**: any
 mismatch is a real engine difference, never a stale reference.
@@ -67,9 +67,8 @@ oracle and engine pinned to google/libphonenumber@<commit> · no metadata drift
 
 The header shows the shared commit, coverage, and the corpus composition by case kind (`skipped` =
 example or display-variant inputs the oracle could not parse; must be zero). One line per method:
-match rate and `(matched / total)`. Any mismatch prints an indented line: `expected` is Google,
-`actual` is Telixon. The prefix sweep prints its own block after the table. Live numbers are on the
-[dashboard](https://proof.telixon.dev/parity.html).
+match rate and `(matched / total)`. Any mismatch prints an indented line, where `expected` is
+Google and `actual` is Telixon. The prefix sweep prints its own block after the table.
 
 ## Gate
 
@@ -97,8 +96,8 @@ Two sweeps run in the gate:
 
 - **corpus**: every corpus case over its region cluster;
 - **case coverage**: one number per distinct engine case (lengths 1-15). `isValidForRegion` is a
-  pure function of the end state, the national length, and the region, so this sweep covers the
-  method's entire reachable domain.
+  pure function of the end state, the national length, and the region, which makes this sweep cover
+  the method's entire reachable domain.
 
 Inputs Google rejects at parse follow the rejection contract: Telixon must judge them valid for no
 candidate. Mismatches feed the same allowlist audit as every other axis.
@@ -108,8 +107,8 @@ candidate. Mismatches feed the same allowlist audit as every other axis.
 `measureAsYouType` (in `as-you-type.ts`) replays each corpus number one character at a time through
 both input controllers, international and national, and compares the live value at every keystroke
 against Google's `AsYouTypeFormatter`. The controllers and `formatInternational` / `formatNational`
-share one format selector, so a complete number renders identically; while typing, grouping is applied
-progressively. This is a measurement printed in the run, not a gate.
+share one format selector, which renders a complete number identically; while typing, grouping is
+applied progressively. The run prints this as a measurement; the gate ignores it.
 
 ## Baseline
 
@@ -128,10 +127,10 @@ parsed under identical conditions on both sides.
 | `display-variant` | international display, national display (parsed with the region), RFC3966 URI, padding                | both sides parse; all methods compared                                            |
 | `mutation`        | truncated (1-3 digits), extended (1-2 digits), first national digit shifted, unassigned calling codes | all methods compared; if Google rejects at parse, Telixon must judge not possible |
 
-The comparison is differential: a mutation that happens to stay valid is still a case, because both
-sides must agree on whatever the verdict is.
+The comparison is differential, which keeps a mutation that happens to stay valid as a case, because
+both sides must agree on whatever the verdict is.
 
-The prefix sweep is a fourth axis: every digit prefix of every example is parsed by both sides and
+The prefix sweep is a fourth axis, where every digit prefix of every example is parsed by both sides and
 `isPossibleWithReason` must match verbatim, prefix by prefix. This is the verdict surface the input
 controllers expose per keystroke.
 

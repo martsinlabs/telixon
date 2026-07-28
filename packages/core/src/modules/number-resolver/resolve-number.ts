@@ -104,7 +104,7 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     };
   }
 
-  // National-mode digits beginning with the region's IDD prefix are internationally dialled: strip the
+  // National-mode digits beginning with the region's IDD prefix are internationally dialed: strip the
   // prefix and parse the remainder as international (libphonenumber FROM_NUMBER_WITH_IDD).
   let iddRemainder: string | null = null;
   if (!hasLeadingPlus && defaultRegionIndex !== -1) {
@@ -114,7 +114,7 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
 
   const readAsNational: boolean = !hasLeadingPlus && defaultRegionIndex !== -1 && iddRemainder === null;
 
-  // True once a redundant leading calling code is dropped: from then on the number behaves as if dialled
+  // True once a redundant leading calling code is dropped: from then on the number behaves as if dialed
   // through that calling code, so the strip below prefers its main region over the default region.
   let leadingCallingCodeStripped = false;
   if (readAsNational) {

@@ -29,7 +29,7 @@ export type ValidationError =
   | { readonly kind: 'TOO_LONG'; readonly maxLength: number }
   /** The length falls in a gap between valid lengths. `possibleLengths` lists the lengths that exist. */
   | { readonly kind: 'INVALID_LENGTH'; readonly possibleLengths: readonly number[] }
-  /** Valid only when dialled inside its own area. */
+  /** Valid only when dialed inside its own area. */
   | { readonly kind: 'POSSIBLE_LOCAL_ONLY' }
   /** The length is valid but the digits match no number that exists in the region. */
   | { readonly kind: 'PATTERN_MISMATCH' }
@@ -70,7 +70,7 @@ export interface PhoneNumber {
   isPossibleWithReason(): PossibilityResult;
   /** The fault to correct, or `null` when none applies. One of nine typed variants. */
   getValidationError(): ValidationError | null;
-  /** The line type, such as `MOBILE` or `FIXED_LINE`. `UNKNOWN` when the number is not valid or the type is ambiguous. */
+  /** The line type, such as `MOBILE` or `FIXED_LINE`. `UNKNOWN` means the number is not valid. */
   getNumberType(): NumberType;
   /** The national significant number: digits only, with the national prefix stripped. */
   getNationalNumber(): string;

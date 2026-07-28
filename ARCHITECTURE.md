@@ -15,7 +15,7 @@ self-contained.
 Telixon is a phone-number library verified against Google libphonenumber, the reference implementation. Four priorities drive every decision, in order:
 
 1. **Performance.** The input path runs on every keystroke. Allocation and indirection in hot paths
-   are defects, not style choices.
+   count as defects.
 2. **Accuracy.** Behavior is verified against Google's libphonenumber, the reference implementation,
    at a pinned commit. Divergence is a bug.
 3. **Stability.** The public API is a contract. Additions are deliberate; removals are breaking.
@@ -42,12 +42,14 @@ telixon/
     core/          @telixon/core    pure engine, all phone-number logic
     web-sdk/       @telixon/web-sdk headless DOM adapter for <input> elements
   apps/
+    docs/          landing page and documentation site (telixon.dev), never published to npm
     sandbox/       internal dev workbench (Vite + TS), never published
+  examples/        runnable examples, one per topic
   CLAUDE.md        engineering standards and AI-assistant operating notes
   ARCHITECTURE.md  this document
 ```
 
-Planned packages (not yet present): `components`, `angular`, `react`, `vue`.
+Planned packages (not yet present): `web-components`, `angular`, `react`, `vue`.
 The layer model below is designed so they slot in without reshaping existing packages.
 
 ## Layer stack
@@ -62,17 +64,17 @@ Each layer adds one concern and depends only on layers beneath it.
 | 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge) | layer 1    | present |
 | 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`                      | core       | present |
 | 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                        | web-sdk    | planned |
-| 6     | `components`                  | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
+| 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
 | 7     | user code                     | All markup, styles, region-selector wiring                            | a binding  | n/a     |
 
 The split keeps the engine free of DOM, reactivity, and framework weight, and lets a caller enter at
 the level matching their need:
 
-- **`@telixon/components`**: drop in a component, one line. (planned)
+- **`@telixon/web-components`**: drop in a component, one line. (planned)
 - **`@telixon/web-sdk`**: bring your own UI, roughly ten lines.
 - **`@telixon/core`**: bypass the SDK.
 
-UI rendering belongs only in the planned `components` layer; `web-sdk` stays UI-free.
+UI rendering belongs only in the planned `web-components` layer; `web-sdk` stays UI-free.
 
 ## Data flow
 
@@ -83,33 +85,32 @@ truth for the resolved value; everything downstream reacts.
 DOM event
   -> web-sdk translates it to a core insert / delete / caret operation
   -> core resolves and returns InputState
-  -> web-sdk applies value and caret to the <input>, then notifies subscribers
+  -> web-sdk applies value and selection to the <input>, then notifies subscribers
   -> framework binding maps the new state to reactive state
   -> user code re-renders
 ```
 
-The engine is imperative and synchronous: a call returns the next `InputState` directly. Reactivity is
-added once, in `web-sdk`, via `subscribe(listener)`; it is not baked into the engine.
+The engine is imperative and synchronous, returning the next `InputState` directly from a call.
+Reactivity is added once, in `web-sdk`, via `subscribe(listener)`; the engine itself carries none.
 
 ## Engine
 
 The engine is the original work and the differentiator.
 
-**It is a generated artifact, not hand-written source.** `core/src/engine` contains no hand-written
-`.ts` source. It is `index.js` + `index.d.ts` (the accessor API) plus binary layers, compiled from
-Google's libphonenumber metadata by a separate tool. Never hand-edit it; changes come from recompiling and
+**It is a generated artifact.** `core/src/engine` holds `index.js` and `index.d.ts` (the accessor
+API) plus binary layers, all compiled from Google's libphonenumber metadata by a separate tool. Never hand-edit it; changes come from recompiling and
 bumping provenance.
 
-**It is a family of deterministic finite-state automata, not per-region data.** Google publishes its
-metadata as regular expressions; the compiler turns them into automata. At the core is a recognition
-DFA: a number's digits drive deterministic state transitions, and the state reached decides validity
-and number type. Region disambiguation and format selection run on dedicated finite-state transducers,
-automata that emit a value (a region, a format index) at the end of the walk instead of a yes/no.
-Resolving a number is therefore a linear-time table walk, deterministic and backtracking-free, which is
-what makes per-keystroke resolution cheap. The recognition automaton is global and unified: one number
-is matched against every region at once, with no per-region data to load. Two regular expressions
+**It is one deterministic finite automaton whose states carry the answers.** Google publishes its
+metadata as regular expressions; the compiler turns them into a single state graph. A number's
+digits drive one walk, deterministic and backtracking-free, and the state the walk ends on is the
+key to every answer. Validity, number type, region, and format index are read off that state through
+accessors shaped `(engine, state, ...)`, which makes the engine a Moore machine, an automaton whose
+output is a function of the state it reaches. One linear-time walk per resolution is what keeps
+per-keystroke work cheap. The automaton is global and unified, matching one
+number against every region at once, with no per-region data to load. Two regular expressions
 survive at runtime, both anchored prefix transforms built from the metadata. The per-territory
-national-prefix rewrite is a bounded capture-group transform; the IDD strip removes a dialled
+national-prefix rewrite is a bounded capture-group transform; the IDD strip removes a dialed
 international prefix before the digits are resolved. Each matches a short leading prefix, never the
 number as a whole. The engine ships as four embedded modules carrying nine binary layers:
 
@@ -145,17 +146,18 @@ statically bundles the modules and decodes them in-process. Each uses the fastes
 
 The pure-JS base64 + gunzip floor runs in any runtime and is byte-equality-tested against zlib in CI.
 
-The bundle-size story is code-and-data separation, not "ship fewer regions":
+Bundle size follows from separating code and data:
 
 - The JS code is tree-shakeable; a caller pays only for the functions they import.
-- The engine artifact is runtime data, out of the initial JS bundle (~119 KB compressed across four
-  content-hashed chunks, ~0.61 MB decompressed). The async entries load it lazily (cached after first
-  load on the web); `@telixon/core/sync-init` carries it in the bundle.
+- The engine artifact is runtime data, out of the initial JS bundle and split across four
+  content-hashed chunks. The async entries load it lazily (cached after first load on the web);
+  `@telixon/core/sync-init` carries it in the bundle instead. Measured figures are published at
+  [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
 
 `index.node.ts`, `index.browser.ts`, and `index.edge.ts` (selected via package export conditions) bind
 `ensureEngineReady()` to the environment's loader and re-export the shared `index.ts`;
 `index.sync-init.ts` and `index.sync-init.node.ts` back the `@telixon/core/sync-init` entry. The
-provider is process-wide, so either entry readies one engine and the rest of the code stays
+provider is process-wide, which lets either entry ready one engine while the rest of the code stays
 environment-agnostic. Initialization is explicit: `await ensureEngineReady()` is the default,
 `ensureEngineReadySync()` from `@telixon/core/sync-init` is the synchronous path, and an API call before
 either throws `EngineNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
@@ -182,17 +184,17 @@ in CI; the rest are enforced in review.
 `packages/core/conformance` runs the public query methods against Google's libphonenumber across every
 supported region, on valid numbers, display spellings, deterministic corruptions, and every digit
 prefix, and fails CI on any divergence outside an explicit allowlist. The oracle loads Google's
-source at **the same commit the engine was compiled from**, so there is no metadata version drift: a
-mismatch is always a real engine difference, never a stale reference. The current baseline is on the
+source at **the same commit the engine was compiled from**, which rules out metadata version drift.
+A mismatch is always a real engine difference, never a stale reference. The current baseline is on the
 [live dashboard](https://proof.telixon.dev/parity.html). See
 [conformance/README.md](packages/core/conformance/README.md).
 
 ### Performance
 
-The per-keystroke path is hot. The standing rule: avoid allocation, regex, and indirection in hot
-paths; prefer charCode parsing and early exits. Outside hot paths, allocation is fine where it improves
-clarity. This is a discipline applied in review and backed by the benchmark suite (`pnpm bench`), with
-continuous performance regression tracking in CI via CodSpeed. It is not a formal zoning map.
+The per-keystroke path is hot. The standing rule avoids allocation, regex, and indirection there,
+preferring charCode parsing and early exits. Outside hot paths, allocation is fine where it improves
+clarity. Review applies the discipline, and the benchmark suite (`pnpm bench`) backs it, with
+continuous performance regression tracking in CI via CodSpeed.
 
 ### Bundle size
 
@@ -206,8 +208,8 @@ These keep modules independent and the dependency graph legible. They are enforc
 - **One primary concept per file**, named for the one thing it exports.
 - **Self-contained modules.** Each owns its `models/`, `utils/`, and `index.ts`.
 - **`index.ts` is a re-export barrel only.** No logic in a barrel.
-- **Never import a module's internals.** Import only from another module's `index.ts`, so internal
-  layout is free to change without rippling outward.
+- **Never import a module's internals.** Import only from another module's `index.ts`, leaving
+  internal layout free to change without rippling outward.
 - **Types live close to usage.** Promote a type to `models/` only once it is shared across modules.
 
 ## Naming

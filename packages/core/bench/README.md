@@ -19,7 +19,7 @@ versions are resolved at runtime from `node_modules`, pinned in `package.json`.
 
 Built at startup from the [oracle](../oracle/) (Google libphonenumber source at the engine's pinned
 commit), filtered to the engine's supported regions, one example number per region per type. No
-on-disk snapshot, so the bench cannot drift from conformance.
+on-disk snapshot, which keeps the bench from drifting away from conformance.
 
 ## Scenarios
 

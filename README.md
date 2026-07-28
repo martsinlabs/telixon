@@ -35,18 +35,29 @@ number.getRegion(); // 'US'
 number.formatE164(); // '+14155550132'
 ```
 
-The same engine drives a phone field, formatting on every keystroke and holding the caret:
+[`@telixon/web-sdk`](packages/web-sdk/README.md) turns a plain `<input>` into a phone field,
+handling the events, the caret, and the history:
 
 ```ts
-import { createNationalInputController } from '@telixon/core';
+import { ensureEngineReady } from '@telixon/core';
+import { createPhoneInput } from '@telixon/web-sdk';
 
-const controller = createNationalInputController({ defaultRegion: 'US' });
+await ensureEngineReady();
 
-controller.insert('', '415', 0, 0);
-// { value: '(415) ', region: 'US', selectionStart: 6, selectionEnd: 6 }
+const input = document.querySelector('input')!;
 
-controller.insert('(415) ', '5550132', 6, 6);
-// { value: '(415) 555-0132', region: 'US', selectionStart: 14, selectionEnd: 14 }
+const phone = createPhoneInput({
+  mode: 'national',
+  defaultRegion: 'US',
+  input,
+});
+
+phone.subscribe((state) => {
+  // After typing 4155550132:
+  // state.value            '(415) 555-0132'
+  // state.region           'US'
+  // state.validationError  null
+});
 ```
 
 Full documentation is at [telixon.dev](https://telixon.dev), with live demos for the
@@ -58,12 +69,12 @@ Full documentation is at [telixon.dev](https://telixon.dev), with live demos for
 
 - **Compiled to one automaton.** Google publishes its metadata as regular expressions; Telixon
   compiles them ahead of time into a single deterministic finite automaton. Resolving a number is
-  one linear-time walk, and the state it ends on carries validity, type, region, and format.
+  one linear-time walk; the state it ends on carries validity, type, region, and format.
+- **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
+  and the full query surface mid-typing.
 - **No third-party dependencies.** `@telixon/core` installs nothing beyond itself.
 - **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
   export conditions.
-- **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
-  and the full query surface mid-typing.
 - **TypeScript-first.** Region codes and number types are closed unions; a typo fails to compile.
 
 ## Conformance
@@ -84,15 +95,10 @@ a divergence the gate misses?
 | ------------------------------------------------ | ------- | ------------------------------------- |
 | [`@telixon/core`](packages/core/README.md)       | shipped | parsing, formatting, validation       |
 | [`@telixon/web-sdk`](packages/web-sdk/README.md) | shipped | headless DOM input controller         |
-| `@telixon/components`                            | planned | drop-in Web Component (`<tel-input>`) |
+| `@telixon/web-components`                        | planned | drop-in Web Component (`<tel-input>`) |
 | `@telixon/angular`                               | planned | Angular binding                       |
 | `@telixon/react`                                 | planned | React binding (hook + component)      |
 | `@telixon/vue`                                   | planned | Vue binding                           |
-
-## Status
-
-`@telixon/core` and `@telixon/web-sdk` are stable at 1.0. Their public APIs follow semantic
-versioning; a breaking change requires a major release.
 
 ## Support
 
@@ -103,7 +109,7 @@ follow [SECURITY.md](SECURITY.md).
 ## Contributing
 
 Setup, workflow, and the engineering standards are in [CONTRIBUTING.md](CONTRIBUTING.md). The system
-design is in [ARCHITECTURE.md](ARCHITECTURE.md), and benchmark methodology is in
+design is in [ARCHITECTURE.md](ARCHITECTURE.md); benchmark methodology is in
 [bench/README.md](packages/core/bench/README.md).
 
 ## License

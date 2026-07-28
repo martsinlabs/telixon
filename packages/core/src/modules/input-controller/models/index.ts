@@ -2,7 +2,7 @@ import { NumberType, RegionCode } from '@telixon/core/engine';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { PhoneNumber } from '../../phone-number/models';
 
-/** The next value and caret to apply to the field. Returned by every mutating {@link InputController} method. */
+/** The next value and selection to apply to the field. Returned by every mutating {@link InputController} method. */
 export interface InputState {
   /** The formatted string to place in the field. */
   readonly value: string;
@@ -61,6 +61,6 @@ export interface InputController {
   readonly canUndo: boolean;
   /** Whether there is history to {@link InputController.redo}. */
   readonly canRedo: boolean;
-  /** The value and caret as they stand, without mutating. */
+  /** The value and selection as they stand, without mutating. */
   readonly currentState: InputState;
 }

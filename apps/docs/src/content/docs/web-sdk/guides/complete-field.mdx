@@ -20,6 +20,10 @@ empty field's placeholder now a Canadian example. Type `6045550132` and the fiel
 `604-555-0132` with the status `Valid: +16045550132`. Reopen the picker and choose United States.
 `604` still belongs to Canada, which flips the flag straight back.
 
+Undo reaches the picker as well. Cmd/Ctrl+Z steps back through the digits, then through the region
+change itself, carrying the flag and the calling code with it. Cmd/Ctrl+Shift+Z replays the whole
+sequence.
+
 The keyboard works throughout. Search `united k` and press Enter, or walk the rows with the arrow
 keys. Select the United Kingdom and type `07400123456`. The leading zero is a trunk prefix with no
 place after `+44`. The status reads `NATIONAL_PREFIX_PRESENT`.

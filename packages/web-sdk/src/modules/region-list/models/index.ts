@@ -7,7 +7,7 @@ import type { NumberType, RegionCode } from '@telixon/core';
  * - `callingCode`: numeric calling code as string (e.g. `'1'`).
  * - `displayName`: region name from `Intl.DisplayNames` for the active locale; falls back to the
  *   ISO region code when the runtime can't produce a localized name. The exact string depends on the
- *   runtime's ICU data, so it is not byte-stable across environments (Node/browser/ICU versions).
+ *   runtime's ICU data, which leaves it byte-unstable across environments (Node/browser/ICU versions).
  * - `data`: caller-defined payload produced by {@link RegionDataFactory}; `undefined` when no factory.
  */
 export type RegionOption<T = undefined> = {
@@ -37,14 +37,14 @@ export type RegionDataFactory<T = undefined> = (input: RegionDataFactoryInput) =
 /**
  * Custom search predicate. Returns `true` to include `option` in the filtered result.
  *
- * The library short-circuits empty and whitespace-only queries and does not invoke this function.
- * The function receives the raw `query`; perform any normalization needed internally.
+ * Empty and whitespace-only queries short-circuit without calling this function. The `query` arrives
+ * raw; normalize it inside the predicate when needed.
  */
 export type RegionSearchFn<T = undefined> = (query: string, option: RegionOption<T>) => boolean;
 
 /**
  * Sort selector. Built-in comparators collate `displayName` in the list's `locale` and break ties by
- * region code, so they are total orders (stable run to run). Because `displayName` comes from
+ * region code, which makes them total orders (stable run to run). Because `displayName` comes from
  * `Intl.DisplayNames` and collation uses the runtime's ICU, the resulting order is locale/ICU dependent
  * and not guaranteed identical across environments.
  *
@@ -97,9 +97,9 @@ export type RegionListListener<T = undefined> = (state: RegionListState<T>) => v
  * Headless region list controller. Produces a reactive, filtered, sorted, searched, localized list
  * of region options for pickers, dropdowns, and selector UIs.
  *
- * The naming distinction is intentional: action verbs (`search`, `localize`) name user-driven
- * interactions; `set*` names declarative config mutations. No initial emit is fired on
- * construction. Call `getState()` after `subscribe` to read the bootstrap value.
+ * Action verbs (`search`, `localize`) name user-driven interactions; `set*` names declarative config
+ * mutations. No initial emit is fired on construction. Call `getState()` after `subscribe` to read
+ * the bootstrap value.
  */
 export type RegionList<T = undefined> = {
   /** Subscribe to state changes. Returns an unsubscribe function. */

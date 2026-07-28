@@ -79,7 +79,7 @@ interface InputState {
 }
 ```
 
-The next value and caret to apply to the field. `value` is the formatted string; the selection
+The next value and selection to apply to the field. `value` is the formatted string; the selection
 indices point into it.
 
 `region` is the region the value resolves to, or `null` when none does. Within a shared calling
@@ -234,7 +234,7 @@ typed national (trunk) prefix there reports
 readonly currentState: InputState;
 ```
 
-The value and caret as they stand.
+The value and selection as they stand.
 
 ## Conformance
 

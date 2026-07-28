@@ -19,12 +19,14 @@ pnpm install --frozen-lockfile
 
 ## Project layout
 
-A pnpm monorepo. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full picture.
+A pnpm monorepo.
 
 ```
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
+apps/docs          landing page and documentation site (telixon.dev)
 apps/sandbox       internal dev workbench
+examples/          runnable examples, one per topic
 ```
 
 ## Development
@@ -43,12 +45,14 @@ Run from the repo root:
 | `pnpm bench`                 | benchmarks, console output                                                   |
 | `pnpm bench:report`          | bench + writes `bench.json`, `bench-badge.json`, `benchmark.html`            |
 | `pnpm conformance`           | parity gate vs Google libphonenumber (fetches Google source once per commit) |
+| `pnpm fuzz`                  | randomized differential sweep against the oracle                             |
+| `pnpm size`                  | `size-limit` budgets for the published entries                               |
 | `pnpm build`                 | build all packages                                                           |
 
 ## Submitting changes
 
-`main` is protected: every change lands through a pull request, and merges are squash-only, so the
-pull request title becomes the commit subject on `main`.
+`main` is protected. Every change lands through a pull request, and merges are squash-only, which
+makes the pull request title the commit subject on `main`.
 
 1. Branch off `main`.
 2. Make your change.
@@ -112,7 +116,7 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
 
 - No unnecessary allocations or copies in hot paths.
 - Every dependency must be justified by measurable need.
-- Bundle size is a hard constraint, not a soft preference.
+- Bundle size is a hard constraint.
 
 ### Hard rules
 
@@ -123,7 +127,7 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
   - **I/O adapter.** A runtime boundary is bridged behind an interface (e.g. resource loaders).
   - **Cached interface implementation.** The class exists solely to memoize underlying pure
     functions on a per-instance basis (e.g. `PhoneNumberView` for `PhoneNumber`). Same input must
-    produce the same output across calls; the class adds caching, not behavior.
+    produce the same output across calls; the class adds caching alone.
   - **State machine.** The contract is a sequence of state transitions reached through an
     imperative API (e.g. `NumberResolver.advance(...)`, `.reset()`, `.snapshot`). The class wraps
     a mutation sequence that has no equivalent pure form.
