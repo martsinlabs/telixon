@@ -30,8 +30,11 @@ Do not file a public issue. Do not post details on social media or blogs before 
 
 ## Supported versions
 
-Pre-1.0. Security fixes target the latest published version only. A formal LTS policy will be defined
-at 1.0.
+| Version | Supported |
+| ------- | --------- |
+| 1.x     | Yes       |
+
+Security fixes land in the latest `1.x` release.
 
 ## Response timeline
 
