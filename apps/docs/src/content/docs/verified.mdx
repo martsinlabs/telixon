@@ -10,16 +10,16 @@ push. Each section names the method and the command that reproduces it.
 
 ## Conformance
 
-Twelve of the thirteen [`PhoneNumber`](/core/reference/phone-number/) methods have a Google
+Thirteen of the fourteen [`PhoneNumber`](/core/reference/phone-number/) methods have a Google
 libphonenumber counterpart; every one of them is compared against it. The oracle is version-matched, running Google's own JavaScript source at
 the exact commit the engine's metadata was built from. Every mismatch it reports is a real
 behavioral difference.
 
-The gate runs two sweeps. The full corpus compares the twelve methods on 11,232 inputs each, across
-all 245 regions, while case coverage compares one number from every distinct case the library can
-produce. Together they stand at 315,988 comparisons with zero divergences. `isValidForRegion` is
-set-compared per case, with 692,672 region checks in the case-coverage sweep alone. The allowlist
-of accepted divergences is empty.
+The gate runs two sweeps. The full corpus compares the thirteen methods on 14,355 inputs each,
+across all 245 regions, extension spellings included, while case coverage compares one number from
+every distinct case the library can produce. Together they stand at 367,766 comparisons with zero
+divergences. `isValidForRegion` is set-compared per case, with 692,513 region checks in the
+case-coverage sweep alone. The allowlist of accepted divergences is empty.
 
 On top of the gate, every push runs a one-million-input parity sample. Weekly, the
 [airtight proof](https://github.com/martsinlabs/telixon/actions/workflows/fuzz.yml) enumerates the

@@ -11,6 +11,9 @@ export type CorpusCaseKind =
   | 'international-display'
   | 'national-display'
   | 'rfc3966-uri'
+  | 'extension-explicit-label'
+  | 'extension-ambiguous-label'
+  | 'extension-rfc3966'
   | 'whitespace-padded'
   // family 'mutation': a deterministic corruption of the example.
   | 'truncated'

@@ -21,6 +21,7 @@ export interface MethodResults {
   readonly getNumberType: NumberType;
   readonly getNationalNumber: string;
   readonly getCallingCode: string | null;
+  readonly getExtension: string | null;
   readonly getRegion: string | null;
   readonly formatE164: string | null;
   readonly formatNational: string | null;
