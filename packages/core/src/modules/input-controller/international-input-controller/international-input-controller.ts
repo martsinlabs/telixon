@@ -360,7 +360,7 @@ class InternationalInputController implements InputController {
       strict: this.config.strict === true,
     });
 
-    return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex));
+    return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex, null));
   }
 
   clearHistory(): void {

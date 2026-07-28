@@ -20,6 +20,20 @@ parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
 parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
 ```
 
+## Extensions
+
+A trailing extension is captured and split off before the digits resolve, under the notations
+Google libphonenumber recognizes, among them `ext.`, `extension`, `x`, `#`, `int`, `доб`, comma,
+tilde, and the RFC 3966 `;ext=` parameter. The captured digits surface through
+[`getExtension`](/core/reference/phone-number/#getextension) and travel through the
+[formats](/core/reference/phone-number/#formats); validity is judged on the base number alone.
+
+```ts
+parsePhoneNumber('+1 415 555 0132 ext. 22').isValid(); // true
+parsePhoneNumber('+1 415 555 0132 x22').getExtension(); // '22'
+parsePhoneNumber('tel:+1-415-555-0132;ext=22').formatE164(); // '+14155550132'
+```
+
 ## ParsePhoneNumberOptions
 
 ```ts

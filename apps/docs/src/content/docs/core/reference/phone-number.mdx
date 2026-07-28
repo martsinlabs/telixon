@@ -1,10 +1,10 @@
 ---
 title: PhoneNumber
-description: The thirteen query and format methods on a parsed number.
+description: The fourteen query and format methods on a parsed number.
 ---
 
 A parsed number, returned by [`parsePhoneNumber`](/core/reference/parse-phone-number/) and by a
-controller's [`getPhoneNumber`](/core/reference/input-controller/#getphonenumber). Thirteen methods
+controller's [`getPhoneNumber`](/core/reference/input-controller/#getphonenumber). Fourteen methods
 query and format it. Every answer derives from the state resolved at parse time.
 
 The examples share one number:
@@ -106,6 +106,17 @@ The national significant number, digits only, with the national prefix stripped.
 number.getNationalNumber(); // '4155550132'
 ```
 
+### getExtension
+
+The extension captured at parse, as typed, or `null` when the input carried none. The notations
+(`ext.`, `x`, `#`, `;ext=`, and the rest) are listed under
+[`parsePhoneNumber`](/core/reference/parse-phone-number/#extensions).
+
+```ts
+parsePhoneNumber('+1 415 555 0132 ext. 22').getExtension(); // '22'
+number.getExtension(); // null
+```
+
 ### getNumberType
 
 The line type, such as `MOBILE` or `FIXED_LINE`, or `FIXED_LINE_OR_MOBILE` where a region assigns
@@ -135,15 +146,18 @@ number.formatE164(); // '+14155550132'
 
 ### formatNational
 
-The region's own national convention.
+The region's own national convention. A captured extension follows, written the way the calling
+code's main region writes it.
 
 ```ts
 number.formatNational(); // '(415) 555-0132'
+parsePhoneNumber('+44 20 7183 8750 ext. 22').formatNational(); // '020 7183 8750 x22'
 ```
 
 ### formatInternational
 
-The international convention, with the calling code spelled out.
+The international convention, with the calling code spelled out. A captured extension follows, as
+in [`formatNational`](#formatnational).
 
 ```ts
 number.formatInternational(); // '+1 415-555-0132'
@@ -151,15 +165,16 @@ number.formatInternational(); // '+1 415-555-0132'
 
 ### formatRfc3966
 
-An RFC 3966 `tel:` URI.
+An RFC 3966 `tel:` URI. A captured extension is carried as the `;ext=` parameter.
 
 ```ts
 number.formatRfc3966(); // 'tel:+1-415-555-0132'
+parsePhoneNumber('+1 415 555 0132 ext. 22').formatRfc3966(); // 'tel:+1-415-555-0132;ext=22'
 ```
 
 ## Conformance
 
-Twelve of the thirteen methods have a Google libphonenumber counterpart, each compared with
+Thirteen of the fourteen methods have a Google libphonenumber counterpart, each compared with
 Google's implementation on every corpus input. `getValidationError` is Telixon's own surface, with no
 counterpart to compare. The numbers, the method, and the cadence are on
 [Verified](/verified/#conformance).

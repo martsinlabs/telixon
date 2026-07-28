@@ -1,8 +1,8 @@
 # Conformance
 
 Proves Telixon's public query methods match [Google libphonenumber][lpn], the reference
-implementation, across every supported region: on valid numbers, on every display spelling of them,
-on deterministic corruptions of them, and on every digit prefix of them.
+implementation, across every supported region: on valid numbers, on every display spelling of them, on their
+extension spellings, on deterministic corruptions of them, and on every digit prefix of them.
 
 ## Run
 
@@ -39,20 +39,20 @@ corpus ──▶ for each number ──▶ oracle  (Google's answer)
 The oracle and the example corpus live in `../oracle/` (shared with the bench so both consume the
 exact same Google source). The conformance corpus is derived from the examples in `corpus/`.
 
-| File                   | Role                                                          |
-| ---------------------- | ------------------------------------------------------------- |
-| `corpus/`              | builds the case corpus: examples, display variants, mutations |
-| `subject.ts`           | runs Telixon over an input                                    |
-| `compare.ts`           | diffs the two sides, aggregates per-method match rates        |
-| `prefix-sweep.ts`      | per-digit-prefix possibility comparison                       |
-| `valid-for-region.ts`  | corpus and per-case isValidForRegion set comparison           |
-| `report.ts`            | formats the report                                            |
-| `known-divergences.ts` | the allowlist of accepted mismatches + audit                  |
-| `conformance.test.ts`  | the gate                                                      |
-| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …)    |
-| `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`      |
-| `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google               |
-| `parity.template.html` | HTML template for the dashboard                               |
+| File                   | Role                                                                        |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `corpus/`              | builds the case corpus: examples, display and extension variants, mutations |
+| `subject.ts`           | runs Telixon over an input                                                  |
+| `compare.ts`           | diffs the two sides, aggregates per-method match rates                      |
+| `prefix-sweep.ts`      | per-digit-prefix possibility comparison                                     |
+| `valid-for-region.ts`  | corpus and per-case isValidForRegion set comparison                         |
+| `report.ts`            | formats the report                                                          |
+| `known-divergences.ts` | the allowlist of accepted mismatches + audit                                |
+| `conformance.test.ts`  | the gate                                                                    |
+| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …)                  |
+| `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`                    |
+| `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google                             |
+| `parity.template.html` | HTML template for the dashboard                                             |
 
 ## Reading the report
 

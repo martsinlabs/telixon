@@ -112,7 +112,7 @@ function detectNationalPrefixPresent(resolved: ResolvedPhoneNumber): ValidationE
   if (reparsedDigits === nationalDigits || !nationalDigits.endsWith(reparsedDigits)) return null;
 
   // The rescued number must be valid for the typed prefix to be the explanation.
-  if (getNumberType(toResolvedPhoneNumber(reparsed, defaultRegionIndex)) === 'UNKNOWN') return null;
+  if (getNumberType(toResolvedPhoneNumber(reparsed, defaultRegionIndex, null)) === 'UNKNOWN') return null;
 
   return {
     kind: 'NATIONAL_PREFIX_PRESENT',

@@ -1,5 +1,6 @@
 import { CorpusEntry, Oracle } from '../../oracle';
 import { deriveDisplayVariants } from './derive-display-variants';
+import { deriveExtensionVariants } from './derive-extension-variants';
 import { deriveMutations } from './derive-mutations';
 import { CorpusCase, RenderedExample } from './models';
 
@@ -48,6 +49,7 @@ export function buildConformanceCorpus(oracle: Oracle, examples: readonly Corpus
   return dedupeCases([
     ...examples.map(toExampleCase),
     ...deriveDisplayVariants(renderedExamples),
+    ...deriveExtensionVariants(renderedExamples),
     ...deriveMutations(renderedExamples),
   ]);
 }

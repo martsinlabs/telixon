@@ -97,6 +97,11 @@ class PhoneNumberView implements PhoneNumber {
     return this.cachedCallingCode;
   }
 
+  // Captured at parse; the stored value is the answer, with nothing to compute or cache.
+  getExtension(): string | null {
+    return this.resolved.extension;
+  }
+
   getRegion(): RegionCode | null {
     if (this.cachedRegion === undefined) {
       this.cachedRegion = getRegion(this.resolved);

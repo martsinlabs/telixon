@@ -1,13 +1,13 @@
 {
   "nodeEntry": {
     "artifact": "@telixon/core (Node entry)",
-    "measured": "20.78 kB brotli",
-    "budget": "22 kB"
+    "measured": "22.34 kB brotli",
+    "budget": "23 kB"
   },
   "browserEntry": {
     "artifact": "@telixon/core (browser entry)",
-    "measured": "23.37 kB brotli",
-    "budget": "25 kB"
+    "measured": "24.91 kB brotli",
+    "budget": "26 kB"
   },
   "webSdk": {
     "artifact": "@telixon/web-sdk",

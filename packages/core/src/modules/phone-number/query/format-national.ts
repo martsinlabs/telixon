@@ -12,11 +12,17 @@ import { hasMaskVariant, pickFormatMask } from '../../number-resolver/utils/form
 import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { selectNationalFormatIndex } from '../../number-resolver/utils/select-national-format';
 import { ResolvedPhoneNumber } from '../models';
+import { appendExtensionSuffix } from './format-extension-suffix';
 import { getRegion } from './get-region';
 import { isPossible } from './is-possible';
 
 // NATIONAL format, or null until possible; national prefix only when the format has a prefix rule, from the resolved region (else the calling code's main region, like libphonenumber).
 export function formatNational(resolved: ResolvedPhoneNumber): string | null {
+  const base: string | null = formatNationalBase(resolved);
+  return base === null ? null : appendExtensionSuffix(base, resolved);
+}
+
+function formatNationalBase(resolved: ResolvedPhoneNumber): string | null {
   const { nationalDigits, callingCode, callingCodeState, defaultRegionIndex } = resolved;
   if (!isPossible(resolved)) return null;
 

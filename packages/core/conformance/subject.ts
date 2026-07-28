@@ -17,6 +17,7 @@ function toMethodResults(phoneNumber: PhoneNumber): MethodResults {
     getNumberType: phoneNumber.getNumberType(),
     getNationalNumber: phoneNumber.getNationalNumber(),
     getCallingCode: phoneNumber.getCallingCode(),
+    getExtension: phoneNumber.getExtension(),
     getRegion: phoneNumber.getRegion(),
     formatE164: phoneNumber.formatE164(),
     formatNational: phoneNumber.formatNational(),
