@@ -68,8 +68,6 @@ export const PACKAGES: readonly DocsPackage[] = [
       },
     ],
   },
-  { name: '@telixon/web-anatomy', label: 'Web Anatomy' },
-  { name: '@telixon/web-theme', label: 'Web Theme' },
   { name: '@telixon/web-components', label: 'Web Components', logo: 'stencil' },
   { name: '@telixon/angular', label: 'Angular', logo: 'angular' },
   { name: '@telixon/react', label: 'React', logo: 'react' },
