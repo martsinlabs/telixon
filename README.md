@@ -94,7 +94,7 @@ a divergence the gate misses?
 | Package                                          | Status  | Role                                  |
 | ------------------------------------------------ | ------- | ------------------------------------- |
 | [`@telixon/core`](packages/core/README.md)       | shipped | parsing, formatting, validation       |
-| [`@telixon/web-sdk`](packages/web-sdk/README.md) | shipped | headless DOM input controller         |
+| [`@telixon/web-sdk`](packages/web-sdk/README.md) | shipped | headless phone-field widgets          |
 | `@telixon/web-components`                        | planned | drop-in Web Component (`<tel-input>`) |
 | `@telixon/angular`                               | planned | Angular binding                       |
 | `@telixon/react`                                 | planned | React binding (hook + component)      |

@@ -1,9 +1,9 @@
 ---
 title: RegionList
-description: The headless state machine behind region pickers.
+description: The headless widget behind region pickers.
 ---
 
-A headless state machine for region pickers. It produces the option rows a dropdown renders and
+The headless widget behind a region picker. It produces the option rows a dropdown renders and
 emits a [`RegionListState`](#regionliststate) snapshot on every change. Each change recomputes the
 options through one pipeline of region filter, number-type filter, search, sort, and prioritized
 pins. No emit fires at construction; read the bootstrap with [`getState`](#getstate).

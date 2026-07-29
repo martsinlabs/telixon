@@ -47,7 +47,7 @@ The search box doubles as the keyboard cursor, where the arrow keys walk the row
 `aria-activedescendant` and Enter picks the active one. Escape closes the popup and hands focus
 back to the region button, while an outside press or focus moving out of the widget closes it too.
 
-Inside a framework component, call each machine's [`destroy`](/web-sdk/phone-input/#destroy) on
+Inside a framework component, call each one's [`destroy`](/web-sdk/phone-input/#destroy) on
 unmount and remove the document-level press listener with them.
 
 <Tabs syncKey="source">
@@ -66,4 +66,4 @@ unmount and remove the document-level press listener with them.
 
 </Tabs>
 
-The two machines never learn about each other. All the wiring lives in the demo's own functions.
+`PhoneInput` and `RegionList` never learn about each other. All the wiring lives in the demo's own functions.
