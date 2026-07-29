@@ -109,14 +109,14 @@ accessors shaped `(engine, state, ...)`, which makes the engine a Moore machine,
 output is a function of the state it reaches. One linear-time walk per resolution is what keeps
 per-keystroke work cheap. The automaton is global and unified, matching one
 number against every region at once, with no per-region data to load. The per-keystroke controller
-path runs no regular expression at all. Five survive elsewhere, each compiled once and anchored.
-Two are prefix transforms built from the metadata: the per-territory national-prefix rewrite (a
-bounded capture-group transform) and the IDD strip that removes a dialed international prefix
-before the digits are resolved. Three belong to `parsePhoneNumber` and port libphonenumber's
-extension handling at the pinned commit: the end-anchored extension-suffix capture, the
-viable-number guard that protects it, and the single-class gate that keeps both off inputs made of
-digits and plain punctuation. The engine ships as four embedded modules carrying nine binary
-layers:
+path and the ordinary parse run no regular expression at all; extension-suspect detection rides
+the resolution walk itself, on the branch digits never take. Four survive, each compiled once and
+anchored. Two are prefix transforms built from the metadata: the per-territory national-prefix
+rewrite (a bounded capture-group transform) and the IDD strip that removes a dialed international
+prefix before the digits are resolved. Two port libphonenumber's extension handling at the pinned
+commit and run only when an input's raw string carries a character plain phone input never
+contains: the end-anchored extension-suffix capture and the viable-number guard that protects it.
+The engine ships as four embedded modules carrying nine binary layers:
 
 ```
 walk.bin.js      recognition DFA state graph, calling-code dispatch, region disambiguation

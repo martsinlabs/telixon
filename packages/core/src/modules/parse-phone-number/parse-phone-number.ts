@@ -6,41 +6,14 @@ import { ParsePhoneNumberOptions } from './models';
 import { extractPossibleNumber } from './utils/extract-possible-number';
 import { stripExtension } from './utils/strip-extension';
 
-// Any character beyond digits, `+`, and plain number punctuation calls for the full
-// extract-and-strip treatment; a single native class test keeps the gate off the JS per-character
-// path. The slow path resolves identically and may only do extra trimming work.
-const NON_PLAIN_INPUT_PATTERN = /[^0-9+\-(). /*:\t-\r]/;
-
-// The index of the first plus or digit, or -1. ASCII checks suffice; the gate above routes any
-// other character to the slow path.
+// The index of the first plus or digit, or -1. ASCII checks match the resolver, which reads ASCII
+// digits only.
 function firstPlusOrDigitIndex(input: string): number {
   for (let index = 0; index < input.length; index++) {
     const code: number = input.charCodeAt(index);
     if ((code >= 0x30 && code <= 0x39) || code === 0x2b) return index;
   }
   return -1;
-}
-
-interface PreparedInput {
-  readonly base: string;
-  readonly extension: string | null;
-  readonly hasLeadingPlus: boolean;
-}
-
-// Both branches read the leading plus off the first plus or digit, the position libphonenumber's
-// extractPossibleNumber would cut to.
-function prepareInput(input: string): PreparedInput {
-  if (NON_PLAIN_INPUT_PATTERN.test(input)) {
-    const { base, extension } = stripExtension(extractPossibleNumber(input));
-    return { base, extension, hasLeadingPlus: base.charCodeAt(0) === 0x2b };
-  }
-
-  const startIndex: number = firstPlusOrDigitIndex(input);
-  return {
-    base: input,
-    extension: null,
-    hasLeadingPlus: startIndex !== -1 && input.charCodeAt(startIndex) === 0x2b,
-  };
 }
 
 /**
@@ -55,26 +28,50 @@ function prepareInput(input: string): PreparedInput {
  * parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
  * parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
  */
-// Trims to the candidate number, splits off a trailing extension, detects the leading-plus flag,
-// then defers to the shared resolveNumber pipeline (which ignores non-digits).
+// One resolution pass detects extension-suspect characters as it walks; only an input carrying one
+// takes the ported extract-and-strip machinery and a second resolution over the cleaned base.
 export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions = {}): PhoneNumber {
   requireEngineReady();
 
   const resourceProvider = getResourceProvider();
   const defaultRegionIndex: number =
     options.defaultRegion !== undefined ? (resourceProvider.regionKeyToIndex[options.defaultRegion] ?? -1) : -1;
+  const strict: boolean = options.strict ?? false;
 
-  const { base, extension, hasLeadingPlus } = prepareInput(input);
-
+  const startIndex: number = firstPlusOrDigitIndex(input);
+  const hasLeadingPlus: boolean = startIndex !== -1 && input.charCodeAt(startIndex) === 0x2b;
   const resolved: ResolvedNumberState = resolveNumber({
-    input: base,
+    input,
     hasLeadingPlus,
     seedCallingCode: null,
     defaultRegionIndex,
     regionFilter: null,
     numberTypeFilter: null,
-    strict: options.strict ?? false,
+    strict,
+    detectExtensionSuspect: true,
   });
+  if (!resolved.extensionSuspect) {
+    return createPhoneNumber(toResolvedPhoneNumber(resolved, defaultRegionIndex, null));
+  }
 
-  return createPhoneNumber(toResolvedPhoneNumber(resolved, defaultRegionIndex, extension));
+  const extracted = extractPossibleNumber(input);
+  const { base, extension } = stripExtension(extracted.candidate);
+
+  // The first resolution stands when the trims dropped no digit and the read mode is unchanged:
+  // the walk ignores non-digits, so the cleaned base resolves to the same state.
+  const baseHasLeadingPlus: boolean = base.charCodeAt(0) === 0x2b;
+  if (extension === null && !extracted.secondNumberCut && baseHasLeadingPlus === hasLeadingPlus) {
+    return createPhoneNumber(toResolvedPhoneNumber(resolved, defaultRegionIndex, null));
+  }
+
+  const rebased: ResolvedNumberState = resolveNumber({
+    input: base,
+    hasLeadingPlus: baseHasLeadingPlus,
+    seedCallingCode: null,
+    defaultRegionIndex,
+    regionFilter: null,
+    numberTypeFilter: null,
+    strict,
+  });
+  return createPhoneNumber(toResolvedPhoneNumber(rebased, defaultRegionIndex, extension));
 }
