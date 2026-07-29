@@ -45,6 +45,43 @@ function collectDigits(input: string): string {
   return digits;
 }
 
+interface CollectedDigits {
+  readonly digits: string;
+  readonly extensionSuspect: boolean;
+}
+
+// collectDigits with suspect detection fused into the same pass: a character beyond digits, '+',
+// common format punctuation, and whitespace controls means parsePhoneNumber must run the ported
+// extension machinery. The digit branch pays nothing; walkInputDetectingExtensionSuspect inlines the same checks.
+function collectDigitsDetectingExtensionSuspect(input: string): CollectedDigits {
+  let digits = '';
+  let extensionSuspect = false;
+  for (let index = 0; index < input.length; index++) {
+    const charCode: number = input.charCodeAt(index);
+    if (charCode >= 0x30 && charCode <= 0x39) {
+      digits += input[index];
+      continue;
+    }
+    if (extensionSuspect) continue;
+    if (
+      charCode === 0x20 ||
+      charCode === 0x2b ||
+      charCode === 0x2d ||
+      charCode === 0x28 ||
+      charCode === 0x29 ||
+      charCode === 0x2e ||
+      charCode === 0x2f ||
+      charCode === 0x2a ||
+      charCode === 0x3a ||
+      (charCode >= 0x09 && charCode <= 0x0d)
+    ) {
+      continue;
+    }
+    extensionSuspect = true;
+  }
+  return { digits, extensionSuspect };
+}
+
 // libphonenumber maybeStripInternationalPrefixAndNormalize: strip a leading IDD prefix and re-parse the
 // remainder. Not an IDD when the next digit is '0', the national trunk digit.
 function stripIddPrefix(digits: string, matcher: RegExp): string | null {
@@ -62,6 +99,37 @@ function walkInput(resolver: NumberResolver, input: string): void {
   }
 }
 
+// walkInput with suspect detection fused into the same pass; the digit branch pays nothing and
+// the checks stay inline so the advance call keeps its inlining.
+// Only parsePhoneNumber's first raw read takes this variant.
+function walkInputDetectingExtensionSuspect(resolver: NumberResolver, input: string): boolean {
+  let extensionSuspect = false;
+  for (let index = 0; index < input.length; index++) {
+    const charCode: number = input.charCodeAt(index);
+    if (charCode >= 0x30 && charCode <= 0x39) {
+      resolver.advance(charCode - 48);
+      continue;
+    }
+    if (extensionSuspect) continue;
+    if (
+      charCode === 0x20 ||
+      charCode === 0x2b ||
+      charCode === 0x2d ||
+      charCode === 0x28 ||
+      charCode === 0x29 ||
+      charCode === 0x2e ||
+      charCode === 0x2f ||
+      charCode === 0x2a ||
+      charCode === 0x3a ||
+      (charCode >= 0x09 && charCode <= 0x0d)
+    ) {
+      continue;
+    }
+    extensionSuspect = true;
+  }
+  return extensionSuspect;
+}
+
 export interface ResolveNumberInput {
   // Raw string; whitespace, '+', and formatting characters are ignored.
   readonly input: string;
@@ -73,6 +141,8 @@ export interface ResolveNumberInput {
   readonly regionFilter: BinaryFilter | null;
   readonly numberTypeFilter: BinaryFilter | null;
   readonly strict: boolean;
+  // parsePhoneNumber only: detect extension-suspect characters during the first raw read.
+  readonly detectExtensionSuspect?: boolean;
 }
 
 export interface ResolvedNumberState {
@@ -82,16 +152,31 @@ export interface ResolvedNumberState {
   readonly readAsNational: boolean;
   // The seeded literal read above; the national-prefix-present check applies only then.
   readonly callingCodeSeeded: boolean;
+  // Set only under `detectExtensionSuspect`: the raw input carries a character the extension machinery must inspect.
+  readonly extensionSuspect: boolean;
 }
 
 export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
-  const { input, hasLeadingPlus, seedCallingCode, defaultRegionIndex, regionFilter, numberTypeFilter, strict } = params;
+  const {
+    input,
+    hasLeadingPlus,
+    seedCallingCode,
+    defaultRegionIndex,
+    regionFilter,
+    numberTypeFilter,
+    strict,
+    detectExtensionSuspect = false,
+  } = params;
   const resourceProvider = getResourceProvider();
 
   const resolver: NumberResolver = cachedResolver ?? (cachedResolver = new NumberResolver());
   resolver.setRegionFilter(regionFilter);
   resolver.setNumberTypeFilter(numberTypeFilter);
   resolver.setStrict(strict);
+
+  // Suspect detection rides the first read over the raw string; every later walk is over digits.
+  let extensionSuspect = false;
+  let rawReadDone = false;
 
   if (seedCallingCode !== null) {
     resolver.setCallingCode(seedCallingCode);
@@ -101,15 +186,27 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
       nationalPrefixPresent: false,
       readAsNational: false,
       callingCodeSeeded: true,
+      extensionSuspect: false,
     };
   }
 
   // National-mode digits beginning with the region's IDD prefix are internationally dialed: strip the
   // prefix and parse the remainder as international (libphonenumber FROM_NUMBER_WITH_IDD).
   let iddRemainder: string | null = null;
+  let rawDigits: string | null = null;
   if (!hasLeadingPlus && defaultRegionIndex !== -1) {
     const matcher: RegExp | null = getIddMatcher(defaultRegionIndex);
-    if (matcher !== null) iddRemainder = stripIddPrefix(collectDigits(input), matcher);
+    if (matcher !== null) {
+      if (detectExtensionSuspect) {
+        const collected: CollectedDigits = collectDigitsDetectingExtensionSuspect(input);
+        extensionSuspect = collected.extensionSuspect;
+        rawReadDone = true;
+        rawDigits = collected.digits;
+      } else {
+        rawDigits = collectDigits(input);
+      }
+      iddRemainder = stripIddPrefix(rawDigits, matcher);
+    }
   }
 
   const readAsNational: boolean = !hasLeadingPlus && defaultRegionIndex !== -1 && iddRemainder === null;
@@ -120,7 +217,12 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
   if (readAsNational) {
     const callingCode: string = String(getMetadataRegionCallingCode(resourceProvider.engine, defaultRegionIndex));
     resolver.setCallingCode(callingCode);
-    walkInput(resolver, input);
+    if (detectExtensionSuspect && !rawReadDone) {
+      extensionSuspect = walkInputDetectingExtensionSuspect(resolver, input);
+    } else {
+      // The digits collected for the IDD check walk directly; the raw string is never rescanned.
+      walkInput(resolver, rawDigits ?? input);
+    }
 
     // National digits that redundantly begin with the region's own calling code: drop it and re-walk.
     // The national-prefix strip still runs below, matching libphonenumber's second pass in parseHelper.
@@ -137,7 +239,12 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     }
   } else {
     resolver.reset();
-    walkInput(resolver, iddRemainder !== null ? iddRemainder : input);
+    const walkTarget: string = iddRemainder !== null ? iddRemainder : input;
+    if (detectExtensionSuspect && !rawReadDone) {
+      extensionSuspect = walkInputDetectingExtensionSuspect(resolver, walkTarget);
+    } else {
+      walkInput(resolver, walkTarget);
+    }
   }
 
   // Strip the national prefix against the default region - but once a leading calling code is extracted
@@ -164,5 +271,11 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
     walkInput(resolver, stripped);
   }
 
-  return { snapshot: resolver.snapshot, nationalPrefixPresent, readAsNational, callingCodeSeeded: false };
+  return {
+    snapshot: resolver.snapshot,
+    nationalPrefixPresent,
+    readAsNational,
+    callingCodeSeeded: false,
+    extensionSuspect,
+  };
 }

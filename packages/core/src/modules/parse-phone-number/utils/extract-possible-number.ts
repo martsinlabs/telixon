@@ -42,17 +42,26 @@ function findSecondNumberStart(input: string): number {
 
 /**
  * Trims `input` to the candidate phone number, mirroring libphonenumber's extractPossibleNumber.
- * Returns the empty string when no plus sign or digit starts a candidate.
+ * The candidate is the empty string when no plus sign or digit starts one. `secondNumberCut`
+ * reports the one trim that can drop digits; every other trim removes non-digits only.
  */
-export function extractPossibleNumber(input: string): string {
+export interface ExtractedCandidate {
+  readonly candidate: string;
+  readonly secondNumberCut: boolean;
+}
+
+export function extractPossibleNumber(input: string): ExtractedCandidate {
   let start = 0;
   while (start < input.length && !isPlusOrDigit(input.charCodeAt(start))) start++;
-  if (start === input.length) return '';
+  if (start === input.length) return { candidate: '', secondNumberCut: false };
 
   let end: number = input.length;
   while (end > start && !isWantedEndChar(input.charCodeAt(end - 1))) end--;
 
   const candidate: string = input.slice(start, end);
   const secondNumberStart: number = findSecondNumberStart(candidate);
-  return secondNumberStart >= 0 ? candidate.slice(0, secondNumberStart) : candidate;
+  if (secondNumberStart >= 0) {
+    return { candidate: candidate.slice(0, secondNumberStart), secondNumberCut: true };
+  }
+  return { candidate, secondNumberCut: false };
 }
