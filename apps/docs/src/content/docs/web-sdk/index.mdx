@@ -5,8 +5,8 @@ description: Install @telixon/web-sdk and bind a phone input and a region list t
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-`@telixon/web-sdk` is the DOM adapter for [`@telixon/core`](/core/). It ships two headless state
-machines for the web, where [`PhoneInput`](/web-sdk/phone-input/) drives a real `<input>` and
+`@telixon/web-sdk` is the DOM adapter for [`@telixon/core`](/core/). It ships two
+headless widgets: [`PhoneInput`](/web-sdk/phone-input/) drives a real `<input>`, and
 [`RegionList`](/web-sdk/region-list/) feeds region pickers.
 
 ## Install
@@ -59,7 +59,7 @@ Your code imports both packages, since the engine loads through `@telixon/core` 
 
 ## Load the engine
 
-Creating either machine before the engine is [loaded](/core/load-the-engine/) throws
+Creating `PhoneInput` or `RegionList` before the engine is [loaded](/core/load-the-engine/) throws
 `EngineNotReadyError`:
 
 ```ts

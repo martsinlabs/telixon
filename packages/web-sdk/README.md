@@ -1,6 +1,6 @@
 # @telixon/web-sdk
 
-Headless DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping the `PhoneInput` and `RegionList` state machines for the web.
+The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping two headless widgets: `PhoneInput` drives a plain `<input>`, `RegionList` feeds the region picker.
 
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 

@@ -18,7 +18,7 @@ import { resolveRegionListComparator } from './utils/sort';
 const DEFAULT_LOCALE: string = 'en';
 
 /**
- * Create a headless region list controller.
+ * Create the headless widget behind a region picker.
  *
  * Pipeline on every state change: base set (cached per locale) -> regionFilter -> numberTypeFilter
  * -> searchFn -> sort -> prioritize -> emit. Mutators that don't change the underlying value skip
