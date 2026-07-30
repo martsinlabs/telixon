@@ -3,6 +3,10 @@
 The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping two headless widgets: `PhoneInput` drives a plain `<input>`, `RegionList` feeds the region picker.
 
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
+[![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
+[![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fweb-sdk%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/web-sdk)
+
+**[Documentation](https://telixon.dev/web-sdk/)** &middot; **[Live demo](https://telixon.dev/web-sdk/guides/complete-field/)**
 
 ## Install
 
@@ -49,8 +53,6 @@ regions.getState().options[0];
 regions.search('united');
 regions.getState().options.map((option) => option.region); // ['US', 'GB', 'AE']
 ```
-
-Full documentation is at [telixon.dev/web-sdk](https://telixon.dev/web-sdk/).
 
 ## Highlights
 
