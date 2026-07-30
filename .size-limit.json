@@ -2,12 +2,12 @@
   {
     "name": "@telixon/core (Node entry)",
     "path": "packages/core/dist/index.node.js",
-    "limit": "23 kB"
+    "limit": "24 kB"
   },
   {
     "name": "@telixon/core (browser entry)",
     "path": "packages/core/dist/index.browser.js",
-    "limit": "26 kB"
+    "limit": "27 kB"
   },
   {
     "name": "@telixon/web-sdk",

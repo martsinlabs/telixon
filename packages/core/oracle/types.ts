@@ -38,6 +38,8 @@ export interface Oracle {
   sampleExampleE164(regionCode: string, typeId: number): string | null;
   // The oracle's verdict for every compared method, or null when Google rejects the input; `regionCode` reads national form (no '+'), like Telixon's defaultRegion.
   evaluate(input: string, regionCode?: string): MethodResults | null;
+  // Google isNumberMatch over two raw strings, as the MatchType name.
+  matchNumbers(first: string, second: string): string;
   // Google's country calling code for a region, as a string ('0' for an unknown region).
   countryCallingCode(regionCode: string): string;
   // The subset of `candidates` Google judges the number valid for (isValidNumberForRegion), joined

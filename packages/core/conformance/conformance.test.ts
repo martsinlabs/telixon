@@ -8,6 +8,7 @@ import { buildConformanceReport } from './compare';
 import { buildConformanceCorpus, CorpusCaseKind } from './corpus';
 import { geographicDomain } from './enumeration-domain';
 import { auditMismatches } from './known-divergences';
+import { sweepNumberMatch } from './number-match';
 import { sweepPossibilityPrefixes } from './prefix-sweep';
 import { formatConformanceReport, formatPrefixSweepReport, formatValidForRegionReport } from './report';
 import { evaluateWithTelixon } from './subject';
@@ -38,6 +39,7 @@ const audit = auditMismatches([
   ...validForRegion.mismatches,
   ...validForRegionCases.mismatches,
 ]);
+const numberMatch = sweepNumberMatch(oracle, examples);
 const aytInternational = measureAsYouType(oracle, examples, internationalProbe);
 const aytNational = measureAsYouType(oracle, examples, nationalProbe);
 
@@ -77,6 +79,11 @@ describe('conformance vs Google libphonenumber', () => {
   it('exercises every corpus case kind', () => {
     const populatedKinds = report.composition.filter(({ cases }) => cases > 0).map(({ kind }) => kind);
     expect([...populatedKinds].sort()).toEqual([...EXPECTED_KINDS].sort());
+  });
+
+  it('grades number pairs the way the oracle does', () => {
+    expect(numberMatch.compared).toBeGreaterThan(5000);
+    expect(numberMatch.mismatches).toEqual([]);
   });
 
   it('compares real extension values on both sides, never undefined', () => {
