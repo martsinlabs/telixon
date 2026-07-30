@@ -1,26 +1,63 @@
 #!/usr/bin/env node
-// Removes dev-only fields from the current package.json, runs `pnpm publish` with all passed-through
-// args, then restores the source file on success, on failure, and on interrupt. Run from the package
-// directory you want to ship.
+// Prepares the current package.json for publishing, runs `pnpm publish` with all passed-through
+// args, then restores the source file on success, on failure, and on interrupt. Run from the
+// package directory you want to ship.
 //
-// Stripped fields (none are consumer-facing):
-//   - devDependencies   (tests, conformance, benchmarks; consumers do not install)
-//   - scripts           (build/copy/typecheck/prepublishOnly; consumers do not run)
-//   - packageManager    (corepack hint for monorepo development)
-//   - publishConfig     (publish-time directives; flags passed on CLI instead)
+// Preparation:
+//   - Stamps `bundleSize` with the package's measured size-limit figure. The README size badge
+//     reads the field from the npm registry, so the published manifest carries the number for the
+//     exact version a consumer installs. A measurement failure aborts the publish.
+//   - Strips dev-only fields (none are consumer-facing):
+//       devDependencies   (tests, conformance, benchmarks; consumers do not install)
+//       scripts           (build/copy/typecheck/prepublishOnly; consumers do not run)
+//       packageManager    (corepack hint for monorepo development)
+//       publishConfig     (publish-time directives; flags passed on CLI instead)
 //
 // Usage (in CI):
 //   node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
 
-import { spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const STRIP_FIELDS = ['devDependencies', 'scripts', 'packageManager', 'publishConfig'];
+
+// The size-limit entry whose measurement ships as the manifest's `bundleSize`. Core publishes the
+// browser entry, the figure the initial-bundle badge is about.
+const BUNDLE_ENTRY_BY_PACKAGE = {
+  '@telixon/core': '@telixon/core (browser entry)',
+  '@telixon/web-sdk': '@telixon/web-sdk',
+};
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+function measureBundleSize(entryName) {
+  const measured = JSON.parse(
+    execSync('pnpm exec size-limit --json', {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'inherit'],
+    }).toString(),
+  );
+  const entry = measured.find((candidate) => candidate.name === entryName);
+  if (!entry) {
+    throw new Error(`size-limit reported no entry named "${entryName}"`);
+  }
+  // size-limit prints kilobytes as bytes over 1000; the stamped figure mirrors its convention.
+  return `${(entry.size / 1000).toFixed(2)} kB brotli`;
+}
 
 const pkgPath = resolve('package.json');
 const original = readFileSync(pkgPath, 'utf8');
 const pkg = JSON.parse(original);
+
+const bundleEntry = BUNDLE_ENTRY_BY_PACKAGE[pkg.name];
+if (bundleEntry) {
+  pkg.bundleSize = measureBundleSize(bundleEntry);
+  console.log(`safe-publish: stamped bundleSize ${pkg.bundleSize}`);
+} else {
+  console.log(`safe-publish: no size-limit entry mapped for ${pkg.name}, bundleSize not stamped`);
+}
 
 const stripped = STRIP_FIELDS.filter((field) => field in pkg);
 for (const field of stripped) {

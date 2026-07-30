@@ -1,7 +1,7 @@
 {
   "name": "@telixon/core",
   "version": "0.1.0",
-  "description": "Phone number parser, formatter, and validator built on Google libphonenumber metadata.",
+  "description": "Phone-number parser, formatter, and validator built on Google libphonenumber metadata.",
   "keywords": [
     "phone",
     "phone-number",

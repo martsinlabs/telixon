@@ -67,6 +67,36 @@ makes the pull request title the commit subject on `main`.
 
 Telixon has a single maintainer who reviews and merges.
 
+## Releasing
+
+Packages release independently. A release is a changelog cut, a version bump, a tag, and an
+automated publish from CI. `main` is protected; everything except the tag lands through a pull
+request.
+
+1. Open a release pull request for the package.
+   - Move the `Unreleased` section of `packages/<package>/CHANGELOG.md` under the new version with
+     the release date; retarget the comparison links.
+   - The changelog decides the bump. Entries under `Removed`, or breaking entries under `Changed`,
+     make it major; `Added` makes it minor; `Fixed` alone makes it patch.
+   - Set `version` in `packages/<package>/package.json` and refresh the lockfile with
+     `pnpm install`.
+2. Merge the pull request, then pull `main`.
+3. Tag the merge commit as `<package>@v<version>` and push the tag:
+
+   ```sh
+   git tag core@v1.0.0 && git push origin core@v1.0.0
+   ```
+
+4. The tag triggers `.github/workflows/release-<package>.yml`. It runs typecheck, tests, build, and
+   the published-types check (the core workflow also runs the conformance gate), then publishes to
+   npm with provenance through `scripts/safe-publish.mjs`. The publish step stamps the package's
+   measured bundle size into the published manifest as `bundleSize`; the README size badge reads it
+   from the registry.
+5. Create the GitHub release from the tag, with the changelog section as the body.
+
+`@telixon/web-sdk` declares `@telixon/core` as a peer dependency; release core first. The web-sdk
+workflow stops before publishing when the core version it needs is not on npm.
+
 ## Engineering standards
 
 These are the canonical engineering standards for Telixon. They are non-negotiable.

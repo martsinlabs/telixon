@@ -17,6 +17,14 @@
   <a href="https://codspeed.io/martsinlabs/telixon"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed" /></a>
 </p>
 
+<p align="center">
+  <a href="https://telixon.dev"><b>Documentation</b></a>
+  &middot;
+  <a href="https://telixon.dev/web-sdk/guides/complete-field/"><b>Live demo</b></a>
+  &middot;
+  <a href="https://telixon.dev/core/how-it-works/"><b>How it works</b></a>
+</p>
+
 ## Quick start
 
 ```bash
@@ -59,11 +67,6 @@ phone.subscribe((state) => {
   // state.validationError  null
 });
 ```
-
-Full documentation is at [telixon.dev](https://telixon.dev), with live demos for the
-[phone field](https://telixon.dev/web-sdk/guides/phone-field/),
-[region picker](https://telixon.dev/web-sdk/guides/region-picker/), and
-[complete field](https://telixon.dev/web-sdk/guides/complete-field/).
 
 ## Highlights
 
