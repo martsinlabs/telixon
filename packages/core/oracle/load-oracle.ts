@@ -53,6 +53,7 @@ interface OracleUtil {
   getSupportedRegions(): string[];
   getExampleNumberForType(regionCode: string, typeId: number): OracleNumber | null;
   parse(value: string, region: string | undefined): OracleNumber;
+  isNumberMatch(first: string, second: string): number;
   format(number: OracleNumber, format: number): string;
   getNationalSignificantNumber(number: OracleNumber): string;
   getRegionCodeForNumber(number: OracleNumber): string | null | undefined;
@@ -73,6 +74,13 @@ interface PhoneNumbersNamespace {
   PhoneNumberUtil: {
     getInstance(): OracleUtil;
     ValidationResult: Record<string, number>;
+    MatchType: {
+      NOT_A_NUMBER: number;
+      NO_MATCH: number;
+      SHORT_NSN_MATCH: number;
+      NSN_MATCH: number;
+      EXACT_MATCH: number;
+    };
   };
   PhoneNumberType: Record<NumberType | 'UNKNOWN', number>;
   PhoneNumberFormat: Record<'E164' | 'INTERNATIONAL' | 'NATIONAL' | 'RFC3966', number>;
@@ -151,6 +159,13 @@ export async function loadOracle(): Promise<Oracle> {
 
   const numberTypeName = buildNumberTypeNames(ph.PhoneNumberType);
   const validationResultName = buildValidationResultNames(ph.PhoneNumberUtil);
+  const matchTypeName: Record<number, string> = {
+    [ph.PhoneNumberUtil.MatchType.NOT_A_NUMBER]: 'NOT_A_NUMBER',
+    [ph.PhoneNumberUtil.MatchType.NO_MATCH]: 'NO_MATCH',
+    [ph.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH]: 'SHORT_NSN_MATCH',
+    [ph.PhoneNumberUtil.MatchType.NSN_MATCH]: 'NSN_MATCH',
+    [ph.PhoneNumberUtil.MatchType.EXACT_MATCH]: 'EXACT_MATCH',
+  };
   const sampledTypes: readonly SampledType[] = SAMPLED_TYPE_NAMES.map((name) => ({
     name,
     id: ph.PhoneNumberType[name],
@@ -173,6 +188,10 @@ export async function loadOracle(): Promise<Oracle> {
       } catch {
         return null;
       }
+    },
+    matchNumbers: (first, second) => {
+      const matchId: number = util.isNumberMatch(first, second);
+      return matchTypeName[matchId] ?? String(matchId);
     },
     evaluate: (input, regionCode) => {
       let parsed: OracleNumber;

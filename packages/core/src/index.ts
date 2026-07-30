@@ -13,6 +13,8 @@ export { createNationalInputController } from './modules/input-controller/nation
 export type { NationalInputControllerConfig } from './modules/input-controller/national-input-controller';
 
 export { getCallingCodeForRegion } from './modules/calling-code-for-region';
+export { matchPhoneNumbers } from './modules/match-phone-numbers';
+export type { PhoneNumberMatch } from './modules/match-phone-numbers';
 export { getPlaceholders, isNationalPrefixOptional } from './modules/placeholders';
 export type { Placeholders } from './modules/placeholders';
 export { regionSupportsNumberTypes } from './modules/region-number-types';

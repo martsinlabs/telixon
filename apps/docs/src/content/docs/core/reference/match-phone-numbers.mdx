@@ -1,0 +1,56 @@
+---
+title: matchPhoneNumbers
+description: Grades whether two inputs denote the same phone number.
+---
+
+```ts
+function matchPhoneNumbers(first: string | PhoneNumber, second: string | PhoneNumber): PhoneNumberMatch;
+```
+
+Grades whether two inputs denote the same phone number. It accepts raw strings and parsed
+[`PhoneNumber`](/core/reference/phone-number/) values in any combination; a string parses on the
+spot. Mirrors Google libphonenumber's `isNumberMatch`.
+
+```ts
+matchPhoneNumbers('+14155550132', '+1 (415) 555-0132'); // 'EXACT_MATCH'
+matchPhoneNumbers('415 555 0132', '+1 415 555 0132'); // 'NSN_MATCH'
+```
+
+## PhoneNumberMatch
+
+```ts
+type PhoneNumberMatch = 'EXACT_MATCH' | 'NSN_MATCH' | 'SHORT_NSN_MATCH' | 'NO_MATCH' | 'NOT_A_NUMBER';
+```
+
+| Value             | Meaning                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `EXACT_MATCH`     | The calling code, the national number, and the extension all agree       |
+| `NSN_MATCH`       | The national numbers agree while at least one side names no calling code |
+| `SHORT_NSN_MATCH` | One national number is a shorter variant of the other                    |
+| `NO_MATCH`        | Both sides read as numbers and they differ                               |
+| `NOT_A_NUMBER`    | No number could be read from one of the inputs                           |
+
+A difference only in a leading zero or in one side carrying an extension also grades as
+`SHORT_NSN_MATCH`; two different explicit extensions never match.
+
+```ts
+matchPhoneNumbers('555 0132', '+1 415 555 0132'); // 'SHORT_NSN_MATCH'
+matchPhoneNumbers('+1 415 555 0132 ext. 22', '+1 415 555 0132'); // 'SHORT_NSN_MATCH'
+matchPhoneNumbers('+1 415 555 0132 ext. 22', '+1 415 555 0132 ext. 23'); // 'NO_MATCH'
+matchPhoneNumbers('abc', '+14155550132'); // 'NOT_A_NUMBER'
+```
+
+## Reading strings
+
+A string with an explicit `+` reads as international. Without one it reads as national digits;
+when the other side carries a calling code, that code's main region parses the digits, and the
+grade caps at `NSN_MATCH`, since the string never named the calling code itself.
+
+```ts
+matchPhoneNumbers('020 7183 8750', '+44 20 7183 8750'); // 'NSN_MATCH'
+```
+
+## Conformance
+
+Every grade is compared with Google libphonenumber's `isNumberMatch` over deterministic pairs
+derived from its example numbers, as part of [the gate](/verified/#conformance).

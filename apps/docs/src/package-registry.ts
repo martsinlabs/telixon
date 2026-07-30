@@ -44,6 +44,7 @@ export const PACKAGES: readonly DocsPackage[] = [
         items: [
           'core/reference/parse-phone-number',
           'core/reference/phone-number',
+          'core/reference/match-phone-numbers',
           'core/reference/validation-error',
           'core/reference/input-controller',
           'core/reference/region-data',
