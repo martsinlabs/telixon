@@ -128,7 +128,8 @@
       <p class="note">
         Pre-parsed value, method called repeatedly. Where libphonenumber-js stores the value as a direct property after
         parse (<code>nationalNumber</code>, <code>countryCallingCode</code>, <code>number</code>, <code>country</code>),
-        a property read is 1-4% faster than Telixon's cached method call.
+        the warm comparison is a property read against Telixon's cached method call; the table below shows the measured
+        numbers.
       </p>
       <table>
         <thead>

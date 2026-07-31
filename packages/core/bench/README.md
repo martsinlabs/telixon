@@ -1,7 +1,7 @@
 # Benchmarks
 
 Compares Telixon against [libphonenumber-js][libphonenumber-js] and
-[google-libphonenumber][google-libphonenumber] (an npm wrapper around Google's libphonenumber JS
+[google-libphonenumber][google-libphonenumber] (a community wrapper around Google's libphonenumber JS
 source) across the public query surface. Same corpus, same runner, same code path, all sources in
 this directory.
 

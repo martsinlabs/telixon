@@ -10,7 +10,7 @@ function toArrayBuffer(decompressed: Buffer): ArrayBuffer {
   return buffer;
 }
 
-// Node sync decode: native zlib (JIT-free, ~10x the pure-JS path cold).
+// Node sync decode: native zlib, far cheaper cold than the pure-JS path because it needs no JIT warmup.
 export function decodeLayerNative(base64: string): ArrayBuffer {
   return toArrayBuffer(zlib.gunzipSync(Buffer.from(base64, 'base64')));
 }
