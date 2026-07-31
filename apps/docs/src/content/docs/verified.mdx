@@ -35,9 +35,11 @@ The [parity dashboard](https://proof.telixon.dev/parity.html) publishes every ru
 ## Performance
 
 The benchmark measures parsing and query throughput, cold and warm, plus per-keystroke controller
-latency. The reference baseline is the google-libphonenumber npm package, a third-party wrapper
-of Google's port. Wall-time numbers depend on hardware. CodSpeed tracks the instrumented
-regressions.
+latency. Every library runs its built package, the same code a consumer installs. The reference
+baseline is the google-libphonenumber npm package, a third-party wrapper of Google's port.
+Wall-time numbers depend on hardware, while the medians across the query surface land around an
+order of magnitude in Telixon's favor; the dashboard publishes the per-method ratios. CodSpeed
+tracks the instrumented regressions.
 
 ```sh
 pnpm bench

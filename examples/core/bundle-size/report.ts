@@ -1,4 +1,4 @@
-// Measures the chunks from `vite build` and writes the bundle-size proof published at telixon.dev/bundle.html.
+// Measures the chunks from `vite build` and writes the bundle-size proof published at proof.telixon.dev/bundle.html.
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';

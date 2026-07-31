@@ -73,6 +73,9 @@ phone.subscribe((state) => {
 - **Compiled to one automaton.** Google publishes its metadata as regular expressions; Telixon
   compiles them ahead of time into a single deterministic finite automaton. Resolving a number is
   one linear-time walk; the state it ends on carries validity, type, region, and format.
+- **An order of magnitude faster.** That one walk parses millions of numbers a second, while the
+  established libraries interpret regex metadata on every call. The
+  [live benchmark](https://proof.telixon.dev/benchmark.html) proves the gap on every push.
 - **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
   and the full query surface mid-typing.
 - **No third-party dependencies.** `@telixon/core` installs nothing beyond itself.
