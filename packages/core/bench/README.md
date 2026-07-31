@@ -8,12 +8,23 @@ this directory.
 ## Run
 
 ```bash
+pnpm build         # benchmarks measure the built package
 pnpm bench         # console only
 pnpm bench:report  # also writes dist/{bench.json, bench-badge.json, benchmark.html}
 ```
 
 Vitest bench (Tinybench) reports `ops/sec`, mean, p99, and ±rme per library per operation. Competitor
 versions are resolved at runtime from `node_modules`, pinned in `package.json`.
+
+## Methodology
+
+Every library runs its built artifact. Telixon is imported through the `#dist` specifier, which
+resolves to `dist/index.node.js`, the same file npm consumers install; the competitors run their
+published `node_modules` builds. A guard fails the suite when `dist` is missing or older than
+`src`. The parse scenario runs with a lengthened warmup and sample window so every library reaches
+steady JIT state before sampling; the same options apply to all three adapters. The strict-cold
+scenario clears Telixon's process-wide memo caches every iteration while leaving the competitors
+untouched, which biases that scenario against Telixon by design.
 
 ## Corpus
 

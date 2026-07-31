@@ -12,6 +12,7 @@
 //       scripts           (build/copy/typecheck/prepublishOnly; consumers do not run)
 //       packageManager    (corepack hint for monorepo development)
 //       publishConfig     (publish-time directives; flags passed on CLI instead)
+//       imports           (the #dist specifier the bench harness measures the build through)
 //
 // Usage (in CI):
 //   node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
@@ -21,7 +22,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const STRIP_FIELDS = ['devDependencies', 'scripts', 'packageManager', 'publishConfig'];
+const STRIP_FIELDS = ['devDependencies', 'scripts', 'packageManager', 'publishConfig', 'imports'];
 
 // The size-limit entry whose measurement ships as the manifest's `bundleSize`. Core publishes the
 // browser entry, the figure the initial-bundle badge is about.

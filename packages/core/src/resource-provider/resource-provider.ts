@@ -157,7 +157,8 @@ export function getResourceProvider(): ResourceProvider {
   return cachedProvider;
 }
 
-// @internal Test and bench hook: drop the process-wide provider so the next getResourceProvider() rebuilds it.
+// @internal Test and bench hook: drop the process-wide provider so the next getResourceProvider()
+// rebuilds it. The process-scoped memo caches survive this reset; clear-global-caches covers them.
 export function __resetResourceProvider(): void {
   cachedProvider = undefined;
   (globalThis as unknown as Record<symbol, ResourceProvider | undefined>)[PROVIDER_KEY] = undefined;

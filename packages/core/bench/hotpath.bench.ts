@@ -33,11 +33,19 @@ function clearTelixonGlobalCachesIfTelixon(adapter: PhoneLibraryAdapter): void {
 
 // ── Parse ────────────────────────────────────────────────
 
+// The tightest loop in the suite needs a long warmup to reach steady JIT state; default-length
+// runs publish under-optimized samples with inflated variance. Applied to every adapter alike.
+const PARSE_BENCH_OPTIONS = { warmupTime: 1000, time: 3000 } as const;
+
 describe('parsePhoneNumber (corpus pass)', () => {
   for (const adapter of ADAPTERS) {
-    bench(adapter.name, () => {
-      for (const entry of CORPUS) consume(adapter.parse(entry.e164, entry.region));
-    });
+    bench(
+      adapter.name,
+      () => {
+        for (const entry of CORPUS) consume(adapter.parse(entry.e164, entry.region));
+      },
+      PARSE_BENCH_OPTIONS,
+    );
   }
 });
 
