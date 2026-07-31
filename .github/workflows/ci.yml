@@ -105,6 +105,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Benchmarks import the built package (#dist); build outside the instrumented step.
+      - run: pnpm build
+
       # Walltime-stable benchmark measurement: CodSpeed runs vitest bench under instrumentation
       # and posts per-PR regression deltas. Threshold and base reference are managed in the CodSpeed
       # GitHub App settings. BENCH_TELIXON_ONLY drops the competitor adapters so only telixon
@@ -138,6 +141,9 @@ jobs:
         with:
           path: packages/core/oracle/.cache
           key: lpn-source-${{ hashFiles('packages/core/src/engine/PROVENANCE.json') }}
+
+      # Benchmarks import the built package (#dist).
+      - run: pnpm build
 
       - run: pnpm bench:report
 

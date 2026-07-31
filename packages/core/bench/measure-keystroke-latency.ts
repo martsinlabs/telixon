@@ -1,9 +1,10 @@
-import { createInternationalInputController, ensureEngineReady, type InputController } from '@telixon/core';
+import { createInternationalInputController, ensureEngineReady, type InputController } from '#dist';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
+import './require-fresh-dist';
 
 await ensureEngineReady();
 

@@ -1,10 +1,12 @@
 import { forEachFormatMask, getFormatMask } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { getProcessScopedCache } from '@telixon/core/utils/get-process-scoped-cache';
 
-// Per-call mask reads decode from the binary; the per-keystroke variant/longest scans are memoized (immutable after load).
+// Per-call mask reads decode from the binary; the per-keystroke variant/longest scans are memoized
+// (immutable after load). Process-scoped, so every bundled copy of this module shares the memos.
 const NO_MASK = '';
-const exactMaskCache = new Map<number, string>();
-const longestMaskCache = new Map<number, string>();
+const exactMaskCache = getProcessScopedCache('exactFormatMasks', () => new Map<number, string>());
+const longestMaskCache = getProcessScopedCache('longestFormatMasks', () => new Map<number, string>());
 
 function exactKey(formatIndex: number, variant: number, totalLength: number): number {
   return formatIndex * 128 + variant * 32 + totalLength;

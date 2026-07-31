@@ -5,6 +5,7 @@ import {
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { getProcessScopedCache } from '@telixon/core/utils/get-process-scoped-cache';
 import { applyLeadingCallingCodeStrip } from './apply-leading-calling-code-strip';
 import { applyNationalPrefixStrip } from './apply-national-prefix-strip';
 import { NumberResolverSnapshot } from './models';
@@ -17,8 +18,9 @@ import { resolvePrimaryRegionIndex } from './utils/resolve-primary-region-index'
 
 let cachedResolver: NumberResolver | null = null;
 
-// Compiled IDD matcher per region: the prefix is fixed metadata, so memoize (referentially transparent).
-const iddMatcherCache = new Map<number, RegExp | null>();
+// Compiled IDD matcher per region: the prefix is fixed metadata, so memoize (referentially
+// transparent). Process-scoped, so every bundled copy of this module shares the one memo.
+const iddMatcherCache = getProcessScopedCache('iddMatchers', () => new Map<number, RegExp | null>());
 function getIddMatcher(regionIndex: number): RegExp | null {
   const cached: RegExp | null | undefined = iddMatcherCache.get(regionIndex);
   if (cached !== undefined) return cached;

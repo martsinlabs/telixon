@@ -25,6 +25,12 @@
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
   "sideEffects": false,
   "type": "module",
+  "imports": {
+    "#dist": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.node.js"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

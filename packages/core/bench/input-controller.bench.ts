@@ -1,7 +1,8 @@
-import { createInternationalInputController, ensureEngineReady, type InputController } from '@telixon/core';
+import { createInternationalInputController, ensureEngineReady, type InputController } from '#dist';
 import { afterAll, bench, describe } from 'vitest';
 import { consume, flushSink } from './consume';
 import { CORPUS } from './corpus';
+import './require-fresh-dist';
 
 await ensureEngineReady();
 

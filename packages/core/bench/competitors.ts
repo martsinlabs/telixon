@@ -1,8 +1,4 @@
-import {
-  ensureEngineReady,
-  parsePhoneNumber as telixonParse,
-  type PhoneNumber as TelixonPhoneNumber,
-} from '@telixon/core';
+import { ensureEngineReady, parsePhoneNumber as telixonParse, type PhoneNumber as TelixonPhoneNumber } from '#dist';
 import { type RegionCode } from '@telixon/core/engine';
 import googleLibphonenumber from 'google-libphonenumber';
 import libphonenumberJsParse, {
@@ -10,6 +6,7 @@ import libphonenumberJsParse, {
   type CountryCode,
   type PhoneNumber as LibphonenumberJsPhoneNumber,
 } from 'libphonenumber-js';
+import './require-fresh-dist';
 
 export interface PhoneLibraryAdapter {
   readonly name: string;
