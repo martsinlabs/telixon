@@ -61,8 +61,8 @@ makes the pull request title the commit subject on `main`.
    documentation changes.
 4. Push to your fork and open a pull request against `main`. Give it a short, one-line conventional
    title: `type(scope): summary` (for example `feat(core): add parsePhoneNumber`).
-5. The `verify`, `conformance`, `codspeed`, and `bundle` checks must pass on the pull request, with
-   the branch up to date with `main`.
+5. The `verify`, `test-matrix`, `runtime-*`, `conformance`, `codspeed`, and `bundle` checks must
+   pass on the pull request, with the branch up to date with `main`.
 6. Keep the pull request small and single-purpose.
 
 Telixon has a single maintainer who reviews and merges.
@@ -153,13 +153,13 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
 - Pure functions or closure factories by default. A class is allowed only when one of the
   following patterns applies, and its rationale must be obvious from context:
   - **Polymorphic contract.** Multiple implementations of one interface are selected at runtime
-    (e.g. `InputController` and its `International` / `National` variants).
-  - **I/O adapter.** A runtime boundary is bridged behind an interface (e.g. resource loaders).
+    (for example `InputController` and its `International` / `National` variants).
+  - **I/O adapter.** A runtime boundary is bridged behind an interface (for example resource loaders).
   - **Cached interface implementation.** The class exists solely to memoize underlying pure
-    functions on a per-instance basis (e.g. `PhoneNumberView` for `PhoneNumber`). Same input must
+    functions on a per-instance basis (for example `PhoneNumberView` for `PhoneNumber`). Same input must
     produce the same output across calls; the class adds caching alone.
   - **State machine.** The contract is a sequence of state transitions reached through an
-    imperative API (e.g. `NumberResolver.advance(...)`, `.reset()`, `.snapshot`). The class wraps
+    imperative API (for example `NumberResolver.advance(...)`, `.reset()`, `.snapshot`). The class wraps
     a mutation sequence that has no equivalent pure form.
 - **No input mutations.** Function arguments are immutable; always return new values. Module-level
   and per-instance memoization caches are permitted as internal optimizations, provided the cached
