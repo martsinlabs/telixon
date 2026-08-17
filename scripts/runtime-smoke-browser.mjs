@@ -5,7 +5,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { dirname, extname, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
@@ -35,8 +35,15 @@ const server = createServer(async (request, response) => {
     response.end(PAGE);
     return;
   }
+  // Containment check: the resolved path must stay inside distRoot, whatever the URL says.
+  const requestPath = normalize(new URL(request.url, 'http://smoke').pathname);
+  const filePath = resolve(distRoot, '.' + requestPath);
+  if (!filePath.startsWith(distRoot + sep)) {
+    response.writeHead(404);
+    response.end();
+    return;
+  }
   try {
-    const filePath = join(distRoot, normalize(request.url).replace(/^([.][.][/\\])+/, ''));
     const body = await readFile(filePath);
     response.writeHead(200, { 'content-type': CONTENT_TYPES[extname(filePath)] ?? 'application/octet-stream' });
     response.end(body);
