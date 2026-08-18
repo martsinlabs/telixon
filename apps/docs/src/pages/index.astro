@@ -552,7 +552,7 @@ const closedTypesCode = `controller.setRegion('USA')
       .demo-rows {
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-template-rows: repeat(4, 26px);
+        grid-template-rows: repeat(4, minmax(26px, auto));
         align-items: center;
         gap: 4px 22px;
         margin-top: 18px;
@@ -591,7 +591,10 @@ const closedTypesCode = `controller.setRegion('USA')
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: 8px;
+        gap: 2px 8px;
+        flex-wrap: wrap;
+        white-space: normal;
+        overflow: visible;
       }
       .err-kind {
         color: var(--error);
@@ -1474,7 +1477,7 @@ const closedTypesCode = `controller.setRegion('USA')
               The conformance suite loads Google libphonenumber's own source at the exact commit the <a
                 class="link-green"
                 href="#compiled-engine">engine</a
-              > was compiled from, so there is no version drift between the library and its reference.
+              > was compiled from, which rules out version drift between the library and its reference.
             </p>
             <p>
               On every push to main and every pull request, <a
@@ -1489,8 +1492,8 @@ const closedTypesCode = `controller.setRegion('USA')
                 target="_blank"
                 rel="noreferrer">exhaustive enumeration</a
               > re-proves the result across every input the engine can distinguish, at every length. The input controllers
-              go through the same gate: every input is typed character by character, and the controller's resolved number
-              must equal the parser's.
+              go through the same gate, where every input is typed character by character and the controller's
+              resolved number must equal the parser's.
             </p>
             <p>
               Explore the results on the <a
@@ -1570,7 +1573,7 @@ const closedTypesCode = `controller.setRegion('USA')
           </div>
           <div class="bench">
             <div class="num">Every PR</div>
-            <div class="label">performance-gated, so a regression cannot merge quietly</div>
+            <div class="label">performance-gated; a regression cannot merge quietly</div>
           </div>
         </div>
         <p class="bench-note">
@@ -1690,11 +1693,11 @@ const closedTypesCode = `controller.setRegion('USA')
           </div>
           <div class="cell">
             <h3><span class="tick" aria-hidden="true">+</span> Bad input never throws</h3>
-            <p>parsePhoneNumber always returns. Invalid input answers with null and a typed reason, not an exception.</p>
+            <p>parsePhoneNumber always returns. Invalid input answers with null and a typed reason.</p>
           </div>
           <div class="cell">
             <h3><span class="tick" aria-hidden="true">+</span> Nothing on import</h3>
-            <p>Importing has no side effects: no fetches, no globals. The engine loads only when you call for it.</p>
+            <p>Importing runs no fetches and sets no globals. The engine loads only when you call for it.</p>
           </div>
           <div class="cell">
             <h3><span class="tick" aria-hidden="true">+</span> One object, every query</h3>
@@ -1722,8 +1725,8 @@ const closedTypesCode = `controller.setRegion('USA')
           <div class="cell wide">
             <h3><span class="tick" aria-hidden="true">+</span> Undo and redo built in</h3>
             <p>
-              Bounded history on every field: the undo and redo shortcuts drive it, and the historyUndo and
-              historyRedo input intents are honored.
+              Bounded history on every field, driven by the undo and redo shortcuts and by the historyUndo and
+              historyRedo input intents.
             </p>
           </div>
           <div class="cell wide">

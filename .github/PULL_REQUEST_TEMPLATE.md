@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- One paragraph: what changes, what does not. -->
+<!-- One paragraph describing the change. -->
 
 ## Motivation
 

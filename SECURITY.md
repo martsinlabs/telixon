@@ -46,7 +46,7 @@ Security fixes land in the latest `1.x` release.
 
 1. You submit a private report through the GitHub Security Advisory form.
 2. The maintainer acknowledges within 5 business days.
-3. We agree on impact assessment and embargo timeline.
+3. You and the maintainer agree on the impact assessment and embargo timeline.
 4. A patch is prepared and released in a new version.
 5. A public advisory is published, with a CVE identifier if appropriate and credit to the reporter.
 
@@ -57,7 +57,7 @@ they prefer to remain anonymous.
 
 ## Safe harbor
 
-We will not pursue legal action or report researchers who:
+Telixon will not pursue legal action against or report researchers who:
 
 - act in good faith,
 - limit testing to their own copy or a controlled environment,

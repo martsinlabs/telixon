@@ -15,7 +15,7 @@ libphonenumber counterpart; every one of them is compared against it. The oracle
 the exact commit the engine's metadata was built from. Every mismatch it reports is a real
 behavioral difference.
 
-The gate runs two sweeps. The full corpus compares the thirteen methods on 14,355 inputs each,
+The gate's full corpus compares the thirteen methods on 14,355 inputs each,
 across all 245 regions, extension spellings included, while case coverage compares one number from
 every distinct case the library can produce. Together they stand at 367,766 comparisons with zero
 divergences. `isValidForRegion` is set-compared per case, with 692,513 region checks in the

@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
     url: https://github.com/martsinlabs/telixon/security/advisories/new
-    about: Report security issues privately, not via public issues.
+    about: Report security issues privately through the GitHub Security Advisory form.
   - name: Questions and discussion
     url: https://github.com/martsinlabs/telixon/discussions
     about: For questions, ideas, and general discussion.

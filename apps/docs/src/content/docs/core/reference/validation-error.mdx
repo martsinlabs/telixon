@@ -43,8 +43,8 @@ Every row is a real input and its real result.
 (`callingCodeInInput: false`), where the digits are the international significant number. It
 reports when a number that is not valid as typed begins with a national-dialing chunk, the trunk
 prefix or a carrier code, whose removal leaves a valid number. `prefix` is the exact leading chunk
-to drop; a Belarusian number typed as `80 29…` reports `prefix: '80'`. Reproducing it takes a
-controller rather than `parsePhoneNumber`:
+to drop; a Belarusian number typed as `80 29...` reports `prefix: '80'`. Reproducing it takes a
+controller:
 
 ```ts
 const controller = createInternationalInputController({

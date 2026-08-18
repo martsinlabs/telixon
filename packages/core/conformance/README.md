@@ -25,15 +25,15 @@ fetches that source at the **same commit the engine was built from** (`src/engin
 and runs it on `google-closure-library`. Sources are cached under `.cache/<commit>/`, leaving only
 the first run in need of network.
 
-Because the oracle and the engine share one commit, there is **no metadata version drift**: any
-mismatch is a real engine difference, never a stale reference.
+Because the oracle and the engine share one commit, there is **no metadata version drift**. Any
+mismatch is a real engine difference.
 
 ## How it works
 
 ```
-corpus ──▶ for each number ──▶ oracle  (Google's answer)
-                          └──▶ subject (Telixon's answer)
-                                  └──▶ compare ──▶ report ──▶ gate
+corpus --> for each number --> oracle  (Google's answer)
+                          \--> subject (Telixon's answer)
+                                  \--> compare --> report --> gate
 ```
 
 The oracle and the example corpus live in `../oracle/` (shared with the bench so both consume the
@@ -49,7 +49,7 @@ exact same Google source). The conformance corpus is derived from the examples i
 | `report.ts`            | formats the report                                                          |
 | `known-divergences.ts` | the allowlist of accepted mismatches + audit                                |
 | `conformance.test.ts`  | the gate                                                                    |
-| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, …)                  |
+| `models.ts`            | shared types (`Mismatch`, `MethodReport`, `MethodName`, ...)                |
 | `artifacts.ts`         | writes `parity.json`, `parity-badge.json`, `parity.html`                    |
 | `as-you-type.ts`       | per-keystroke as-you-type measurement vs Google                             |
 | `parity.template.html` | HTML template for the dashboard                                             |
@@ -59,7 +59,7 @@ exact same Google source). The conformance corpus is derived from the examples i
 ```
 oracle and engine pinned to google/libphonenumber@<commit> · no metadata drift
 <N> cases · <compared> compared · <covered>/<total> regions · <skipped> skipped
-  <kind>=<count> · …
+  <kind>=<count> · ...
   google-rejected mutations judged not possible: <agreed>/<total>
 
   <method>  <rate>  (<matched>/<total>)
@@ -112,13 +112,13 @@ applied progressively. The run prints this as a measurement; the gate ignores it
 
 ## Baseline
 
-Latest: [live dashboard](https://proof.telixon.dev/parity.html).
-Reproduce locally: `pnpm conformance`.
+The latest run is published on the [live dashboard](https://proof.telixon.dev/parity.html).
+Reproduce it locally with `pnpm conformance`.
 
 ## Corpus
 
-Every case derives deterministically from Google's example numbers (one per region per type), so
-there is no snapshot to drift and no randomness in the gate. One case is one exact input string
+Every case derives deterministically from Google's example numbers (one per region per type), which
+leaves no snapshot to drift and no randomness in the gate. One case is one exact input string
 parsed under identical conditions on both sides.
 
 | Family            | Kinds                                                                                                 | Contract                                                                          |
