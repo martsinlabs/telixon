@@ -43,8 +43,8 @@ matchPhoneNumbers('abc', '+14155550132'); // 'NOT_A_NUMBER'
 ## Reading strings
 
 A string with an explicit `+` reads as international. Without one it reads as national digits;
-when the other side carries a calling code, that code's main region parses the digits, and the
-grade caps at `NSN_MATCH`, since the string never named the calling code itself.
+when the other side carries a calling code, that code's main region parses the digits. The grade
+caps at `NSN_MATCH`, since the string never named the calling code itself.
 
 ```ts
 matchPhoneNumbers('020 7183 8750', '+44 20 7183 8750'); // 'NSN_MATCH'

@@ -33,4 +33,4 @@ Vite prints the chunk sizes. `pnpm --filter @telixon/example-core-bundle-size re
 ## How the numbers are measured
 
 `report.ts` reads the emitted chunks from `dist/assets`, classifies each as initial or engine, and gzip/brotli-compresses
-it with `node:zlib`. Nothing is hard-coded; every figure comes from the build output.
+it with `node:zlib`. Every figure comes from the build output.

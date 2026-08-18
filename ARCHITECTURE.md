@@ -67,8 +67,8 @@ Each layer adds one concern and depends only on layers beneath it.
 | 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
 | 7     | user code                     | All markup, styles, region-selector wiring                            | a binding  | n/a     |
 
-The split keeps the engine free of DOM, reactivity, and framework weight, and lets a caller enter at
-the level matching their need:
+The split keeps the engine free of DOM, reactivity, and framework weight, while letting a caller
+enter at the level matching their need:
 
 - **`@telixon/web-components`**: drop in a component, one line. (planned)
 - **`@telixon/web-sdk`**: bring your own UI, roughly ten lines.
@@ -103,8 +103,8 @@ bumping provenance.
 
 **It is one deterministic finite automaton whose states carry the answers.** Google publishes its
 metadata as regular expressions; the compiler turns them into a single state graph. A number's
-digits drive one walk, deterministic and backtracking-free, and the state the walk ends on is the
-key to every answer. Validity, number type, region, and format index are read off that state through
+digits drive one walk, deterministic and backtracking-free. The state the walk ends on is the key
+to every answer. Validity, number type, region, and format index are read off that state through
 accessors shaped `(engine, state, ...)`, which makes the engine a Moore machine, an automaton whose
 output is a function of the state it reaches. One linear-time walk per resolution is what keeps
 per-keystroke work cheap. The automaton is global and unified, matching one
@@ -134,7 +134,7 @@ The engine loads as a **single indivisible artifact**. Because the recognition a
 single region cannot be loaded in isolation; there is no per-region lazy loading by design.
 
 The four modules ship as base64-of-gzip ESM (`engine/embedded/*.bin.js`); the library owns loading and
-decoding. Initialization is explicit and **asynchronous by default**: `await ensureEngineReady()` from
+decoding. Initialization is explicit and **asynchronous by default**. `await ensureEngineReady()` from
 `@telixon/core` loads the engine on demand and decodes it off the main thread. A synchronous path lives
 in a separate thin entry, `@telixon/core/sync-init`, exporting `ensureEngineReadySync()`, which
 statically bundles the modules and decodes them in-process. Each uses the fastest decode the runtime has:
@@ -162,7 +162,7 @@ Bundle size follows from separating code and data:
 `ensureEngineReady()` to the environment's loader and re-export the shared `index.ts`;
 `index.sync-init.ts` and `index.sync-init.node.ts` back the `@telixon/core/sync-init` entry. The
 provider is process-wide, which lets either entry ready one engine while the rest of the code stays
-environment-agnostic. Initialization is explicit: `await ensureEngineReady()` is the default,
+environment-agnostic. Initialization is explicit. `await ensureEngineReady()` is the default,
 `ensureEngineReadySync()` from `@telixon/core/sync-init` is the synchronous path, and an API call before
 either throws `EngineNotReadyError`. `isEngineReady()` is a synchronous readiness predicate. Full
 detail: [Load the engine](https://telixon.dev/core/load-the-engine/).
@@ -187,9 +187,9 @@ in CI; the rest are enforced in review.
 
 `packages/core/conformance` runs the public query methods against Google's libphonenumber across every
 supported region, on valid numbers, display spellings, deterministic corruptions, and every digit
-prefix, and fails CI on any divergence outside an explicit allowlist. The oracle loads Google's
+prefix. Any divergence outside an explicit allowlist fails CI. The oracle loads Google's
 source at **the same commit the engine was compiled from**, which rules out metadata version drift.
-A mismatch is always a real engine difference, never a stale reference. The current baseline is on the
+A mismatch is always a real engine difference. The current baseline is on the
 [live dashboard](https://proof.telixon.dev/parity.html). See
 [conformance/README.md](packages/core/conformance/README.md).
 
@@ -197,7 +197,7 @@ A mismatch is always a real engine difference, never a stale reference. The curr
 
 The per-keystroke path is hot. The standing rule avoids allocation, regex, and indirection there,
 preferring charCode parsing and early exits. Outside hot paths, allocation is fine where it improves
-clarity. Review applies the discipline, and the benchmark suite (`pnpm bench`) backs it, with
+clarity. Review applies the discipline. The benchmark suite (`pnpm bench`) backs it, with
 continuous performance regression tracking in CI via CodSpeed.
 
 ### Bundle size
@@ -220,9 +220,9 @@ These keep modules independent and the dependency graph legible. They are enforc
 
 The engine and the entire public API speak in **regions** (`RegionCode`, `REGION_CODES`, `getRegion`, the
 `defaultRegion` config, the web-sdk `RegionList`), matching libphonenumber and ECMAScript `Intl`, where a
-region is an ISO 3166-1 area that may not be a sovereign country. The term "calling code" names the ITU
-E.164 dial prefix (the `+1` number), never the region; "country code" survives only where we cite Google's
-own functions (e.g. `getCountryCodeForRegion`).
+region is an ISO 3166-1 area that may not be a sovereign country. The term "calling code" always names the
+ITU E.164 dial prefix (the `+1` number); "country code" survives only where Google's own functions are
+cited (for example `getCountryCodeForRegion`).
 
 ## Public API
 

@@ -51,8 +51,8 @@ Run from the repo root:
 
 ## Submitting changes
 
-`main` is protected. Every change lands through a pull request, and merges are squash-only, which
-makes the pull request title the commit subject on `main`.
+`main` is protected. Every change lands through a pull request. Merges are squash-only, which makes
+the pull request title the commit subject on `main`.
 
 1. Branch off `main`.
 2. Make your change.
@@ -105,7 +105,7 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
 
 - One responsibility per function. No "and" in what it does.
 - Pure by default; side effects only at explicit I/O boundaries.
-- No boolean flag parameters; no optional params that change fundamental behavior. Use separate
+- No boolean flag parameters; no optional parameters that change fundamental behavior. Use separate
   functions.
 - Never mutate inputs; always return new values.
 
