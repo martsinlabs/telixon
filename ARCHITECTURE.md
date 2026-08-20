@@ -175,7 +175,7 @@ There is one resolution core. Both entry shapes use it; neither duplicates query
 - `createInternationalInputController` / `createNationalInputController`: incremental, per keystroke.
 
 The `PhoneNumber` query surface (`isValid`, `isValidForRegion`, `isPossible`, `isPossibleWithReason`,
-`getValidationError`, `getNumberType`, `getNationalNumber`, `getCallingCode`, `getRegion`, `formatE164`,
+`getValidationError`, `getNumberType`, `getNationalNumber`, `getCallingCode`, `getExtension`, `getRegion`, `formatE164`,
 `formatNational`, `formatInternational`, `formatRfc3966`) is pure reads over an already-resolved snapshot.
 
 ## Cross-cutting invariants
