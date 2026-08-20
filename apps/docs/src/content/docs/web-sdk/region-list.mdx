@@ -28,14 +28,18 @@ regions.getState().options[0];
 
 | Field              | Type                            | Meaning                                                                                                                |
 | ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `dataFactory`      | `(input) => T`                  | Produces the `data` slot from the option's `region`, `callingCode`, and `displayName`; its return type flows into `T`. |
+| `dataFactory`      | `RegionDataFactory<T>`          | Produces the `data` slot from the option's `region`, `callingCode`, and `displayName`; its return type flows into `T`. |
 | `regionFilter`     | `readonly RegionCode[] \| null` | Restricts the list to these regions.                                                                                   |
 | `numberTypeFilter` | `readonly NumberType[] \| null` | Keeps regions that assign at least one of these types.                                                                 |
 | `searchQuery`      | `string`                        | Initial search query.                                                                                                  |
-| `searchFn`         | `(query, option) => boolean`    | Custom search predicate; the default is described under [Search matching](#search-matching).                           |
-| `locale`           | `string`                        | Locale for display names; `'en'` by default.                                                                           |
-| `sort`             | `RegionListSort`                | `'alphabetical'` (default), `'callingCode'`, or a comparator.                                                          |
-| `prioritize`       | `readonly RegionCode[]`         | Regions pinned to the top, in the given order.                                                                         |
+| `searchFn`         | `RegionSearchFn<T>`             | Custom search predicate; the default is described under [Search matching](#search-matching).                           |
+
+`RegionDataFactory<T>` is `(input: RegionDataFactoryInput) => T`, where `RegionDataFactoryInput`
+carries the option's `region`, `callingCode`, and `displayName`. `RegionSearchFn<T>` is
+`(query: string, option: RegionOption<T>) => boolean`.
+| `locale` | `string` | Locale for display names; `'en'` by default. |
+| `sort` | `RegionListSort` | `'alphabetical'` (default), `'callingCode'`, or a comparator. |
+| `prioritize` | `readonly RegionCode[]` | Regions pinned to the top, in the given order. |
 
 For both filters, `null` lifts the restriction; `[]` matches nothing.
 
@@ -123,10 +127,11 @@ createRegionList({ dataFactory: ({ region }) => regionToFlagEmoji(region) }).get
 ### subscribe
 
 ```ts
-subscribe(listener: (state: RegionListState<T>) => void): () => void;
+subscribe(listener: RegionListListener<T>): () => void;
 ```
 
 Subscribes to state changes. Returns an unsubscribe function.
+`RegionListListener<T>` is `(state: RegionListState<T>) => void`.
 
 ### getState
 

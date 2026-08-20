@@ -44,8 +44,8 @@ jobs:
       # ignored: node10 resolver (pre-2019) does not read `exports` map, so
       # subpaths like @telixon/core/engine cannot resolve in that mode by
       # design; this lib targets node16+/bundler resolution.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
 
       - run: pnpm size
 

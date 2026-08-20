@@ -42,7 +42,7 @@ Run from the repo root:
 | `pnpm format:check`          | Prettier (check only; used by CI)                                            |
 | `pnpm typecheck`             | TypeScript, no emit, all packages                                            |
 | `pnpm typecheck:conformance` | TypeScript for the conformance harness                                       |
-| `pnpm bench`                 | benchmarks, console output                                                   |
+| `pnpm bench`                 | benchmarks on the built packages (`pnpm build` first), console output        |
 | `pnpm bench:report`          | bench + writes `bench.json`, `bench-badge.json`, `benchmark.html`            |
 | `pnpm conformance`           | parity gate vs Google libphonenumber (fetches Google source once per commit) |
 | `pnpm fuzz`                  | randomized differential sweep against the oracle                             |
@@ -75,7 +75,7 @@ request.
 
 1. Open a release pull request for the package.
    - Move the `Unreleased` section of `packages/<package>/CHANGELOG.md` under the new version with
-     the release date; retarget the comparison links.
+     the release date. Add or retarget the comparison links at the bottom of the file.
    - The changelog decides the bump. Entries under `Removed`, or breaking entries under `Changed`,
      make it major; `Added` makes it minor; `Fixed` alone makes it patch.
    - Set `version` in `packages/<package>/package.json` and refresh the lockfile with

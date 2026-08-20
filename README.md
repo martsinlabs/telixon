@@ -13,7 +13,6 @@
   <a href="https://github.com/martsinlabs/telixon/actions/workflows/ci.yml"><img src="https://github.com/martsinlabs/telixon/actions/workflows/ci.yml/badge.svg" alt="ci" /></a>
   <a href="https://proof.telixon.dev/parity.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json" alt="conformance" /></a>
   <a href="https://proof.telixon.dev/benchmark.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json" alt="benchmarks" /></a>
-  <a href="https://proof.telixon.dev/bundle.html"><img src="https://img.shields.io/endpoint?url=https://proof.telixon.dev/bundle-badge.json" alt="initial bundle" /></a>
   <a href="https://codspeed.io/martsinlabs/telixon"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed" /></a>
 </p>
 
@@ -45,6 +44,10 @@ number.formatE164(); // '+14155550132'
 
 [`@telixon/web-sdk`](packages/web-sdk/README.md) turns a plain `<input>` into a phone field,
 handling the events, the caret, and the history:
+
+```bash
+npm install @telixon/web-sdk
+```
 
 ```ts
 import { ensureEngineReady } from '@telixon/core';
@@ -78,10 +81,10 @@ phone.subscribe((state) => {
   [live benchmark](https://proof.telixon.dev/benchmark.html) proves the gap on every push.
 - **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
   and the full query surface mid-typing.
-- **No third-party dependencies.** `@telixon/core` installs nothing beyond itself.
 - **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
-  export conditions.
+  export conditions and each exercised in CI.
 - **TypeScript-first.** Region codes and number types are closed unions; a typo fails to compile.
+- **Zero dependencies.**
 
 ## Conformance
 

@@ -54,9 +54,9 @@ controller.deleteBackward('(415) 555-0132', 3, 8);
 - **An order of magnitude faster.** A single linear walk parses millions of numbers a second,
   while the established libraries interpret regex metadata on every call. The
   [live benchmark](https://proof.telixon.dev/benchmark.html) proves the gap on every push.
-- **No third-party dependencies.** The package installs nothing beyond itself.
 - **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
-  export conditions.
+  export conditions and each exercised in CI.
+- **Zero dependencies.**
 
 ## Support
 

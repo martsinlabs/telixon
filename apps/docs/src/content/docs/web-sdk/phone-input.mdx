@@ -30,7 +30,8 @@ phone.getState().placeholder; // '(201) 555-0123'
 
 ## PhoneInputOptions
 
-A discriminated union on `mode`. `'national'` extends
+A discriminated union on `mode`, exported as `NationalPhoneInputOptions` and
+`InternationalPhoneInputOptions`. `'national'` extends
 [`NationalInputControllerConfig`](/core/reference/input-controller/#nationalinputcontrollerconfig);
 `'international'` extends
 [`InternationalInputControllerConfig`](/core/reference/input-controller/#internationalinputcontrollerconfig).
@@ -93,10 +94,11 @@ empty national field reports `TOO_SHORT` under its region.
 ### subscribe
 
 ```ts
-subscribe(listener: (state: PhoneInputState) => void): () => void;
+subscribe(listener: PhoneInputListener): () => void;
 ```
 
-Subscribes to state changes. Returns an unsubscribe function.
+Subscribes to state changes. Returns an unsubscribe function. `PhoneInputListener` is
+`(state: PhoneInputState) => void`.
 
 ### getState
 

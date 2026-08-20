@@ -29,6 +29,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Verify the tag matches the package version
+        run: |
+          TAG_VERSION=${GITHUB_REF_NAME#core@v}
+          PKG_VERSION=$(node -p "require('./packages/core/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package version $PKG_VERSION"
+            exit 1
+          fi
+
       - run: pnpm typecheck
 
       - run: pnpm test
@@ -44,7 +53,7 @@ jobs:
       - run: pnpm build
 
       # Re-validate published type entry points against the actual release commit.
-      - run: pnpm dlx @arethetypeswrong/cli@latest --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
+      - run: pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution
 
       - name: Publish @telixon/core
         run: node ../../scripts/safe-publish.mjs --access public --provenance --no-git-checks
