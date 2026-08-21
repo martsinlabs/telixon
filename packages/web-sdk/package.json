@@ -1,6 +1,6 @@
 {
   "name": "@telixon/web-sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "DOM adapter for @telixon/core: two headless widgets, PhoneInput driving a plain <input> and RegionList feeding region pickers.",
   "keywords": [
     "phone-input",
