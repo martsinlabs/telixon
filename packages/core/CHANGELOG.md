@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-21
+
 ### Added
 
 - `parsePhoneNumber` with `defaultRegion` and `strict` options. It never throws on bad input; the
@@ -32,4 +34,5 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/commits/main
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.0.0...HEAD
+[1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/core@v1.0.0
