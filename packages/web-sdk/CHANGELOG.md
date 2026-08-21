@@ -6,6 +6,8 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-21
+
 ### Added
 
 - `createPhoneInput` binding a plain `<input>` to a core input controller. It wires the
@@ -16,4 +18,5 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 - `regionToFlagEmoji` mapping a region code to its flag emoji.
 - `@telixon/core` as a peer dependency; the engine loads through it directly.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/commits/main
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.0...HEAD
+[1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/web-sdk@v1.0.0
