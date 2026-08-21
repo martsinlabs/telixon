@@ -38,11 +38,12 @@ jobs:
             exit 1
           fi
 
+      # Build first: the bundle-size example typechecks against the built package.
+      - run: pnpm build
+
       - run: pnpm typecheck
 
       - run: pnpm test
-
-      - run: pnpm build
 
       # Re-validate published type entry points against the actual release commit.
       - run: pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/web-sdk --ignore-rules cjs-resolves-to-esm no-resolution
