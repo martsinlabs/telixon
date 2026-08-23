@@ -54,10 +54,13 @@ class NationalInputController implements InputController {
 
   #defaultCallingCode: string | null = null;
 
-  constructor(private config: NationalInputControllerConfig) {
-    this.#setRegion(this.config.defaultRegion);
+  readonly #config: NationalInputControllerConfig;
 
-    if (this.config.strict) {
+  constructor(config: NationalInputControllerConfig) {
+    this.#config = config;
+    this.#setRegion(this.#config.defaultRegion);
+
+    if (this.#config.strict) {
       this.#numberResolver.setStrict(true);
     }
 
@@ -331,7 +334,7 @@ class NationalInputController implements InputController {
       defaultRegionIndex: this.#defaultRegionIndex,
       regionFilter: this.#numberResolver.regionFilter,
       numberTypeFilter: this.#numberResolver.numberTypeFilter,
-      strict: this.config.strict === true,
+      strict: this.#config.strict === true,
     });
 
     return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex, null));

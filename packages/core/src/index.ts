@@ -22,6 +22,6 @@ export { regionSupportsNumberTypes } from './modules/region-number-types';
 export { EngineNotReadyError } from './errors';
 export { isEngineReady } from './resource-provider';
 
-export { REGION_CODES } from './engine';
 export type { NumberType, RegionCode } from './engine';
 export { NUMBER_TYPES } from './number-types';
+export { REGION_CODES } from './region-codes';
