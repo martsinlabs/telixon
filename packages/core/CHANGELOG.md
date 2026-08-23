@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-08-23
+
 ### Changed
 
 - `PhoneNumber` and the input controllers hold their state in native private fields; a runtime
@@ -41,5 +43,6 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.0.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.0.1...HEAD
+[1.0.1]: https://github.com/martsinlabs/telixon/compare/core@v1.0.0...core@v1.0.1
 [1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/core@v1.0.0
