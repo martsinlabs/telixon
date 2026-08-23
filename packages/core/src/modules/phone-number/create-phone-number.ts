@@ -12,43 +12,48 @@ import { getValidationError } from './query/get-validation-error';
 import { isPossibleWithReason } from './query/is-possible-with-reason';
 import { isValidForRegion } from './query/is-valid-for-region';
 
+// `undefined` marks an unfilled memo slot; `null` is a legitimate cached result.
 class PhoneNumberView implements PhoneNumber {
-  private cachedNationalNumber: string | undefined = undefined;
+  #cachedNationalNumber: string | undefined = undefined;
 
-  private cachedCallingCode: string | null | undefined = undefined;
+  #cachedCallingCode: string | null | undefined = undefined;
 
-  private cachedRegion: RegionCode | null | undefined = undefined;
+  #cachedRegion: RegionCode | null | undefined = undefined;
 
-  private cachedE164: string | null | undefined = undefined;
+  #cachedE164: string | null | undefined = undefined;
 
-  private cachedFormattedNational: string | null | undefined = undefined;
+  #cachedFormattedNational: string | null | undefined = undefined;
 
-  private cachedFormattedInternational: string | null | undefined = undefined;
+  #cachedFormattedInternational: string | null | undefined = undefined;
 
-  private cachedRfc3966: string | null | undefined = undefined;
+  #cachedRfc3966: string | null | undefined = undefined;
 
-  private cachedValidationResult: PossibilityResult | undefined = undefined;
+  #cachedValidationResult: PossibilityResult | undefined = undefined;
 
-  private cachedValidationError: ValidationError | null | undefined = undefined;
+  #cachedValidationError: ValidationError | null | undefined = undefined;
 
-  private cachedIsValid: boolean | undefined = undefined;
+  #cachedIsValid: boolean | undefined = undefined;
 
-  private cachedNumberType: NumberType | undefined = undefined;
+  #cachedNumberType: NumberType | undefined = undefined;
 
-  constructor(private readonly resolved: ResolvedPhoneNumber) {}
+  readonly #resolved: ResolvedPhoneNumber;
+
+  constructor(resolved: ResolvedPhoneNumber) {
+    this.#resolved = resolved;
+  }
 
   // libphonenumber isValidNumber: a number is valid when it resolves to a concrete type.
   isValid(): boolean {
-    if (this.cachedIsValid === undefined) {
-      this.cachedIsValid = this.getNumberType() !== 'UNKNOWN';
+    if (this.#cachedIsValid === undefined) {
+      this.#cachedIsValid = this.getNumberType() !== 'UNKNOWN';
     }
 
-    return this.cachedIsValid;
+    return this.#cachedIsValid;
   }
 
   // libphonenumber isValidNumberForRegion: valid for one specific region's patterns.
   isValidForRegion(region: RegionCode): boolean {
-    return isValidForRegion(this.resolved, region);
+    return isValidForRegion(this.#resolved, region);
   }
 
   isPossible(): boolean {
@@ -58,88 +63,88 @@ class PhoneNumberView implements PhoneNumber {
   }
 
   isPossibleWithReason(): PossibilityResult {
-    if (this.cachedValidationResult === undefined) {
-      this.cachedValidationResult = isPossibleWithReason(this.resolved);
+    if (this.#cachedValidationResult === undefined) {
+      this.#cachedValidationResult = isPossibleWithReason(this.#resolved);
     }
 
-    return this.cachedValidationResult;
+    return this.#cachedValidationResult;
   }
 
   getValidationError(): ValidationError | null {
-    if (this.cachedValidationError === undefined) {
-      this.cachedValidationError = getValidationError(this.resolved, this.isPossibleWithReason(), this.isValid());
+    if (this.#cachedValidationError === undefined) {
+      this.#cachedValidationError = getValidationError(this.#resolved, this.isPossibleWithReason(), this.isValid());
     }
 
-    return this.cachedValidationError;
+    return this.#cachedValidationError;
   }
 
   getNumberType(): NumberType {
-    if (this.cachedNumberType === undefined) {
-      this.cachedNumberType = getNumberType(this.resolved);
+    if (this.#cachedNumberType === undefined) {
+      this.#cachedNumberType = getNumberType(this.#resolved);
     }
 
-    return this.cachedNumberType;
+    return this.#cachedNumberType;
   }
 
   getNationalNumber(): string {
-    if (this.cachedNationalNumber === undefined) {
-      this.cachedNationalNumber = getNationalNumber(this.resolved);
+    if (this.#cachedNationalNumber === undefined) {
+      this.#cachedNationalNumber = getNationalNumber(this.#resolved);
     }
 
-    return this.cachedNationalNumber;
+    return this.#cachedNationalNumber;
   }
 
   getCallingCode(): string | null {
-    if (this.cachedCallingCode === undefined) {
-      this.cachedCallingCode = getCallingCode(this.resolved);
+    if (this.#cachedCallingCode === undefined) {
+      this.#cachedCallingCode = getCallingCode(this.#resolved);
     }
 
-    return this.cachedCallingCode;
+    return this.#cachedCallingCode;
   }
 
   // Captured at parse; the stored value is the answer, with nothing to compute or cache.
   getExtension(): string | null {
-    return this.resolved.extension;
+    return this.#resolved.extension;
   }
 
   getRegion(): RegionCode | null {
-    if (this.cachedRegion === undefined) {
-      this.cachedRegion = getRegion(this.resolved);
+    if (this.#cachedRegion === undefined) {
+      this.#cachedRegion = getRegion(this.#resolved);
     }
 
-    return this.cachedRegion;
+    return this.#cachedRegion;
   }
 
   formatE164(): string | null {
-    if (this.cachedE164 === undefined) {
-      this.cachedE164 = formatE164(this.resolved);
+    if (this.#cachedE164 === undefined) {
+      this.#cachedE164 = formatE164(this.#resolved);
     }
 
-    return this.cachedE164;
+    return this.#cachedE164;
   }
 
   formatNational(): string | null {
-    if (this.cachedFormattedNational === undefined) {
-      this.cachedFormattedNational = formatNational(this.resolved);
+    if (this.#cachedFormattedNational === undefined) {
+      this.#cachedFormattedNational = formatNational(this.#resolved);
     }
 
-    return this.cachedFormattedNational;
+    return this.#cachedFormattedNational;
   }
 
   formatInternational(): string | null {
-    if (this.cachedFormattedInternational === undefined) {
-      this.cachedFormattedInternational = formatInternational(this.resolved);
+    if (this.#cachedFormattedInternational === undefined) {
+      this.#cachedFormattedInternational = formatInternational(this.#resolved);
     }
 
-    return this.cachedFormattedInternational;
+    return this.#cachedFormattedInternational;
   }
 
   formatRfc3966(): string | null {
-    if (this.cachedRfc3966 === undefined) {
-      this.cachedRfc3966 = formatRfc3966(this.resolved);
+    if (this.#cachedRfc3966 === undefined) {
+      this.#cachedRfc3966 = formatRfc3966(this.#resolved);
     }
 
-    return this.cachedRfc3966;
+    return this.#cachedRfc3966;
   }
 }
 

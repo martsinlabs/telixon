@@ -32,19 +32,22 @@ class InternationalInputController implements InputController {
 
   #plusErasable: boolean = false;
 
-  constructor(private config: InternationalInputControllerConfig = {}) {
-    if (this.config.defaultRegion) {
-      this.#setDefaultRegion(this.config.defaultRegion);
+  readonly #config: InternationalInputControllerConfig;
+
+  constructor(config: InternationalInputControllerConfig = {}) {
+    this.#config = config;
+    if (this.#config.defaultRegion) {
+      this.#setDefaultRegion(this.#config.defaultRegion);
     }
 
-    if (this.config.strict) {
+    if (this.#config.strict) {
       this.#numberResolver.setStrict(true);
     }
 
-    const display = this.config.display;
+    const display = this.#config.display;
     this.#plusErasable = display !== undefined && display.callingCodeInInput && display.plusPrefix === 'erasable';
 
-    const shouldShowCallingCode: boolean = this.config.display?.callingCodeInInput !== false;
+    const shouldShowCallingCode: boolean = this.#config.display?.callingCodeInInput !== false;
     const insertText: string = config.initialValue ?? (shouldShowCallingCode ? (this.#defaultCallingCode ?? '') : '');
 
     // Only an explicit '+' or the calling-code seed primes the plus; every plus-less start, the
@@ -78,7 +81,7 @@ class InternationalInputController implements InputController {
   }
 
   #seedResolver(): void {
-    if (this.config.display?.callingCodeInInput === false && this.#defaultCallingCode !== null) {
+    if (this.#config.display?.callingCodeInInput === false && this.#defaultCallingCode !== null) {
       this.#numberResolver.setCallingCode(this.#defaultCallingCode);
     } else {
       this.#numberResolver.reset();
@@ -104,7 +107,7 @@ class InternationalInputController implements InputController {
       snapshot,
       caretIndex,
       profile,
-      this.config.display,
+      this.#config.display,
       direction,
       plusErased,
       this.#defaultRegionIndex,
@@ -353,11 +356,11 @@ class InternationalInputController implements InputController {
     const resolved: ResolvedNumberState = resolveNumber({
       input: this.#history.current.value,
       hasLeadingPlus: true,
-      seedCallingCode: this.config.display?.callingCodeInInput === false ? this.#defaultCallingCode : null,
+      seedCallingCode: this.#config.display?.callingCodeInInput === false ? this.#defaultCallingCode : null,
       defaultRegionIndex: this.#defaultRegionIndex,
       regionFilter: this.#numberResolver.regionFilter,
       numberTypeFilter: this.#numberResolver.numberTypeFilter,
-      strict: this.config.strict === true,
+      strict: this.#config.strict === true,
     });
 
     return createPhoneNumber(toResolvedPhoneNumber(resolved, this.#defaultRegionIndex, null));

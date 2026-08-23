@@ -6,6 +6,13 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Changed
+
+- `PhoneNumber` and the input controllers hold their state in native private fields; a runtime
+  instance exposes the public methods only.
+- `REGION_CODES` and `NUMBER_TYPES` are frozen at runtime.
+- The engine metadata moves to google/libphonenumber v9.0.37 (from v9.0.35).
+
 ## [1.0.0] - 2026-08-21
 
 ### Added
