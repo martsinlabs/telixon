@@ -29,6 +29,9 @@ regions.getState().options[0];
 | Field              | Type                            | Meaning                                                                                                                |
 | ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `dataFactory`      | `RegionDataFactory<T>`          | Produces the `data` slot from the option's `region`, `callingCode`, and `displayName`; its return type flows into `T`. |
+| `locale`           | `string`                        | Locale for display names; `'en'` by default.                                                                           |
+| `sort`             | `RegionListSort`                | `'alphabetical'` (default), `'callingCode'`, or a comparator.                                                          |
+| `prioritize`       | `readonly RegionCode[]`         | Regions pinned to the top, in the given order.                                                                         |
 | `regionFilter`     | `readonly RegionCode[] \| null` | Restricts the list to these regions.                                                                                   |
 | `numberTypeFilter` | `readonly NumberType[] \| null` | Keeps regions that assign at least one of these types.                                                                 |
 | `searchQuery`      | `string`                        | Initial search query.                                                                                                  |
@@ -37,9 +40,6 @@ regions.getState().options[0];
 `RegionDataFactory<T>` is `(input: RegionDataFactoryInput) => T`, where `RegionDataFactoryInput`
 carries the option's `region`, `callingCode`, and `displayName`. `RegionSearchFn<T>` is
 `(query: string, option: RegionOption<T>) => boolean`.
-| `locale` | `string` | Locale for display names; `'en'` by default. |
-| `sort` | `RegionListSort` | `'alphabetical'` (default), `'callingCode'`, or a comparator. |
-| `prioritize` | `readonly RegionCode[]` | Regions pinned to the top, in the given order. |
 
 For both filters, `null` lifts the restriction; `[]` matches nothing.
 
