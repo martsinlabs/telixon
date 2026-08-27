@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-27
+
 ### Changed
 
 - Backspace and forward delete treat formatting characters as transparent and consume the nearest
@@ -48,6 +50,7 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.0.1...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.0...HEAD
+[1.1.0]: https://github.com/martsinlabs/telixon/compare/core@v1.0.1...core@v1.1.0
 [1.0.1]: https://github.com/martsinlabs/telixon/compare/core@v1.0.0...core@v1.0.1
 [1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/core@v1.0.0
