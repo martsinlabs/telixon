@@ -10,13 +10,7 @@ import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../pho
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
 
-import {
-  findNextDigitPosition,
-  findPreviousDigitPosition,
-  isFormattingChar,
-  toInputState,
-  toInputStateWithSelection,
-} from '../utils';
+import { findNextDigitPosition, findPreviousDigitPosition, toInputState, toInputStateWithSelection } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { InternationalInputControllerConfig } from './models';
 import { resolveInternationalControllerState } from './utils';
@@ -159,41 +153,6 @@ class InternationalInputController implements InputController {
       return toInputState(this.#history.current);
     }
 
-    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
-      if (findNextDigitPosition(value, selectionStart) !== -1) {
-        const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
-        if (prevDigit === -1) {
-          this.#history.updateCurrentSelection(selectionStart, selectionStart);
-          return toInputStateWithSelection(this.#history.current, selectionStart, selectionStart);
-        }
-        const pos: number = prevDigit + 1;
-        this.#history.updateCurrentSelection(pos, pos);
-        return toInputStateWithSelection(this.#history.current, pos, pos);
-      }
-
-      this.#history.updateCurrentSelection(selectionStart, selectionEnd);
-
-      const trimmedState: InputControllerState = this.#resolveState(
-        value,
-        { insertText: '', selectionStart, selectionEnd },
-        'backward',
-        this.#plusErased,
-      );
-
-      if (trimmedState.value.length < value.length) {
-        this.#history.push(trimmedState);
-        return toInputState(this.#history.current);
-      }
-
-      const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
-      if (prevDigit === -1) {
-        return toInputStateWithSelection(this.#history.current, selectionStart, selectionStart);
-      }
-      const pos: number = prevDigit + 1;
-      this.#history.updateCurrentSelection(pos, pos);
-      return toInputStateWithSelection(this.#history.current, pos, pos);
-    }
-
     let effectiveStart: number = selectionStart;
     let effectiveEnd: number = selectionEnd;
 
@@ -236,13 +195,6 @@ class InternationalInputController implements InputController {
         this.#resolveState(value, { insertText: '', selectionStart: 0, selectionEnd: 0 }, 'forward', true),
       );
       return toInputState(this.#history.current);
-    }
-
-    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart)) {
-      const nextDigit: number = findNextDigitPosition(value, selectionStart + 1);
-      const pos: number = nextDigit === -1 ? selectionStart : nextDigit;
-      this.#history.updateCurrentSelection(pos, pos);
-      return toInputStateWithSelection(this.#history.current, pos, pos);
     }
 
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);

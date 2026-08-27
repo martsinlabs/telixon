@@ -17,15 +17,15 @@ describe('NationalInputController.deleteBackward', () => {
     expect(state.selectionEnd).toBe(0);
   });
 
-  it('snaps caret past a formatting char without deleting a digit (caret just after "011 ")', () => {
+  it('deletes the digit before the caret through a formatting char (caret just after "011 ")', () => {
     const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
-    // Position 4 is right after "011 ": char at index 3 is the space.
+    // Position 4 is right after "011 ": the separator is transparent, the nearest digit to the left goes.
     const state = controller.deleteBackward(AR_FORMATTED, 4, 4);
 
-    expect(state.value).toBe(AR_FORMATTED);
-    expect(state.selectionStart).toBe(3);
-    expect(state.selectionEnd).toBe(3);
+    expect(state.value.replace(/\D/g, '')).toBe('011534343444');
+    expect(state.selectionStart).toBe(2);
+    expect(state.selectionEnd).toBe(2);
   });
 
   it('removes the last digit and trims trailing formatting (direction backward)', () => {
@@ -51,14 +51,14 @@ describe('NationalInputController.deleteBackward', () => {
 });
 
 describe('NationalInputController.deleteForward', () => {
-  it('snaps caret forward past a formatting char (caret on the space at index 3)', () => {
+  it('deletes the next digit through a formatting char (caret on the space at index 3)', () => {
     const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);
     const state = controller.deleteForward(AR_FORMATTED, 3, 3);
 
-    expect(state.value).toBe(AR_FORMATTED);
-    // Caret should jump to the next digit position (index 4).
-    expect(state.selectionStart).toBe(4);
+    expect(state.value.replace(/\D/g, '')).toBe('011534343444');
+    expect(state.selectionStart).toBe(3);
+    expect(state.selectionEnd).toBe(3);
   });
 
   it('is a no-op when caret is at the end of the value', () => {

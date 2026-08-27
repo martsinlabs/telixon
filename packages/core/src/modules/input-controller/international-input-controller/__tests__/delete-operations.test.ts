@@ -6,16 +6,16 @@ const US_MOBILE = getExampleNumber('US', 'MOBILE');
 const US_MOBILE_INTL = '1' + US_MOBILE;
 
 describe('InternationalInputController.deleteBackward', () => {
-  it('snaps caret past the trailing space separator when no national digits exist (structural)', () => {
+  it('deletes the calling-code digit through the trailing structural separator', () => {
     const controller = createInternationalInputController({ defaultRegion: 'US' });
-    // '1 ' with caret at end: the separator is structurally re-added on resolve, so backspace snaps the caret after the calling-code digit.
+    // '1 ' with caret at end: the separator is transparent, backspace consumes the calling-code digit.
     const state = controller.deleteBackward('1 ', 2, 2);
 
-    expect(state.value).toBe('1 ');
-    expect(state.selectionStart).toBe(1);
+    expect(state.value).toBe('');
+    expect(state.selectionStart).toBe(0);
   });
 
-  it('strips trailing formatting after a partial national number without losing a digit', () => {
+  it('deletes the last digit through a trailing formatting character', () => {
     const controller = createInternationalInputController({ defaultRegion: 'US' });
     const seeded = controller.setValue('1212');
     const valueWithTrailingFormatter = `${seeded.value}-`;
@@ -23,8 +23,8 @@ describe('InternationalInputController.deleteBackward', () => {
 
     const state = controller.deleteBackward(valueWithTrailingFormatter, caret, caret);
 
-    // All four national digits remain; only the trailing dash is removed.
-    expect(state.value.replace(/\D/g, '')).toBe('1212');
+    // The trailing dash is transparent: backspace consumes the last digit and the value reformats.
+    expect(state.value.replace(/\D/g, '')).toBe('121');
     expect(state.value.endsWith('-')).toBe(false);
     expect(state.selectionStart).toBe(state.value.length);
   });
@@ -81,7 +81,7 @@ describe('InternationalInputController.deleteForward', () => {
     expect(state.value.replace(/\D/g, '')).toBe('1' + US_MOBILE.slice(1));
   });
 
-  it('keeps the "+" under forward delete at position 0 when plusPrefix is \'fixed\'', () => {
+  it('keeps the "+" and deletes the first digit under forward delete at position 0 (fixed plus)', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
       display: { callingCodeInInput: true, plusPrefix: 'fixed' },
@@ -91,7 +91,7 @@ describe('InternationalInputController.deleteForward', () => {
     const state = controller.deleteForward(seeded.value, 0, 0);
 
     expect(state.value.startsWith('+')).toBe(true);
-    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL);
+    expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL.slice(1));
   });
 });
 

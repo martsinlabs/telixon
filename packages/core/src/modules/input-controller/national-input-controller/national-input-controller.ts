@@ -16,13 +16,7 @@ import { getNationalPrefixRules } from '../../number-resolver/utils/get-national
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputState } from '../models';
-import {
-  findNextDigitPosition,
-  findPreviousDigitPosition,
-  isFormattingChar,
-  toInputState,
-  toInputStateWithSelection,
-} from '../utils';
+import { findNextDigitPosition, findPreviousDigitPosition, toInputState, toInputStateWithSelection } from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { NationalControllerState, NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
@@ -183,34 +177,6 @@ class NationalInputController implements InputController {
       return toInputStateWithSelection(this.#history.current, 0, 0);
     }
 
-    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart - 1)) {
-      if (findNextDigitPosition(value, selectionStart) !== -1) {
-        const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
-        const pos: number = prevDigit === -1 ? 0 : prevDigit + 1;
-        this.#history.updateCurrentSelection(pos, pos);
-        return toInputStateWithSelection(this.#history.current, pos, pos);
-      }
-
-      this.#history.updateCurrentSelection(selectionStart, selectionEnd);
-
-      const trimmedState: NationalControllerState = this.#resolveFromEdit(
-        value,
-        { insertText: '', selectionStart, selectionEnd },
-        'backward',
-        true,
-      );
-
-      if (trimmedState.value.length < value.length) {
-        this.#history.push(trimmedState);
-        return toInputState(this.#history.current);
-      }
-
-      const prevDigit: number = findPreviousDigitPosition(value, selectionStart);
-      const pos: number = prevDigit === -1 ? 0 : prevDigit + 1;
-      this.#history.updateCurrentSelection(pos, pos);
-      return toInputStateWithSelection(this.#history.current, pos, pos);
-    }
-
     let effectiveStart: number = selectionStart;
     let effectiveEnd: number = selectionEnd;
 
@@ -242,13 +208,6 @@ class NationalInputController implements InputController {
   }
 
   deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState {
-    if (selectionStart === selectionEnd && isFormattingChar(value, selectionStart)) {
-      const nextDigit: number = findNextDigitPosition(value, selectionStart + 1);
-      const pos: number = nextDigit === -1 ? selectionStart : nextDigit;
-      this.#history.updateCurrentSelection(pos, pos);
-      return toInputStateWithSelection(this.#history.current, pos, pos);
-    }
-
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
     let effectiveStart: number = selectionStart;

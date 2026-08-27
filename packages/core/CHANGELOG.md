@@ -6,6 +6,11 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Changed
+
+- Backspace and forward delete treat formatting characters as transparent and consume the nearest
+  digit on the edit side in one press.
+
 ## [1.0.1] - 2026-08-23
 
 ### Changed
