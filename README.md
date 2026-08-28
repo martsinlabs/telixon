@@ -100,14 +100,14 @@ a divergence the gate misses?
 
 ## Packages
 
-| Package                                          | Status  | Role                                  |
-| ------------------------------------------------ | ------- | ------------------------------------- |
-| [`@telixon/core`](packages/core/README.md)       | shipped | parsing, formatting, validation       |
-| [`@telixon/web-sdk`](packages/web-sdk/README.md) | shipped | headless phone-field widgets          |
-| `@telixon/web-components`                        | planned | drop-in Web Component (`<tel-input>`) |
-| `@telixon/angular`                               | planned | Angular binding                       |
-| `@telixon/react`                                 | planned | React binding (hook + component)      |
-| `@telixon/vue`                                   | planned | Vue binding                           |
+| Package                                          | Version                                                                                                                            | Status  | Role                                  |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------- |
+| [`@telixon/core`](packages/core/README.md)       | [![npm](https://img.shields.io/npm/v/%40telixon%2Fcore?color=26997b&label=npm)](https://www.npmjs.com/package/@telixon/core)       | shipped | parsing, formatting, validation       |
+| [`@telixon/web-sdk`](packages/web-sdk/README.md) | [![npm](https://img.shields.io/npm/v/%40telixon%2Fweb-sdk?color=26997b&label=npm)](https://www.npmjs.com/package/@telixon/web-sdk) | shipped | headless phone-field widgets          |
+| `@telixon/web-components`                        |                                                                                                                                    | planned | drop-in Web Component (`<tel-input>`) |
+| `@telixon/angular`                               |                                                                                                                                    | planned | Angular binding                       |
+| `@telixon/react`                                 |                                                                                                                                    | planned | React binding (hook + component)      |
+| `@telixon/vue`                                   |                                                                                                                                    | planned | Vue binding                           |
 
 ## Support
 

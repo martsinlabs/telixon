@@ -5,6 +5,7 @@ Phone-number parser, formatter, and validator built on Google libphonenumber met
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 [![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
 [![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fcore%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/core)
+[![downloads](https://img.shields.io/npm/dm/%40telixon%2Fcore?color=26997b&label=downloads)](https://www.npmjs.com/package/@telixon/core)
 
 **[Documentation](https://telixon.dev/core/)** &middot; **[Live demo](https://telixon.dev/web-sdk/guides/complete-field/)**
 
