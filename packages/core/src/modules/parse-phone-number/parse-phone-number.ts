@@ -1,5 +1,6 @@
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
+import { toInputString } from '@telixon/core/utils/to-input-string';
 import { ResolvedNumberState, resolveNumber } from '../number-resolver/resolve-number';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../phone-number';
 import { ParsePhoneNumberOptions } from './models';
@@ -33,15 +34,16 @@ function firstPlusOrDigitIndex(input: string): number {
 export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions = {}): PhoneNumber {
   requireEngineReady();
 
+  const safeInput: string = toInputString(input);
   const resourceProvider = getResourceProvider();
   const defaultRegionIndex: number =
     options.defaultRegion !== undefined ? (resourceProvider.regionKeyToIndex[options.defaultRegion] ?? -1) : -1;
   const strict: boolean = options.strict ?? false;
 
-  const startIndex: number = firstPlusOrDigitIndex(input);
-  const hasLeadingPlus: boolean = startIndex !== -1 && input.charCodeAt(startIndex) === 0x2b;
+  const startIndex: number = firstPlusOrDigitIndex(safeInput);
+  const hasLeadingPlus: boolean = startIndex !== -1 && safeInput.charCodeAt(startIndex) === 0x2b;
   const resolved: ResolvedNumberState = resolveNumber({
-    input,
+    input: safeInput,
     hasLeadingPlus,
     seedCallingCode: null,
     defaultRegionIndex,
@@ -54,7 +56,7 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
     return createPhoneNumber(toResolvedPhoneNumber(resolved, defaultRegionIndex, null));
   }
 
-  const extracted = extractPossibleNumber(input);
+  const extracted = extractPossibleNumber(safeInput);
   const { base, extension } = stripExtension(extracted.candidate);
 
   // The first resolution stands when the trims dropped no digit and the read mode is unchanged:

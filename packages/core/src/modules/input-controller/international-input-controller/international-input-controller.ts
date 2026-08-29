@@ -1,6 +1,7 @@
 import { getMetadataRegionCallingCode, NumberType, RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
+import { toInputString } from '@telixon/core/utils/to-input-string';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
@@ -10,10 +11,24 @@ import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../pho
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
 
-import { findNextDigitPosition, findPreviousDigitPosition, toInputState, toInputStateWithSelection } from '../utils';
+import {
+  collectDigits,
+  findNextDigitPosition,
+  findPreviousDigitPosition,
+  toInputState,
+  toInputStateWithSelection,
+} from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { InternationalInputControllerConfig } from './models';
 import { resolveInternationalControllerState } from './utils';
+
+function hasDigitAtOrAfter(value: string, index: number): boolean {
+  for (let i = index; i < value.length; i++) {
+    const charCode: number = value.charCodeAt(i);
+    if (charCode >= 48 && charCode <= 57) return true;
+  }
+  return false;
+}
 
 class InternationalInputController implements InputController {
   #history!: InputStateHistory<InputControllerState>;
@@ -117,12 +132,45 @@ class InternationalInputController implements InputController {
     return this.#plusErasable && selectionStart === 0 && selectionEnd > 0 && value.startsWith('+');
   }
 
-  insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
+  // A pasted number often repeats the calling code the field already shows. When the raw read dies
+  // on the doubled code, the insert retries with the duplicate stripped and keeps the resolvable read.
+  #dedupedCallingCodeInsert(
+    value: string,
+    insertText: string,
+    selectionStart: number,
+    selectionEnd: number,
+    plusErased: boolean,
+  ): InputControllerState | null {
+    const snapshot: NumberResolverSnapshot = this.#history.current.snapshot;
+    const callingCode: string = snapshot.callingCodeDigits;
+    if (callingCode === '' || !snapshot.callingCodeCompleted || snapshot.nationalDigits !== '') return null;
+
+    const insertedDigits: string = collectDigits(insertText);
+    if (insertedDigits.length < callingCode.length + 4) return null;
+    if (!insertedDigits.startsWith(callingCode)) return null;
+    if (hasDigitAtOrAfter(value, selectionStart)) return null;
+
+    return this.#resolveState(
+      value,
+      {
+        insertText: insertedDigits.slice(callingCode.length),
+        selectionStart,
+        selectionEnd,
+      },
+      'forward',
+      plusErased,
+    );
+  }
+
+  insert(rawValue: string, rawText: string, selectionStart: number, selectionEnd: number): InputState {
+    const value: string = toInputString(rawValue);
+    const text: string = toInputString(rawText);
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
     const plusRestored: boolean = selectionStart === 0 && text.startsWith('+');
+    const plusErased: boolean = this.#plusErased && !plusRestored;
 
-    const nextState: InputControllerState = this.#resolveState(
+    let nextState: InputControllerState = this.#resolveState(
       value,
       {
         insertText: text,
@@ -130,15 +178,27 @@ class InternationalInputController implements InputController {
         selectionEnd,
       },
       'forward',
-      this.#plusErased && !plusRestored,
+      plusErased,
     );
+
+    if (nextState.profileRef === null && text.length >= 5) {
+      const dedupedState: InputControllerState | null = this.#dedupedCallingCodeInsert(
+        value,
+        text,
+        selectionStart,
+        selectionEnd,
+        plusErased,
+      );
+      if (dedupedState !== null && dedupedState.profileRef !== null) nextState = dedupedState;
+    }
 
     this.#history.push(nextState);
 
     return toInputState(this.#history.current);
   }
 
-  deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState {
+  deleteBackward(rawValue: string, selectionStart: number, selectionEnd: number): InputState {
+    const value: string = toInputString(rawValue);
     if (selectionStart === 0 && selectionEnd === 0) {
       this.#history.updateCurrentSelection(0, 0);
       return toInputStateWithSelection(this.#history.current, 0, 0);
@@ -187,7 +247,8 @@ class InternationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState {
+  deleteForward(rawValue: string, selectionStart: number, selectionEnd: number): InputState {
+    const value: string = toInputString(rawValue);
     // Forward delete with the caret on a visible erasable plus erases the plus and keeps the digits.
     if (this.#plusErasable && selectionStart === 0 && selectionEnd === 0 && value.startsWith('+')) {
       this.#history.updateCurrentSelection(0, 0);
@@ -225,7 +286,8 @@ class InternationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  setValue(value: string): InputState {
+  setValue(rawValue: string): InputState {
+    const value: string = toInputString(rawValue);
     // Re-setting the exact current value leaves the rendering untouched and only moves the caret to the end.
     if (value === this.#history.current.value) {
       const end: number = value.length;
