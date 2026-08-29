@@ -6,6 +6,8 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-08-28
+
 ### Fixed
 
 - `compositionend` reads the composed text the browser has already committed into the value
@@ -27,5 +29,6 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 - `regionToFlagEmoji` mapping a region code to its flag emoji.
 - `@telixon/core` as a peer dependency; the engine loads through it directly.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.1...HEAD
+[1.0.1]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.0...web-sdk@v1.0.1
 [1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/web-sdk@v1.0.0
