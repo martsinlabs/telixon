@@ -94,14 +94,38 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     notify(buildState());
   }
 
+  // Realigns the controller when the DOM value changed outside the beforeinput pipeline
+  // (browser autofill, password managers, cancelled compositions).
+  function reconcile(): void {
+    const domValue: string = input.value;
+    if (domValue === inputController.currentState.value) return;
+
+    commit(() => inputController.setValue(domValue));
+  }
+
   function handleCompositionEnd(event: CompositionEvent): void {
     if (event.target !== input) return;
-    if (!event.data) return;
 
-    const start: number = input.selectionStart ?? 0;
-    const end: number = input.selectionEnd ?? 0;
+    // The browser commits the composed text into the value before this event fires, ending at the
+    // caret. The edit replays against the pre-composition value so the caret math stays exact.
+    const data: string = event.data ?? '';
+    const value: string = input.value;
+    const caret: number = input.selectionStart ?? value.length;
+    const start: number = caret - data.length;
 
-    commit(() => inputController.insert(input.value, event.data!, start, end));
+    if (data !== '' && start >= 0 && value.slice(start, caret) === data) {
+      commit(() => inputController.insert(value.slice(0, start) + value.slice(caret), data, start, start));
+      return;
+    }
+
+    reconcile();
+  }
+
+  function handleInput(event: Event): void {
+    if (event.target !== input) return;
+    if (event instanceof InputEvent && event.isComposing) return;
+
+    reconcile();
   }
 
   function handleBeforeInput(event: InputEvent): void {
@@ -213,6 +237,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
   input.addEventListener('compositionend', handleCompositionEnd);
   input.addEventListener('beforeinput', handleBeforeInput);
+  input.addEventListener('input', handleInput);
   input.addEventListener('keydown', handleKeyDown);
   notify(buildState());
 
@@ -276,6 +301,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
       ATTACHED_INPUTS.delete(input);
       input.removeEventListener('compositionend', handleCompositionEnd);
       input.removeEventListener('beforeinput', handleBeforeInput);
+      input.removeEventListener('input', handleInput);
       input.removeEventListener('keydown', handleKeyDown);
       listeners.clear();
     },
