@@ -704,15 +704,81 @@ describe('PhoneInput filters: re-resolution', () => {
 });
 
 describe('PhoneInput compositionend', () => {
-  it('commits the IME composition data via inputController.insert', () => {
+  // Browsers commit the composed text into input.value before compositionend fires, with the caret
+  // resting after the committed text; the specs replay that exact sequence.
+  it('reads the committed IME composition once', () => {
     const { input, cleanup } = attachInput();
     const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
 
-    input.setSelectionRange(0, 0);
+    input.value = '5';
+    input.setSelectionRange(1, 1);
 
     dispatchCompositionEnd(input, '5');
 
     expect(digits(input.value)).toBe('5');
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('reads a composition committed after existing digits once', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
+
+    dispatchBeforeInput(input, 'insertText', { data: '415' });
+    const preComposition: string = input.value;
+
+    input.value = preComposition + '555';
+    input.setSelectionRange(input.value.length, input.value.length);
+
+    dispatchCompositionEnd(input, '555');
+
+    expect(digits(input.value)).toBe('415555');
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('resynchronizes from the DOM when a composition ends without data', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'national', defaultRegion: 'US' });
+
+    input.value = '415';
+    input.setSelectionRange(3, 3);
+
+    dispatchCompositionEnd(input, '');
+
+    expect(digits(input.value)).toBe('415');
+    expect(digits(phone.getState().value)).toBe('415');
+
+    phone.destroy();
+    cleanup();
+  });
+});
+
+describe('PhoneInput DOM reconciliation', () => {
+  it('adopts a browser autofill that fires only an input event', () => {
+    const { input, cleanup } = attachInput();
+    const phone = createPhoneInput({ input, mode: 'international' });
+
+    input.value = '+1' + US_MOBILE;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(digits(phone.getState().value)).toBe('1' + US_MOBILE);
+    expect(phone.getPhoneNumber().formatE164()).toBe('+1' + US_MOBILE);
+
+    phone.destroy();
+    cleanup();
+  });
+
+  it('preserves a value already present in the input at attach', () => {
+    const { input, cleanup } = attachInput();
+    input.value = '+1' + US_MOBILE;
+
+    const phone = createPhoneInput({ input, mode: 'international' });
+
+    expect(digits(input.value)).toBe('1' + US_MOBILE);
+    expect(phone.getPhoneNumber().formatE164()).toBe('+1' + US_MOBILE);
 
     phone.destroy();
     cleanup();

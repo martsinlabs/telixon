@@ -44,6 +44,9 @@ The adapter adds these fields:
 | `numberTypeFilter`      | `readonly NumberType[] \| null` | Number-type filter applied at construction.                          |
 | `placeholderNumberType` | `NumberType`                    | The type the placeholder demonstrates; `'MOBILE'` by default.        |
 
+A value already present in the input element seeds the controller when `initialValue` is omitted,
+which keeps server-rendered and pre-attach autofilled values.
+
 ## PhoneInputState
 
 ```ts
@@ -88,6 +91,8 @@ empty national field reports `TOO_SHORT` under its region.
   rest of the family)
 - Undo and redo: the native `historyUndo` and `historyRedo` input types, plus Cmd/Ctrl+Z,
   Cmd/Ctrl+Shift+Z, and Cmd/Ctrl+Y
+- Browser autofill and password managers: a value change that arrives with a bare `input` event
+  resynchronizes the controller from the field
 
 ## Members
 
@@ -116,8 +121,9 @@ setValue(value: string): void;
 
 Replaces the value through the controller's
 [`setValue`](/core/reference/input-controller/#setvalue), writes the result back, then emits.
-Values written outside the event stream, browser autofill included, bypass the controller; push
-them through this method.
+Browser autofill and password managers announce their writes with an `input` event, and the widget
+adopts those on its own. A script that assigns `input.value` directly fires no event; push such
+values through this method.
 
 ### setRegion
 

@@ -29,5 +29,12 @@ function createInternationalController(options: InternationalPhoneInputOptions):
 }
 
 export function buildController(options: PhoneInputOptions): InputController {
-  return options.mode === 'national' ? createNationalController(options) : createInternationalController(options);
+  // A value already present in the DOM input (server-rendered, restored, autofilled before attach)
+  // seeds the controller unless the consumer passes an explicit initialValue.
+  const seeded: PhoneInputOptions =
+    options.initialValue === undefined && options.input.value !== ''
+      ? { ...options, initialValue: options.input.value }
+      : options;
+
+  return seeded.mode === 'national' ? createNationalController(seeded) : createInternationalController(seeded);
 }
