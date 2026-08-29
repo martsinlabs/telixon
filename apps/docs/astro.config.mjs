@@ -1,6 +1,7 @@
 // @ts-check
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
+import starlightLlmsTxt from 'starlight-llms-txt';
 import { AVAILABLE_PACKAGES } from './src/package-registry';
 
 export default defineConfig({
@@ -15,6 +16,8 @@ export default defineConfig({
       },
       description:
         'Phone number parsing, validation, formatting, and a headless input controller for JavaScript and TypeScript. Verified against Google libphonenumber.',
+      // llms.txt, llms-full.txt, and llms-small.txt for AI assistant retrieval.
+      plugins: [starlightLlmsTxt()],
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/martsinlabs/telixon' }],
       editLink: { baseUrl: 'https://github.com/martsinlabs/telixon/edit/main/apps/docs/' },

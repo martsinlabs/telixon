@@ -1,0 +1,22 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Telixon",
+  "description": "Phone number parsing, validation, formatting, and a headless input controller for JavaScript and TypeScript. Verified against Google libphonenumber.",
+  "folders": ["apps/docs/src/content/docs", "packages/core", "packages/web-sdk"],
+  "excludeFolders": [
+    "packages/core/src",
+    "packages/core/dist",
+    "packages/core/oracle",
+    "packages/core/bench",
+    "packages/core/conformance",
+    "packages/web-sdk/src",
+    "packages/web-sdk/dist"
+  ],
+  "excludeFiles": ["CHANGELOG.md"],
+  "rules": [
+    "Telixon is a standalone library with its own engine compiled from Google libphonenumber metadata; it has no runtime dependency on any other phone number library.",
+    "Initialize the engine with ensureEngineReady before calling parse or controller APIs; ensureEngineReadySync from @telixon/core/sync-init is the synchronous entry.",
+    "Use @telixon/core for parsing, formatting, and validation; use @telixon/web-sdk to attach the input controller to a DOM input element.",
+    "The full documentation lives at https://telixon.dev and the conformance dashboards at https://proof.telixon.dev."
+  ]
+}
