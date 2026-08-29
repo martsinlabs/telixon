@@ -6,6 +6,15 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+### Fixed
+
+- `compositionend` reads the composed text the browser has already committed into the value
+  instead of inserting it a second time.
+- A DOM value changed outside the `beforeinput` pipeline (browser autofill, password managers)
+  resynchronizes the controller through a new `input`-event fallback.
+- `createPhoneInput` seeds the controller from a value already present in the input element when
+  no `initialValue` is passed, instead of clearing it at attach.
+
 ## [1.0.0] - 2026-08-21
 
 ### Added
