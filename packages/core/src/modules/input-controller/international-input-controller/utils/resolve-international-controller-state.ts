@@ -85,7 +85,9 @@ export function resolveInternationalControllerState(
         regionIndex,
       );
     }
-  } else if (snapshot.callingCodeState !== -1) {
+  } else if (snapshot.callingCodeState !== -1 && (snapshot.callingCodeCompleted || snapshot.nationalDigits === '')) {
+    // A completed code or one still being typed reports its primary region. National digits under
+    // an incomplete code mean the walk died mid-code, and a dead prefix resolves to no region.
     const primaryRegionIndex: number = resolvePrimaryRegionIndex(snapshot.callingCodeState, -1);
 
     region = resourceProvider.regionIds[primaryRegionIndex] ?? null;

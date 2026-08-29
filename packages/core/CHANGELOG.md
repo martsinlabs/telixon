@@ -6,6 +6,17 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Fixed
+
+- An insert without digits typed over a selection consumes the selected digits instead of keeping
+  them, matching native input behavior.
+- An international paste that repeats the calling code the field already shows drops the duplicate
+  code when the raw digits cannot resolve.
+- `InputState.region` reports `null` once the typed digits can no longer complete a calling code,
+  as the contract documents.
+- `parsePhoneNumber` and the controller methods coerce non-string runtime input to a string,
+  keeping the documented no-throw contract for plain JavaScript callers.
+
 ## [1.1.0] - 2026-08-27
 
 ### Changed

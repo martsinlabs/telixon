@@ -7,6 +7,7 @@ import {
 } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
+import { toInputString } from '@telixon/core/utils/to-input-string';
 import { NumberResolver } from '../../number-resolver';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resolver/models';
 import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
@@ -16,7 +17,13 @@ import { getNationalPrefixRules } from '../../number-resolver/utils/get-national
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputState } from '../models';
-import { findNextDigitPosition, findPreviousDigitPosition, toInputState, toInputStateWithSelection } from '../utils';
+import {
+  collectDigits,
+  findNextDigitPosition,
+  findPreviousDigitPosition,
+  toInputState,
+  toInputStateWithSelection,
+} from '../utils';
 import { resolveInput } from '../utils/resolve-input';
 import { NationalControllerState, NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
@@ -28,15 +35,6 @@ function hasTypedNationalPrefix(rawDigits: string, prefixRules: NationalPrefixRu
   }
 
   return rawDigits.startsWith(prefixRules.nationalPrefix);
-}
-
-function collectDigits(text: string): string {
-  let digits = '';
-  for (let index = 0; index < text.length; index++) {
-    const charCode: number = text.charCodeAt(index);
-    if (charCode >= 48 && charCode <= 57) digits += text[index];
-  }
-  return digits;
 }
 
 class NationalInputController implements InputController {
@@ -137,15 +135,12 @@ class NationalInputController implements InputController {
     const current: NationalControllerState = this.#history.current;
     if (value === current.value) {
       const insertedDigits: string = collectDigits(change.insertText);
-      // An insert without digits keeps the selected digits, same as resolveInput.
-      const keepsSelection: boolean = change.insertText.length > 0 && insertedDigits.length === 0;
-      const selectionEnd: number = keepsSelection ? change.selectionStart : change.selectionEnd;
       const range = typedRangeForSelection(
         current.alignment,
         current.rawDigits.length,
         value,
         change.selectionStart,
-        selectionEnd,
+        change.selectionEnd,
       );
       const typedDigits: string =
         current.rawDigits.slice(0, range.start) + insertedDigits + current.rawDigits.slice(range.end);
@@ -164,14 +159,19 @@ class NationalInputController implements InputController {
   }
 
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
+    const safeValue: string = toInputString(value);
+    const safeText: string = toInputString(text);
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
-    this.#history.push(this.#resolveFromEdit(value, { insertText: text, selectionStart, selectionEnd }, 'forward'));
+    this.#history.push(
+      this.#resolveFromEdit(safeValue, { insertText: safeText, selectionStart, selectionEnd }, 'forward'),
+    );
 
     return toInputState(this.#history.current);
   }
 
-  deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState {
+  deleteBackward(rawValue: string, selectionStart: number, selectionEnd: number): InputState {
+    const value: string = toInputString(rawValue);
     if (selectionStart === 0 && selectionEnd === 0) {
       this.#history.updateCurrentSelection(0, 0);
       return toInputStateWithSelection(this.#history.current, 0, 0);
@@ -207,7 +207,8 @@ class NationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState {
+  deleteForward(rawValue: string, selectionStart: number, selectionEnd: number): InputState {
+    const value: string = toInputString(rawValue);
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
     let effectiveStart: number = selectionStart;
@@ -232,7 +233,8 @@ class NationalInputController implements InputController {
     return toInputState(this.#history.current);
   }
 
-  setValue(value: string): InputState {
+  setValue(rawValue: string): InputState {
+    const value: string = toInputString(rawValue);
     // Re-setting the exact current value leaves the rendering untouched and only moves the caret to the end.
     if (value === this.#history.current.value) {
       const end: number = value.length;
