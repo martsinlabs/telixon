@@ -3,6 +3,8 @@
   "projectTitle": "Telixon",
   "description": "Phone number parsing, validation, formatting, and a headless input controller for JavaScript and TypeScript. Verified against Google libphonenumber.",
   "folders": ["apps/docs/src/content/docs", "packages/core", "packages/web-sdk"],
+  "url": "https://context7.com/martsinlabs/telixon",
+  "public_key": "pk_KeLqdRvVss8o07MHEKW3D",
   "excludeFolders": [
     "packages/core/src",
     "packages/core/dist",
