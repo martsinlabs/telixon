@@ -88,6 +88,29 @@ const closedTypesCode = `controller.setRegion('USA')
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="Telixon. The number +1 415-555-0132 resolved to US, FIXED_LINE_OR_MOBILE, valid." />
     <meta name="twitter:card" content="summary_large_image" />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': ['SoftwareApplication', 'SoftwareSourceCode'],
+        name: 'Telixon',
+        description:
+          'Phone number parsing, validation, formatting, and a headless input controller for JavaScript and TypeScript. Verified against Google libphonenumber.',
+        url: 'https://telixon.dev/',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Node.js, browsers, edge runtimes',
+        programmingLanguage: 'TypeScript',
+        license: 'https://www.apache.org/licenses/LICENSE-2.0',
+        codeRepository: 'https://github.com/martsinlabs/telixon',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        sameAs: [
+          'https://github.com/martsinlabs/telixon',
+          'https://www.npmjs.com/package/@telixon/core',
+          'https://www.npmjs.com/package/@telixon/web-sdk',
+        ],
+      })}
+    />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#161618" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f8f8" />
     <script is:inline>
