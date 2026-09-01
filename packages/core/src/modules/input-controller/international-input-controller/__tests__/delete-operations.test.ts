@@ -52,6 +52,21 @@ describe('InternationalInputController.deleteBackward', () => {
     expect(state.selectionEnd).toBe(1);
   });
 
+  it('stores the no-op caret in currentState when backspacing right after the fixed "+"', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
+    });
+
+    controller.deleteBackward('+1 ', 1, 1);
+
+    // Adapters render from currentState: the stored selection must match the no-op caret.
+    const current = controller.currentState;
+    expect(current.value).toBe('+1 ');
+    expect(current.selectionStart).toBe(1);
+    expect(current.selectionEnd).toBe(1);
+  });
+
   it('deletes the last digit when callingCodeInInput is false (national-only display)', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',

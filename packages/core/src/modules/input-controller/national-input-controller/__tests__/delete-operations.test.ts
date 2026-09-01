@@ -17,6 +17,21 @@ describe('NationalInputController.deleteBackward', () => {
     expect(state.selectionEnd).toBe(0);
   });
 
+  it('stores the no-op caret in currentState when no digit precedes the caret', () => {
+    const controller = createNationalInputController({ defaultRegion: 'US' });
+    const seeded = controller.setValue('4155550132');
+    expect(seeded.value).toBe('(415) 555-0132');
+
+    // Position 1 sits after "(" with no digit before it: the delete is a no-op.
+    controller.deleteBackward(seeded.value, 1, 1);
+
+    // Adapters render from currentState: the stored selection must match the no-op caret.
+    const current = controller.currentState;
+    expect(current.value).toBe('(415) 555-0132');
+    expect(current.selectionStart).toBe(1);
+    expect(current.selectionEnd).toBe(1);
+  });
+
   it('deletes the digit before the caret through a formatting char (caret just after "011 ")', () => {
     const controller = createNationalInputController({ defaultRegion: 'AR' });
     controller.setValue(AR_RAW);

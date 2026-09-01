@@ -220,9 +220,8 @@ class InternationalInputController implements InputController {
       const position: number = findPreviousDigitPosition(value, selectionStart);
 
       if (position === -1) {
-        return toInputState(
-          this.#resolveState(value, { insertText: '', selectionStart, selectionEnd }, 'backward', this.#plusErased),
-        );
+        this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+        return toInputStateWithSelection(this.#history.current, selectionStart, selectionEnd);
       }
 
       effectiveStart = position;
