@@ -6,6 +6,14 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-09-01
+
+### Fixed
+
+- A backspace with no digit before the caret keeps the caret at its position. Both input
+  controllers stored the previous edit's selection for that branch, which sent the caret to the
+  end of the field when backspacing on a fixed plus.
+
 ## [1.1.1] - 2026-08-28
 
 ### Fixed
@@ -63,7 +71,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.1...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.2...HEAD
+[1.1.2]: https://github.com/martsinlabs/telixon/compare/core@v1.1.1...core@v1.1.2
 [1.1.1]: https://github.com/martsinlabs/telixon/compare/core@v1.1.0...core@v1.1.1
 [1.1.0]: https://github.com/martsinlabs/telixon/compare/core@v1.0.1...core@v1.1.0
 [1.0.1]: https://github.com/martsinlabs/telixon/compare/core@v1.0.0...core@v1.0.1
