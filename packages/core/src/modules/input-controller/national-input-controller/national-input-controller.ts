@@ -184,9 +184,8 @@ class NationalInputController implements InputController {
       const position: number = findPreviousDigitPosition(value, selectionStart);
 
       if (position === -1) {
-        return toInputState(
-          this.#resolveFromEdit(value, { insertText: '', selectionStart, selectionEnd }, 'backward', true),
-        );
+        this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+        return toInputStateWithSelection(this.#history.current, selectionStart, selectionEnd);
       }
 
       effectiveStart = position;
