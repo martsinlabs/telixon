@@ -19,7 +19,7 @@
 <p align="center">
   <a href="https://telixon.dev"><b>Documentation</b></a>
   &middot;
-  <a href="https://telixon.dev/web-sdk/guides/complete-field/"><b>Live demo</b></a>
+  <a href="https://telixon.dev/playground/input/"><b>Playground</b></a>
   &middot;
   <a href="https://telixon.dev/core/how-it-works/"><b>How it works</b></a>
 </p>

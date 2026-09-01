@@ -1,0 +1,1263 @@
+---
+// The input playground: a live phone field assembled from the configuration panel, with the
+// controller state, the resolved number, and the matching code rendered per keystroke. The field
+// is the classic composition, a region picker beside the input, both driven by the headless
+// machines. The configuration round-trips through the URL query so any state is shareable.
+import BrandLogo from '../../components/BrandLogo.astro';
+import '../../styles/tokens.css';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Input Playground</title>
+    <meta
+      name="description"
+      content="Assemble a live Telixon phone field: pick the mode, region, and display options, then watch the value, caret, validation verdict, and E.164 update on every keystroke."
+    />
+    <link rel="canonical" href="https://telixon.dev/playground/input/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://telixon.dev/playground/input/" />
+    <meta property="og:title" content="Input Playground" />
+    <meta
+      property="og:description"
+      content="Assemble a live Telixon phone field and watch its state update on every keystroke."
+    />
+    <meta property="og:image" content="https://telixon.dev/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#161618" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f8f8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <script is:inline>
+      // Resolve the theme before first paint; shares Starlight's storage key so the docs match.
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem('starlight-theme');
+        } catch (e) {
+          /* storage unavailable */
+        }
+        var theme = stored === 'light' || stored === 'dark' ? stored : 'auto';
+        if (theme === 'auto') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <header class="nav">
+      <div class="shell nav-row">
+        <a class="brand" href="/" aria-label="Telixon home">
+          <BrandLogo class="brand-logo" />
+        </a>
+        <nav class="nav-links" aria-label="Site">
+          <a href="/core/">Docs</a>
+          <a href="https://github.com/martsinlabs/telixon">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="shell">
+      <h1>Input playground</h1>
+      <p class="lede">
+        Assemble a phone field, then type into it. The state on the right is the controller's own,
+        read on every keystroke.
+      </p>
+
+      <div class="grid">
+        <section class="panel" aria-labelledby="config-title">
+          <h2 id="config-title">Configuration</h2>
+
+          <fieldset>
+            <legend>Mode</legend>
+            <label class="choice"><input type="radio" name="mode" value="national" /> national</label>
+            <label class="choice"
+              ><input type="radio" name="mode" value="international" checked /> international</label
+            >
+          </fieldset>
+
+          <fieldset id="display-group">
+            <legend>Display</legend>
+            <label class="choice"><input type="checkbox" id="cc-in-input" checked /> calling code in input</label>
+            <div id="plus-group" class="sub-group" role="radiogroup" aria-label="Plus prefix">
+              <label class="choice"><input type="radio" name="plus" value="none" checked /> plus none</label>
+              <label class="choice"><input type="radio" name="plus" value="fixed" /> plus fixed</label>
+              <label class="choice"><input type="radio" name="plus" value="erasable" /> plus erasable</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Filters</legend>
+            <label class="filter-label" for="region-filter">regions</label>
+            <input
+              id="region-filter"
+              class="filter-input"
+              type="text"
+              placeholder="US, CA"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+            />
+            <span id="type-grid-label" class="filter-label">number types</span>
+            <div id="type-grid" class="type-grid" role="group" aria-labelledby="type-grid-label"></div>
+          </fieldset>
+
+          <div class="panel-actions">
+            <button id="reset" type="button" class="ghost-btn">Reset</button>
+            <button id="share" type="button" class="ghost-btn">Copy link</button>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="field-title">
+          <h2 id="field-title">The field</h2>
+          <div class="field-root" id="field-root">
+            <div class="input-shell" id="input-shell">
+              <button
+                id="region-trigger"
+                class="region-trigger"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="region-listbox"
+                aria-label="Select region"
+              >
+                <span id="flag" aria-hidden="true">🌐</span>
+                <span id="trigger-code" class="trigger-code"></span>
+                <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true">
+                  <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+                </svg>
+              </button>
+              <input id="phone" type="tel" autocomplete="tel" spellcheck="false" aria-label="Phone number" />
+            </div>
+            <div class="region-menu" id="region-menu" hidden>
+              <input
+                id="region-search"
+                class="region-search"
+                type="text"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="region-listbox"
+                aria-autocomplete="list"
+                aria-label="Search regions"
+                placeholder="Search regions"
+              />
+              <ul id="region-listbox" role="listbox" aria-label="Regions"></ul>
+            </div>
+          </div>
+          <div class="history-row">
+            <button id="undo" type="button" class="ghost-btn" disabled>Undo</button>
+            <button id="redo" type="button" class="ghost-btn" disabled>Redo</button>
+            <span class="valid-pill" id="valid-pill">valid</span>
+          </div>
+
+          <dl class="state">
+            <div class="row"><dt>value</dt><dd id="st-value" class="mono empty"></dd></div>
+            <div class="row"><dt>caret</dt><dd id="st-caret" class="mono empty"></dd></div>
+            <div class="row"><dt>region</dt><dd id="st-region" class="mono empty"></dd></div>
+            <div class="row"><dt>verdict</dt><dd id="st-verdict" class="mono empty"></dd></div>
+            <div class="row"><dt>E.164</dt><dd id="st-e164" class="mono empty"></dd></div>
+            <div class="row"><dt>national</dt><dd id="st-national" class="mono empty"></dd></div>
+            <div class="row"><dt>international</dt><dd id="st-international" class="mono empty"></dd></div>
+            <div class="row"><dt>number type</dt><dd id="st-type" class="mono empty"></dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <section class="panel code-panel" aria-labelledby="code-title">
+        <div class="code-head">
+          <h2 id="code-title">The code</h2>
+          <button id="copy-code" type="button" class="ghost-btn">Copy</button>
+        </div>
+        <pre><code id="code"></code></pre>
+      </section>
+    </main>
+
+    <footer class="shell site-footer">
+      <p>Telixon, Apache-2.0. <a href="https://github.com/martsinlabs/telixon">GitHub</a></p>
+    </footer>
+
+    <script>
+      import type { NumberType, ValidationError } from '@telixon/core';
+      import { NUMBER_TYPES, REGION_CODES, ensureEngineReady, getCallingCodeForRegion } from '@telixon/core';
+      import type { PhoneInput } from '@telixon/web-sdk';
+      import { createPhoneInput, createRegionList, regionToFlagEmoji } from '@telixon/web-sdk';
+
+      type RegionCode = (typeof REGION_CODES)[number];
+      type PlusPrefix = 'none' | 'fixed' | 'erasable';
+      // The concrete types worth filtering by; the umbrella and fallback entries stay out of the panel.
+      const FILTERABLE_NUMBER_TYPES: readonly NumberType[] = NUMBER_TYPES.filter(
+        (type) => type !== 'FIXED_LINE_OR_MOBILE' && type !== 'UNKNOWN',
+      );
+
+      interface PlaygroundConfig {
+        mode: 'international' | 'national';
+        region: RegionCode;
+        callingCodeInInput: boolean;
+        plusPrefix: PlusPrefix;
+        regionFilter: RegionCode[] | null;
+        numberTypes: NumberType[] | null;
+      }
+
+      const DEFAULT_CONFIG: PlaygroundConfig = {
+        mode: 'international',
+        region: 'US',
+        callingCodeInInput: true,
+        plusPrefix: 'none',
+        regionFilter: null,
+        numberTypes: null,
+      };
+
+      const byId = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
+
+      // The configuration panel.
+      const modeRadios = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="mode"]'));
+      const plusRadios = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="plus"]'));
+      const callingCodeBox = byId<HTMLInputElement>('cc-in-input');
+      const displayGroup = byId<HTMLFieldSetElement>('display-group');
+      const plusGroup = byId<HTMLDivElement>('plus-group');
+      const regionFilterInput = byId<HTMLInputElement>('region-filter');
+      const typeGrid = byId<HTMLDivElement>('type-grid');
+
+      // The field with its region picker.
+      const fieldRoot = byId<HTMLDivElement>('field-root');
+      const inputShell = byId<HTMLDivElement>('input-shell');
+      const input = byId<HTMLInputElement>('phone');
+      const trigger = byId<HTMLButtonElement>('region-trigger');
+      const flag = byId<HTMLSpanElement>('flag');
+      const triggerCode = byId<HTMLSpanElement>('trigger-code');
+      const menu = byId<HTMLDivElement>('region-menu');
+      const search = byId<HTMLInputElement>('region-search');
+      const list = byId<HTMLUListElement>('region-listbox');
+
+      // History, verdict, and the snippet.
+      const undoButton = byId<HTMLButtonElement>('undo');
+      const redoButton = byId<HTMLButtonElement>('redo');
+      const validPill = byId<HTMLSpanElement>('valid-pill');
+      const snippetNode = byId<HTMLElement>('code');
+
+      // One checkbox per number type, generated from the canonical list the filter accepts.
+      const typeBoxes = new Map<NumberType, HTMLInputElement>(
+        FILTERABLE_NUMBER_TYPES.map((type) => {
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          const label = document.createElement('label');
+          label.className = 'choice type-choice';
+          label.append(box, ` ${type.toLowerCase().replace(/_/g, ' ')}`);
+          typeGrid.append(label);
+          return [type, box];
+        }),
+      );
+
+      const parseRegionFilter = (raw: string): RegionCode[] | null => {
+        const codes = raw
+          .toUpperCase()
+          .split(/[^A-Z]+/)
+          .filter((code): code is RegionCode => REGION_CODES.includes(code as RegionCode));
+        const unique = [...new Set(codes)];
+        return unique.length > 0 ? unique : null;
+      };
+
+      const parseNumberTypes = (raw: string): NumberType[] | null => {
+        const types = raw
+          .toUpperCase()
+          .split(',')
+          .filter((type): type is NumberType => FILTERABLE_NUMBER_TYPES.includes(type as NumberType));
+        const unique = [...new Set(types)];
+        return unique.length > 0 ? unique : null;
+      };
+
+      // A region outside an active filter cannot seed the field; the first filtered region takes over.
+      const snapRegionToFilter = (config: PlaygroundConfig): PlaygroundConfig =>
+        config.regionFilter !== null && !config.regionFilter.includes(config.region)
+          ? { ...config, region: config.regionFilter[0] }
+          : config;
+
+      const readConfigFromUrl = (): PlaygroundConfig => {
+        const params = new URLSearchParams(location.search);
+        const mode = params.get('mode') === 'national' ? 'national' : 'international';
+        const region = REGION_CODES.includes(params.get('region') as RegionCode)
+          ? (params.get('region') as RegionCode)
+          : 'US';
+        const plus = params.get('plus');
+        return snapRegionToFilter({
+          mode,
+          region,
+          callingCodeInInput: params.get('cc') !== 'false',
+          plusPrefix: plus === 'fixed' || plus === 'erasable' ? plus : 'none',
+          regionFilter: parseRegionFilter(params.get('regions') ?? ''),
+          numberTypes: parseNumberTypes(params.get('types') ?? ''),
+        });
+      };
+
+      const writeConfigToUrl = (config: PlaygroundConfig): void => {
+        const params = new URLSearchParams();
+        params.set('mode', config.mode);
+        params.set('region', config.region);
+        if (config.mode === 'international') {
+          params.set('cc', String(config.callingCodeInInput));
+          if (config.callingCodeInInput) params.set('plus', config.plusPrefix);
+        }
+        if (config.regionFilter !== null) params.set('regions', config.regionFilter.join(','));
+        if (config.numberTypes !== null) params.set('types', config.numberTypes.join(','));
+        history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+      };
+
+      const readConfigFromControls = (region: RegionCode): PlaygroundConfig => {
+        const numberTypes: NumberType[] = FILTERABLE_NUMBER_TYPES.filter(
+          (type) => typeBoxes.get(type)?.checked === true,
+        );
+        return snapRegionToFilter({
+          mode: (modeRadios.find((radio) => radio.checked)?.value ?? 'international') as PlaygroundConfig['mode'],
+          region,
+          callingCodeInInput: callingCodeBox.checked,
+          plusPrefix: (plusRadios.find((radio) => radio.checked)?.value ?? 'none') as PlusPrefix,
+          regionFilter: parseRegionFilter(regionFilterInput.value),
+          numberTypes: numberTypes.length > 0 ? numberTypes : null,
+        });
+      };
+
+      const applyConfigToControls = (config: PlaygroundConfig): void => {
+        for (const radio of modeRadios) radio.checked = radio.value === config.mode;
+        callingCodeBox.checked = config.callingCodeInInput;
+        for (const radio of plusRadios) radio.checked = radio.value === config.plusPrefix;
+        regionFilterInput.value = config.regionFilter?.join(', ') ?? '';
+        for (const [type, box] of typeBoxes) box.checked = config.numberTypes?.includes(type) ?? false;
+      };
+
+      const syncControlAvailability = (config: PlaygroundConfig): void => {
+        displayGroup.classList.toggle('inactive', config.mode !== 'international');
+        for (const control of displayGroup.querySelectorAll('input')) {
+          (control as HTMLInputElement).disabled = config.mode !== 'international';
+        }
+        plusGroup.classList.toggle('inactive', config.mode !== 'international' || !config.callingCodeInInput);
+        for (const radio of plusRadios) {
+          radio.disabled = config.mode !== 'international' || !config.callingCodeInInput;
+        }
+      };
+
+      const buildSnippet = (config: PlaygroundConfig): string => {
+        const lines: string[] = [];
+        lines.push(`import { ensureEngineReady } from '@telixon/core';`);
+        lines.push(`import { createPhoneInput, createRegionList } from '@telixon/web-sdk';`);
+        lines.push('');
+        lines.push('await ensureEngineReady();');
+        lines.push('');
+        lines.push('const phone = createPhoneInput({');
+        lines.push(`  mode: '${config.mode}',`);
+        lines.push(`  defaultRegion: '${config.region}',`);
+        if (config.mode === 'international') {
+          if (config.callingCodeInInput) {
+            lines.push(`  display: { callingCodeInInput: true, plusPrefix: '${config.plusPrefix}' },`);
+          } else {
+            lines.push('  display: { callingCodeInInput: false },');
+          }
+        }
+        if (config.regionFilter !== null) {
+          lines.push(`  regionFilter: [${config.regionFilter.map((code) => `'${code}'`).join(', ')}],`);
+        }
+        if (config.numberTypes !== null) {
+          lines.push(`  numberTypeFilter: [${config.numberTypes.map((type) => `'${type}'`).join(', ')}],`);
+        }
+        lines.push(`  input: document.querySelector('input'),`);
+        lines.push('});');
+        lines.push('');
+        lines.push('const regions = createRegionList();');
+        lines.push('regions.subscribe((state) => renderYourListbox(state.options));');
+        lines.push(`regions.search('fra'); // drives the popup search`);
+        lines.push('');
+        lines.push('phone.subscribe((state) => console.log(state.value, state.validationError));');
+        return lines.join('\n');
+      };
+
+      // The colors mirror the docs code theme; the snippet's own shapes are the whole grammar.
+      const SNIPPET_TOKEN = /('[^']*')|(\/\/.*$)|\b(import|from|await|const|true|false)\b|([A-Za-z_$][\w$]*)(?=\()/gm;
+
+      const highlightSnippet = (source: string): string =>
+        source
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(SNIPPET_TOKEN, (match, str, comment, keyword) => {
+            if (str) return `<span class="tok-str">${str}</span>`;
+            if (comment) return `<span class="tok-cm">${comment}</span>`;
+            if (keyword) return `<span class="tok-kw">${keyword}</span>`;
+            return `<span class="tok-fn">${match}</span>`;
+          });
+
+      const renderSnippet = (config: PlaygroundConfig): void => {
+        snippetNode.innerHTML = highlightSnippet(buildSnippet(config));
+      };
+
+      const setStat = (id: string, text: string | null): void => {
+        const node = byId<HTMLElement>(id);
+        node.textContent = text ?? '';
+        node.classList.toggle('empty', !text);
+      };
+
+      const describeVerdict = (error: ValidationError): string => {
+        switch (error.kind) {
+          case 'TOO_SHORT':
+            return `TOO_SHORT, min ${error.minLength} digits`;
+          case 'TOO_LONG':
+            return `TOO_LONG, max ${error.maxLength} digits`;
+          case 'INVALID_LENGTH':
+            return `INVALID_LENGTH, expected ${error.possibleLengths.join(' or ')} digits`;
+          case 'NATIONAL_PREFIX_MISSING':
+            return `NATIONAL_PREFIX_MISSING, expected ${error.expectedPrefix}`;
+          default:
+            return error.kind;
+        }
+      };
+
+      ensureEngineReady().then(() => {
+        let phone: PhoneInput | null = null;
+        let config: PlaygroundConfig = readConfigFromUrl();
+        // The region shown on the trigger; follows typing where the digits own the region.
+        let triggerRegion: RegionCode = config.region;
+
+        const regions = createRegionList({
+          dataFactory: ({ region }) => regionToFlagEmoji(region),
+        });
+
+        const renderTrigger = (): void => {
+          flag.textContent = regionToFlagEmoji(triggerRegion);
+          // With the code typed in the field the button stays flag-only; elsewhere it owns the code.
+          const showCode = !(config.mode === 'international' && config.callingCodeInInput);
+          triggerCode.textContent = showCode ? `+${getCallingCodeForRegion(triggerRegion)}` : '';
+        };
+
+        const markSelected = (region: RegionCode): void => {
+          const previous = list.querySelector('[aria-selected="true"]');
+          previous?.setAttribute('aria-selected', 'false');
+          list.querySelector(`[data-region="${region}"]`)?.setAttribute('aria-selected', 'true');
+        };
+
+        let activeRegion: RegionCode | null = null;
+        const setActive = (region: RegionCode | null): void => {
+          list.querySelector('[data-active="true"]')?.removeAttribute('data-active');
+          search.removeAttribute('aria-activedescendant');
+          activeRegion = null;
+          if (region === null) return;
+          const row = list.querySelector<HTMLLIElement>(`[data-region="${region}"]`);
+          if (!row) return;
+          activeRegion = region;
+          row.setAttribute('data-active', 'true');
+          search.setAttribute('aria-activedescendant', row.id);
+          const rowRect = row.getBoundingClientRect();
+          const listRect = list.getBoundingClientRect();
+          if (rowRect.top < listRect.top) list.scrollTop += rowRect.top - listRect.top;
+          else if (rowRect.bottom > listRect.bottom) list.scrollTop += rowRect.bottom - listRect.bottom;
+        };
+
+        const moveActive = (step: number): void => {
+          const rows = Array.from(list.children) as HTMLLIElement[];
+          if (rows.length === 0) return;
+          const index = rows.findIndex((row) => row.dataset.region === activeRegion);
+          const nextIndex = index === -1 ? (step > 0 ? 0 : rows.length - 1) : (index + step + rows.length) % rows.length;
+          setActive(rows[nextIndex].dataset.region as RegionCode);
+        };
+
+        const emptyRow = document.createElement('li');
+        emptyRow.className = 'region-empty';
+        emptyRow.textContent = 'No matches';
+
+        const renderList = (state: ReturnType<typeof regions.getState>): void => {
+          if (state.options.length === 0) {
+            list.replaceChildren(emptyRow);
+            return;
+          }
+          list.replaceChildren(
+            ...state.options.map((option) => {
+              const row = document.createElement('li');
+              row.id = `region-option-${option.region}`;
+              row.dataset.region = option.region;
+              row.setAttribute('role', 'option');
+              row.setAttribute('aria-selected', String(option.region === triggerRegion));
+              const rowFlag = document.createElement('span');
+              rowFlag.className = 'region-option-flag';
+              rowFlag.textContent = String(option.data);
+              const rowName = document.createElement('span');
+              rowName.className = 'region-option-name';
+              rowName.textContent = option.displayName;
+              const rowCode = document.createElement('span');
+              rowCode.className = 'region-option-code';
+              rowCode.textContent = `+${option.callingCode}`;
+              row.append(rowFlag, rowName, rowCode);
+              return row;
+            }),
+          );
+        };
+
+        const closeMenu = (): void => {
+          menu.hidden = true;
+          trigger.setAttribute('aria-expanded', 'false');
+          setActive(null);
+        };
+
+        const openMenu = (): void => {
+          menu.hidden = false;
+          trigger.setAttribute('aria-expanded', 'true');
+          search.value = '';
+          regions.search('');
+          list.scrollTop = 0;
+          setActive(triggerRegion);
+          search.focus({ preventScroll: true });
+        };
+
+        // The bridge from the picker to the phone, shaped by the composition. An explicit
+        // selection is a configuration act: it also moves defaultRegion in the snippet and URL.
+        const select = (region: RegionCode): void => {
+          triggerRegion = region;
+          config = { ...config, region };
+          writeConfigToUrl(config);
+          renderSnippet(config);
+          renderTrigger();
+          markSelected(region);
+          if (!phone) return;
+          if (config.mode === 'international' && config.callingCodeInInput) {
+            // The code lives in the field; selecting a region repins the controller's default
+            // region, then rewrites the code and keeps the digits.
+            phone.setRegion(region);
+            const national = phone.getPhoneNumber().getNationalNumber() ?? '';
+            const plus = config.plusPrefix === 'none' ? '' : '+';
+            phone.setValue(`${plus}${getCallingCodeForRegion(region)}${national}`);
+          } else {
+            phone.setRegion(region);
+          }
+          closeMenu();
+          input.focus();
+        };
+
+        const followResolvedRegion = (region: string | null): void => {
+          if (region === null || region === triggerRegion) return;
+          if (!REGION_CODES.includes(region as RegionCode)) return;
+          triggerRegion = region as RegionCode;
+          // The resolved region is part of the shown setup: the URL and the snippet follow the typing.
+          config = { ...config, region: triggerRegion };
+          writeConfigToUrl(config);
+          renderSnippet(config);
+          renderTrigger();
+          markSelected(triggerRegion);
+        };
+
+        const render = (): void => {
+          if (!phone) return;
+          const state = phone.getState();
+          const number = phone.getPhoneNumber();
+          const valid = number.isValid();
+
+          followResolvedRegion(state.region);
+          setStat('st-value', state.value === '' ? null : JSON.stringify(state.value));
+          setStat('st-caret', `${state.selectionStart}, ${state.selectionEnd}`);
+          setStat('st-region', state.region);
+          const error = state.validationError;
+          setStat('st-verdict', error ? describeVerdict(error) : 'valid');
+          byId<HTMLElement>('st-verdict').dataset.tone = error ? 'error' : 'valid';
+          setStat('st-e164', number.formatE164());
+          setStat('st-national', valid ? number.formatNational() : null);
+          setStat('st-international', valid ? number.formatInternational() : null);
+          setStat('st-type', valid ? number.getNumberType() : null);
+
+          undoButton.disabled = !phone.canUndo();
+          redoButton.disabled = !phone.canRedo();
+          validPill.classList.toggle('on', valid);
+          inputShell.classList.toggle('valid', valid);
+          input.placeholder = state.placeholder ?? '';
+        };
+
+        const rebuild = (): void => {
+          config = readConfigFromControls(config.region);
+          syncControlAvailability(config);
+          regionFilterInput.value = config.regionFilter?.join(', ') ?? '';
+          writeConfigToUrl(config);
+          renderSnippet(config);
+          triggerRegion = config.region;
+          closeMenu();
+          renderTrigger();
+
+          phone?.destroy();
+          input.value = '';
+
+          // The same filters narrow the field and the picker list.
+          regions.setRegionFilter(config.regionFilter);
+          regions.setNumberTypeFilter(config.numberTypes);
+
+          const { region, regionFilter, numberTypes: numberTypeFilter } = config;
+          if (config.mode === 'national') {
+            phone = createPhoneInput({ mode: 'national', defaultRegion: region, regionFilter, numberTypeFilter, input });
+          } else if (config.callingCodeInInput) {
+            const display = { callingCodeInInput: true, plusPrefix: config.plusPrefix } as const;
+            phone = createPhoneInput({
+              mode: 'international',
+              defaultRegion: region,
+              display,
+              regionFilter,
+              numberTypeFilter,
+              input,
+            });
+          } else {
+            const display = { callingCodeInInput: false } as const;
+            phone = createPhoneInput({
+              mode: 'international',
+              defaultRegion: region,
+              display,
+              regionFilter,
+              numberTypeFilter,
+              input,
+            });
+          }
+
+          phone.subscribe(render);
+          render();
+        };
+
+        applyConfigToControls(config);
+        rebuild();
+
+        // The text filter fires change on commit (blur or Enter), never mid-typing of a code.
+        for (const control of [...modeRadios, ...plusRadios, callingCodeBox, regionFilterInput, ...typeBoxes.values()]) {
+          control.addEventListener('change', rebuild);
+        }
+
+        regions.subscribe((state) => {
+          renderList(state);
+          setActive(state.options.length > 0 ? (state.options[0].region as RegionCode) : null);
+        });
+        renderList(regions.getState());
+
+        trigger.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu()));
+        search.addEventListener('input', () => regions.search(search.value));
+        search.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            moveActive(event.key === 'ArrowDown' ? 1 : -1);
+            return;
+          }
+          if (event.key === 'Enter' && activeRegion !== null) {
+            event.preventDefault();
+            select(activeRegion);
+          }
+        });
+        list.addEventListener('click', (event) => {
+          const row = (event.target as HTMLElement).closest('li');
+          if (row?.dataset.region) select(row.dataset.region as RegionCode);
+        });
+        fieldRoot.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !menu.hidden) {
+            closeMenu();
+            trigger.focus();
+          }
+        });
+        document.addEventListener('pointerdown', (event) => {
+          if (!menu.hidden && !fieldRoot.contains(event.target as Node)) closeMenu();
+        });
+
+        undoButton.addEventListener('click', () => phone?.undo());
+        redoButton.addEventListener('click', () => phone?.redo());
+
+        byId<HTMLButtonElement>('reset').addEventListener('click', () => {
+          config = { ...DEFAULT_CONFIG };
+          applyConfigToControls(config);
+          rebuild();
+          input.focus();
+        });
+
+        const wireCopy = (button: HTMLButtonElement, getText: () => string): void => {
+          const idleLabel = button.textContent ?? '';
+          let timer = 0;
+          button.addEventListener('click', () => {
+            void navigator.clipboard.writeText(getText());
+            button.textContent = 'Copied';
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => (button.textContent = idleLabel), 1300);
+          });
+        };
+        wireCopy(byId<HTMLButtonElement>('share'), () => location.href);
+        wireCopy(byId<HTMLButtonElement>('copy-code'), () => snippetNode.textContent ?? '');
+      });
+    </script>
+
+    <style is:global>
+      :root {
+        --bg: #161618;
+        --panel: rgba(255, 255, 255, 0.03);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.16);
+        --text: #f2f3f4;
+        --brand-ink: #ffffff;
+        --muted: #9ba1a6;
+        --green: var(--brand-solid);
+        --green-text: #1fd8a4;
+        --green-glow: rgb(var(--brand) / 0.35);
+        --green-dim: rgb(var(--brand) / 0.12);
+        --error: #ef7275;
+        --radius: 14px;
+        --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        --field-bg: rgba(0, 0, 0, 0.45);
+        --grid-dot: rgba(255, 255, 255, 0.05);
+        --surface: #1d1f21;
+        --surface-border: rgba(255, 255, 255, 0.1);
+        --surface-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 1px 2px rgba(0, 0, 0, 0.6),
+          0 20px 40px -24px rgba(0, 0, 0, 0.95);
+        --menu-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        --code-bg: rgba(0, 0, 0, 0.35);
+        --code-kw: #79c0ff;
+        --code-fn: #d2a8ff;
+        --code-str: #1fd8a4;
+        --code-cm: #838990;
+      }
+      [data-theme='light'] {
+        --bg: #f7f8f8;
+        --panel: rgba(0, 0, 0, 0.03);
+        --border: rgba(0, 0, 0, 0.09);
+        --border-strong: rgba(0, 0, 0, 0.18);
+        --text: #17191b;
+        --brand-ink: #161618;
+        --muted: #4c5257;
+        --green-text: #1b7359;
+        --green-glow: rgb(var(--brand) / 0.28);
+        --green-dim: rgb(var(--brand) / 0.12);
+        --error: #ce2c31;
+        --field-bg: #ffffff;
+        --grid-dot: rgba(0, 0, 0, 0.06);
+        --surface: #ffffff;
+        --surface-border: rgba(0, 0, 0, 0.1);
+        --surface-shadow: 0 10px 22px -14px rgba(20, 45, 32, 0.2), 0 2px 5px -3px rgba(20, 45, 32, 0.1);
+        --menu-shadow: 0 24px 48px -24px rgba(20, 45, 32, 0.35);
+        --code-bg: #f0f2f1;
+        --code-kw: #0964d0;
+        --code-fn: #7a4bd1;
+        --code-str: #1d755d;
+        --code-cm: #63696f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--bg);
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+      .atmosphere {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 720px;
+        pointer-events: none;
+        background:
+          radial-gradient(720px 480px at 50% -80px, rgb(var(--brand) / 0.14), transparent),
+          radial-gradient(1200px 700px at 50% -200px, rgb(var(--brand) / 0.06), transparent);
+        -webkit-mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.45) 70%, transparent 92%);
+        mask-image: linear-gradient(180deg, #000 45%, rgba(0, 0, 0, 0.45) 70%, transparent 92%);
+      }
+      .atmosphere::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+        background-size: 26px 26px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 80%);
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .shell {
+        position: relative;
+        max-width: 1020px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
+      .nav {
+        position: relative;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        color: var(--brand-ink);
+      }
+      .brand-logo {
+        display: block;
+        height: 24px;
+        width: auto;
+      }
+      .nav-links {
+        display: flex;
+        gap: 26px;
+        color: var(--muted);
+        font-size: 14.5px;
+        font-weight: 500;
+      }
+      .nav-links a {
+        transition: color 0.15s ease;
+      }
+      .nav-links a:hover,
+      .nav-links a:focus-visible {
+        color: var(--text);
+      }
+      main.shell {
+        padding-top: 46px;
+        padding-bottom: 72px;
+      }
+      h1 {
+        font-size: clamp(28px, 4vw, 36px);
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        font-weight: 750;
+        margin: 0 0 10px;
+      }
+      .lede {
+        color: var(--muted);
+        font-size: 16px;
+        max-width: 56ch;
+        margin: 0 0 34px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius);
+        box-shadow: var(--surface-shadow);
+        padding: 20px 22px 22px;
+      }
+      .panel h2 {
+        font-size: 11.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 0 0 18px;
+      }
+      fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0 0 18px;
+      }
+      fieldset:last-of-type {
+        margin-bottom: 20px;
+      }
+      legend {
+        font-size: 13px;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+        padding: 0;
+        margin-bottom: 7px;
+      }
+      .choice {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 14px;
+        color: var(--text);
+        padding: 4px 0;
+        cursor: pointer;
+      }
+      .choice input {
+        accent-color: var(--green);
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        cursor: pointer;
+      }
+      .sub-group {
+        margin-top: 5px;
+        padding-left: 24px;
+        border-left: 2px solid var(--border);
+      }
+      .filter-label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+      .filter-input {
+        width: 100%;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--text);
+        background: var(--field-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 10px;
+        margin-bottom: 12px;
+        transition: border-color 0.15s ease;
+      }
+      .filter-input::placeholder {
+        color: var(--muted);
+        opacity: 0.55;
+        text-transform: none;
+      }
+      .filter-input:focus-visible {
+        outline: none;
+        border-color: var(--green);
+      }
+      .type-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 10px;
+      }
+      .type-choice {
+        font-size: 13px;
+        line-height: 1.3;
+        align-items: flex-start;
+      }
+      .type-choice input {
+        margin-top: 1px;
+      }
+      .inactive {
+        opacity: 0.4;
+      }
+      .inactive .choice {
+        cursor: default;
+      }
+      .panel-actions {
+        display: flex;
+        gap: 9px;
+      }
+      .panel-actions #share {
+        flex: 1;
+      }
+      .ghost-btn {
+        font-family: var(--font-sans);
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+        background: none;
+        border: 1px solid var(--border-strong);
+        border-radius: 9px;
+        padding: 8px 14px;
+        min-height: 38px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease,
+          opacity 0.15s ease;
+      }
+      .ghost-btn:hover:not(:disabled),
+      .ghost-btn:focus-visible {
+        border-color: var(--green);
+        background: var(--green-dim);
+      }
+      .ghost-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .field-root {
+        position: relative;
+      }
+      .input-shell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--field-bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 12px;
+        padding: 8px 16px 8px 8px;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .input-shell:focus-within {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-dim);
+      }
+      .input-shell.valid {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-dim), 0 0 24px -6px var(--green-glow);
+      }
+      .region-trigger {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--font-sans);
+        font-size: 17px;
+        color: var(--text);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+      .region-trigger:hover,
+      .region-trigger:focus-visible {
+        border-color: var(--green);
+        background: var(--green-dim);
+      }
+      .trigger-code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .trigger-code:empty {
+        display: none;
+      }
+      .chevron {
+        width: 9px;
+        color: var(--muted);
+      }
+      #phone {
+        flex: 1;
+        font-family: var(--font-mono);
+        font-size: 17px;
+        letter-spacing: 0.01em;
+        color: var(--text);
+        background: none;
+        border: 0;
+        outline: 0;
+        min-width: 0;
+        padding: 4px 0;
+      }
+      #phone::placeholder {
+        color: var(--muted);
+        opacity: 0.55;
+      }
+      .region-menu {
+        position: absolute;
+        z-index: 10;
+        top: calc(100% + 8px);
+        left: 0;
+        width: min(340px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        box-shadow: var(--menu-shadow);
+        padding: 8px;
+      }
+      .region-search {
+        width: 100%;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        color: var(--text);
+        background: var(--field-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 11px;
+        margin-bottom: 7px;
+        transition: border-color 0.15s ease;
+      }
+      .region-search:focus-visible {
+        outline: none;
+        border-color: var(--green);
+      }
+      #region-listbox {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 264px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      #region-listbox li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.35;
+        cursor: pointer;
+      }
+      #region-listbox li:hover,
+      #region-listbox li[data-active='true'] {
+        background: var(--green-dim);
+      }
+      #region-listbox li[aria-selected='true'] {
+        color: var(--green-text);
+        font-weight: 600;
+      }
+      .region-option-flag {
+        flex: none;
+        width: 22px;
+        text-align: center;
+        font-size: 16px;
+      }
+      .region-option-name {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .region-option-code {
+        flex: none;
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+      }
+      .region-empty {
+        color: var(--muted);
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      .history-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 14px 0 18px;
+      }
+      .valid-pill {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 4px 13px;
+        opacity: 0.55;
+        transition:
+          color 0.15s ease,
+          border-color 0.15s ease,
+          opacity 0.15s ease;
+      }
+      .valid-pill.on {
+        color: var(--green-text);
+        border-color: rgb(var(--brand) / 0.55);
+        background: var(--green-dim);
+        opacity: 1;
+      }
+      .state {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .state .row {
+        display: grid;
+        grid-template-columns: 132px minmax(0, 1fr);
+        gap: 14px;
+        padding: 8px 0;
+        border-top: 1px solid var(--border);
+      }
+      .state dt {
+        color: var(--muted);
+        font-size: 13.5px;
+        padding-top: 1px;
+      }
+      .state dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      .mono {
+        font-family: var(--font-mono);
+        font-size: 13.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      .state dd.empty::before {
+        content: '—';
+        color: var(--muted);
+        opacity: 0.45;
+      }
+      #st-verdict:not(.empty) {
+        color: var(--error);
+      }
+      #st-verdict:not(.empty)[data-tone='valid'] {
+        color: var(--green-text);
+      }
+      .code-panel {
+        margin-top: 18px;
+      }
+      .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .code-head h2 {
+        margin: 0;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        overflow-x: auto;
+        margin: 0;
+      }
+      pre code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--text);
+      }
+      .tok-kw {
+        color: var(--code-kw);
+      }
+      .tok-fn {
+        color: var(--code-fn);
+      }
+      .tok-str {
+        color: var(--code-str);
+      }
+      .tok-cm {
+        color: var(--code-cm);
+      }
+      .site-footer {
+        border-top: 1px solid var(--border);
+        padding-top: 18px;
+        padding-bottom: 36px;
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+      .site-footer a {
+        color: var(--green-text);
+      }
+      :focus-visible {
+        outline: 2px solid var(--green);
+        outline-offset: 2px;
+      }
+      @media (max-width: 760px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          gap: 18px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </body>
+</html>

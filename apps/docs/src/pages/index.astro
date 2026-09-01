@@ -1341,6 +1341,10 @@ const closedTypesCode = `controller.setRegion('USA')
         .nav-right {
           gap: 6px;
         }
+        /* The playground stays reachable through the footer; the tight nav keeps Docs visible. */
+        .nav-playground {
+          display: none;
+        }
         .nav-btn-text {
           display: none;
         }
@@ -1404,6 +1408,7 @@ const closedTypesCode = `controller.setRegion('USA')
             >
             <span class="nav-btn-text">GitHub</span>
           </a>
+          <a class="nav-btn nav-playground" href="/playground/input/">Playground</a>
           <a class="nav-btn" href="/core/">Docs</a>
           <a class="nav-btn nav-cta" href="#get-started">Get started</a>
         </div>
@@ -1821,6 +1826,7 @@ const closedTypesCode = `controller.setRegion('USA')
         <div class="meta">Built on Google libphonenumber metadata. Apache 2.0 License.</div>
         <div class="links">
           <a href="https://github.com/martsinlabs/telixon">GitHub</a>
+          <a href="/playground/input/">Playground</a>
           <a href="/core/">Docs</a>
           <a href="https://proof.telixon.dev/parity.html">proof.telixon.dev</a>
         </div>

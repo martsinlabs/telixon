@@ -7,7 +7,7 @@ The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/cor
 [![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fweb-sdk%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/web-sdk)
 [![downloads](https://img.shields.io/npm/dm/%40telixon%2Fweb-sdk?color=26997b&label=downloads)](https://www.npmjs.com/package/@telixon/web-sdk)
 
-**[Documentation](https://telixon.dev/web-sdk/)** &middot; **[Live demo](https://telixon.dev/web-sdk/guides/complete-field/)**
+**[Documentation](https://telixon.dev/web-sdk/)** &middot; **[Playground](https://telixon.dev/playground/input/)**
 
 ## Install
 
