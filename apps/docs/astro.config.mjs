@@ -6,6 +6,8 @@ import { AVAILABLE_PACKAGES } from './src/package-registry';
 
 export default defineConfig({
   site: 'https://telixon.dev',
+  // The playground umbrella points at its only room until further rooms exist.
+  redirects: { '/playground': '/playground/input' },
   integrations: [
     starlight({
       title: 'Telixon',
