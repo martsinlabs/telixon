@@ -1,5 +1,5 @@
 import {
-  getMetadataRegionCallingCode,
+  getRegionCallingCode,
   NationalPrefixRules,
   normalizeNationalNumber,
   NumberType,
@@ -68,7 +68,7 @@ class NationalInputController implements InputController {
 
     this.#defaultCallingCode =
       this.#defaultRegionIndex !== -1
-        ? String(getMetadataRegionCallingCode(getResourceProvider().engine, this.#defaultRegionIndex))
+        ? String(getRegionCallingCode(getResourceProvider().engine, this.#defaultRegionIndex))
         : null;
   }
 

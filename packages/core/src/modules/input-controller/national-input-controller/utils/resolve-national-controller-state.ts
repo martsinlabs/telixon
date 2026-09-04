@@ -2,7 +2,7 @@ import {
   formatNumber,
   formatNumberWithRawCaret,
   FormattingDirection,
-  getMetadataFormatIndex,
+  getFormatIndex,
   getRegionNationalPrefix,
   MASK_VARIANT,
   NationalPrefixRules,
@@ -73,7 +73,7 @@ export function resolveNationalControllerState(
 
     if (formatPosition !== -1) {
       appliedFormatIndex = formatPosition;
-      const formatIndex: number = getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
+      const formatIndex: number = getFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
 
       // Group whether or not the national prefix was typed (matching Google): prefix mask with it, plain national mask otherwise.
       const usePrefixMasks: boolean =
@@ -92,7 +92,7 @@ export function resolveNationalControllerState(
           resourceProvider.placeholders,
           nationalPrefix,
         );
-        formattedNationalNumber = formatNumber(context, 0, direction).formatted;
+        formattedNationalNumber = formatNumber(context, { caretIndex: 0, direction }).formatted;
         alignment = buildDigitAlignment(typedDigits, context, formattedNationalNumber, prefixRules, direction);
 
         // The engine places the caret by a rendered digit count; the alignment converts the typed caret into it.

@@ -1,4 +1,4 @@
-import { formatNumber, getMetadataFormatIndex, MASK_VARIANT } from '@telixon/core/engine';
+import { formatNumber, getFormatIndex, MASK_VARIANT } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { buildFormattingContext } from '../../number-resolver/utils/build-formatting-context';
 import { pickFormatMask } from '../../number-resolver/utils/format-masks';
@@ -20,7 +20,7 @@ export function formatInternationalBase(resolved: ResolvedPhoneNumber): string |
   const mask: string | undefined =
     formatPosition >= 0
       ? pickFormatMask(
-          getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition),
+          getFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition),
           MASK_VARIANT.INTERNATIONAL,
           nationalDigits.length,
         )

@@ -116,13 +116,13 @@ rewrite (a bounded capture-group transform) and the IDD strip that removes a dia
 prefix before the digits are resolved. Two port libphonenumber's extension handling at the pinned
 commit and run only when an input's raw string carries a character plain phone input never
 contains: the end-anchored extension-suffix capture and the viable-number guard that protects it.
-The engine ships as four embedded modules carrying nine binary layers:
+The engine ships as four embedded modules carrying eight binary layers:
 
 ```
 walk.bin.js      recognition DFA state graph, calling-code dispatch, region disambiguation
 verdict.bin.js   baked validity and number-type verdicts, exact-acceptance terminals
-scope.bin.js     number-type scope, per-region length masks
-metadata.bin.js  formats, masks, territory and reference data (string-table encoded), format selection
+scope.bin.js     number-type scope per state, per-type profiles of reachable lengths and formats
+metadata.bin.js  formats, mask strings, region length masks, territory and reference data (string-table encoded), format selection
 ```
 
 **Provenance is the audit trail.** `engine/PROVENANCE.json` pins the upstream repository, commit, file

@@ -1,8 +1,4 @@
-import {
-  getMetadataRegionCallingCode,
-  getRegionInternationalPrefix,
-  getRegionNationalPrefix,
-} from '@telixon/core/engine';
+import { getRegionCallingCode, getRegionInternationalPrefix, getRegionNationalPrefix } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getProcessScopedCache } from '@telixon/core/utils/get-process-scoped-cache';
@@ -217,7 +213,7 @@ export function resolveNumber(params: ResolveNumberInput): ResolvedNumberState {
   // through that calling code, so the strip below prefers its main region over the default region.
   let leadingCallingCodeStripped = false;
   if (readAsNational) {
-    const callingCode: string = String(getMetadataRegionCallingCode(resourceProvider.engine, defaultRegionIndex));
+    const callingCode: string = String(getRegionCallingCode(resourceProvider.engine, defaultRegionIndex));
     resolver.setCallingCode(callingCode);
     if (detectExtensionSuspect && !rawReadDone) {
       extensionSuspect = walkInputDetectingExtensionSuspect(resolver, input);

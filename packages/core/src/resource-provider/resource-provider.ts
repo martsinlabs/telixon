@@ -1,11 +1,11 @@
 import {
   Engine,
-  findMetadataCallingCode,
-  getMetadataNumberTypeName,
-  getMetadataPlaceholders,
-  getMetadataRegionCallingCode,
-  getMetadataRegionCode,
-  getMetadataRegionCount,
+  findCallingCode,
+  getNumberTypeName,
+  getPlaceholders,
+  getRegionCallingCode,
+  getRegionCode,
+  getRegionCount,
   getRegionLeadingDigits,
   MetadataNumberType,
   parseEngine,
@@ -17,10 +17,10 @@ import { MetadataPlaceholders, ResourceProvider } from './models';
 
 // The metadata region order is REGION_CODES (alphabetical); a mismatch means a broken artifact.
 function resolveRegionCodes(engine: Engine): readonly RegionCode[] {
-  const count: number = getMetadataRegionCount(engine);
+  const count: number = getRegionCount(engine);
   if (count !== REGION_CODES.length) throw new Error('Engine metadata region count differs from REGION_CODES');
   for (let regionIndex = 0; regionIndex < count; regionIndex++) {
-    if (getMetadataRegionCode(engine, regionIndex) !== REGION_CODES[regionIndex]) {
+    if (getRegionCode(engine, regionIndex) !== REGION_CODES[regionIndex]) {
       throw new Error('Engine metadata region order differs from REGION_CODES');
     }
   }
@@ -37,8 +37,8 @@ function buildRegionKeyToIndex(regionIds: readonly RegionCode[]): Record<string,
 function buildCallingCodeIndexByCode(engine: Engine, regionCount: number): Record<number, number> {
   const map: Record<number, number> = {};
   for (let regionIndex = 0; regionIndex < regionCount; regionIndex++) {
-    const callingCode: number = getMetadataRegionCallingCode(engine, regionIndex);
-    if (map[callingCode] === undefined) map[callingCode] = findMetadataCallingCode(engine, callingCode);
+    const callingCode: number = getRegionCallingCode(engine, regionIndex);
+    if (map[callingCode] === undefined) map[callingCode] = findCallingCode(engine, callingCode);
   }
   return map;
 }
@@ -50,7 +50,7 @@ function buildCallingCodeIndexByRegion(
 ): Int16Array {
   const table = new Int16Array(regionCount).fill(-1);
   for (let regionIndex = 0; regionIndex < regionCount; regionIndex++) {
-    table[regionIndex] = callingCodeIndexByCode[getMetadataRegionCallingCode(engine, regionIndex)] ?? -1;
+    table[regionIndex] = callingCodeIndexByCode[getRegionCallingCode(engine, regionIndex)] ?? -1;
   }
   return table;
 }
@@ -69,7 +69,7 @@ function buildRegionHasLeadingDigits(engine: Engine, regionCount: number): Uint8
 function buildNumberTypeNames(engine: Engine): readonly MetadataNumberType[] {
   const names: MetadataNumberType[] = [];
   for (let typeId = 0; typeId < MAX_NUMBER_TYPE_IDS; typeId++) {
-    const name: string = getMetadataNumberTypeName(engine, typeId);
+    const name: string = getNumberTypeName(engine, typeId);
     if (!name) break;
     names.push(name as MetadataNumberType);
   }
@@ -137,7 +137,7 @@ class DefaultResourceProvider extends ResourceProvider {
     this.numberTypeNames = buildNumberTypeNames(engine);
     this.regionHasLeadingDigits = buildRegionHasLeadingDigits(engine, this.regionIds.length);
 
-    const [digitPlaceholder, ignoredDigitPlaceholder, nationalPrefixPlaceholder] = getMetadataPlaceholders(engine);
+    const [digitPlaceholder, ignoredDigitPlaceholder, nationalPrefixPlaceholder] = getPlaceholders(engine);
     this.placeholders = { digitPlaceholder, ignoredDigitPlaceholder, nationalPrefixPlaceholder };
 
     this.ready = true;

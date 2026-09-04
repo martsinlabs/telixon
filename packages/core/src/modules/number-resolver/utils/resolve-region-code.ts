@@ -1,20 +1,18 @@
 import {
   forEachExactRegion,
   getCallingCodeStateRegions,
-  getMetadataRegionCallingCode,
+  getRegionCallingCode,
   getVerdict,
   isRegionLeadingDigitsSatisfied,
   RegionCode,
   VERDICT_LENGTH_COUNT,
+  VERDICT_REGION_NONE,
   verdictIsDecided,
   verdictRegion,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveExactMatchedTypeIdMask } from './resolve-exact-matched-types';
-
-// Verdict region payload meaning "no region" (engine verdict contract).
-const VERDICT_REGION_NONE = 255;
 
 // Regions with any exact acceptance at (endState, length), collected in one scan of the state's exact list.
 function collectExactRegions(endState: number, nationalLength: number): number[] {
@@ -34,7 +32,7 @@ function matchesRegion(
 ): boolean {
   const resourceProvider = getResourceProvider();
   if (resourceProvider.regionHasLeadingDigits[regionIndex]) {
-    const callingCode: number = getMetadataRegionCallingCode(resourceProvider.engine, regionIndex);
+    const callingCode: number = getRegionCallingCode(resourceProvider.engine, regionIndex);
     const callingCodeIndex: number | undefined = resourceProvider.callingCodeIndexByCode[callingCode];
     if (callingCodeIndex === undefined) return false;
     return isRegionLeadingDigitsSatisfied(resourceProvider.engine, callingCodeIndex, regionIndex, nationalDigits);

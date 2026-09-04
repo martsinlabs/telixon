@@ -6,6 +6,12 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Changed
+
+- The engine metadata moves to google/libphonenumber v9.0.38 (from v9.0.37).
+- The engine artifact is rebuilt with a smaller encoding. The four embedded modules shrink from
+  163 KB to 114 KB. Verdicts, formats, and validation results are unchanged.
+
 ### Fixed
 
 - A selection reported past the stored value is clamped to its bounds before it is kept, keeping

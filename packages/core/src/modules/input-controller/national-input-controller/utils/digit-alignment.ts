@@ -59,7 +59,8 @@ function displayBoundariesByTyped(
     return boundaries;
   }
 
-  return normalizeNationalNumber(typedDigits, prefixRules, 0, undefined, true).displayCaretByTyped!;
+  return normalizeNationalNumber(typedDigits, prefixRules, { caretIndex: 0, collectDisplayBoundaries: true })
+    .displayCaretByTyped!;
 }
 
 /**
@@ -82,7 +83,8 @@ export function buildDigitAlignment(
   if (renderedDigits === typedDigits) return null;
 
   // The engine records where each display digit landed during its single format walk.
-  const positionByDisplay: number[] = formatNumber(context, 0, direction, true).digitPositions ?? [];
+  const positionByDisplay: number[] =
+    formatNumber(context, { caretIndex: 0, direction, collectDigitPositions: true }).digitPositions ?? [];
 
   const displayByRenderedPosition = new Map<number, number>();
   for (let displayIndex = 0; displayIndex < positionByDisplay.length; displayIndex++) {

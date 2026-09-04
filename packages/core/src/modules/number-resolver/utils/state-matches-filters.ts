@@ -2,7 +2,7 @@ import {
   forEachNumberTypeIndex,
   forEachRegionInCallingCodeState,
   forEachScopeRegion,
-  getScopeNumberTypeMask,
+  getScopeTypeMask,
   isInCallingCode,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
@@ -35,7 +35,7 @@ export function stateMatchesFilters(
   forEachScopeRegion(resourceProvider.engine, state, (scopeEntryIndex: number, regionIndex: number) => {
     if (regionFilter && regionFilter[regionIndex] === 0) return;
 
-    const mask: number = getScopeNumberTypeMask(resourceProvider.engine, scopeEntryIndex);
+    const mask: number = getScopeTypeMask(resourceProvider.engine, scopeEntryIndex);
 
     forEachNumberTypeIndex(mask, (numberTypeIndex: number) => {
       if (!numberTypeFilter || isNumberTypeAllowed(numberTypeFilter, regionIndex, numberTypeIndex)) {

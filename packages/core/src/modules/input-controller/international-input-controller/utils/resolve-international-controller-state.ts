@@ -1,10 +1,4 @@
-import {
-  formatNumber,
-  FormattingDirection,
-  getMetadataFormatIndex,
-  MASK_VARIANT,
-  RegionCode,
-} from '@telixon/core/engine';
+import { formatNumber, FormattingDirection, getFormatIndex, MASK_VARIANT, RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../../number-resolver/models';
@@ -47,11 +41,7 @@ export function resolveInternationalControllerState(
 
     if (selectedIndex >= 0) {
       formatIndex = selectedIndex;
-      const globalFormatIndex: number = getMetadataFormatIndex(
-        resourceProvider.engine,
-        callingCodeIndex,
-        selectedIndex,
-      );
+      const globalFormatIndex: number = getFormatIndex(resourceProvider.engine, callingCodeIndex, selectedIndex);
 
       const variant: number = hasMaskVariant(globalFormatIndex, MASK_VARIANT.INTERNATIONAL)
         ? MASK_VARIANT.INTERNATIONAL
@@ -61,8 +51,7 @@ export function resolveInternationalControllerState(
       if (mask !== undefined) {
         const { formatted, caretIndex: natCaretFormatted } = formatNumber(
           buildFormattingContext(mask, snapshot.nationalDigits, resourceProvider.placeholders),
-          caretInCallingCode ? 0 : nationalCaretIndex,
-          direction,
+          { caretIndex: caretInCallingCode ? 0 : nationalCaretIndex, direction },
         );
 
         formattedNationalNumber = formatted;

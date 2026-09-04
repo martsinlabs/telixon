@@ -17,14 +17,14 @@ behavioral difference.
 
 The gate's full corpus compares the thirteen methods on 14,355 inputs each,
 across all 245 regions, extension spellings included, while case coverage compares one number from
-every distinct case the library can produce. Together they stand at 367,766 comparisons with zero
-divergences. `isValidForRegion` is set-compared per case, with 692,513 region checks in the
+every distinct case the library can produce. Together they stand at 228,647 comparisons with zero
+divergences. `isValidForRegion` is set-compared per case, with 141,594 region checks in the
 case-coverage sweep alone. A 9,050-pair sweep grades [`matchPhoneNumbers`](/core/reference/match-phone-numbers/) against
 Google's isNumberMatch alongside them. The allowlist of accepted divergences is empty.
 
 On top of the gate, every push runs a one-million-input parity sample. Weekly, the
 [airtight proof](https://github.com/martsinlabs/telixon/actions/workflows/fuzz.yml) enumerates the
-complete geographic input domain of 1,838,775,900 inputs, split across ten shards.
+complete geographic input domain of 1,847,667,900 inputs, split across ten shards.
 
 ```sh
 pnpm conformance

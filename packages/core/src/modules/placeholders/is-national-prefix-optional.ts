@@ -1,8 +1,8 @@
 import {
-  getMetadataFormatIndex,
-  getMetadataTypeCount,
-  getMetadataTypeExample,
-  getMetadataTypeId,
+  getFormatIndex,
+  getRegionTypeCount,
+  getRegionTypeExample,
+  getRegionTypeId,
   isFormatPrefixOptional,
   NumberType,
   RegionCode,
@@ -27,16 +27,16 @@ export function isNationalPrefixOptional(region: RegionCode, type: NumberType): 
     const typeId: number = resourceProvider.numberTypeNames.indexOf(metadataType);
     if (typeId < 0) continue;
 
-    const typeCount: number = getMetadataTypeCount(tables, regionIndex);
+    const typeCount: number = getRegionTypeCount(tables, regionIndex);
     for (let typePosition = 0; typePosition < typeCount; typePosition++) {
-      if (getMetadataTypeId(tables, regionIndex, typePosition) !== typeId) continue;
-      const exampleNsn: string | undefined = getMetadataTypeExample(tables, regionIndex, typePosition);
+      if (getRegionTypeId(tables, regionIndex, typePosition) !== typeId) continue;
+      const exampleNsn: string | undefined = getRegionTypeExample(tables, regionIndex, typePosition);
       if (exampleNsn === undefined) continue;
 
       const formatPosition: number = selectNationalFormatIndex(callingCodeIndex, exampleNsn, false);
       if (formatPosition < 0) continue;
 
-      return isFormatPrefixOptional(tables, getMetadataFormatIndex(tables, callingCodeIndex, formatPosition));
+      return isFormatPrefixOptional(tables, getFormatIndex(tables, callingCodeIndex, formatPosition));
     }
   }
 

@@ -1,7 +1,7 @@
 name: Fuzz
 
 # Weekly airtight parity proof. Heavier than the per-push gate, so it runs on a schedule (and on demand)
-# rather than on every push: every deciding-digit combination at every length, 1,838,775,900 inputs,
+# rather than on every push: every deciding-digit combination at every length, 1,847,667,900 inputs,
 # checked against Google's libphonenumber. The per-push gate lives in ci.yml.
 on:
   schedule:

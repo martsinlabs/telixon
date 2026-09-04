@@ -18,7 +18,7 @@ packages/
 
 ### Core package
 
-- `src/engine/`: generated DFA artifact compiled from Google's libphonenumber metadata; accessor (`index.js`/`index.d.ts`) plus `embedded/` (four base64-of-gzip ESM modules, nine layers). The library owns loading: fetch/import the modules, decode (native per environment, pure-JS floor), `parseEngine`/`assembleEngine`
+- `src/engine/`: generated DFA artifact compiled from Google's libphonenumber metadata; accessor (`index.js`/`index.d.ts`) plus `embedded/` (four base64-of-gzip ESM modules, eight layers). The library owns loading: fetch/import the modules, decode (native per environment, pure-JS floor), `parseEngine`/`assembleEngine`
 - `src/modules/`: feature modules (`number-resolver`, `input-controller`, …)
 - `src/models/`: shared types
 - `src/utils/`: pure, reusable utilities
