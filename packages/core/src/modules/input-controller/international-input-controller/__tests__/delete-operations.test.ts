@@ -52,6 +52,23 @@ describe('InternationalInputController.deleteBackward', () => {
     expect(state.selectionEnd).toBe(1);
   });
 
+  it('clamps a degenerate selection past the stored value to its bounds', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
+    });
+
+    // The raw value coerces to an empty string while the selection points past every bound.
+    const state = controller.deleteBackward(null as unknown as string, 9, 9);
+
+    expect(state.value).toBe('+1 ');
+    expect(state.selectionStart).toBe(3);
+    expect(state.selectionEnd).toBe(3);
+    const current = controller.currentState;
+    expect(current.selectionStart).toBe(3);
+    expect(current.selectionEnd).toBe(3);
+  });
+
   it('stores the no-op caret in currentState when backspacing right after the fixed "+"', () => {
     const controller = createInternationalInputController({
       defaultRegion: 'US',
@@ -107,6 +124,23 @@ describe('InternationalInputController.deleteForward', () => {
 
     expect(state.value.startsWith('+')).toBe(true);
     expect(state.value.replace(/\D/g, '')).toBe(US_MOBILE_INTL.slice(1));
+  });
+
+  it('clamps a degenerate selection past the stored value to its bounds', () => {
+    const controller = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: true, plusPrefix: 'fixed' },
+    });
+
+    // The raw value coerces to an empty string while the selection points past every bound.
+    const state = controller.deleteForward(null as unknown as string, 9, 9);
+
+    expect(state.value).toBe('+1 ');
+    expect(state.selectionStart).toBe(3);
+    expect(state.selectionEnd).toBe(3);
+    const current = controller.currentState;
+    expect(current.selectionStart).toBe(3);
+    expect(current.selectionEnd).toBe(3);
   });
 });
 

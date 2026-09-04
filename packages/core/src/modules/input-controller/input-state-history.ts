@@ -37,10 +37,15 @@ export class InputStateHistory<State extends InputControllerState = InputControl
   updateCurrentSelection(selectionStart: number, selectionEnd: number): void {
     const current: State = this.stack[this.index]!;
 
+    // Degenerate callers can hand a selection past the stored value; the stored state stays in bounds.
+    const maxIndex: number = current.value.length;
+    const start: number = Math.max(0, Math.min(selectionStart, maxIndex));
+    const end: number = Math.max(start, Math.min(selectionEnd, maxIndex));
+
     this.stack[this.index] = {
       ...current,
-      selectionStart,
-      selectionEnd,
+      selectionStart: start,
+      selectionEnd: end,
     };
   }
 
