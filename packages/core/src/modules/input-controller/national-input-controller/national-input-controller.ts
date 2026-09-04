@@ -185,7 +185,7 @@ class NationalInputController implements InputController {
 
       if (position === -1) {
         this.#history.updateCurrentSelection(selectionStart, selectionEnd);
-        return toInputStateWithSelection(this.#history.current, selectionStart, selectionEnd);
+        return toInputState(this.#history.current);
       }
 
       effectiveStart = position;

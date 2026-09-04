@@ -6,6 +6,11 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Fixed
+
+- A selection reported past the stored value is clamped to its bounds before it is kept, keeping
+  `currentState` and the history snapshots coherent for coerced degenerate input.
+
 ## [1.1.2] - 2026-09-01
 
 ### Fixed
