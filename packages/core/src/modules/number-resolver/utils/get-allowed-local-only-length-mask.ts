@@ -1,7 +1,7 @@
 import {
-  getGeneralDescLocalOnlyLengthMask,
-  getMetadataTypeLocalOnlyMask,
+  getRegionPossibleLocalOnlyLengthMask,
   getRegionTypeCount,
+  getRegionTypePossibleLocalOnlyLengthMask,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -19,7 +19,7 @@ export function getAllowedLocalOnlyLengthMask(
   const resourceProvider = getResourceProvider();
 
   if (!numberTypeFilter) {
-    return getGeneralDescLocalOnlyLengthMask(resourceProvider.engine, regionIndex);
+    return getRegionPossibleLocalOnlyLengthMask(resourceProvider.engine, regionIndex);
   }
 
   // Priority order keeps generalDesc last; the union covers concrete types only.
@@ -27,7 +27,7 @@ export function getAllowedLocalOnlyLengthMask(
   let unionMask = 0;
   for (let typePosition = 0; typePosition < typeCount - 1; typePosition++) {
     if (!isNumberTypeAllowed(numberTypeFilter, regionIndex, typePosition)) continue;
-    unionMask |= getMetadataTypeLocalOnlyMask(resourceProvider.engine, regionIndex, typePosition);
+    unionMask |= getRegionTypePossibleLocalOnlyLengthMask(resourceProvider.engine, regionIndex, typePosition);
   }
 
   return unionMask;

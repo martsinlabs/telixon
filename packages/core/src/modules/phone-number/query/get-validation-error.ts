@@ -1,9 +1,4 @@
-import {
-  getMaxLength,
-  getMetadataFormatIndex,
-  getRegionNationalPrefix,
-  isFormatPrefixOptional,
-} from '@telixon/core/engine';
+import { getFormatIndex, getMaxLength, getRegionNationalPrefix, isFormatPrefixOptional } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
 import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
@@ -87,7 +82,7 @@ function detectNationalPrefixMissing(regionIndex: number, nationalDigits: string
   const formatPosition: number = selectNationalFormatIndex(callingCodeIndex, nationalDigits, false);
   if (formatPosition < 0) return null;
 
-  const formatIndex: number = getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
+  const formatIndex: number = getFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
   if (isFormatPrefixOptional(resourceProvider.engine, formatIndex)) return null;
 
   return { kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: nationalPrefix };

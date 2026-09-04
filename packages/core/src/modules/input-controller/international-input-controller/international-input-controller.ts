@@ -1,4 +1,4 @@
-import { getMetadataRegionCallingCode, NumberType, RegionCode } from '@telixon/core/engine';
+import { getRegionCallingCode, NumberType, RegionCode } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { toInputString } from '@telixon/core/utils/to-input-string';
@@ -85,7 +85,7 @@ class InternationalInputController implements InputController {
 
     this.#defaultCallingCode =
       this.#defaultRegionIndex !== -1
-        ? String(getMetadataRegionCallingCode(resourceProvider.engine, this.#defaultRegionIndex))
+        ? String(getRegionCallingCode(resourceProvider.engine, this.#defaultRegionIndex))
         : null;
   }
 

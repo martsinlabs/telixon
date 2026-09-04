@@ -8,15 +8,14 @@ import {
   forEachScopeRegion,
   getExactTypeMask,
   getMaxLength,
-  getProfileLengthMask,
   getReachableLengthMask,
+  getReachableTypeMaskAtLength,
   getRegionTypeCount,
   getRegionTypeId,
-  getScopeNumberTypeMask,
-  getScopeProfileId,
   getScopeTerminalTypeMask,
+  getScopeTypeProfile,
   getStateFlags,
-  getTypeMaskAtLength,
+  getTypeProfileReachableLengthMask,
   hasExactMatch,
   stepDigit,
 } from '@telixon/core/engine';
@@ -96,8 +95,6 @@ function profileFromMask(
   const entry: number = scopeEntryIndex !== -1 ? scopeEntryIndex : findScopeEntryAlongWalk(context, regionIndex);
   if (entry === -1) return null;
 
-  const scopeTypeMask: number = getScopeNumberTypeMask(context.engine, entry);
-
   let mask: number = candidateMask;
   while (mask !== 0) {
     const typePosition: number = 31 - Math.clz32(mask & -mask);
@@ -108,7 +105,7 @@ function profileFromMask(
     return {
       regionIndex,
       numberTypeIndex: typePosition,
-      numberTypeProfileId: getScopeProfileId(context.engine, entry, scopeTypeMask, typePosition),
+      numberTypeProfileId: getScopeTypeProfile(context.engine, entry, typePosition),
     };
   }
 
@@ -125,7 +122,7 @@ function futureCandidateMask(
   const totals: number = context.reachableTotals & ~((1 << minTotal) - 1);
   let union = 0;
   forEachLength(totals, (total: number) => {
-    if (scopeEntryIndex !== -1) union |= getTypeMaskAtLength(context.engine, scopeEntryIndex, total);
+    if (scopeEntryIndex !== -1) union |= getReachableTypeMaskAtLength(context.engine, scopeEntryIndex, total);
     union |= getExactTypeMask(context.engine, context.endState, regionIndex, total);
   });
   return union;
@@ -292,7 +289,6 @@ function uniqueConcreteTerminalRegionAt(context: ResolveContext, state: number, 
 
     const generalDescPosition: number = getRegionTypeCount(context.engine, regionIndex) - 1;
     let mask: number = getScopeTerminalTypeMask(context.engine, scopeEntryIndex) & ~(1 << generalDescPosition);
-    const scopeTypeMask: number = getScopeNumberTypeMask(context.engine, scopeEntryIndex);
 
     let reachable = false;
     while (mask !== 0 && !reachable) {
@@ -301,8 +297,8 @@ function uniqueConcreteTerminalRegionAt(context: ResolveContext, state: number, 
 
       if (isTypeExcluded(context, regionIndex, typePosition)) continue;
 
-      const profileId: number = getScopeProfileId(context.engine, scopeEntryIndex, scopeTypeMask, typePosition);
-      if (totalDigits <= getMaxLength(getProfileLengthMask(context.engine, profileId))) reachable = true;
+      const profileId: number = getScopeTypeProfile(context.engine, scopeEntryIndex, typePosition);
+      if (totalDigits <= getMaxLength(getTypeProfileReachableLengthMask(context.engine, profileId))) reachable = true;
     }
     if (!reachable) return;
 

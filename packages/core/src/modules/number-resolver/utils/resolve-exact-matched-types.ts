@@ -1,10 +1,10 @@
 import {
   containsLength,
   getExactTypeMask,
-  getGeneralDescLengthMask,
+  getRegionPossibleLengthMask,
   getRegionTypeCount,
   getRegionTypeId,
-  getRegionTypeLengthMask,
+  getRegionTypePossibleLengthMask,
 } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
@@ -34,7 +34,7 @@ export function resolveExactMatchedTypeIdMask(
   const generalDescPosition: number = typeCount - 1;
   const exactMask: number = getExactTypeMask(engine, endState, regionIndex, nationalLength);
   if ((exactMask & (1 << generalDescPosition)) === 0) return 0;
-  if (!containsLength(getGeneralDescLengthMask(engine, regionIndex), nationalLength)) return 0;
+  if (!containsLength(getRegionPossibleLengthMask(engine, regionIndex), nationalLength)) return 0;
 
   let matchedTypeIdMask = 0;
   let mask: number = exactMask & ~(1 << generalDescPosition);
@@ -43,9 +43,11 @@ export function resolveExactMatchedTypeIdMask(
     mask &= mask - 1;
 
     if (numberTypeFilter && !isNumberTypeAllowed(numberTypeFilter, regionIndex, typePosition)) continue;
-    if (!containsLength(getRegionTypeLengthMask(engine, regionIndex, typePosition), nationalLength)) {
-      continue;
-    }
+    // A type without declared lengths inherits the region's general-desc lengths, as libphonenumber does.
+    const typeLengthMask: number =
+      getRegionTypePossibleLengthMask(engine, regionIndex, typePosition) ??
+      getRegionPossibleLengthMask(engine, regionIndex);
+    if (!containsLength(typeLengthMask, nationalLength)) continue;
 
     matchedTypeIdMask |= 1 << getRegionTypeId(engine, regionIndex, typePosition);
   }

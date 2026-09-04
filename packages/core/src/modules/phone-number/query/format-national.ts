@@ -1,7 +1,7 @@
 import {
   formatNumber,
+  getFormatIndex,
   getFormatPrefixRule,
-  getMetadataFormatIndex,
   getRegionNationalPrefix,
   MASK_VARIANT,
   RegionCode,
@@ -33,7 +33,7 @@ function formatNationalBase(resolved: ResolvedPhoneNumber): string | null {
   const formatPosition: number = selectNationalFormatIndex(callingCodeIndex, nationalDigits, false);
   if (formatPosition < 0) return nationalDigits;
 
-  const formatIndex: number = getMetadataFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
+  const formatIndex: number = getFormatIndex(resourceProvider.engine, callingCodeIndex, formatPosition);
   const usePrefixMasks: boolean =
     getFormatPrefixRule(resourceProvider.engine, formatIndex) !== undefined &&
     hasMaskVariant(formatIndex, MASK_VARIANT.NATIONAL_WITH_PREFIX);

@@ -86,7 +86,7 @@ jobs:
 
       # Broad per-push parity sample on top of the corpus and the case-coverage gate: one million distinct
       # numbers checked against Google. Runs after the artifact upload so its output stays off the
-      # dashboard. The full airtight proof (1,838,775,900 inputs) runs weekly in fuzz.yml.
+      # dashboard. The full airtight proof (1,847,667,900 inputs) runs weekly in fuzz.yml.
       - run: pnpm fuzz
         env:
           FUZZ_N: '1000000'

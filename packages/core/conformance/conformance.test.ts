@@ -116,7 +116,7 @@ describe('isValidForRegion vs Google isValidNumberForRegion', () => {
   });
 
   it('sweeps one number per engine case, covering the method domain exhaustively', () => {
-    expect(validForRegionCases.total).toBeGreaterThan(100_000);
+    expect(validForRegionCases.emptyCallingCodes).toEqual([]);
     expect(validForRegionCases.regionChecks).toBeGreaterThan(validForRegionCases.total);
   });
 });

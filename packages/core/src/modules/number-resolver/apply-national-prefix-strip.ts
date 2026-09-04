@@ -1,7 +1,7 @@
 import {
   containsLength,
   getMaxLength,
-  getStripFirstDigitMask,
+  getRegionStripFirstDigitMask,
   NationalPrefixRules,
   normalizeNationalNumber,
 } from '@telixon/core/engine';
@@ -33,7 +33,7 @@ export function stripNationalPrefix(
   const { engine } = getResourceProvider();
 
   // Quick reject: the first digit cannot start this territory's nationalPrefixForParsing.
-  const leadMask: number = getStripFirstDigitMask(engine, regionIndex);
+  const leadMask: number = getRegionStripFirstDigitMask(engine, regionIndex);
   if (((leadMask >>> (nationalDigits.charCodeAt(0) - 48)) & 1) === 0) return null;
 
   const prefixRules: NationalPrefixRules | undefined = getNationalPrefixRules(regionIndex);

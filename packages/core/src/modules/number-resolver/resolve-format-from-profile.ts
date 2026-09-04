@@ -1,4 +1,4 @@
-import { getProfileFormatMask, selectPartialFormat } from '@telixon/core/engine';
+import { getTypeProfileFormatMask, selectPartialFormat } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { ResourceProvider } from '@telixon/core/resource-provider/models';
 import { getCallingCodeIndexByRegionIndex } from '@telixon/core/utils/get-calling-code-index-by-region-index';
@@ -12,9 +12,9 @@ export function resolveFormatFromProfile(
   const resourceProvider: ResourceProvider = getResourceProvider();
 
   const callingCodeIndex: number = getCallingCodeIndexByRegionIndex(profileRef.regionIndex);
-  const formatMask: number = getProfileFormatMask(resourceProvider.engine, profileRef.numberTypeProfileId);
+  const formatMask: number = getTypeProfileFormatMask(resourceProvider.engine, profileRef.numberTypeProfileId);
 
-  // Position within the calling code's format list (getMetadataFormatIndex maps it to the global index).
+  // Position within the calling code's format list (getFormatIndex maps it to the global index).
   const formatIndex: number = selectPartialFormat(
     resourceProvider.engine,
     callingCodeIndex,

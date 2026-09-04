@@ -1,5 +1,5 @@
 import {
-  getMetadataRegionCallingCode,
+  getRegionCallingCode,
   getRegionTypeId,
   MetadataNumberType,
   normalizeNationalNumber,
@@ -30,7 +30,7 @@ function createNationalResolver(region: RegionCode, rawNationalDigits: string): 
   const prefixRules = getNationalPrefixRules(regionIndex)!;
   const { normalizedDigits } = normalizeNationalNumber(rawNationalDigits, prefixRules);
 
-  return createResolver(String(getMetadataRegionCallingCode(resourceProvider.engine, regionIndex)), normalizedDigits);
+  return createResolver(String(getRegionCallingCode(resourceProvider.engine, regionIndex)), normalizedDigits);
 }
 
 function resolveProfile(resolver: NumberResolver, preferredRegion?: RegionCode): NumberTypeProfileRef | null {

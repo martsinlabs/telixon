@@ -29,6 +29,8 @@ export interface ValidForRegionSweep {
   readonly rejectionAgreed: number;
   // Total (input, candidate region) pairs checked across the sweep.
   readonly regionChecks: number;
+  // Case sweep only: calling codes of the domain that contributed no number; must stay empty.
+  readonly emptyCallingCodes: readonly string[];
   readonly mismatches: readonly Mismatch[];
 }
 
@@ -73,6 +75,7 @@ interface SweepCounters {
   rejectedByGoogle: number;
   rejectionAgreed: number;
   regionChecks: number;
+  emptyCallingCodes: string[];
   mismatches: Mismatch[];
 }
 
@@ -84,6 +87,7 @@ function newCounters(): SweepCounters {
     rejectedByGoogle: 0,
     rejectionAgreed: 0,
     regionChecks: 0,
+    emptyCallingCodes: [],
     mismatches: [],
   };
 }
@@ -169,8 +173,12 @@ export function sweepValidForRegionCases(
 
   for (const callingCode of domain.callingCodes) {
     const candidates = candidatesByCode.get(callingCode);
-    if (!candidates) continue;
-    const numbers = buildCaseCoverage(engine, [callingCode], minLength, maxLength);
+    const numbers = candidates === undefined ? [] : buildCaseCoverage(engine, [callingCode], minLength, maxLength);
+    if (candidates === undefined || numbers.length === 0) {
+      // A domain calling code the sweep cannot cover is a broken enumeration, never a smaller domain.
+      counters.emptyCallingCodes.push(callingCode);
+      continue;
+    }
     for (const input of numbers) {
       compareOne(oracle, counters, 'valid-for-region-case', callingCode, input, undefined, candidates);
     }

@@ -1,22 +1,17 @@
 /**
  * @public
- * Joins the collected layer parts (from {@link parseModuleLayers}) into the runtime {@link Engine}.
- * The four core slices snap back into `core`; the rest map straight across. Throws if a layer is
- * missing.
+ * Joins the collected layer parts (from {@link parseModuleLayers}) into the runtime {@link Engine}:
+ * stamps the state flags. Throws if a layer is missing. The parts may arrive in
+ * any order.
  */
 export declare function assembleEngine(parts: ReadonlyArray<Partial<EngineLayers>>): Engine;
 
 /**
  * @public
- * Per-state region data for the calling-code zone of the trie (the states spanning the calling-code
- * digits, before the national number). Built from the same trie + metadata; read via the accessors.
+ * Per-state region data of the calling-code zone (the states before the national number). Layer key
+ * `callingCodes`. Opaque: read it through the calling-code accessors.
  */
 export declare interface CallingCodeLayer {
-    stateRegionOffset: Uint16Array;
-    stateRegionCount: Uint8Array;
-    regionIndexPool: Uint8Array;
-    stateMainRegion: Uint8Array;
-    stateFlags: Uint8Array;
 }
 
 /**
@@ -27,19 +22,21 @@ export declare function containsLength(mask: number, length: number): boolean;
 
 /**
  * @public
- * The parsed engine: the walk/verdict/scope/exact `core` plus the calling-code, region-mask,
- * format-select, region-select, and metadata layers. Build it with {@link parseEngine} (all bytes at
- * once) or {@link parseModuleLayers} + {@link assembleEngine} (file by file), then read everything
- * through the accessors (they take this object as their first argument).
+ * The four walk layers.
  */
-export declare interface Engine {
-    core: EngineCore;
-    callingCode: CallingCodeLayer;
-    regionMasks: RegionMasksLayer;
-    formatSelect: FormatSelectLayer;
-    regionSelect: RegionSelectLayer;
-    metadata: MetadataTablesLayer;
+export declare interface CoreLayers {
+    trie: TrieLayer;
+    verdict: VerdictLayer;
+    scope: ScopeLayer;
+    exact: ExactLayer;
 }
+
+/**
+ * @public
+ * The runtime engine: the eight layers, assembled (state flags stamped). The layers are opaque;
+ * read the engine through the accessors, which take it as their first argument.
+ */
+export declare type Engine = EngineLayers;
 
 /**
  * @public
@@ -60,44 +57,8 @@ export declare const ENGINE_MODULES: ReadonlyArray<{
 
 /**
  * @public
- * The walk core of an {@link Engine}: transitions, per-state flags, verdicts, scope, and exact
- * acceptance. Reached as `engine.core`; read it through the accessors (`stepDigit`, `getVerdict`, …).
- *
- * Glossary (other layer docs rely on these terms):
- * - refMapping: index-to-key tables for regions, calling codes, and number types.
- * - bundle: a palette entry shared by every state with identical scope + verdict + exact payloads.
- * - profile: a state's id into the bundle palette.
- * - terminal prefix: a prefix that is itself a complete, accepted number (no further digits needed).
- * - group module: one of the four shipped `*.bin.js` modules, each packing several layers.
- */
-export declare interface EngineCore {
-    transitionWords: Uint32Array;
-    profile: Uint16Array;
-    bundleScopeOffset: Uint16Array;
-    scopeRegion: Uint8Array;
-    scopeNumberMask: Uint16Array;
-    scopeTerminalMask: Uint16Array;
-    scopeProfileStart: Uint16Array;
-    scopeLengthTypeVector: Uint16Array;
-    profileIds: Uint16Array;
-    formatMaskPool: Uint32Array;
-    lengthMaskPool: Uint32Array;
-    bundleExactList: Uint16Array;
-    bundleVerdictVector: Uint16Array;
-    bundleLengthsUnion: Uint32Array;
-    exactListOffset: Uint16Array;
-    exactRegion: Uint8Array;
-    exactVector: Uint16Array;
-    vectorOffset: Uint16Array;
-    vectorMasks: Uint32Array;
-    verdictVectors: Uint16Array;
-    lengthTypeVectors: Uint16Array;
-}
-
-/**
- * @public
- * Decompressed bytes of each engine layer, keyed by layer name (the keys are also the keys inside
- * the group modules). Pass it to {@link parseEngine} once you have decoded every layer.
+ * Decompressed bytes of each layer, keyed like {@link EngineLayers} (the keys are also the keys
+ * inside the group modules). Pass it to {@link parseEngine} once you have decoded every layer.
  */
 export declare interface EngineLayerBytes {
     trie: ArrayBuffer;
@@ -105,7 +66,6 @@ export declare interface EngineLayerBytes {
     scope: ArrayBuffer;
     exact: ArrayBuffer;
     callingCodes: ArrayBuffer;
-    regionMasks: ArrayBuffer;
     formatSelect: ArrayBuffer;
     regionSelect: ArrayBuffer;
     metadata: ArrayBuffer;
@@ -113,50 +73,45 @@ export declare interface EngineLayerBytes {
 
 /**
  * @public
- * The nine parsed layers, keyed by the same names the group modules use. The `core` is split across
- * four of them (`trie`, `verdict`, `scope`, `exact`); {@link assembleEngine} joins the four back into
- * one {@link Engine}. Each group module yields a few of these — {@link parseModuleLayers} returns the
- * subset a single module carries.
+ * The eight parsed layers, keyed by the names the group modules use. {@link parseModuleLayers}
+ * returns the subset one module carries; {@link assembleEngine} joins them into the {@link Engine}.
  */
-export declare interface EngineLayers {
-    trie: TrieSection;
-    verdict: VerdictSection;
-    scope: ScopeSection;
-    exact: ExactSection;
+export declare interface EngineLayers extends CoreLayers {
     callingCodes: CallingCodeLayer;
-    regionMasks: RegionMasksLayer;
     formatSelect: FormatSelectLayer;
     regionSelect: RegionSelectLayer;
-    metadata: MetadataTablesLayer;
+    metadata: MetadataLayer;
 }
 
 /**
  * @public
- * The slice of {@link EngineCore} carried in the `verdict.bin.js` module (layer key `exact`).
+ * Full-pattern acceptance per state, region, and type. Layer key `exact`. Opaque: read it through the exact
+ * accessors.
  */
-export declare type ExactSection = Pick<EngineCore, 'exactListOffset' | 'exactRegion' | 'exactVector' | 'vectorOffset' | 'vectorMasks'>;
+export declare interface ExactLayer {
+}
 
 /**
  * @public
- * Calling-code index for a value; -1 when unknown.
+ * Calling-code index of a value; -1 when unknown.
  */
-export declare function findMetadataCallingCode(engine: Engine, callingCode: number): number;
+export declare function findCallingCode(engine: Engine, callingCode: number): number;
 
 /**
  * @public
- * Region index for a two-letter id; -1 when unknown.
+ * Region index of a two-letter code; -1 when unknown.
  */
-export declare function findMetadataRegion(engine: Engine, regionCode: string): number;
+export declare function findRegion(engine: Engine, regionCode: string): number;
 
 /**
  * @public
- * Scope entry index for a region at a state, or -1 when the region is out of scope.
+ * Scope entry index of a region at a state, or -1 when the region is out of scope.
  */
 export declare function findScopeEntry(engine: Engine, state: number, regionIndex: number): number;
 
 /**
  * @public
- * Iterates regions with at least one exactly-matching type for the walk ending at `state`.
+ * Iterates the regions with at least one exactly accepting type for the walk ending at `state`.
  */
 export declare function forEachExactRegion(engine: Engine, state: number, nationalLength: number, callback: (regionIndex: number, exactTypeMask: number) => StopIteration): void;
 
@@ -168,7 +123,7 @@ export declare function forEachFormatIndex(mask: number, callback: (index: numbe
 
 /**
  * @public
- * Iterates a format variant's (totalLength, mask string) entries.
+ * Iterates a format variant's (totalLength, mask string) entries in ascending length. Cold path: allocates.
  */
 export declare function forEachFormatMask(engine: Engine, formatIndex: number, variant: number, callback: (totalLength: number, mask: string) => void): void;
 
@@ -192,7 +147,7 @@ export declare function forEachRegionInCallingCodeState(engine: Engine, state: n
 
 /**
  * @public
- * Iterates the state's scoped regions; the callback receives the scope entry index and region.
+ * Iterates the state's scope entries in walk order; the callback receives the entry index and region.
  */
 export declare function forEachScopeRegion(engine: Engine, state: number, callback: (scopeEntryIndex: number, regionIndex: number) => StopIteration): void;
 
@@ -200,7 +155,20 @@ export declare function forEachScopeRegion(engine: Engine, state: number, callba
  * @public
  * Formats a phone number according to the provided formatting context.
  */
-export declare function formatNumber(context: PhoneNumberFormattingContext, caretIndex?: number, direction?: FormattingDirection, collectDigitPositions?: boolean): FormattedWithCaret;
+export declare function formatNumber(context: PhoneNumberFormattingContext, options?: FormatNumberOptions): FormattedWithCaret;
+
+/**
+ * @public
+ * Options of {@link formatNumber}.
+ */
+export declare interface FormatNumberOptions {
+    /** Caret position in the national digits to remap into the formatted string; default 0. */
+    caretIndex?: number;
+    /** Default `forward`. */
+    direction?: FormattingDirection;
+    /** Also return `digitPositions`; default false (nothing allocated). */
+    collectDigitPositions?: boolean;
+}
 
 /**
  * @public
@@ -210,19 +178,10 @@ export declare function formatNumberWithRawCaret(context: PhoneNumberFormattingC
 
 /**
  * @public
- * Format-selection layer: picks the format index for a national number. Use the select accessors.
+ * Format selection data per calling code. Layer key `formatSelect`. Opaque: read it through
+ * `selectCompleteFormat` and `selectPartialFormat`.
  */
 export declare interface FormatSelectLayer {
-    callingCodeFormatStart: Uint32Array;
-    formatLengthMask: Uint32Array;
-    formatRangeLow: Uint8Array;
-    formatRangeHigh: Uint8Array;
-    formatFlags: Uint8Array;
-    callingCodeNodeRoot: Uint32Array;
-    nodeSatisfiedMask: Uint32Array;
-    nodeChildDigits: Uint16Array;
-    nodeChildOffset: Uint16Array;
-    childNode: Uint16Array;
 }
 
 /**
@@ -248,6 +207,12 @@ export declare type FormattingDirection = 'forward' | 'backward';
 
 /**
  * @public
+ * Calling code value at a calling-code index.
+ */
+export declare function getCallingCode(engine: Engine, callingCodeIndex: number): number;
+
+/**
+ * @public
  * Get primary region for calling code state.
  */
 export declare function getCallingCodeMainRegion(engine: Engine, state: number): number;
@@ -260,8 +225,8 @@ export declare function getCallingCodeStateRegions(engine: Engine, state: number
 
 /**
  * @public
- * Mask of types whose pattern exactly matches the number ending at `state` with `nationalLength`
- * national digits.
+ * Mask of a region's types whose full pattern accepts the number ending at `state` with
+ * `nationalLength` national digits.
  */
 export declare function getExactTypeMask(engine: Engine, state: number, regionIndex: number, nationalLength: number): number;
 
@@ -273,13 +238,31 @@ export declare function getFirstFormatIndex(mask: number): number;
 
 /**
  * @public
+ * Number of formats of a calling-code index.
+ */
+export declare function getFormatCount(engine: Engine, callingCodeIndex: number): number;
+
+/**
+ * @public
+ * Global format index of a format position under a calling-code index.
+ */
+export declare function getFormatIndex(engine: Engine, callingCodeIndex: number, formatPosition: number): number;
+
+/**
+ * @public
  * intlFormat of a format ("NA" preserved verbatim), or undefined.
  */
 export declare function getFormatIntlTemplate(engine: Engine, formatIndex: number): string | undefined;
 
 /**
  * @public
- * Mask string of a format variant for a total length, or undefined (see MASK_VARIANT).
+ * Total lengths (bit = length) a format's pattern accepts.
+ */
+export declare function getFormatLengthMask(engine: Engine, formatIndex: number): number;
+
+/**
+ * @public
+ * Mask string of a format variant for a total length, or undefined (see MASK_VARIANT). Cold path: allocates.
  */
 export declare function getFormatMask(engine: Engine, formatIndex: number, variant: number, totalLength: number): string | undefined;
 
@@ -297,118 +280,52 @@ export declare function getFormatTemplate(engine: Engine, formatIndex: number): 
 
 /**
  * @public
- * General-desc national length mask of a region (testNumberLength input).
- */
-export declare function getGeneralDescLengthMask(engine: Engine, regionIndex: number): number;
-
-/**
- * @public
- * General-desc local-only length mask of a region.
- */
-export declare function getGeneralDescLocalOnlyLengthMask(engine: Engine, regionIndex: number): number;
-
-/**
- * @public
  * Returns the maximum length encoded in the bitmask (position of highest set bit).
  */
 export declare function getMaxLength(mask: number): number;
 
 /**
  * @public
- * Calling code value at a calling-code index.
- */
-export declare function getMetadataCallingCodeByIndex(engine: Engine, callingCodeIndex: number): number;
-
-/**
- * @public
- * Number of formats of a calling-code index.
- */
-export declare function getMetadataFormatCount(engine: Engine, callingCodeIndex: number): number;
-
-/**
- * @public
- * Global format index for a calling-code index and local position.
- */
-export declare function getMetadataFormatIndex(engine: Engine, callingCodeIndex: number, formatPosition: number): number;
-
-/**
- * @public
  * Name of a refMapping number-type index. Cold path: allocates.
  */
-export declare function getMetadataNumberTypeName(engine: Engine, typeId: number): string;
+export declare function getNumberTypeName(engine: Engine, typeId: number): string;
 
 /**
  * @public
  * Placeholders: digit, ignored digit, national prefix.
  */
-export declare function getMetadataPlaceholders(engine: Engine): [string, string, string];
+export declare function getPlaceholders(engine: Engine): [string, string, string];
+
+/**
+ * @public
+ * Union of the total lengths reachable from the state over every region and type still in play
+ * (ancestor terminals included). Mask with `~((1 << consumed) - 1)` for the still-reachable set.
+ */
+export declare function getReachableLengthMask(engine: Engine, state: number): number;
+
+/**
+ * @public
+ * Mask of a scope entry's types that can still total `totalLength` from the state; lowest set bit wins.
+ */
+export declare function getReachableTypeMaskAtLength(engine: Engine, scopeEntryIndex: number, totalLength: number): number;
 
 /**
  * @public
  * Calling code of a region.
  */
-export declare function getMetadataRegionCallingCode(engine: Engine, regionIndex: number): number;
+export declare function getRegionCallingCode(engine: Engine, regionIndex: number): number;
 
 /**
  * @public
  * Two-letter region code. Cold path: allocates.
  */
-export declare function getMetadataRegionCode(engine: Engine, regionIndex: number): string;
+export declare function getRegionCode(engine: Engine, regionIndex: number): string;
 
 /**
  * @public
- * Number of regions in the tables.
+ * Number of regions.
  */
-export declare function getMetadataRegionCount(engine: Engine): number;
-
-/**
- * @public
- * Number of type positions of a region.
- */
-export declare function getMetadataTypeCount(engine: Engine, regionIndex: number): number;
-
-/**
- * @public
- * Example number of a type position as a digit string, or undefined. Cold path: allocates.
- */
-export declare function getMetadataTypeExample(engine: Engine, regionIndex: number, typePosition: number): string | undefined;
-
-/**
- * @public
- * refMapping number-type index at a region's type position.
- */
-export declare function getMetadataTypeId(engine: Engine, regionIndex: number, typePosition: number): number;
-
-/**
- * @public
- * Local-only length mask of a type position; 0 = absent.
- */
-export declare function getMetadataTypeLocalOnlyMask(engine: Engine, regionIndex: number, typePosition: number): number;
-
-/**
- * @public
- * National length mask of a type position; undefined when the entry has no possibleLengths.
- */
-export declare function getMetadataTypeNationalMask(engine: Engine, regionIndex: number, typePosition: number): number | undefined;
-
-/**
- * @public
- * Format bitmask of a profile id.
- */
-export declare function getProfileFormatMask(engine: Engine, profileId: number): number;
-
-/**
- * @public
- * Length bitmask of a profile id.
- */
-export declare function getProfileLengthMask(engine: Engine, profileId: number): number;
-
-/**
- * @public
- * Union of total lengths reachable from the state; mask with `~((1 << consumed) - 1)` for the
- * still-reachable set.
- */
-export declare function getReachableLengthMask(engine: Engine, state: number): number;
+export declare function getRegionCount(engine: Engine): number;
 
 /**
  * @public
@@ -430,6 +347,18 @@ export declare function getRegionNationalPrefix(engine: Engine, regionIndex: num
 
 /**
  * @public
+ * National lengths (bit = length) the region declares: the general-desc mask, the union of its types.
+ */
+export declare function getRegionPossibleLengthMask(engine: Engine, regionIndex: number): number;
+
+/**
+ * @public
+ * Local-only lengths (bit = length) the region declares; 0 = none.
+ */
+export declare function getRegionPossibleLocalOnlyLengthMask(engine: Engine, regionIndex: number): number;
+
+/**
+ * @public
  * preferredExtnPrefix of a region (the prefix its numbers write before an extension), or undefined.
  */
 export declare function getRegionPreferredExtnPrefix(engine: Engine, regionIndex: number): string | undefined;
@@ -448,15 +377,28 @@ export declare function getRegionPrefixForParsing(engine: Engine, regionIndex: n
 
 /**
  * @public
+ * 10-bit mask of first national digits that can start the region's national-prefix pattern.
+ * Zero means the region never strips; consult before touching the rewrite regex.
+ */
+export declare function getRegionStripFirstDigitMask(engine: Engine, regionIndex: number): number;
+
+/**
+ * @public
  * nationalPrefixTransformRule of a region, or undefined.
  */
 export declare function getRegionTransformRule(engine: Engine, regionIndex: number): string | undefined;
 
 /**
  * @public
- * Number of type positions of a region (mirrors the territory's `numberTypes` order).
+ * Number of type positions of a region.
  */
 export declare function getRegionTypeCount(engine: Engine, regionIndex: number): number;
+
+/**
+ * @public
+ * Example number of a type position as a digit string, or undefined. Cold path: allocates.
+ */
+export declare function getRegionTypeExample(engine: Engine, regionIndex: number, typePosition: number): string | undefined;
 
 /**
  * @public
@@ -466,58 +408,51 @@ export declare function getRegionTypeId(engine: Engine, regionIndex: number, typ
 
 /**
  * @public
- * National length mask at a region's type position.
+ * National lengths (bit = length) a type position declares; undefined when the entry declares none.
  */
-export declare function getRegionTypeLengthMask(engine: Engine, regionIndex: number, typePosition: number): number;
+export declare function getRegionTypePossibleLengthMask(engine: Engine, regionIndex: number, typePosition: number): number | undefined;
 
 /**
  * @public
- * Territory-level local-only length mask; 0 = absent.
+ * Local-only lengths (bit = length) a type position declares; 0 = none.
  */
-export declare function getRegionUnionLocalOnlyMask(engine: Engine, regionIndex: number): number;
+export declare function getRegionTypePossibleLocalOnlyLengthMask(engine: Engine, regionIndex: number, typePosition: number): number;
 
 /**
  * @public
- * Territory-level national length mask.
- */
-export declare function getRegionUnionNationalMask(engine: Engine, regionIndex: number): number;
-
-/**
- * @public
- * Number type mask of a scope entry (selection-priority bit order: lowest set bit wins).
- */
-export declare function getScopeNumberTypeMask(engine: Engine, scopeEntryIndex: number): number;
-
-/**
- * @public
- * Profile id for a set type-mask bit of a scope entry.
- */
-export declare function getScopeProfileId(engine: Engine, scopeEntryIndex: number, typeMask: number, typeIndex: number): number;
-
-/**
- * @public
- * Terminal-prefix type mask of a scope entry.
+ * Mask of the scope entry's types that have a terminal prefix at the state.
  */
 export declare function getScopeTerminalTypeMask(engine: Engine, scopeEntryIndex: number): number;
 
 /**
  * @public
- * State flags; test with the STATE_FLAG_* masks.
+ * Type mask of a scope entry (selection-priority bit order: lowest set bit wins).
+ */
+export declare function getScopeTypeMask(engine: Engine, scopeEntryIndex: number): number;
+
+/**
+ * @public
+ * Type profile id of one type of a scope entry; the type must be set in the entry's type mask.
+ */
+export declare function getScopeTypeProfile(engine: Engine, scopeEntryIndex: number, typeIndex: number): number;
+
+/**
+ * @public
+ * The state's flag word; test it with the STATE_FLAG_* masks.
  */
 export declare function getStateFlags(engine: Engine, state: number): number;
 
 /**
  * @public
- * 10-bit mask of first national digits that can start the region's national-prefix pattern.
- * Zero means the region never strips; consult before touching the rewrite regex.
+ * Formats (bit = format position under the calling code) a type profile can still use.
  */
-export declare function getStripFirstDigitMask(engine: Engine, regionIndex: number): number;
+export declare function getTypeProfileFormatMask(engine: Engine, typeProfile: number): number;
 
 /**
  * @public
- * Mask of a scope entry's types whose possible totals include `totalLength`; lowest set bit wins.
+ * Total lengths (bit = length) a type profile can still reach from the state.
  */
-export declare function getTypeMaskAtLength(engine: Engine, scopeEntryIndex: number, totalLength: number): number;
+export declare function getTypeProfileReachableLengthMask(engine: Engine, typeProfile: number): number;
 
 /**
  * @public
@@ -540,7 +475,7 @@ export declare function hasRegionInCallingCodeState(engine: Engine, state: numbe
 
 /**
  * @public
- * Terminal-prefix flag of the state.
+ * A terminal prefix lies exactly at the state.
  */
 export declare function hasTerminalPrefix(engine: Engine, state: number): boolean;
 
@@ -576,7 +511,7 @@ export declare function isInCallingCode(engine: Engine, state: number): boolean;
 
 /**
  * @public
- * Regex-free `matchesLeadingDigits`: true when the territory's leadingDigits prefix-matches the
+ * Google `matchesLeadingDigits` semantics: true when the territory's leadingDigits prefix-matches the
  * national digits. Returns false when the region has no leadingDigits for this calling code.
  * `callingCodeIndex` must be valid and `nationalDigits` ASCII digits with no prefix.
  */
@@ -590,7 +525,7 @@ export declare type IsViableNationalNumber = (nationalDigits: string) => boolean
 
 /**
  * @public
- * Mask variants, in formatMaskStart order.
+ * Mask variants of a format.
  */
 export declare const MASK_VARIANT: Readonly<{
     readonly NATIONAL: 0;
@@ -600,48 +535,17 @@ export declare const MASK_VARIANT: Readonly<{
 
 /**
  * @public
- * Subset of {@link NumberType} mapping 1:1 to XML metadata elements (drops runtime-only types, adds `GENERAL_DESC`).
+ * The shipped metadata (territories, formats, reference mapping). Layer key `metadata`. Opaque: read it
+ * through the metadata accessors (string accessors allocate and are cold-path by design).
  */
-export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBILE' | 'UNKNOWN'> | 'GENERAL_DESC';
+export declare interface MetadataLayer {
+}
 
 /**
  * @public
- * The shipped metadata (territories, formats, reference mapping). Read through the accessors;
- * string accessors allocate and are cold-path by design.
+ * Subset of {@link NumberType} mapping 1:1 to XML metadata elements (drops runtime-only types, adds `GENERAL_DESC`).
  */
-export declare interface MetadataTablesLayer {
-    poolOffsets: Uint16Array;
-    poolBytes: Uint8Array;
-    regionCodeChars: Uint8Array;
-    regionCallingCode: Uint16Array;
-    regionNationalPrefixRef: Uint16Array;
-    regionPrefixForParsingRef: Uint16Array;
-    regionTransformRuleRef: Uint16Array;
-    regionLeadingDigitsRef: Uint16Array;
-    regionInternationalPrefixRef: Uint16Array;
-    regionPreferredInternationalPrefixRef: Uint16Array;
-    regionPreferredExtnPrefixRef: Uint16Array;
-    regionUnionNational: Uint32Array;
-    regionUnionLocalOnly: Uint32Array;
-    regionTypeOffset: Uint16Array;
-    typeIds: Uint8Array;
-    typeNationalMasks: Uint32Array;
-    typeLocalOnlyMasks: Uint32Array;
-    typeExampleRef: Uint16Array;
-    exampleOffsets: Uint16Array;
-    exampleNibbles: Uint8Array;
-    callingCodeFormatStart: Uint16Array;
-    formatTemplateRef: Uint16Array;
-    formatIntlRef: Uint16Array;
-    formatPrefixRuleRef: Uint16Array;
-    formatFlags: Uint8Array;
-    formatMaskStart: Uint16Array;
-    maskEntryLength: Uint8Array;
-    maskEntryRef: Uint16Array;
-    callingCodes: Uint16Array;
-    numberTypeNameRefs: Uint16Array;
-    placeholderChars: Uint8Array;
-}
+export declare type MetadataNumberType = Exclude<NumberType, 'FIXED_LINE_OR_MOBILE' | 'UNKNOWN'> | 'GENERAL_DESC';
 
 /**
  * @public
@@ -675,7 +579,20 @@ export declare interface NormalizedNationalNumber {
  * Normalizes national digits and remaps the caret, returning parse and display views.
  * When `isViable` is given, a viable number is never stripped into a non-viable one.
  */
-export declare function normalizeNationalNumber(digits: string, rules: NationalPrefixRules, caretIndex?: number, isViable?: IsViableNationalNumber, collectDisplayBoundaries?: boolean): NormalizedNationalNumber;
+export declare function normalizeNationalNumber(digits: string, rules: NationalPrefixRules, options?: NormalizeNationalNumberOptions): NormalizedNationalNumber;
+
+/**
+ * @public
+ * Options of {@link normalizeNationalNumber}.
+ */
+export declare interface NormalizeNationalNumberOptions {
+    /** Caret position in the typed digits to remap; default 0. */
+    caretIndex?: number;
+    /** Strip guard: a viable number is never stripped into a non-viable one. */
+    isViable?: IsViableNationalNumber;
+    /** Also return `displayCaretByTyped`, the display caret of every typed boundary; default false. */
+    collectDisplayBoundaries?: boolean;
+}
 
 /**
  * @public
@@ -726,49 +643,31 @@ export declare type RegionCode = (typeof REGION_CODES)[number];
 
 /**
  * @public
- * Flat per-region tables: general-desc length masks, type length masks, and the strip
- * quick-reject mask. Read through the accessors.
- */
-export declare interface RegionMasksLayer {
-    generalDescNationalMask: Uint32Array;
-    generalDescLocalOnlyMask: Uint32Array;
-    stripFirstDigitMask: Uint16Array;
-    regionTypeOffset: Uint16Array;
-    typeIds: Uint8Array;
-    typeLengthMasks: Uint32Array;
-}
-
-/**
- * @public
- * Region-disambiguation layer for shared calling codes. Use the select accessors.
+ * Region disambiguation data for shared calling codes. Layer key `regionSelect`. Opaque: read it through
+ * `isRegionLeadingDigitsSatisfied`.
  */
 export declare interface RegionSelectLayer {
-    callingCodeSlotStart: Uint32Array;
-    slotRegion: Uint16Array;
-    callingCodeNodeRoot: Uint32Array;
-    nodeSatisfiedMask: Uint32Array;
-    nodeChildDigits: Uint16Array;
-    nodeChildOffset: Uint16Array;
-    childNode: Uint16Array;
 }
 
 /**
  * @public
- * The slice of {@link EngineCore} carried in the `scope.bin.js` module (layer key `scope`).
+ * Regions in scope per state, with their type masks and type profiles. Layer key `scope`. Opaque: read it
+ * through the scope accessors.
  */
-export declare type ScopeSection = Pick<EngineCore, 'bundleScopeOffset' | 'scopeRegion' | 'scopeNumberMask' | 'scopeTerminalMask' | 'scopeProfileStart' | 'profileIds' | 'formatMaskPool' | 'lengthMaskPool' | 'bundleExactList'>;
+export declare interface ScopeLayer {
+}
 
 /**
  * @public
- * Regex-free format selection for a complete national number: the first format (array order) whose
- * leadingDigits is satisfied and whose pattern matches the full length. `callingCode` must be a
- * valid index and `nationalDigits` ASCII digits with no prefix.
+ * Format selection for a complete national number: the first format (array order) whose
+ * leadingDigits is satisfied and whose pattern accepts the full length. `callingCodeIndex` must be
+ * valid and `nationalDigits` ASCII digits with no prefix.
  */
-export declare function selectCompleteFormat(engine: Engine, callingCode: number, nationalDigits: string): SelectedFormat;
+export declare function selectCompleteFormat(engine: Engine, callingCodeIndex: number, nationalDigits: string): SelectedFormat;
 
 /**
  * @public
- * Chosen national and international format indices into `formatsTable[callingCode]` (`-1` = none).
+ * Chosen national and international format positions under the calling code (`-1` = none).
  */
 export declare interface SelectedFormat {
     national: number;
@@ -777,11 +676,11 @@ export declare interface SelectedFormat {
 
 /**
  * @public
- * Regex-free format selection while typing. The national choice is scoped by `profileFormatMask`
- * (from `getFormatMask`); both choices use the upper length bound only. `callingCode` must be a
- * valid index and `nationalDigits` ASCII digits with no prefix.
+ * Format selection while typing. The national choice is scoped by
+ * `typeProfileFormatMask` (from `getTypeProfileFormatMask`); both choices use the upper length
+ * bound only. `callingCodeIndex` must be valid and `nationalDigits` ASCII digits with no prefix.
  */
-export declare function selectPartialFormat(engine: Engine, callingCode: number, nationalDigits: string, profileFormatMask: number): SelectedFormat;
+export declare function selectPartialFormat(engine: Engine, callingCodeIndex: number, nationalDigits: string, typeProfileFormatMask: number): SelectedFormat;
 
 /**
  * @public
@@ -799,7 +698,7 @@ export declare const STATE_FLAG_CALLING_CODE_COMPLETE: number;
  * @public
  * Flag bit: the state carries exact-acceptance entries.
  */
-export declare const STATE_FLAG_HAS_EXACT: number;
+export declare const STATE_FLAG_HAS_EXACT_MATCH: number;
 
 /**
  * @public
@@ -833,9 +732,10 @@ export declare function toNumberTypes(metadataTypes: readonly MetadataNumberType
 
 /**
  * @public
- * The slice of {@link EngineCore} carried in the `walk.bin.js` module (layer key `trie`).
+ * Per-state walk data. Layer key `trie`. Opaque: read it through `stepDigit` and the flag accessors.
  */
-export declare type TrieSection = Pick<EngineCore, 'transitionWords' | 'profile'>;
+export declare interface TrieLayer {
+}
 
 /**
  * @public
@@ -851,9 +751,15 @@ export declare const VERDICT_NONE = 4095;
 
 /**
  * @public
- * Verdict number-type id for the FIXED_LINE + MOBILE fold.
+ * Region value of a verdict that resolved no region.
  */
-export declare const VERDICT_TYPE_FIXED_LINE_OR_MOBILE = 11;
+export declare const VERDICT_REGION_NONE = 255;
+
+/**
+ * @public
+ * Verdict number-type id for the FIXED_LINE + MOBILE fold; distinct from every refMapping type index.
+ */
+export declare const VERDICT_TYPE_FIXED_LINE_OR_MOBILE = 14;
 
 /**
  * @public
@@ -881,19 +787,20 @@ export declare function verdictIsValid(verdict: number): boolean;
 
 /**
  * @public
- * Region index of a verdict; 255 = no region.
+ * Verdict records per state and national length. Layer key `verdict`. Opaque: read it through `getVerdict`.
+ */
+export declare interface VerdictLayer {
+}
+
+/**
+ * @public
+ * Region index of a verdict; VERDICT_REGION_NONE when no region resolved.
  */
 export declare function verdictRegion(verdict: number): number;
 
 /**
  * @public
- * The slice of {@link EngineCore} carried in the `verdict.bin.js` module (layer key `verdict`).
- */
-export declare type VerdictSection = Pick<EngineCore, 'bundleVerdictVector' | 'bundleLengthsUnion' | 'scopeLengthTypeVector' | 'verdictVectors' | 'lengthTypeVectors'>;
-
-/**
- * @public
- * Number type id of a verdict (refMapping index, 11 = FIXED_LINE_OR_MOBILE, 15 = UNKNOWN).
+ * Number type id of a verdict: a refMapping index, VERDICT_TYPE_FIXED_LINE_OR_MOBILE, or VERDICT_TYPE_UNKNOWN.
  */
 export declare function verdictType(verdict: number): number;
 

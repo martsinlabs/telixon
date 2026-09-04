@@ -1,10 +1,10 @@
 import {
+  getFormatCount,
+  getFormatIndex,
   getFormatIntlTemplate,
-  getMetadataFormatCount,
-  getMetadataFormatIndex,
-  getMetadataTypeCount,
-  getMetadataTypeExample,
-  getMetadataTypeId,
+  getRegionTypeCount,
+  getRegionTypeExample,
+  getRegionTypeId,
   NumberType,
   RegionCode,
   selectCompleteFormat,
@@ -19,9 +19,9 @@ export type { Placeholders };
 // True when any of the calling code's formats can render internationally ('NA' marks an explicit absence).
 function hasInternationalFormat(callingCodeIndex: number): boolean {
   const tables = getResourceProvider().engine;
-  const formatCount: number = getMetadataFormatCount(tables, callingCodeIndex);
+  const formatCount: number = getFormatCount(tables, callingCodeIndex);
   for (let formatPosition = 0; formatPosition < formatCount; formatPosition++) {
-    const formatIndex: number = getMetadataFormatIndex(tables, callingCodeIndex, formatPosition);
+    const formatIndex: number = getFormatIndex(tables, callingCodeIndex, formatPosition);
     if (getFormatIntlTemplate(tables, formatIndex) !== 'NA') return true;
   }
   return false;
@@ -42,20 +42,20 @@ export function getPlaceholders(region: RegionCode, type: NumberType): Placehold
     const typeId: number = resourceProvider.numberTypeNames.indexOf(metadataType);
     if (typeId < 0) continue;
 
-    const typeCount: number = getMetadataTypeCount(tables, regionIndex);
+    const typeCount: number = getRegionTypeCount(tables, regionIndex);
     for (let typePosition = 0; typePosition < typeCount; typePosition++) {
-      if (getMetadataTypeId(tables, regionIndex, typePosition) !== typeId) continue;
-      const exampleNsn: string | undefined = getMetadataTypeExample(tables, regionIndex, typePosition);
+      if (getRegionTypeId(tables, regionIndex, typePosition) !== typeId) continue;
+      const exampleNsn: string | undefined = getRegionTypeExample(tables, regionIndex, typePosition);
       if (exampleNsn === undefined) continue;
 
       const selected = selectCompleteFormat(resourceProvider.engine, callingCodeIndex, exampleNsn);
       const nationalFormatIndex: number =
-        selected.national === -1 ? -1 : getMetadataFormatIndex(tables, callingCodeIndex, selected.national);
+        selected.national === -1 ? -1 : getFormatIndex(tables, callingCodeIndex, selected.national);
       const internationalPosition: number = hasInternationalFormat(callingCodeIndex)
         ? selected.international
         : selected.national;
       const internationalFormatIndex: number =
-        internationalPosition === -1 ? -1 : getMetadataFormatIndex(tables, callingCodeIndex, internationalPosition);
+        internationalPosition === -1 ? -1 : getFormatIndex(tables, callingCodeIndex, internationalPosition);
 
       const placeholders: Placeholders | null = buildExamplePlaceholders(
         exampleNsn,

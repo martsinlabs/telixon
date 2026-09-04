@@ -1,9 +1,4 @@
-import {
-  getMetadataRegionCallingCode,
-  MetadataNumberType,
-  NumberType,
-  VERDICT_LENGTH_COUNT,
-} from '@telixon/core/engine';
+import { getRegionCallingCode, MetadataNumberType, NumberType, VERDICT_LENGTH_COUNT } from '@telixon/core/engine';
 import { getResourceProvider } from '@telixon/core/resource-provider';
 import { resolveExactMatchedTypeIdMask } from '../../number-resolver/utils/resolve-exact-matched-types';
 import { ResolvedPhoneNumber } from '../models';
@@ -38,10 +33,7 @@ export function numberTypeForRegion(
   const { endState, nationalDigits, callingCode, regionFilter, numberTypeFilter } = resolved;
   const resourceProvider = getResourceProvider();
 
-  if (
-    callingCode === '' ||
-    Number(callingCode) !== getMetadataRegionCallingCode(resourceProvider.engine, regionIndex)
-  ) {
+  if (callingCode === '' || Number(callingCode) !== getRegionCallingCode(resourceProvider.engine, regionIndex)) {
     return null;
   }
   if (regionFilter && regionFilter[regionIndex] === 0) return null;
