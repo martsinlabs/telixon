@@ -1,8 +1,8 @@
 /**
  * @public
  * Joins the collected layer parts (from {@link parseModuleLayers}) into the runtime {@link Engine}:
- * stamps the state flags. Throws if a layer is missing. The parts may arrive in
- * any order.
+ * completes the walk layer (state flags included) and derives the reachable tables. Throws if a layer
+ * is missing. The parts may arrive in any order.
  */
 export declare function assembleEngine(parts: ReadonlyArray<Partial<EngineLayers>>): Engine;
 
@@ -33,10 +33,13 @@ export declare interface CoreLayers {
 
 /**
  * @public
- * The runtime engine: the eight layers, assembled (state flags stamped). The layers are opaque;
- * read the engine through the accessors, which take it as their first argument.
+ * The runtime engine: the eight layers, assembled (state flags stamped), plus the derived `reachable`
+ * tables. The layers are opaque; read the engine through the accessors, which take it as their first
+ * argument.
  */
-export declare type Engine = EngineLayers;
+export declare interface Engine extends EngineLayers {
+    reachable: ReachableLayer;
+}
 
 /**
  * @public
@@ -627,6 +630,20 @@ export declare interface PhoneNumberFormattingContext {
     nationalPrefixPlaceholder: string;
     ignoredDigitPlaceholder: string;
     nationalPrefix?: string;
+}
+
+/**
+ * @public
+ * Reachable type masks cover total lengths 0..REACHABLE_LENGTH_COUNT-1; longer totals are unreachable.
+ */
+export declare const REACHABLE_LENGTH_COUNT = 20;
+
+/**
+ * @public
+ * Reachable totals per state and per scope entry, derived on assembly (never shipped). Layer key
+ * `reachable`. Opaque: read it through `getReachableLengthMask` and `getReachableTypeMaskAtLength`.
+ */
+export declare interface ReachableLayer {
 }
 
 /**
