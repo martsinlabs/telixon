@@ -13,7 +13,15 @@
     "numberTypes": 11
   },
   "validation": {
-    "passedAt": "2026-09-04T21:17:39.627Z"
+    "passedAt": "2026-09-05T04:09:22.484Z"
   },
-  "builtAt": "2026-09-04T21:17:39.627Z"
+  "builtAt": "2026-09-05T04:09:22.484Z",
+  "artifacts": {
+    "index.js": "c1f95adc9dfe74455ecd235fbd55f8f3176476443832c28c817c45f1872058f5",
+    "index.d.ts": "f83192de6449e5ea5ec7697096dfe4ea310e6b0d9e8bb1edfb83d86b50943e38",
+    "embedded/walk.bin.js": "c1d133791d71fcb83832d23d98009b7124a24fc8abaf2e72ef3ff532c8ddf5a4",
+    "embedded/verdict.bin.js": "93a62e4ca5adcf7e4d3caedb682e36fc81ea7f9a7c38e036cdcaec666a905aeb",
+    "embedded/scope.bin.js": "184cd8de2a533c27b9c24d7559eac07fd6b07e45afba58856da57f39a0e47a7b",
+    "embedded/metadata.bin.js": "3eabaa8f3b67fe9d0364350c5aa948f0f49be4337758fa31f34b1cebafd49e60"
+  }
 }
