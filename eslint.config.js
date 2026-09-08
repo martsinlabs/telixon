@@ -29,7 +29,7 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.{mjs,js}', '**/*.config.{mjs,js}'],
+    files: ['**/scripts/**/*.{mjs,js}', '**/*.config.{mjs,js}'],
     languageOptions: {
       globals: {
         console: 'readonly',

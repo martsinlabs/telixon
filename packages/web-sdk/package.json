@@ -1,7 +1,7 @@
 {
   "name": "@telixon/web-sdk",
   "version": "1.0.1",
-  "description": "DOM adapter for @telixon/core: two headless widgets, PhoneInput driving a plain <input> and RegionList feeding region pickers.",
+  "description": "DOM adapter for @telixon/core: PhoneInput driving a plain <input>, RegionList feeding region pickers, and a flag sprite for every region.",
   "keywords": [
     "phone-input",
     "phone-number",
@@ -21,23 +21,35 @@
   },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./flags": {
+      "types": "./dist/flags/index.d.ts",
+      "default": "./dist/flags/index.js"
+    },
+    "./flags/flags.css": "./dist/flags/flags.css",
+    "./flags/sprite.png": "./dist/flags/sprite.png",
+    "./flags/sprite@2x.png": "./dist/flags/sprite@2x.png"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && pnpm run copy:flags",
+    "build:flags": "node scripts/build-flag-sprite.mjs",
+    "copy:flags": "cpy \"src/flags/assets/*\" dist/flags",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
