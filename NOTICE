@@ -5,3 +5,7 @@ This product includes phone numbering metadata and rules derived from
 Google's libphonenumber (https://github.com/google/libphonenumber),
 licensed under the Apache License, Version 2.0. The exact upstream commit
 is pinned in packages/core/src/engine/PROVENANCE.json.
+
+The flag sprite shipped by @telixon/web-sdk is rendered from the flag
+artwork of flag-icons (https://github.com/lipis/flag-icons), licensed
+under the MIT License; the full notice is in packages/web-sdk/NOTICE.

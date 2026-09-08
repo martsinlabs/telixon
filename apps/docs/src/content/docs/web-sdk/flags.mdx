@@ -1,0 +1,100 @@
+---
+title: Flag sprite
+description: One sprite sheet with a flag for every engine region, selected through a translate offset.
+---
+
+`@telixon/web-sdk/flags` ships a sprite sheet, at 1x and 2x, with a flag for every region the
+engine knows plus a neutral cell for an unresolved region. Emoji flags render as two letters on
+Windows. The sheet renders the same everywhere. [`flagTransform`](#flagtransform) returns the
+`translate` that brings one region's cell into view.
+
+## Markup
+
+```html
+<span class="tlx-flag" aria-hidden="true">
+  <span class="tlx-flag__image"></span>
+</span>
+```
+
+```ts
+import '@telixon/web-sdk/flags/flags.css';
+import { flagTransform } from '@telixon/web-sdk/flags';
+
+const image = document.querySelector<HTMLElement>('.tlx-flag__image')!;
+image.style.transform = flagTransform('US'); // 'translate(-18.75%, -87.5%)'
+```
+
+The outer element is the cell and the inner one is the sheet. The flag is decorative. The region's
+name belongs in text next to it.
+
+## Stylesheet
+
+`@telixon/web-sdk/flags/flags.css` defines both classes and carries the sheet.
+
+`.tlx-flag` is the cell, an inline block `1.5em` wide with a `4 / 3` aspect ratio and
+`overflow: hidden`. Set its `width` to size the flag. A `border-radius` or a border belongs here.
+
+`.tlx-flag__image` is the sheet, `1600%` by `1600%` of the cell, with `sprite.png` (512 by 384
+pixels) as its background and `sprite@2x.png` (1024 by 768 pixels) from `1.5dppx` up. It prints
+with background graphics switched off.
+
+Importing the stylesheet is the whole setup. Bundlers rebase its relative URLs from
+`node_modules`. Parcel needs `"@parcel/resolver-default": { "packageExports": true }` in the
+project's `package.json`. Bun inlines both sheets as `data:` URLs. Without a bundler, copy
+`node_modules/@telixon/web-sdk/dist/flags/` as one directory and link its `flags.css`. The sheets
+are also exported at `@telixon/web-sdk/flags/sprite.png` and `@telixon/web-sdk/flags/sprite@2x.png`.
+
+## flagOffset
+
+```ts
+function flagOffset(region: RegionCode | null): FlagOffset;
+
+type FlagOffset = {
+  readonly x: number;
+  readonly y: number;
+};
+```
+
+The translation, in percent of the sheet element's own size, that brings the region's cell to the
+container's origin. `null` and unknown codes resolve to the neutral cell. Repeated calls return the
+same frozen object.
+
+```ts
+flagOffset('CA'); // { x: -25, y: -12.5 }
+flagOffset(null); // { x: -31.25, y: -93.75 }
+```
+
+## flagTransform
+
+```ts
+function flagTransform(region: RegionCode | null): string;
+```
+
+The `translate(x%, y%)` value built from [`flagOffset`](#flagoffset).
+
+```ts
+flagTransform('GB'); // 'translate(-68.75%, -25%)'
+flagTransform(null); // 'translate(-31.25%, -93.75%)'
+```
+
+## In a RegionList
+
+The `dataFactory` of a [`RegionList`](/web-sdk/region-list/#regionlistoptions) carries the
+transform on every option:
+
+```ts
+import { createRegionList } from '@telixon/web-sdk';
+import { flagTransform } from '@telixon/web-sdk/flags';
+
+const regions = createRegionList({ dataFactory: ({ region }) => flagTransform(region) });
+
+regions.getState().options[0];
+// { region: 'AF', callingCode: '93', displayName: 'Afghanistan', data: 'translate(-18.75%, 0%)' }
+```
+
+## Artwork
+
+The cells are rendered from the 4:3 artwork of [flag-icons](https://github.com/lipis/flag-icons),
+distributed under the MIT License. The notice ships in the package's `NOTICE` file. A test asserts
+that the sheet order equals `REGION_CODES`.
+[`regionToFlagEmoji`](/web-sdk/region-list/#regiontoflagemoji) remains available for emoji.

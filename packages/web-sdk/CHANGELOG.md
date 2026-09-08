@@ -6,6 +6,13 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+### Added
+
+- `@telixon/web-sdk/flags` ships a flag sprite for every engine region plus a neutral cell,
+  rendered from flag-icons artwork at 1x and 2x. `flagOffset` and `flagTransform` return the
+  `translate` that shows one region's cell. `flags.css` sizes the `.tlx-flag` cell and carries the
+  sheet, with the 2x sheet under a resolution media query.
+
 ## [1.0.1] - 2026-08-28
 
 ### Fixed

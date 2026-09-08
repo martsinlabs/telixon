@@ -55,6 +55,23 @@ regions.search('united');
 regions.getState().options.map((option) => option.region); // ['US', 'GB', 'AE']
 ```
 
+`@telixon/web-sdk/flags` ships a sprite sheet with a flag for every region. A cell is two elements.
+The stylesheet carries the sheet:
+
+```html
+<span class="tlx-flag" aria-hidden="true"><span class="tlx-flag__image"></span></span>
+```
+
+The transform selects the region's cell:
+
+```ts
+import '@telixon/web-sdk/flags/flags.css';
+import { flagTransform } from '@telixon/web-sdk/flags';
+
+const image = document.querySelector<HTMLElement>('.tlx-flag__image')!;
+image.style.transform = flagTransform('US'); // 'translate(-18.75%, -87.5%)'
+```
+
 ## Highlights
 
 - **Full input controller.** Live formatting on every keystroke with a stable caret, across
