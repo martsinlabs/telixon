@@ -106,6 +106,8 @@ export type RegionList<T = undefined> = {
   subscribe(listener: RegionListListener<T>): () => void;
   /** Read the current state without subscribing. */
   getState(): RegionListState<T>;
+  /** The option for a region from the base set, regardless of the filters and the query. It is the same object that appears in `options`. `undefined` for a code the engine does not know. */
+  getOption(region: RegionCode): RegionOption<T> | undefined;
 
   /** Update the search query and re-run the filter pipeline. No-op when the query is unchanged. */
   search(query: string): void;

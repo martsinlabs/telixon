@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { REGION_CODES } from '@telixon/core';
+import { REGION_CODES, type RegionCode } from '@telixon/core';
 import { describe, expect, it, vi } from 'vitest';
 import type { RegionOption } from '../models';
 import { createRegionList } from '../region-list';
@@ -360,5 +360,54 @@ describe('createRegionList: subscribe and destroy', () => {
     list.search('any');
 
     expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe('createRegionList: getOption', () => {
+  it('returns the base-set option for a region, the same object rendered in options', () => {
+    const list = createRegionList();
+    const option = list.getOption('US');
+
+    expect(option?.region).toBe('US');
+    expect(option?.callingCode).toBe('1');
+    expect(list.getState().options).toContain(option);
+
+    list.destroy();
+  });
+
+  it('ignores the query and the filters', () => {
+    const list = createRegionList({ regionFilter: ['GB'], searchQuery: 'zzz' });
+
+    expect(list.getState().options).toEqual([]);
+    expect(list.getOption('US')?.region).toBe('US');
+
+    list.destroy();
+  });
+
+  it('returns undefined for a code the engine does not know', () => {
+    const list = createRegionList();
+
+    expect(list.getOption('ZZ' as RegionCode)).toBeUndefined();
+
+    list.destroy();
+  });
+
+  it('follows localize and refresh with the recomputed option', () => {
+    let calls = 0;
+    const list = createRegionList({ dataFactory: () => ++calls });
+    const before = list.getOption('US')!;
+
+    list.localize('fr');
+    const localized = list.getOption('US')!;
+    expect(localized).not.toBe(before);
+    expect(localized.displayName).toBe(new Intl.DisplayNames(['fr'], { type: 'region' }).of('US'));
+    expect(list.getState().options).toContain(localized);
+
+    list.refresh();
+    const refreshed = list.getOption('US')!;
+    expect(refreshed).not.toBe(localized);
+    expect(refreshed.data).toBeGreaterThan(localized.data);
+
+    list.destroy();
   });
 });

@@ -12,6 +12,7 @@ import type {
   RegionSearchFn,
 } from './models';
 import { computeBaseOptions } from './utils/base';
+import { getRegionIndex } from './utils/region-index';
 import { defaultSearch } from './utils/search';
 import { resolveRegionListComparator } from './utils/sort';
 
@@ -115,6 +116,11 @@ export function createRegionList<T = undefined>(options: RegionListOptions<T> = 
   return {
     getState(): RegionListState<T> {
       return buildState();
+    },
+
+    getOption(region: RegionCode): RegionOption<T> | undefined {
+      const index: number | undefined = getRegionIndex(region);
+      return index === undefined ? undefined : baseSet[index];
     },
 
     subscribe(listener: RegionListListener<T>): () => void {
