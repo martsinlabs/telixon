@@ -141,6 +141,16 @@ getState(): RegionListState<T>;
 
 The current state, without subscribing.
 
+### getOption
+
+```ts
+getOption(region: RegionCode): RegionOption<T> | undefined;
+```
+
+The option for a region from the base set, regardless of the filters and the query. It is the same
+object that appears in `options` and follows `localize` and `refresh`. A code the engine does not
+know returns `undefined`.
+
 ### search
 
 ```ts
