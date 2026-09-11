@@ -12,7 +12,7 @@
   {
     "name": "@telixon/web-sdk",
     "path": "packages/web-sdk/dist/index.js",
-    "limit": "5 kB"
+    "limit": "8 kB"
   },
   {
     "name": "@telixon/web-sdk/flags",

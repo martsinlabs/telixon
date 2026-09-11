@@ -8,6 +8,10 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ### Added
 
+- `attachRegionPicker` wires a trigger, a popup with an optional search field, and a listbox to a
+  `RegionPicker`. Clicks, keys, typing, pointer moves, outside presses, and focus leaving flow in.
+  The popup's `hidden`, the rows, the combobox and option attributes, the cursor, the search
+  field's value, and focus flow out.
 - `createRegionPicker` drives a region picker's trigger and list. It reads rows from a
   `RegionList` and holds the open state, the keyboard cursor, and the selected option. Bound to a
   `PhoneInput`, it follows the phone's resolved region.

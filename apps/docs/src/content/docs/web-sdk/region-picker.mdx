@@ -8,6 +8,7 @@ The headless widget behind a region picker's trigger and list. It reads its rows
 selected option. Every change emits a [`RegionPickerState`](#regionpickerstate) snapshot. Bound to a
 [`PhoneInput`](/web-sdk/phone-input/), the phone owns the selected region and the picker follows
 it. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
+[`attachRegionPicker`](#attachregionpicker) wires a trigger, a popup, and a listbox to it.
 
 ## createRegionPicker
 
@@ -151,3 +152,92 @@ destroy(): void;
 Unsubscribes from `regions` and the phone and clears all listeners. Idempotent. The list and the
 phone stay alive. Destroy the picker before or together with the phone; a `select` after the phone
 is gone has nothing to write to.
+
+## attachRegionPicker
+
+```ts
+function attachRegionPicker<T = undefined>(options: AttachRegionPickerOptions<T>): RegionPickerAttachment;
+```
+
+Wires a trigger, a popup, and a listbox to a picker. Events flow in and state flows out. The
+adapter builds no elements of its own. Rows come from `renderOption` and the empty element from
+`renderEmpty`. The trigger's content, the styling, and the popup's position stay with the caller.
+
+```html
+<button class="picker-trigger"><span class="picker-code"></span></button>
+<div class="picker-menu" hidden>
+  <input type="text" placeholder="Search" />
+  <ul></ul>
+</div>
+<input type="tel" class="phone" />
+```
+
+```ts
+const code = document.querySelector<HTMLElement>('.picker-code')!;
+
+const attachment = attachRegionPicker({
+  picker,
+  trigger: document.querySelector<HTMLButtonElement>('.picker-trigger')!,
+  popup: document.querySelector<HTMLElement>('.picker-menu')!,
+  search: document.querySelector<HTMLInputElement>('.picker-menu input')!,
+  listbox: document.querySelector<HTMLElement>('.picker-menu ul')!,
+  renderOption: (option) => {
+    const row = document.createElement('li');
+    row.textContent = `${option.displayName} +${option.callingCode}`;
+    return row;
+  },
+  renderTrigger: (selected) => {
+    code.textContent = selected === null ? '' : `+${selected.callingCode}`;
+  },
+  returnFocusTo: document.querySelector<HTMLInputElement>('.phone')!,
+});
+```
+
+| Field           | Type                                          | Meaning                                                                                       |
+| --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `picker`        | `RegionPicker<T>`                             | The picker to wire.                                                                           |
+| `trigger`       | `HTMLButtonElement`                           | The button that opens the list. It gets `type="button"` when the attribute is absent.         |
+| `popup`         | `HTMLElement`                                 | Holds the search field and the listbox. Shown and hidden through `hidden`. May live anywhere. |
+| `listbox`       | `HTMLElement`                                 | Receives the rows.                                                                            |
+| `search`        | `HTMLInputElement`                            | The search field. Without it the trigger carries the combobox role.                           |
+| `renderOption`  | `(option: RegionOption<T>) => HTMLElement`    | Builds a row. The adapter adds `role`, `id`, `data-region`, `aria-selected`, `data-active`.   |
+| `renderTrigger` | `(selected: RegionOption<T> \| null) => void` | Called on attach and on every change of the selection.                                        |
+| `renderEmpty`   | `() => HTMLElement`                           | Builds the element shown while the rows are empty.                                            |
+| `returnFocusTo` | `HTMLElement`                                 | Focused after a pick. The trigger by default.                                                 |
+| `autoFocus`     | `boolean`                                     | Focus the search field when the list opens. `true` by default.                                |
+
+What the adapter wires:
+
+- A click on the trigger toggles the list. A closing click returns focus to the trigger when focus
+  was inside the popup. On the trigger and on the search field, `ArrowDown` and `ArrowUp` open a
+  closed list and move the cursor in an open one. `Enter` picks the cursor's row, moves focus to
+  `returnFocusTo`, and closes. While the list is open, `Enter` never submits a surrounding form.
+  `Escape` returns focus to the trigger and closes. Keys pressed during IME composition are
+  ignored.
+- Typing in the search field searches. A query set on the picker is written back to the field.
+- A click on a row picks it. A moving pointer moves the cursor. A list scrolling under a resting
+  pointer leaves the cursor in place. The cursor scrolls into view within the listbox on open and
+  on keyboard moves.
+- A press outside the trigger and the popup closes the list, as does focus leaving them. The press
+  is seen in the capture phase, before any handler on the pressed element.
+- On the trigger, `aria-haspopup`, `aria-controls`, and `aria-expanded`. On the search field, or
+  on the trigger without one, `role="combobox"`, `aria-controls`, `aria-expanded`, and
+  `aria-activedescendant`, plus `aria-autocomplete="list"` on the search field. On the list,
+  `role="listbox"` and `tabindex="-1"`, which keeps a scrollable list out of the tab order. On
+  every row, `role="option"`, an id, `data-region`, `aria-selected` for the selected region, and
+  `data-active` for the cursor. Ids are unique per attachment.
+- Rows are cached per option object and reused across searches. A localized list yields new rows.
+
+The trigger's accessible name stays with the caller, as does its content. A stylesheet that sets
+`display` on the popup must keep `[hidden]` hidden. Give the list and the phone the same filters
+when the rows must match what the phone accepts.
+
+### destroy
+
+```ts
+destroy(): void;
+```
+
+Removes every listener, the document-level one included, and unsubscribes from the picker.
+Idempotent. The picker stays alive, as do the rendered elements and their attributes. Call it when
+the elements leave the page.

@@ -68,3 +68,38 @@ export type RegionPicker<T = undefined> = {
   /** Unsubscribe from `regions` and the phone and clear all listeners. Idempotent. Destroy the picker before or together with the phone. */
   destroy(): void;
 };
+
+/**
+ * Elements and callbacks {@link attachRegionPicker} wires to a {@link RegionPicker}.
+ *
+ * - `trigger`: the button that opens the list. It gets `type="button"` when the attribute is absent.
+ * - `popup`: the container of the search field and the listbox, shown and hidden through `hidden`.
+ *   It may live anywhere in the document, outside the trigger's subtree included.
+ * - `listbox`: the element that receives the rows.
+ * - `search`: the search field. Without it the trigger carries the combobox role.
+ * - `renderOption`: builds the element of a row. The adapter adds the option attributes itself.
+ * - `renderTrigger`: receives the selected option on attach and on every change of the selection.
+ * - `renderEmpty`: builds the element shown while the rows are empty.
+ * - `returnFocusTo`: the element focused after a pick. The trigger by default.
+ * - `autoFocus`: focus the search field when the list opens. `true` by default.
+ */
+export type AttachRegionPickerOptions<T = undefined> = {
+  picker: RegionPicker<T>;
+  trigger: HTMLButtonElement;
+  popup: HTMLElement;
+  listbox: HTMLElement;
+  search?: HTMLInputElement;
+  renderOption: (option: RegionOption<T>) => HTMLElement;
+  renderTrigger?: (selected: RegionOption<T> | null) => void;
+  renderEmpty?: () => HTMLElement;
+  returnFocusTo?: HTMLElement;
+  autoFocus?: boolean;
+};
+
+/**
+ * Handle returned by {@link attachRegionPicker}.
+ */
+export type RegionPickerAttachment = {
+  /** Remove every listener and unsubscribe from the picker. Idempotent. The picker and the rendered elements stay. */
+  destroy(): void;
+};

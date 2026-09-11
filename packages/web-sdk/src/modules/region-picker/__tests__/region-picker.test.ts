@@ -306,6 +306,13 @@ describe('createRegionPicker: emission and lifetime', () => {
 
     expect(listener).not.toHaveBeenCalled();
 
+    picker.open();
+    listener.mockClear();
+    picker.open();
+    picker.search('');
+
+    expect(listener).not.toHaveBeenCalled();
+
     picker.destroy();
     regions.destroy();
   });
