@@ -5,6 +5,7 @@
   --border: #c9d1ce;
   --accent: #26997b;
 
+  position: relative;
   color: var(--text);
 }
 
@@ -15,17 +16,82 @@
   font-weight: 600;
 }
 
-#region-picker input {
-  width: 100%;
+#region-picker .region-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(24rem, 100%);
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.375rem;
   background: var(--surface);
   color: inherit;
   font-size: 1rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-#region-picker input:focus-visible {
+#region-picker .region-picker-trigger:hover {
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+#region-picker .region-picker-trigger:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+#region-picker .tlx-flag {
+  width: 1.25rem;
+  border-radius: 2px;
+}
+
+#region-picker .region-picker-name {
+  flex: 1;
+}
+
+#region-picker .region-picker-chevron {
+  width: 0.625rem;
+  height: 0.375rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #region-picker .region-picker-chevron {
+    transition: transform 150ms ease;
+  }
+}
+
+#region-picker .region-picker-trigger[aria-expanded='true'] .region-picker-chevron {
+  transform: rotate(180deg);
+}
+
+#region-picker .region-picker-menu {
+  position: absolute;
+  z-index: 10;
+  margin-top: 0.375rem;
+  width: min(24rem, 100%);
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.1);
+}
+
+#region-picker .region-picker-menu input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--surface);
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+#region-picker .region-picker-menu input:focus-visible {
   border-color: var(--accent);
   outline: none;
   box-shadow: 0 0 0 1px var(--accent);
@@ -36,15 +102,12 @@
 }
 
 #region-picker ul {
-  margin: 0.75rem 0 0;
-  padding: 0.375rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
   list-style: none;
-  max-height: 16rem;
+  max-height: 15rem;
   overflow-y: auto;
   scrollbar-width: thin;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--surface);
 }
 
 #region-picker li {
@@ -57,7 +120,6 @@
   cursor: pointer;
 }
 
-#region-picker li:hover,
 #region-picker li[data-active='true'] {
   background: rgb(38 153 123 / 0.08);
 }

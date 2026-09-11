@@ -217,6 +217,7 @@ field behaves as a plain input again.
 
 ## Pair with a region picker
 
-A [`RegionList`](/web-sdk/region-list/) supplies the rows; the picker's selection hands its region
-to [`setRegion`](#setregion). The full wiring, with a popup and a live demo, is in
-[Build the complete field](/web-sdk/guides/complete-field/).
+A [`RegionPicker`](/web-sdk/region-picker/) created with the phone hands a pick to
+[`setRegion`](#setregion) and follows the resolved [`region`](#phoneinputstate) back.
+[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wires the DOM. The full field,
+with a live demo, is in [Build the complete field](/web-sdk/guides/complete-field/).

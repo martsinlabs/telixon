@@ -2,9 +2,10 @@
 // The input playground: a live phone field assembled from the configuration panel, with the
 // controller state, the resolved number, and the matching code rendered per keystroke. The field
 // is the classic composition, a region picker beside the input, both driven by the headless
-// machines. The configuration round-trips through the URL query so any state is shareable.
+// widgets. The configuration round-trips through the URL query so any state is shareable.
 import BrandLogo from '../../components/BrandLogo.astro';
 import '../../styles/tokens.css';
+import '@telixon/web-sdk/flags/flags.css';
 ---
 
 <html lang="en">
@@ -130,7 +131,7 @@ import '../../styles/tokens.css';
                 aria-controls="region-listbox"
                 aria-label="Select region"
               >
-                <span id="flag" aria-hidden="true">🌐</span>
+                <span class="tlx-flag" aria-hidden="true"><span id="flag" class="tlx-flag__image"></span></span>
                 <span id="trigger-code" class="trigger-code"></span>
                 <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true">
                   <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"></path>
@@ -189,7 +190,8 @@ import '../../styles/tokens.css';
       import type { NumberType, ValidationError } from '@telixon/core';
       import { NUMBER_TYPES, REGION_CODES, ensureEngineReady, getCallingCodeForRegion } from '@telixon/core';
       import type { PhoneInput } from '@telixon/web-sdk';
-      import { createPhoneInput, createRegionList, regionToFlagEmoji } from '@telixon/web-sdk';
+      import { createPhoneInput, createRegionList } from '@telixon/web-sdk';
+      import { flagTransform } from '@telixon/web-sdk/flags';
 
       type RegionCode = (typeof REGION_CODES)[number];
       type PlusPrefix = 'none' | 'fixed' | 'erasable';
@@ -424,12 +426,10 @@ import '../../styles/tokens.css';
         // The region shown on the trigger; follows typing where the digits own the region.
         let triggerRegion: RegionCode = config.region;
 
-        const regions = createRegionList({
-          dataFactory: ({ region }) => regionToFlagEmoji(region),
-        });
+        const regions = createRegionList();
 
         const renderTrigger = (): void => {
-          flag.textContent = regionToFlagEmoji(triggerRegion);
+          flag.style.transform = flagTransform(triggerRegion);
           // With the code typed in the field the button stays flag-only; elsewhere it owns the code.
           const showCode = !(config.mode === 'international' && config.callingCodeInInput);
           triggerCode.textContent = showCode ? `+${getCallingCodeForRegion(triggerRegion)}` : '';
@@ -483,8 +483,12 @@ import '../../styles/tokens.css';
               row.setAttribute('role', 'option');
               row.setAttribute('aria-selected', String(option.region === triggerRegion));
               const rowFlag = document.createElement('span');
-              rowFlag.className = 'region-option-flag';
-              rowFlag.textContent = String(option.data);
+              rowFlag.className = 'tlx-flag region-option-flag';
+              rowFlag.setAttribute('aria-hidden', 'true');
+              const rowFlagImage = document.createElement('span');
+              rowFlagImage.className = 'tlx-flag__image';
+              rowFlagImage.style.transform = flagTransform(option.region);
+              rowFlag.append(rowFlagImage);
               const rowName = document.createElement('span');
               rowName.className = 'region-option-name';
               rowName.textContent = option.displayName;
@@ -1101,11 +1105,11 @@ import '../../styles/tokens.css';
         color: var(--green-text);
         font-weight: 600;
       }
+      .region-trigger .tlx-flag,
       .region-option-flag {
         flex: none;
         width: 22px;
-        text-align: center;
-        font-size: 16px;
+        border-radius: 2px;
       }
       .region-option-name {
         flex: 1;

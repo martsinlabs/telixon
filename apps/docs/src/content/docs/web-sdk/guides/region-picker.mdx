@@ -1,6 +1,6 @@
 ---
 title: Build a region picker
-description: A region picker built from one createRegionList call, a flag dataFactory, and a small render function.
+description: A region picker built from a RegionList, a RegionPicker, and attachRegionPicker on a button, a search box, and a list.
 ---
 
 import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
@@ -10,27 +10,38 @@ import css from '../../../../components/demos/region-picker.css?raw';
 import code from '../../../../components/demos/region-picker.js?raw';
 
 [`createRegionList`](/web-sdk/region-list/#createregionlist) turns the engine's region data into
-picker rows. The `RegionList` filters, searches, sorts, and prioritizes the list, while your
-`renderList` function draws the rows.
+picker rows. [`createRegionPicker`](/web-sdk/region-picker/#createregionpicker) holds the open
+state, the keyboard cursor, and the selection.
+[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wires a button, a search box,
+and a list to it, while your render functions draw the rows and the button.
 
 ## Live demo
 
-All 245 regions are in the list, with US, CA, and GB pinned on top. Search `united` and the list
-narrows to three rows. The match runs over names, region codes, and calling codes; `+44` finds
-the United Kingdom too. Click a row and the status reports the selection, while the arrow keys
-walk the list from the search box and Enter picks the active row.
+Open the picker. All 245 regions are in the list, with US, CA, and GB pinned on top. Search
+`united` and the list narrows to three rows. The match runs over names, region codes, and calling
+codes; `+44` finds the United Kingdom too. Pick a row and the button shows its flag and name, with
+the status line reporting the selection. The arrow keys walk the rows from the search box, Enter
+picks the active row, and Escape closes the list.
 
 <RegionPickerDemo />
 
 ## The code
 
-The demo and the source are the same three files. The markup is a search input, an empty list, and
-a status line. `createRegionList` builds the rows, with
-[`prioritize`](/web-sdk/region-list/#regionlistoptions)
-pinning US, CA, and GB and a `dataFactory` putting a
-[flag emoji](/web-sdk/region-list/#regiontoflagemoji) in each option's `data` slot. The search box
-feeds [`search`](/web-sdk/region-list/#search). `renderList` rebuilds the rows from each emitted
-[state](/web-sdk/region-list/#regionliststate).
+The demo and the source are the same three files. The markup is a button with a
+[flag sprite](/web-sdk/flags/) cell and a name, a popup with the search box and an empty list, and
+a status line.
+
+The script creates two widgets. `createRegionList` builds the rows, with
+[`prioritize`](/web-sdk/region-list/#regionlistoptions) pinning US, CA, and GB. `createRegionPicker`
+takes the list and, without a phone input, keeps the selection itself.
+[`select`](/web-sdk/region-picker/#select) seeds it with the United States.
+
+`attachRegionPicker` wires the button, the search box, and the list to the picker and owns the
+clicks, the keys, the outside press, and the ARIA attributes. The demo hands it three functions.
+`renderOption` builds a row from a flag cell, the name, and the calling code, with
+[`flagTransform`](/web-sdk/flags/#flagtransform) selecting the cell. `renderEmpty` builds the row
+shown when the search matches nothing. `renderTrigger` puts the selected region's flag and name on
+the button and writes the status line.
 
 <Tabs syncKey="source">
 
@@ -49,4 +60,5 @@ feeds [`search`](/web-sdk/region-list/#search). `renderList` rebuilds the rows f
 </Tabs>
 
 The picker so far only reports the selection.
-[Build the complete field](/web-sdk/guides/complete-field/) wires it to a phone input.
+[Build the complete field](/web-sdk/guides/complete-field/) hands it a phone input, which then
+owns the region.

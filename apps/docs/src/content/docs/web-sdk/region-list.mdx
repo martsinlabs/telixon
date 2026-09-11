@@ -1,10 +1,10 @@
 ---
 title: RegionList
-description: The headless widget behind region pickers.
+description: The headless widget that produces a region picker's rows.
 ---
 
-The headless widget behind a region picker. It produces the option rows a dropdown renders and
-emits a [`RegionListState`](#regionliststate) snapshot on every change. Each change recomputes the
+The headless widget that produces a region picker's rows. It emits a
+[`RegionListState`](#regionliststate) snapshot on every change. Each change recomputes the
 options through one pipeline of region filter, number-type filter, search, sort, and prioritized
 pins. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
 
@@ -112,8 +112,8 @@ function regionToFlagEmoji(region: RegionCode): string;
 ```
 
 The region's flag emoji, built from the two Unicode regional indicator symbols for its letters.
-Platforms without flag emoji, notably Windows, render the two letters; for a flag on every
-platform, ship an SVG set keyed by the region code.
+Platforms without flag emoji, notably Windows, render the two letters. The
+[flag sprite](/web-sdk/flags/) shows a flag on every platform.
 
 ```ts
 regionToFlagEmoji('US'); // '🇺🇸'

@@ -40,7 +40,7 @@ A pnpm monorepo. Published libraries live in `packages/`; non-published apps liv
 telixon/
   packages/
     core/          @telixon/core    pure engine, all phone-number logic
-    web-sdk/       @telixon/web-sdk headless DOM adapter for <input> elements
+    web-sdk/       @telixon/web-sdk headless widgets for the phone input and the region picker, plus the flag sprite
   apps/
     docs/          landing page and documentation site (telixon.dev), never published to npm
     sandbox/       internal dev workbench (Vite + TS), never published
@@ -56,16 +56,16 @@ The layer model below is designed so they slot in without reshaping existing pac
 
 Each layer adds one concern and depends only on layers beneath it.
 
-| Layer | Where                         | Adds                                                                  | Depends on | Status  |
-| ----- | ----------------------------- | --------------------------------------------------------------------- | ---------- | ------- |
-| 0     | `core/src/engine` (generated) | Metadata: binary engine layers, provenance-pinned                     | nothing    | present |
-| 1     | `core/src/engine` accessor    | Engine: typed access and walk/format primitives                       | layer 0    | present |
-| 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads)                    | layer 1    | present |
-| 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge) | layer 1    | present |
-| 4     | `@telixon/web-sdk`            | Headless: DOM events to engine ops + `subscribe`                      | core       | present |
-| 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                        | web-sdk    | planned |
-| 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                     | web-sdk    | planned |
-| 7     | user code                     | All markup, styles, region-selector wiring                            | a binding  | n/a     |
+| Layer | Where                         | Adds                                                                   | Depends on | Status  |
+| ----- | ----------------------------- | ---------------------------------------------------------------------- | ---------- | ------- |
+| 0     | `core/src/engine` (generated) | Metadata: binary engine layers, provenance-pinned                      | nothing    | present |
+| 1     | `core/src/engine` accessor    | Engine: typed access and walk/format primitives                        | layer 0    | present |
+| 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads)                     | layer 1    | present |
+| 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge)  | layer 1    | present |
+| 4     | `@telixon/web-sdk`            | Headless widgets: DOM events to engine ops, region picker, `subscribe` | core       | present |
+| 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                         | web-sdk    | planned |
+| 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                      | web-sdk    | planned |
+| 7     | user code                     | All markup, styles, popup positioning                                  | a binding  | n/a     |
 
 The split keeps the engine free of DOM, reactivity, and framework weight, while letting a caller
 enter at the level matching their need:
@@ -74,7 +74,8 @@ enter at the level matching their need:
 - **`@telixon/web-sdk`**: bring your own UI, roughly ten lines.
 - **`@telixon/core`**: bypass the SDK.
 
-UI rendering belongs only in the planned `web-components` layer; `web-sdk` stays UI-free.
+UI rendering belongs only in the planned `web-components` layer. `web-sdk` writes state and
+attributes onto elements the caller owns. The flag sprite ships as a stylesheet and two images.
 
 ## Data flow
 

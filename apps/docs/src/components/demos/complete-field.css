@@ -64,9 +64,9 @@
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
-#complete-field .phone-field-flag {
-  font-size: 1.125rem;
-  line-height: 1;
+#complete-field .tlx-flag {
+  width: 1.25rem;
+  border-radius: 2px;
 }
 
 #complete-field .phone-field-code {
@@ -139,7 +139,6 @@
   cursor: pointer;
 }
 
-#complete-field li:hover,
 #complete-field li[data-active='true'] {
   background: rgb(38 153 123 / 0.08);
 }
