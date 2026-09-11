@@ -69,6 +69,9 @@ picker.select(picker.getState().active!); // phone.setRegion('CA')
 picker.close();
 ```
 
+`attachRegionPicker` wires a trigger, a popup with a search field, and a listbox to the picker. It
+handles the clicks, the keys, outside presses, the ARIA attributes, and the row rendering.
+
 `@telixon/web-sdk/flags` ships a sprite sheet with a flag for every region. A cell is two elements.
 The stylesheet carries the sheet:
 

@@ -11,7 +11,7 @@
   },
   "webSdk": {
     "artifact": "@telixon/web-sdk",
-    "measured": "4.69 kB brotli",
-    "budget": "5 kB"
+    "measured": "7.07 kB brotli",
+    "budget": "8 kB"
   }
 }
