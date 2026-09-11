@@ -1853,6 +1853,8 @@ const closedTypesCode = `controller.setRegion('USA')
       const errorNoteEl = document.getElementById('hero-error-note');
 
       if (input && shell && flag && region && type && e164 && pill && errorEl && errorKindEl && errorNoteEl) {
+        // The seeded number is a US number; show its flag while the engine loads.
+        flag.style.transform = flagTransform('US');
         ensureEngineReady()
           .then(() => {
             const phoneInput = createPhoneInput({

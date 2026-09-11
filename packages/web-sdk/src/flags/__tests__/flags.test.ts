@@ -101,6 +101,11 @@ describe('shipped assets', () => {
     expect(css).toContain('background-size: 100% 100%;');
   });
 
+  it('shows the neutral cell until a transform is set', async () => {
+    const css = await readFile(new URL('flags.css', ASSETS), 'utf8');
+    expect(css).toContain(`transform: ${flagTransform(null)};`);
+  });
+
   it('carries the 1x sheet by default and the 2x sheet under a resolution media query', async () => {
     const css = await readFile(new URL('flags.css', ASSETS), 'utf8');
     expect(css).toContain('background-image: url(./sprite.png);');
