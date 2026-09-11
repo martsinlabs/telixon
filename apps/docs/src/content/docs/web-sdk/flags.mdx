@@ -35,8 +35,9 @@ name belongs in text next to it.
 `overflow: hidden`. Set its `width` to size the flag. A `border-radius` or a border belongs here.
 
 `.tlx-flag__image` is the sheet, `1600%` by `1600%` of the cell, with `sprite.png` (512 by 384
-pixels) as its background and `sprite@2x.png` (1024 by 768 pixels) from `1.5dppx` up. It prints
-with background graphics switched off.
+pixels) as its background and `sprite@2x.png` (1024 by 768 pixels) from `1.5dppx` up. Until a
+script sets a transform, the stylesheet shows the neutral cell. It prints with background graphics
+switched off.
 
 Importing the stylesheet is the whole setup. Bundlers rebase its relative URLs from
 `node_modules`. Parcel needs `"@parcel/resolver-default": { "packageExports": true }` in the
