@@ -1,0 +1,153 @@
+---
+title: RegionPicker
+description: The headless widget behind a region picker's trigger and list.
+---
+
+The headless widget behind a region picker's trigger and list. It reads its rows from a
+[`RegionList`](/web-sdk/region-list/) and holds the open state, the keyboard cursor, and the
+selected option. Every change emits a [`RegionPickerState`](#regionpickerstate) snapshot. Bound to a
+[`PhoneInput`](/web-sdk/phone-input/), the phone owns the selected region and the picker follows
+it. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
+
+## createRegionPicker
+
+```ts
+function createRegionPicker<T = undefined>(options: RegionPickerOptions<T>): RegionPicker<T>;
+```
+
+```ts
+const regions = createRegionList({ prioritize: ['US', 'CA', 'GB'] });
+const picker = createRegionPicker({ regions, phone });
+
+picker.open();
+picker.search('can');
+picker.getState().active; // 'CA'
+picker.select('CA'); // phone.setRegion('CA')
+picker.close();
+```
+
+## RegionPickerOptions
+
+| Field     | Type            | Meaning                                                                                               |
+| --------- | --------------- | ----------------------------------------------------------------------------------------------------- |
+| `regions` | `RegionList<T>` | The list the picker reads its rows from. The picker never destroys it.                                |
+| `phone`   | `PhoneInput`    | The phone input that owns the selected region. See [Bound to a phone input](#bound-to-a-phone-input). |
+
+## RegionPickerState
+
+```ts
+type RegionPickerState<T = undefined> = {
+  readonly open: boolean;
+  readonly selected: RegionOption<T> | null;
+  readonly active: RegionCode | null;
+  readonly options: readonly RegionOption<T>[];
+  readonly searchQuery: string;
+};
+```
+
+`selected` is `null` until a region is selected. It is the option from the list's base set, the same
+object the list renders. It follows [`localize`](/web-sdk/region-list/#localize) and
+[`refresh`](/web-sdk/region-list/#refresh). `active` is the row under the keyboard cursor and is
+`null` while closed. `options` and `searchQuery` mirror the list's state.
+
+## Bound to a phone input
+
+With a `phone`, the phone input is the single source of the selected region. The picker subscribes
+to it and takes `selected` from the phone's resolved region, keeping the last region while the phone
+reports `null`. [`select`](#select) hands the region to
+[`setRegion`](/web-sdk/phone-input/#setregion) instead of storing it. Undo on the phone therefore
+moves the picker as well. A `select` that round-trips through the phone emits once.
+
+The picker writes only its search query to `regions`. Filters stay where they are set. Give the
+list and the phone the same `regionFilter` and `numberTypeFilter` when the rows must match what the
+phone accepts.
+
+## Members
+
+### subscribe
+
+```ts
+subscribe(listener: RegionPickerListener<T>): () => void;
+```
+
+Subscribes to state changes. Returns an unsubscribe function.
+`RegionPickerListener<T>` is `(state: RegionPickerState<T>) => void`.
+
+### getState
+
+```ts
+getState(): RegionPickerState<T>;
+```
+
+The current state, without subscribing.
+
+### open
+
+```ts
+open(): void;
+```
+
+Shows the list with an empty query and the cursor on the selected row, or on the first row when
+the selection is filtered out. A no-op while open.
+
+### close
+
+```ts
+close(): void;
+```
+
+Hides the list and clears the cursor. A no-op while closed.
+
+### toggle
+
+```ts
+toggle(): void;
+```
+
+`open` while closed, `close` while open.
+
+### search
+
+```ts
+search(query: string): void;
+```
+
+Updates the query on `regions`. A new row set moves the cursor to the first row, which lets Enter
+pick the top match. An unchanged query is a no-op.
+
+### setActive
+
+```ts
+setActive(region: RegionCode | null): void;
+```
+
+Puts the cursor on a row, or clears it with `null`. A region outside `options` clears it.
+
+### moveActive
+
+```ts
+moveActive(step: number): void;
+```
+
+Moves the cursor by `step` rows, wrapping at both ends. Without a cursor, a positive step starts at
+the first row and a negative one at the last.
+
+### select
+
+```ts
+select(region: RegionCode): void;
+```
+
+Selects a region. Bound to a phone, the phone receives the region; on its own, the picker keeps
+it. A region the list does not know changes nothing. Closing the list after a pick stays with the
+caller.
+
+### destroy
+
+```ts
+destroy(): void;
+```
+
+Unsubscribes from `regions` and the phone and clears all listeners. Idempotent. The list and the
+phone stay alive. Destroy the picker before or together with the phone; a `select` after the phone
+is gone has nothing to write to.

@@ -1,6 +1,6 @@
 # @telixon/web-sdk
 
-The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping two headless widgets. `PhoneInput` drives a plain `<input>` while `RegionList` feeds the region picker.
+The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping three headless widgets. `PhoneInput` drives a plain `<input>`, `RegionList` feeds the region picker, and `RegionPicker` drives the picker's trigger and list.
 
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 [![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
@@ -53,6 +53,20 @@ regions.getState().options[0];
 
 regions.search('united');
 regions.getState().options.map((option) => option.region); // ['US', 'GB', 'AE']
+```
+
+`createRegionPicker` holds the open state, the row the arrow keys highlight (the keyboard cursor
+that Enter picks), and the selection. Bound to a phone, it follows the phone's resolved region:
+
+```ts
+import { createRegionPicker } from '@telixon/web-sdk';
+
+const picker = createRegionPicker({ regions, phone });
+
+picker.open();
+picker.search('can');
+picker.select(picker.getState().active!); // phone.setRegion('CA')
+picker.close();
 ```
 
 `@telixon/web-sdk/flags` ships a sprite sheet with a flag for every region. A cell is two elements.
