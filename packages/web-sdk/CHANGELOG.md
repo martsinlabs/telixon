@@ -8,11 +8,11 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ### Added
 
+- `createRegionPicker` drives a region picker's trigger and list. It reads rows from a
+  `RegionList` and holds the open state, the keyboard cursor, and the selected option. Bound to a
+  `PhoneInput`, it follows the phone's resolved region.
 - `RegionList.getOption(region)` returns the option for a region from the base set, regardless of
   the filters and the query, as the same object that appears in `options`.
-
-### Added
-
 - `@telixon/web-sdk/flags` ships a flag sprite for every engine region plus a neutral cell,
   rendered from flag-icons artwork at 1x and 2x. `flagOffset` and `flagTransform` return the
   `translate` that shows one region's cell. `flags.css` sizes the `.tlx-flag` cell and carries the

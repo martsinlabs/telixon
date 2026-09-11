@@ -65,7 +65,7 @@ export const PACKAGES: readonly DocsPackage[] = [
       },
       {
         label: 'Reference',
-        items: ['web-sdk/phone-input', 'web-sdk/region-list', 'web-sdk/flags'],
+        items: ['web-sdk/phone-input', 'web-sdk/region-list', 'web-sdk/region-picker', 'web-sdk/flags'],
       },
     ],
   },
