@@ -28,7 +28,7 @@ import '@telixon/web-sdk/flags/flags.css';
     />
     <meta property="og:image" content="https://telixon.dev/og.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#161618" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1312" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f8f8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -692,36 +692,38 @@ import '@telixon/web-sdk/flags/flags.css';
 
     <style is:global>
       :root {
-        --bg: #161618;
-        --panel: rgba(255, 255, 255, 0.03);
-        --border: rgba(255, 255, 255, 0.08);
-        --border-strong: rgba(255, 255, 255, 0.16);
-        --text: #f2f3f4;
+        color-scheme: dark;
+        --bg: #0f1312;
+        --panel: #161b19;
+        --border: rgba(255, 255, 255, 0.09);
+        --border-strong: rgba(255, 255, 255, 0.18);
+        --text: #edf1ef;
         --brand-ink: #ffffff;
-        --muted: #9ba1a6;
+        --muted: #98a39f;
         --green: var(--brand-solid);
-        --green-text: #1fd8a4;
+        --green-text: #3ddba9;
         --green-glow: rgb(var(--brand) / 0.35);
-        --green-dim: rgb(var(--brand) / 0.12);
-        --error: #ef7275;
+        --green-dim: rgb(var(--brand) / 0.14);
+        --error: #f0787b;
         --radius: 14px;
         --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-        --field-bg: rgba(0, 0, 0, 0.45);
+        --field-bg: #111514;
         --grid-dot: rgba(255, 255, 255, 0.05);
-        --surface: #1d1f21;
-        --surface-border: rgba(255, 255, 255, 0.1);
+        --surface: #1b211f;
+        --surface-border: rgba(255, 255, 255, 0.12);
         --surface-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 1px 2px rgba(0, 0, 0, 0.6),
-          0 20px 40px -24px rgba(0, 0, 0, 0.95);
-        --menu-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        --code-bg: rgba(0, 0, 0, 0.35);
-        --code-kw: #79c0ff;
-        --code-fn: #d2a8ff;
-        --code-str: #1fd8a4;
-        --code-cm: #838990;
+          inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.5),
+          0 20px 40px -24px rgba(0, 0, 0, 0.8);
+        --menu-shadow: 0 20px 44px -18px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        --code-bg: #0c100f;
+        --code-kw: #8ab4ff;
+        --code-fn: #c9a8ff;
+        --code-str: #3ddba9;
+        --code-cm: #7f8a86;
       }
       [data-theme='light'] {
+        color-scheme: light;
         --bg: #f7f8f8;
         --panel: rgba(0, 0, 0, 0.03);
         --border: rgba(0, 0, 0, 0.09);
@@ -913,20 +915,23 @@ import '@telixon/web-sdk/flags/flags.css';
         text-transform: uppercase;
         color: var(--text);
         background: var(--field-bg);
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 8px;
         padding: 7px 10px;
         margin-bottom: 12px;
-        transition: border-color 0.15s ease;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
       }
       .filter-input::placeholder {
         color: var(--muted);
-        opacity: 0.55;
+        opacity: 0.8;
         text-transform: none;
       }
       .filter-input:focus-visible {
         outline: none;
         border-color: var(--green);
+        box-shadow: 0 0 0 1px var(--green);
       }
       .type-grid {
         display: grid;
@@ -984,59 +989,66 @@ import '@telixon/web-sdk/flags/flags.css';
       }
       .input-shell {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        align-items: stretch;
         background: var(--field-bg);
         border: 1px solid var(--border-strong);
-        border-radius: 12px;
-        padding: 8px 16px 8px 8px;
+        border-radius: 10px;
         transition:
           border-color 0.15s ease,
           box-shadow 0.15s ease;
       }
       .input-shell:focus-within {
         border-color: var(--green);
-        box-shadow: 0 0 0 3px var(--green-dim);
-      }
-      .input-shell.valid {
-        border-color: var(--green);
-        box-shadow: 0 0 0 3px var(--green-dim), 0 0 24px -6px var(--green-glow);
+        box-shadow: 0 0 0 1px var(--green);
       }
       .region-trigger {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
+        padding: 0 12px;
         font-family: var(--font-sans);
-        font-size: 17px;
+        font-size: 15px;
         color: var(--text);
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 7px 10px;
+        background: transparent;
+        border: 0;
+        border-right: 1px solid var(--border-strong);
+        border-radius: 10px 0 0 10px;
         cursor: pointer;
-        transition:
-          border-color 0.15s ease,
-          background 0.15s ease;
+        transition: background 0.15s ease;
       }
-      .region-trigger:hover,
-      .region-trigger:focus-visible {
-        border-color: var(--green);
+      .region-trigger:hover {
         background: var(--green-dim);
+      }
+      .region-trigger:focus-visible {
+        outline: 2px solid var(--green);
+        outline-offset: -2px;
       }
       .trigger-code {
         font-family: var(--font-mono);
-        font-size: 13px;
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
         color: var(--muted);
       }
       .trigger-code:empty {
         display: none;
       }
       .chevron {
-        width: 9px;
+        width: 10px;
+        height: 6px;
         color: var(--muted);
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .chevron {
+          transition: transform 150ms ease;
+        }
+      }
+      .region-trigger[aria-expanded='true'] .chevron {
+        transform: rotate(180deg);
       }
       #phone {
         flex: 1;
+        min-width: 0;
+        padding: 12px 14px;
         font-family: var(--font-mono);
         font-size: 17px;
         letter-spacing: 0.01em;
@@ -1044,8 +1056,6 @@ import '@telixon/web-sdk/flags/flags.css';
         background: none;
         border: 0;
         outline: 0;
-        min-width: 0;
-        padding: 4px 0;
       }
       #phone::placeholder {
         color: var(--muted);
@@ -1054,45 +1064,49 @@ import '@telixon/web-sdk/flags/flags.css';
       .region-menu {
         position: absolute;
         z-index: 10;
-        top: calc(100% + 8px);
+        top: calc(100% + 6px);
         left: 0;
-        width: min(340px, 100%);
+        width: min(24rem, 100%);
+        padding: 8px;
         background: var(--surface);
         border: 1px solid var(--surface-border);
-        border-radius: 12px;
+        border-radius: 10px;
         box-shadow: var(--menu-shadow);
-        padding: 8px;
       }
       .region-search {
         width: 100%;
+        box-sizing: border-box;
+        padding: 8px 12px;
         font-family: var(--font-sans);
         font-size: 14px;
         color: var(--text);
         background: var(--field-bg);
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 8px;
-        padding: 8px 11px;
-        margin-bottom: 7px;
-        transition: border-color 0.15s ease;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
       }
       .region-search:focus-visible {
         outline: none;
         border-color: var(--green);
+        box-shadow: 0 0 0 1px var(--green);
       }
       #region-listbox {
         list-style: none;
-        margin: 0;
+        margin: 8px 0 0;
         padding: 0;
-        max-height: 264px;
+        max-height: 15rem;
         overflow-y: auto;
         overscroll-behavior: contain;
+        scrollbar-width: thin;
       }
       #region-listbox li {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 10px;
-        border-radius: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
         font-size: 14px;
         line-height: 1.35;
         cursor: pointer;
@@ -1102,13 +1116,12 @@ import '@telixon/web-sdk/flags/flags.css';
         background: var(--green-dim);
       }
       #region-listbox li[aria-selected='true'] {
-        color: var(--green-text);
-        font-weight: 600;
+        background: rgb(var(--brand) / 0.2);
       }
       .region-trigger .tlx-flag,
       .region-option-flag {
         flex: none;
-        width: 22px;
+        width: 20px;
         border-radius: 2px;
       }
       .region-option-name {
@@ -1127,9 +1140,12 @@ import '@telixon/web-sdk/flags/flags.css';
         color: var(--muted);
       }
       .region-empty {
+        justify-content: center;
         color: var(--muted);
-        padding: 8px 10px;
+        padding: 8px 12px;
         font-size: 14px;
+        cursor: default;
+        pointer-events: none;
       }
       .history-row {
         display: flex;
