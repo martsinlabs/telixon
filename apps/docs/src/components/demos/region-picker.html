@@ -1,14 +1,18 @@
 <div id="region-picker">
-  <label for="region-picker-search">Region</label>
-  <input
-    id="region-picker-search"
-    type="text"
-    role="combobox"
-    aria-expanded="true"
-    aria-controls="region-picker-listbox"
-    aria-autocomplete="list"
-    placeholder="Search regions"
-  />
-  <ul id="region-picker-listbox" role="listbox" aria-label="Regions"></ul>
+  <label for="region-picker-trigger">Region</label>
+
+  <button id="region-picker-trigger" class="region-picker-trigger">
+    <span class="tlx-flag" aria-hidden="true"><span class="tlx-flag__image"></span></span>
+    <span class="region-picker-name"></span>
+    <svg class="region-picker-chevron" viewBox="0 0 10 6" aria-hidden="true">
+      <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+    </svg>
+  </button>
+
+  <div class="region-picker-menu" hidden>
+    <input class="region-picker-search" type="text" aria-label="Search regions" placeholder="Search regions" />
+    <ul aria-label="Regions"></ul>
+  </div>
+
   <p class="region-picker-status"></p>
 </div>

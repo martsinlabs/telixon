@@ -5,6 +5,7 @@
 import { Code } from '@astrojs/starlight/components';
 import BrandLogo from '../components/BrandLogo.astro';
 import '../styles/tokens.css';
+import '@telixon/web-sdk/flags/flags.css';
 
 const quickstartCode = `import { ensureEngineReady, parsePhoneNumber } from '@telixon/core';
 
@@ -552,9 +553,10 @@ const closedTypesCode = `controller.setRegion('USA')
         box-shadow: 0 0 0 3px var(--green-glow);
       }
       .demo-input .flag {
+        flex: none;
+        width: 26px;
         margin-right: 12px;
-        font-size: 20px;
-        line-height: 1;
+        border-radius: 2px;
       }
       .demo-input input {
         flex: 1;
@@ -1444,7 +1446,7 @@ const closedTypesCode = `controller.setRegion('USA')
             <span class="valid-pill" id="hero-valid">valid</span>
           </div>
           <div class="demo-input" id="hero-shell">
-            <span class="flag" id="hero-flag">🌐</span>
+            <span class="tlx-flag flag" aria-hidden="true"><span class="tlx-flag__image" id="hero-flag"></span></span>
             <input
               id="hero-input"
               type="text"
@@ -1657,7 +1659,7 @@ const closedTypesCode = `controller.setRegion('USA')
           <div class="field-shell">
             <label class="field-label" for="ar-input">AR national mobile number</label>
             <div class="demo-input">
-              <span class="flag">🇦🇷</span>
+              <span class="tlx-flag flag" aria-hidden="true"><span class="tlx-flag__image" id="ar-flag"></span></span>
               <input
                 id="ar-input"
                 type="text"
@@ -1758,8 +1760,8 @@ const closedTypesCode = `controller.setRegion('USA')
             </p>
           </div>
           <div class="cell wide">
-            <h3><span class="tick" aria-hidden="true">+</span> Flag emoji</h3>
-            <p>Flags derived arithmetically from Unicode letters, one pure function, no assets.</p>
+            <h3><span class="tick" aria-hidden="true">+</span> Flags for every region</h3>
+            <p>One sprite sheet at 1x and 2x, the same flag on every platform, selected by a translate offset.</p>
           </div>
           <div class="cell wide">
             <h3><span class="tick" aria-hidden="true">+</span> Real placeholders</h3>
@@ -1790,7 +1792,7 @@ const closedTypesCode = `controller.setRegion('USA')
           <a class="slab" href="/web-sdk/">
             <span class="name">@telixon/web-sdk</span>
             <span class="chip chip-today">Today</span>
-            <span class="desc">The DOM layer for the input controller. You bring your own markup.</span>
+            <span class="desc">The DOM layer for the input controller and the region picker, with a flag sprite. You bring your own markup.</span>
           </a>
           <div class="slab">
             <span class="name">@telixon/web-components</span>
@@ -1836,7 +1838,8 @@ const closedTypesCode = `controller.setRegion('USA')
     <!-- Live hero demo: the real packages, imported from the workspace. -->
     <script>
       import { ensureEngineReady } from '@telixon/core';
-      import { createPhoneInput, regionToFlagEmoji } from '@telixon/web-sdk';
+      import { createPhoneInput } from '@telixon/web-sdk';
+      import { flagTransform } from '@telixon/web-sdk/flags';
 
       const input = document.getElementById('hero-input') as HTMLInputElement | null;
       const shell = document.getElementById('hero-shell');
@@ -1883,7 +1886,7 @@ const closedTypesCode = `controller.setRegion('USA')
               const numberType = valid ? number.getNumberType() : null;
               const e164Value = number.formatE164();
 
-              flag.textContent = state.region ? regionToFlagEmoji(state.region) : '🌐';
+              flag.style.transform = flagTransform(state.region);
               region.textContent = state.region ?? '';
               region.classList.toggle('empty', !state.region);
               type.textContent = numberType ?? '';
@@ -1917,6 +1920,8 @@ const closedTypesCode = `controller.setRegion('USA')
       // Live AR demo in the Input Controller section: strict national, region pinned to AR.
       const arInput = document.getElementById('ar-input') as HTMLInputElement | null;
       const arE164 = document.getElementById('ar-e164');
+      const arFlag = document.getElementById('ar-flag');
+      if (arFlag) arFlag.style.transform = flagTransform('AR');
 
       if (arInput && arE164) {
         ensureEngineReady()

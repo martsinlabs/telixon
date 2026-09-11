@@ -11,7 +11,9 @@ import code from '../../../../components/demos/complete-field.js?raw';
 
 This guide wires the [phone field](/web-sdk/guides/phone-field/) and the
 [region picker](/web-sdk/guides/region-picker/) into one widget, where the picker supplies the
-calling code and the input holds the rest.
+calling code and the input holds the rest. [`RegionPicker`](/web-sdk/region-picker/) sits between
+the list and the phone, while [`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker)
+sits between the picker and the DOM. The [flag sprite](/web-sdk/flags/) draws the flags.
 
 ## Live demo
 
@@ -32,23 +34,33 @@ place after `+44`. The status reads `NATIONAL_PREFIX_PRESENT`.
 
 ## The code
 
-The demo and the source are the same three files. The markup is the region button, the input, and a
-popup with the search box and the list.
+The demo and the source are the same three files. The markup is the region button with a flag
+cell, the input, a popup with the search box and the list, and a status line.
 [`callingCodeInInput: false`](/core/reference/input-controller/#internationalinputcontrollerconfig)
 keeps the calling code out of the input, leaving the selected region to supply it.
 
-The wiring runs both ways. A click on a row calls `select`, which updates the button, hands the
-region to [`setRegion`](/web-sdk/phone-input/#setregion), closes the popup, and returns focus to
-the input. Coming back, the subscriber follows the resolved
-[`state.region`](/web-sdk/phone-input/#phoneinputstate), moving the flag when the digits land in
-another region on the same calling code.
+The script creates three widgets. [`createRegionList`](/web-sdk/region-list/#createregionlist)
+builds the rows with US, CA, and GB pinned on top.
+[`createPhoneInput`](/web-sdk/phone-input/#createphoneinput) binds the input.
+[`createRegionPicker`](/web-sdk/region-picker/#createregionpicker) takes both, which makes the
+phone the owner of the region. A pick reaches [`setRegion`](/web-sdk/phone-input/#setregion). The
+picker follows the phone's resolved [`region`](/web-sdk/phone-input/#phoneinputstate) back, moving
+the flag when the digits land in another region on the same calling code.
 
-The search box doubles as the keyboard cursor, where the arrow keys walk the rows through
-`aria-activedescendant` and Enter picks the active one. Escape closes the popup and hands focus
-back to the region button, while an outside press or focus moving out of the widget closes it too.
+[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wires the button, the search
+box, and the list to the picker and owns the clicks, the keys, the outside press, and the ARIA
+attributes. The demo hands it three functions. `renderOption` builds a row from a flag cell, the
+name, and the calling code, with [`flagTransform`](/web-sdk/flags/#flagtransform) selecting the
+cell. `renderEmpty` builds the row shown when the search matches nothing. `renderTrigger` puts the
+selected region's flag and calling code on the button. `returnFocusTo` sends focus to the input
+after a pick.
 
-Inside a framework component, call each one's [`destroy`](/web-sdk/phone-input/#destroy) on
-unmount and remove the document-level press listener with them.
+Two things stay with the demo. `positionPopup` flips the popup above the field when the viewport
+below cannot fit it, since positioning is the caller's. `renderStatus` draws the placeholder and
+the status from each emitted [state](/web-sdk/phone-input/#phoneinputstate).
+
+Inside a framework component, call [`destroy`](/web-sdk/region-picker/#destroy-1) on the
+attachment and on each widget on unmount.
 
 <Tabs syncKey="source">
 
@@ -66,4 +78,6 @@ unmount and remove the document-level press listener with them.
 
 </Tabs>
 
-`PhoneInput` and `RegionList` never learn about each other. All the wiring lives in the demo's own functions.
+`PhoneInput` and `RegionList` never learn about each other. `RegionPicker` holds the open state,
+the keyboard cursor, and the selection between them. `attachRegionPicker` turns that state into a
+working control.
