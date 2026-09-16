@@ -41,6 +41,7 @@ telixon/
   packages/
     core/          @telixon/core    pure engine, all phone-number logic
     web-sdk/       @telixon/web-sdk headless widgets for the phone input and the region picker, plus the flag sprite
+    angular/       @telixon/angular Angular binding on web-sdk
   apps/
     docs/          landing page and documentation site (telixon.dev), never published to npm
     sandbox/       internal dev workbench (Vite + TS), never published
@@ -49,7 +50,7 @@ telixon/
   ARCHITECTURE.md  this document
 ```
 
-Planned packages (not yet present): `web-components`, `angular`, `react`, `vue`.
+Planned packages (not yet present): `web-components`, `react`, `vue`.
 The layer model below is designed so they slot in without reshaping existing packages.
 
 ## Layer stack
@@ -63,7 +64,8 @@ Each layer adds one concern and depends only on layers beneath it.
 | 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads)                     | layer 1    | present |
 | 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge)  | layer 1    | present |
 | 4     | `@telixon/web-sdk`            | Headless widgets: DOM events to engine ops, region picker, `subscribe` | core       | present |
-| 5     | `angular` / `react` / `vue`   | `subscribe` to framework-native reactive state                         | web-sdk    | planned |
+| 5     | `@telixon/angular`            | Angular providers over the web-sdk widgets                             | web-sdk    | present |
+| 5     | `react` / `vue`               | `subscribe` to framework-native reactive state                         | web-sdk    | planned |
 | 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                      | web-sdk    | planned |
 | 7     | user code                     | All markup, styles, popup positioning                                  | a binding  | n/a     |
 
