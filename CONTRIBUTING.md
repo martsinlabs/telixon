@@ -24,6 +24,7 @@ A pnpm monorepo.
 ```
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
+packages/angular   @telixon/angular Angular binding on web-sdk
 apps/docs          landing page and documentation site (telixon.dev)
 apps/sandbox       internal dev workbench
 examples/          runnable examples, one per topic
@@ -76,6 +77,8 @@ request.
 1. Open a release pull request for the package.
    - Move the `Unreleased` section of `packages/<package>/CHANGELOG.md` under the new version with
      the release date. Add or retarget the comparison links at the bottom of the file.
+   - For `@telixon/angular` the major version follows Angular's. The 20.x line targets Angular 20
+     alone, while a new Angular major starts a new line. The changelog decides the minor and patch.
    - The changelog decides the bump. Entries under `Removed`, or breaking entries under `Changed`,
      make it major; `Added` makes it minor; `Fixed` alone makes it patch.
    - Set `version` in `packages/<package>/package.json` and refresh the lockfile with
@@ -95,7 +98,9 @@ request.
 5. Create the GitHub release from the tag, with the changelog section as the body.
 
 `@telixon/web-sdk` declares `@telixon/core` as a peer dependency; release core first. The web-sdk
-workflow stops before publishing when the core version it needs is not on npm.
+workflow stops before publishing when the core version it needs is not on npm. `@telixon/angular`
+depends on both at the workspace versions; release core and web-sdk first. Its workflow runs the
+same check for both.
 
 ## Engineering standards
 
@@ -155,6 +160,9 @@ These are the canonical engineering standards for Telixon. They are non-negotiab
   - **Polymorphic contract.** Multiple implementations of one interface are selected at runtime
     (for example `InputController` and its `International` / `National` variants).
   - **I/O adapter.** A runtime boundary is bridged behind an interface (for example resource loaders).
+  - **Framework contract.** Angular services, directives, and components are classes because the
+    framework's injector and template compiler require them. The class stays a thin shell while
+    the logic lives in functions.
   - **Cached interface implementation.** The class exists solely to memoize underlying pure
     functions on a per-instance basis (for example `PhoneNumberView` for `PhoneNumber`). Same input must
     produce the same output across calls; the class adds caching alone.

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// Prepares the current package.json for publishing, runs `pnpm publish` with all passed-through
-// args, then restores the source file on success, on failure, and on interrupt. Run from the
-// package directory you want to ship.
+// Prepares the package manifest for publishing, runs `pnpm publish` with all passed-through args,
+// then restores the source files on success, on failure, and on interrupt. Run from the package
+// directory you want to ship. When `publishConfig.directory` names a build output, the manifest in
+// that directory is the one that ships and gets prepared, while the source manifest keeps the
+// directive so pnpm publishes the output and rewrites `workspace:` ranges from the workspace.
 //
-// Preparation:
+// Preparation of the shipped manifest:
 //   - Stamps `bundleSize` with the package's measured size-limit figure. The README size badge
 //     reads the field from the npm registry, so the published manifest carries the number for the
 //     exact version a consumer installs. A measurement failure aborts the publish.
@@ -29,6 +31,7 @@ const STRIP_FIELDS = ['devDependencies', 'scripts', 'packageManager', 'publishCo
 const BUNDLE_ENTRY_BY_PACKAGE = {
   '@telixon/core': '@telixon/core (browser entry)',
   '@telixon/web-sdk': '@telixon/web-sdk',
+  '@telixon/angular': '@telixon/angular',
 };
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -48,33 +51,51 @@ function measureBundleSize(entryName) {
   return `${(entry.size / 1000).toFixed(2)} kB brotli`;
 }
 
-const pkgPath = resolve('package.json');
-const original = readFileSync(pkgPath, 'utf8');
-const pkg = JSON.parse(original);
+function stripFields(pkg, keep = []) {
+  const stripped = STRIP_FIELDS.filter((field) => field in pkg && !keep.includes(field));
+  for (const field of stripped) {
+    delete pkg[field];
+  }
+  return stripped;
+}
 
-const bundleEntry = BUNDLE_ENTRY_BY_PACKAGE[pkg.name];
+const sourcePath = resolve('package.json');
+const sourceOriginal = readFileSync(sourcePath, 'utf8');
+const source = JSON.parse(sourceOriginal);
+
+const publishDirectory = source.publishConfig?.directory;
+const shippedPath = publishDirectory === undefined ? sourcePath : resolve(publishDirectory, 'package.json');
+const shippedOriginal = shippedPath === sourcePath ? sourceOriginal : readFileSync(shippedPath, 'utf8');
+const shipped = shippedPath === sourcePath ? source : JSON.parse(shippedOriginal);
+
+const bundleEntry = BUNDLE_ENTRY_BY_PACKAGE[shipped.name];
 if (bundleEntry) {
-  pkg.bundleSize = measureBundleSize(bundleEntry);
-  console.log(`safe-publish: stamped bundleSize ${pkg.bundleSize}`);
+  shipped.bundleSize = measureBundleSize(bundleEntry);
+  console.log(`safe-publish: stamped bundleSize ${shipped.bundleSize}`);
 } else {
-  console.log(`safe-publish: no size-limit entry mapped for ${pkg.name}, bundleSize not stamped`);
+  console.log(`safe-publish: no size-limit entry mapped for ${shipped.name}, bundleSize not stamped`);
 }
 
-const stripped = STRIP_FIELDS.filter((field) => field in pkg);
-for (const field of stripped) {
-  delete pkg[field];
-}
-
-writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-
+const stripped = stripFields(shipped);
+writeFileSync(shippedPath, JSON.stringify(shipped, null, 2) + '\n');
 console.log(`safe-publish: stripped ${stripped.length ? stripped.join(', ') : '(no fields)'}`);
+
+// With a publish directory, the source manifest keeps only the directive pnpm reads. Its lifecycle
+// scripts go too, since the output is already built.
+if (shippedPath !== sourcePath) {
+  stripFields(source, ['publishConfig']);
+  source.publishConfig = { directory: publishDirectory };
+  writeFileSync(sourcePath, JSON.stringify(source, null, 2) + '\n');
+  console.log(`safe-publish: publishing ${publishDirectory}`);
+}
 
 // Writes back the original bytes, keeping formatting and key order. Safe to call more than once.
 let restored = false;
 function restoreSource() {
   if (restored) return;
   restored = true;
-  writeFileSync(pkgPath, original);
+  writeFileSync(shippedPath, shippedOriginal);
+  if (shippedPath !== sourcePath) writeFileSync(sourcePath, sourceOriginal);
   console.log('safe-publish: source package.json restored');
 }
 

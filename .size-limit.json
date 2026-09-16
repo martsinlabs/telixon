@@ -18,5 +18,10 @@
     "name": "@telixon/web-sdk/flags",
     "path": "packages/web-sdk/dist/flags/index.js",
     "limit": "1.5 kB"
+  },
+  {
+    "name": "@telixon/angular",
+    "path": "packages/angular/dist/fesm2022/telixon-angular.mjs",
+    "limit": "2 kB"
   }
 ]
