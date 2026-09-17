@@ -70,6 +70,48 @@ export type RegionPicker<T = undefined> = {
 };
 
 /**
+ * The listbox id one binding wrote, plus a ready-made id for a row. Both are unique per binding,
+ * which keeps them apart across the pickers on a page. A row's id is what `aria-activedescendant`
+ * points at. The binding itself matches rows by `data-region`. A caller that renders rows before the
+ * binding exists is free to give them ids of its own.
+ */
+export type RegionPickerElementIds = {
+  readonly listbox: string;
+  option(region: RegionCode): string;
+};
+
+/**
+ * Elements {@link bindRegionPicker} wires to a {@link RegionPicker}.
+ *
+ * - `trigger`: the button that opens the list. It gets `type="button"` when the attribute is absent.
+ * - `popup`: the container of the search field and the listbox. It may live anywhere in the
+ *   document, outside the trigger's subtree included.
+ * - `listbox`: the element that holds the rows. Every row carries `data-region`.
+ * - `search`: the search field. Without it the trigger carries the combobox role.
+ * - `returnFocusTo`: the element focused after a pick. The trigger by default.
+ */
+export type BindRegionPickerOptions<T = undefined> = {
+  picker: RegionPicker<T>;
+  trigger: HTMLButtonElement;
+  popup: HTMLElement;
+  listbox: HTMLElement;
+  search?: HTMLInputElement;
+  returnFocusTo?: HTMLElement;
+};
+
+/**
+ * Handle returned by {@link bindRegionPicker}.
+ */
+export type RegionPickerBinding = {
+  /** The listbox id the binding wrote, and an id scheme for the rows. */
+  readonly ids: RegionPickerElementIds;
+  /** Scroll the row under the cursor into view inside the listbox. Call it once the rows are in the DOM. */
+  revealCursor(): void;
+  /** Remove every listener. Idempotent. The elements and their attributes stay. */
+  destroy(): void;
+};
+
+/**
  * Elements and callbacks {@link attachRegionPicker} wires to a {@link RegionPicker}.
  *
  * - `trigger`: the button that opens the list. It gets `type="button"` when the attribute is absent.
@@ -83,16 +125,10 @@ export type RegionPicker<T = undefined> = {
  * - `returnFocusTo`: the element focused after a pick. The trigger by default.
  * - `autoFocus`: focus the search field when the list opens. `true` by default.
  */
-export type AttachRegionPickerOptions<T = undefined> = {
-  picker: RegionPicker<T>;
-  trigger: HTMLButtonElement;
-  popup: HTMLElement;
-  listbox: HTMLElement;
-  search?: HTMLInputElement;
+export type AttachRegionPickerOptions<T = undefined> = BindRegionPickerOptions<T> & {
   renderOption: (option: RegionOption<T>) => HTMLElement;
   renderTrigger?: (selected: RegionOption<T> | null) => void;
   renderEmpty?: () => HTMLElement;
-  returnFocusTo?: HTMLElement;
   autoFocus?: boolean;
 };
 

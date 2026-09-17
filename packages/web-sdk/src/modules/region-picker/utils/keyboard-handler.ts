@@ -2,11 +2,10 @@ import type { RegionCode } from '@telixon/core';
 import { NEXT_ROW_STEP, PREVIOUS_ROW_STEP } from '../constants/cursor';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY, ENTER_KEY, ESCAPE_KEY } from '../constants/keys';
 import type { RegionPicker, RegionPickerState } from '../models';
-import type { PickerRenderer } from './picker-renderer';
 
 export type KeyboardHandlerOptions<T> = {
   picker: RegionPicker<T>;
-  renderer: PickerRenderer<T>;
+  revealCursor: () => void;
   trigger: HTMLButtonElement;
   pick: (region: RegionCode) => void;
 };
@@ -16,7 +15,7 @@ export type KeyboardHandlerOptions<T> = {
  * list open, Enter picks the cursor's row while Escape hands focus to the trigger and closes.
  */
 export function createKeyboardHandler<T>(options: KeyboardHandlerOptions<T>): (event: KeyboardEvent) => void {
-  const { picker, renderer, trigger, pick } = options;
+  const { picker, revealCursor, trigger, pick } = options;
 
   function handleArrow(event: KeyboardEvent, step: number, open: boolean): void {
     event.preventDefault();
@@ -25,7 +24,7 @@ export function createKeyboardHandler<T>(options: KeyboardHandlerOptions<T>): (e
       return;
     }
     picker.moveActive(step);
-    renderer.revealCursor();
+    revealCursor();
   }
 
   function handleEnter(event: KeyboardEvent, state: RegionPickerState<T>): void {

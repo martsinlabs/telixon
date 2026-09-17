@@ -6,6 +6,20 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+### Added
+
+- `bindRegionPicker` wires the behavior of a region picker to a trigger, a popup, and a listbox
+  whose rows the caller renders. It writes the attributes describing the parts once, then leaves
+  the rows and every attribute that follows the state to the caller. `attachRegionPicker` is this
+  binding with the rendering on top.
+
+### Fixed
+
+- A click on a region picker's trigger takes focus to the trigger. Safari leaves focus on the body
+  after a button press, which stranded the keys until focus moved by hand.
+- A press inside a region picker's popup keeps the list open when the popup lives in a shadow root.
+  Such a press reaches the document retargeted to the host, which read as a press outside.
+
 ## [1.1.0] - 2026-09-11
 
 ### Added
