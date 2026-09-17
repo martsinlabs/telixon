@@ -1,29 +1,29 @@
 import type { RegionOption } from '../../region-list/models';
 import type { RegionPickerState } from '../models';
+import { comboboxHost } from './combobox-host';
 import { setActiveDescendant, setExpanded, setRowActive, setRowSelected } from './live-attributes';
 import type { OptionRows } from './option-rows';
-import { scrollRowIntoView } from './scroll-row-into-view';
+import { rowForRegion } from './row-lookup';
 
 export type PickerRendererOptions<T> = {
   trigger: HTMLButtonElement;
   popup: HTMLElement;
-  host: HTMLElement;
   search: HTMLInputElement | null;
   listbox: HTMLElement;
   rows: OptionRows<T>;
   renderTrigger: ((selected: RegionOption<T> | null) => void) | null;
+  revealCursor: () => void;
   autoFocus: boolean;
 };
 
 /** Writes picker state to the DOM. Every part of the state is written only when it changed. */
 export type PickerRenderer<T> = {
   render(state: RegionPickerState<T>): void;
-  /** Scroll the cursor's row into view inside the listbox. */
-  revealCursor(): void;
 };
 
 export function createPickerRenderer<T>(options: PickerRendererOptions<T>): PickerRenderer<T> {
-  const { trigger, popup, host, search, listbox, rows, renderTrigger, autoFocus } = options;
+  const { trigger, popup, search, listbox, rows, renderTrigger, revealCursor, autoFocus } = options;
+  const host: HTMLElement = comboboxHost(trigger, search);
 
   let renderedOptions: readonly RegionOption<T>[] | null = null;
   // `undefined` until the first render, which lets renderTrigger run on attach for an empty selection.
@@ -45,7 +45,7 @@ export function createPickerRenderer<T>(options: PickerRendererOptions<T>): Pick
     }
 
     // The selected row is tracked by element, which covers a row rendered after the selection changed.
-    const nextRow: HTMLElement | null = state.selected === null ? null : rows.rowOf(state.selected);
+    const nextRow: HTMLElement | null = state.selected === null ? null : rowForRegion(listbox, state.selected.region);
     if (nextRow === selectedRow) return;
     if (selectedRow !== null) setRowSelected(selectedRow, false);
     selectedRow = nextRow;
@@ -53,7 +53,7 @@ export function createPickerRenderer<T>(options: PickerRendererOptions<T>): Pick
   }
 
   function renderCursor(state: RegionPickerState<T>): void {
-    const nextRow: HTMLElement | null = state.active === null ? null : rows.rowForRegion(state.active);
+    const nextRow: HTMLElement | null = state.active === null ? null : rowForRegion(listbox, state.active);
     if (nextRow === activeRow) return;
     if (activeRow !== null) setRowActive(activeRow, false);
     activeRow = nextRow;
@@ -63,10 +63,6 @@ export function createPickerRenderer<T>(options: PickerRendererOptions<T>): Pick
 
   function renderQuery(state: RegionPickerState<T>): void {
     if (search !== null && search.value !== state.searchQuery) search.value = state.searchQuery;
-  }
-
-  function revealCursor(): void {
-    if (activeRow !== null) scrollRowIntoView(listbox, activeRow);
   }
 
   function renderVisibility(state: RegionPickerState<T>): void {
@@ -90,5 +86,5 @@ export function createPickerRenderer<T>(options: PickerRendererOptions<T>): Pick
     renderVisibility(state);
   }
 
-  return { render, revealCursor };
+  return { render };
 }

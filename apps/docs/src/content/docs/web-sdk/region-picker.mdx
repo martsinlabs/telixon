@@ -3,12 +3,15 @@ title: RegionPicker
 description: The headless widget behind a region picker's trigger and list.
 ---
 
-The headless widget behind a region picker's trigger and list. It reads its rows from a
-[`RegionList`](/web-sdk/region-list/) and holds the open state, the keyboard cursor, and the
-selected option. Every change emits a [`RegionPickerState`](#regionpickerstate) snapshot. Bound to a
+`createRegionPicker` reads its rows from a [`RegionList`](/web-sdk/region-list/) and holds the open
+state, the keyboard cursor, and the selected option. Every change emits a
+[`RegionPickerState`](#regionpickerstate) snapshot. Bound to a
 [`PhoneInput`](/web-sdk/phone-input/), the phone owns the selected region and the picker follows
-it. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
-[`attachRegionPicker`](#attachregionpicker) wires a trigger, a popup, and a listbox to it.
+it. No emit fires at construction. Read the bootstrap with [`getState`](#getstate).
+
+Two functions take the widget to the DOM. [`bindRegionPicker`](#bindregionpicker) wires the events
+and leaves the rendering to the caller, and [`attachRegionPicker`](#attachregionpicker) renders the
+rows as well.
 
 ## createRegionPicker
 
@@ -153,15 +156,155 @@ Unsubscribes from `regions` and the phone and clears all listeners. Idempotent. 
 phone stay alive. Destroy the picker before or together with the phone; a `select` after the phone
 is gone has nothing to write to.
 
+## bindRegionPicker
+
+```ts
+function bindRegionPicker<T = undefined>(options: BindRegionPickerOptions<T>): RegionPickerBinding;
+```
+
+Wires a trigger, a popup with an optional search field, and a listbox to a picker. Events flow in,
+while the rendering belongs to the caller, which suits a framework whose template already turns the
+picker's state into elements. [`attachRegionPicker`](#attachregionpicker) adds the rendering.
+
+What the binding wires:
+
+- A click on the trigger toggles the list and takes focus to the trigger, which Safari never does
+  on its own. A caller that moves focus into the popup as the list opens still wins, since that
+  move runs on the emit. On the trigger and on the search field, `ArrowDown` and `ArrowUp` open a
+  closed list and move the cursor in an open one. `Enter` picks the cursor's row, moves focus to
+  `returnFocusTo`, and closes. While the list is open, `Enter` never submits a surrounding form.
+  `Escape` returns focus to the trigger and closes. Focus moves before the list closes, which never
+  strands it inside a hidden popup. Keys pressed during IME composition are ignored.
+- Typing in the search field searches the list.
+- A click on a row picks it. A moving pointer moves the cursor. A list scrolling under a resting
+  pointer leaves the cursor in place. The cursor scrolls into view on the arrow keys.
+- A press outside the trigger and the popup closes the list, as does focus leaving them. The press
+  is seen in the capture phase, before any handler on the pressed element. A press inside a shadow
+  root is followed to the element it really landed on.
+- Once, the attributes that describe the parts. On the trigger, `type="button"` when the attribute
+  is absent, `aria-haspopup`, and `aria-controls`. On the search field, or on the trigger without
+  one, `role="combobox"` and `aria-controls`, plus `aria-autocomplete="list"` on the search field.
+  On the list, an id, `role="listbox"`, and `tabindex="-1"`, which keeps a scrollable list out of
+  the tab order. No other attribute follows.
+
+The rows and everything that follows the state stay with the caller:
+
+| What the caller writes  | Where                             | From                         |
+| ----------------------- | --------------------------------- | ---------------------------- |
+| the rows                | the listbox                       | `state.options`              |
+| `hidden`                | the popup                         | `state.open`                 |
+| `aria-expanded`         | the trigger and the combobox host | `state.open`                 |
+| `aria-selected`         | every row                         | `state.selected`             |
+| `data-active`           | the row under the cursor          | `state.active`               |
+| `aria-activedescendant` | the combobox host                 | the cursor row's `id`        |
+| `value`                 | the search field                  | `state.searchQuery`          |
+| focus on open           | the search field                  | the edge from closed to open |
+
+Every row carries `data-region` with its region code, which is how the binding finds the row a
+click, a pointer, or the cursor belongs to. A combobox announces itself through `aria-expanded`. A
+host left without one reaches the screen reader incomplete.
+
+```ts
+const binding = bindRegionPicker({ picker, trigger, popup, search, listbox });
+
+picker.subscribe((state) => {
+  popup.hidden = !state.open;
+  trigger.setAttribute('aria-expanded', String(state.open));
+  search.setAttribute('aria-expanded', String(state.open));
+  if (search.value !== state.searchQuery) search.value = state.searchQuery;
+
+  listbox.replaceChildren(
+    ...state.options.map((option) => {
+      const row = document.createElement('li');
+      row.id = binding.ids.option(option.region);
+      row.dataset.region = option.region;
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', String(option.region === state.selected?.region));
+      if (option.region === state.active) row.dataset.active = 'true';
+      row.textContent = `${option.displayName} +${option.callingCode}`;
+      return row;
+    }),
+  );
+
+  const cursor = state.active === null ? null : listbox.querySelector(`[data-region="${state.active}"]`);
+  if (cursor === null) search.removeAttribute('aria-activedescendant');
+  else search.setAttribute('aria-activedescendant', cursor.id);
+
+  // The rows reach the DOM here, one step after the state changed.
+  binding.revealCursor();
+});
+```
+
+| Field           | Type                | Meaning                                                                                                                            |
+| --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `picker`        | `RegionPicker<T>`   | The picker to wire.                                                                                                                |
+| `trigger`       | `HTMLButtonElement` | The button that opens the list.                                                                                                    |
+| `popup`         | `HTMLElement`       | Holds the search field and the listbox. Presses and focus inside it count as inside the picker. May live anywhere in the document. |
+| `listbox`       | `HTMLElement`       | Holds the rows.                                                                                                                    |
+| `search`        | `HTMLInputElement`  | The search field. Without it the trigger carries the combobox role.                                                                |
+| `returnFocusTo` | `HTMLElement`       | Focused after a pick. The trigger by default.                                                                                      |
+
+### ids
+
+```ts
+readonly ids: { readonly listbox: string; option(region: RegionCode): string };
+```
+
+The listbox id, plus a ready-made id for a row. Both are unique per binding,
+which keeps them apart across the pickers on a page. A listbox that already carries an id keeps it,
+which lets a template own the id and the binding point `aria-controls` at it.
+
+A row's id is never read by the binding, which leaves it with the caller. A framework that renders
+rows on its first pass, before the binding exists, gives them ids of its own and points
+`aria-activedescendant` at those.
+
+### revealCursor
+
+```ts
+revealCursor(): void;
+```
+
+Scrolls the row under the cursor into view inside the listbox. Arrow keys call it already. Call it
+where the rows reach the DOM after the state changed, as a framework renders them, which covers
+the list opening on a fresh row set.
+
+### destroy
+
+```ts
+destroy(): void;
+```
+
+Removes every listener, the document-level one included. Idempotent. The elements and the
+attributes the binding wrote stay.
+
 ## attachRegionPicker
 
 ```ts
 function attachRegionPicker<T = undefined>(options: AttachRegionPickerOptions<T>): RegionPickerAttachment;
+
+type AttachRegionPickerOptions<T = undefined> = BindRegionPickerOptions<T> & {
+  renderOption: (option: RegionOption<T>) => HTMLElement;
+  renderTrigger?: (selected: RegionOption<T> | null) => void;
+  renderEmpty?: () => HTMLElement;
+  autoFocus?: boolean;
+};
 ```
 
-Wires a trigger, a popup, and a listbox to a picker. Events flow in and state flows out. The
-adapter builds no elements of its own. Rows come from `renderOption` and the empty element from
-`renderEmpty`. The trigger's content, the styling, and the popup's position stay with the caller.
+[`bindRegionPicker`](#bindregionpicker) with the rendering on top. Every event above flows in the
+same way, while the state the binding leaves to a caller is written here. The adapter builds no
+elements of its own. Rows come from `renderOption` and the empty element from `renderEmpty`. It
+leaves the trigger's content, the styling, and the popup's position alone.
+
+What the adapter adds:
+
+- The rows, each with `role="option"`, an [id](#ids), and `data-region`. Rows are
+  cached per option object and reused across searches. A localized list yields new rows.
+- The popup's `hidden`, `aria-expanded` on the trigger and the combobox host, `aria-selected` on
+  the selected row, `data-active` on the cursor's row, and `aria-activedescendant` on the host.
+- A query set on the picker, written back to the search field.
+- The search field focused as the list opens, with the list scrolled to the top and the cursor
+  revealed. `autoFocus: false` leaves focus where it is.
+- `renderTrigger`, called on attach and on every change of the selection.
 
 ```html
 <button class="picker-trigger"><span class="picker-code"></span></button>
@@ -193,44 +336,17 @@ const attachment = attachRegionPicker({
 });
 ```
 
-| Field           | Type                                          | Meaning                                                                                       |
-| --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `picker`        | `RegionPicker<T>`                             | The picker to wire.                                                                           |
-| `trigger`       | `HTMLButtonElement`                           | The button that opens the list. It gets `type="button"` when the attribute is absent.         |
-| `popup`         | `HTMLElement`                                 | Holds the search field and the listbox. Shown and hidden through `hidden`. May live anywhere. |
-| `listbox`       | `HTMLElement`                                 | Receives the rows.                                                                            |
-| `search`        | `HTMLInputElement`                            | The search field. Without it the trigger carries the combobox role.                           |
-| `renderOption`  | `(option: RegionOption<T>) => HTMLElement`    | Builds a row. The adapter adds `role`, `id`, `data-region`, `aria-selected`, `data-active`.   |
-| `renderTrigger` | `(selected: RegionOption<T> \| null) => void` | Called on attach and on every change of the selection.                                        |
-| `renderEmpty`   | `() => HTMLElement`                           | Builds the element shown while the rows are empty.                                            |
-| `returnFocusTo` | `HTMLElement`                                 | Focused after a pick. The trigger by default.                                                 |
-| `autoFocus`     | `boolean`                                     | Focus the search field when the list opens. `true` by default.                                |
+| Field           | Type                                          | Meaning                                                        |
+| --------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| `renderOption`  | `(option: RegionOption<T>) => HTMLElement`    | Builds a row. The adapter adds the option attributes itself.   |
+| `renderTrigger` | `(selected: RegionOption<T> \| null) => void` | Called on attach and on every change of the selection.         |
+| `renderEmpty`   | `() => HTMLElement`                           | Builds the element shown while the rows are empty.             |
+| `autoFocus`     | `boolean`                                     | Focus the search field when the list opens. `true` by default. |
 
-What the adapter wires:
-
-- A click on the trigger toggles the list. A closing click returns focus to the trigger when focus
-  was inside the popup. On the trigger and on the search field, `ArrowDown` and `ArrowUp` open a
-  closed list and move the cursor in an open one. `Enter` picks the cursor's row, moves focus to
-  `returnFocusTo`, and closes. While the list is open, `Enter` never submits a surrounding form.
-  `Escape` returns focus to the trigger and closes. Keys pressed during IME composition are
-  ignored.
-- Typing in the search field searches. A query set on the picker is written back to the field.
-- A click on a row picks it. A moving pointer moves the cursor. A list scrolling under a resting
-  pointer leaves the cursor in place. The cursor scrolls into view within the listbox on open and
-  on keyboard moves.
-- A press outside the trigger and the popup closes the list, as does focus leaving them. The press
-  is seen in the capture phase, before any handler on the pressed element.
-- On the trigger, `aria-haspopup`, `aria-controls`, and `aria-expanded`. On the search field, or
-  on the trigger without one, `role="combobox"`, `aria-controls`, `aria-expanded`, and
-  `aria-activedescendant`, plus `aria-autocomplete="list"` on the search field. On the list,
-  `role="listbox"` and `tabindex="-1"`, which keeps a scrollable list out of the tab order. On
-  every row, `role="option"`, an id, `data-region`, `aria-selected` for the selected region, and
-  `data-active` for the cursor. Ids are unique per attachment.
-- Rows are cached per option object and reused across searches. A localized list yields new rows.
+The elements come from [`BindRegionPickerOptions`](#bindregionpicker), which these options extend.
 
 The trigger's accessible name stays with the caller, as does its content. A stylesheet that sets
-`display` on the popup must keep `[hidden]` hidden. Give the list and the phone the same filters
-when the rows must match what the phone accepts.
+`display` on the popup must keep `[hidden]` hidden.
 
 ### destroy
 
@@ -238,6 +354,6 @@ when the rows must match what the phone accepts.
 destroy(): void;
 ```
 
-Removes every listener, the document-level one included, and unsubscribes from the picker.
-Idempotent. The picker stays alive, as do the rendered elements and their attributes. Call it when
-the elements leave the page.
+Removes every listener the binding added and unsubscribes from the picker. Idempotent. The picker
+stays alive, as do the rendered elements and their attributes. Call it when the elements leave the
+page.
