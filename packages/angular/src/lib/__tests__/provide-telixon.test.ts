@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-import '@angular/compiler';
 import {
   ErrorHandler,
   PLATFORM_ID,
@@ -8,9 +6,8 @@ import {
   type Provider,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { ensureEngineReady } from '@telixon/core';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideTelixon } from '../provide-telixon';
 
 vi.mock('@telixon/core', async (importOriginal) => ({
@@ -19,10 +16,6 @@ vi.mock('@telixon/core', async (importOriginal) => ({
 }));
 
 const load = vi.mocked(ensureEngineReady);
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
-});
 
 beforeEach(() => {
   load.mockClear();

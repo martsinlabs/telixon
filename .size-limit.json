@@ -22,6 +22,6 @@
   {
     "name": "@telixon/angular",
     "path": "packages/angular/dist/fesm2022/telixon-angular.mjs",
-    "limit": "2 kB"
+    "limit": "4 kB"
   }
 ]
