@@ -64,7 +64,7 @@ Each layer adds one concern and depends only on layers beneath it.
 | 2     | `core/src/modules`            | Resolution (DFA walk) + query methods (pure reads)                     | layer 1    | present |
 | 3     | `core/src/resource-*`         | How the engine artifact is loaded and decoded (node / browser / edge)  | layer 1    | present |
 | 4     | `@telixon/web-sdk`            | Headless widgets: DOM events to engine ops, region picker, `subscribe` | core       | present |
-| 5     | `@telixon/angular`            | Angular providers over the web-sdk widgets                             | web-sdk    | present |
+| 5     | `@telixon/angular`            | Angular providers and directives over the web-sdk widgets              | web-sdk    | present |
 | 5     | `react` / `vue`               | `subscribe` to framework-native reactive state                         | web-sdk    | planned |
 | 6     | `web-components`              | Optional drop-in `<tel-input>`; the only renderer                      | web-sdk    | planned |
 | 7     | user code                     | All markup, styles, popup positioning                                  | a binding  | n/a     |

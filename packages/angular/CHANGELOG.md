@@ -8,6 +8,12 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ### Added
 
+- `TelixonPhoneInput` turns an `<input>` into a phone field that formats as the user types and
+  works as a form control. The form value is the number in E.164 while it is valid and `null`
+  otherwise. An invalid number reports its fault under `telixonPhone`. A field with no digits after
+  the calling code reports none, which leaves emptiness to `Validators.required`. The field follows
+  its options when they change. The directive exposes the web-sdk widget as `phone`, its state as
+  `state`, and `focus()`.
 - `provideTelixon` adds Telixon's providers to an Angular application. With `preloadEngine: true`
   the engine loads after the first render, in the browser only. A failed load reports to
   `ErrorHandler`.

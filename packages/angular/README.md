@@ -1,6 +1,6 @@
 # @telixon/angular
 
-The Angular binding for [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk). `provideTelixon` adds Telixon's providers to an application and can preload the phone-number engine.
+Phone fields for Angular. A directive turns any `<input>` into a phone field that formats as the user types, keeps the caret and the history, and works as a form control, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk).
 
 **[Documentation](https://telixon.dev/web-sdk/)**
 
@@ -15,13 +15,36 @@ npm install @telixon/angular
 ## Quick start
 
 ```ts
-import { ApplicationConfig } from '@angular/core';
-import { provideTelixon } from '@telixon/angular';
+import { Component } from '@angular/core';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TelixonPhoneInput } from '@telixon/angular';
 
-export const appConfig: ApplicationConfig = {
-  providers: [provideTelixon({ preloadEngine: true })],
-};
+@Component({
+  selector: 'app-contact',
+  imports: [ReactiveFormsModule, TelixonPhoneInput],
+  template: `
+    <input
+      #phone="telixonPhoneInput"
+      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
+      [formControl]="control"
+      [placeholder]="phone.state()?.placeholder ?? ''"
+    />
+
+    @if (control.errors?.['telixonPhone']; as error) {
+      <p>{{ error.kind }}</p>
+    } @else if (control.errors?.['required']) {
+      <p>Phone number is required.</p>
+    }
+  `,
+})
+export class Contact {
+  readonly control = new FormControl<string | null>(null, Validators.required);
+}
 ```
+
+The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`. A field with no digits after the calling code reports none, which leaves emptiness to `Validators.required`. A partial number keeps the value `null`, which makes `Validators.required` report next to `telixonPhone`. Check `telixonPhone` first, as the example does. The options are those of `createPhoneInput`. The field follows them when they change. A bare `telixonPhoneInput` attribute makes an international field. The directive exposes the web-sdk widget as `phone` and its latest state as `state`, and `focus()` moves focus into the field.
+
+`provideTelixon({ preloadEngine: true })` loads the engine right after the first render, which suits a field on the first screen.
 
 ## Versions
 
