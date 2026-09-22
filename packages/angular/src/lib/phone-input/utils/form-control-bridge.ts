@@ -6,6 +6,7 @@ import { formError } from './form-error';
 import { formValue } from './form-value';
 import { requiresRebuild } from './requires-rebuild';
 import { sameValidationError } from './same-validation-error';
+import { toWidgetWrite, type WidgetWrite } from './widget-write';
 
 export type FormControlBridgeOptions = {
   element: HTMLInputElement;
@@ -75,12 +76,18 @@ export function createFormControlBridge(options: FormControlBridgeOptions): Form
     if (errorChanged) onErrorChange();
   }
 
-  function create(nextOptions: TelixonPhoneInputOptions): void {
+  function create(nextOptions: TelixonPhoneInputOptions): PhoneInput {
     const widget: PhoneInput = createPhoneInput({ ...nextOptions, input: element });
     appliedOptions = nextOptions;
     unsubscribe = widget.subscribe((widgetState: PhoneInputState): void => sync(widget, widgetState));
     phone.set(widget);
-    sync(widget, widget.getState());
+    return widget;
+  }
+
+  function show(widget: PhoneInput, text: string, options: TelixonPhoneInputOptions): void {
+    const write: WidgetWrite = toWidgetWrite(text, options);
+    if (write.region !== null) widget.setRegion(write.region);
+    widget.setValue(write.text);
   }
 
   function teardown(): void {
@@ -90,22 +97,42 @@ export function createFormControlBridge(options: FormControlBridgeOptions): Form
     phone.set(null);
   }
 
-  function rebuild(widget: PhoneInput, nextOptions: TelixonPhoneInputOptions): void {
-    // Without national digits the field holds a calling code at most, which the new options seed again.
-    const startsOver: boolean = widget.getPhoneNumber().getNationalNumber() === '';
-    teardown();
-    if (startsOver) renderer.setProperty(element, 'value', '');
-    // The new widget reads the text the element holds and formats it again.
-    create(nextOptions);
-  }
-
   function withReporting(mode: Reporting, run: () => void): void {
+    const previous: Reporting = reporting;
     reporting = mode;
     try {
       run();
     } finally {
-      reporting = 'edit';
+      reporting = previous;
     }
+  }
+
+  // Several widget calls reach the form as their sum, reported once under `mode`.
+  function build(mode: Reporting, nextOptions: TelixonPhoneInputOptions, text: string | null): void {
+    const held = { value: heldValue, error: heldError, text: heldText };
+    withReporting('write', () => {
+      const widget: PhoneInput = create(nextOptions);
+      if (text === null) return;
+      show(widget, text, nextOptions);
+      widget.clearHistory();
+    });
+    heldValue = held.value;
+    heldError = held.error;
+    heldText = held.text;
+
+    const widget: PhoneInput | null = phone();
+    if (widget !== null) withReporting(mode, () => sync(widget, widget.getState()));
+  }
+
+  function rebuild(widget: PhoneInput, nextOptions: TelixonPhoneInputOptions): void {
+    const phoneNumber: PhoneNumber = widget.getPhoneNumber();
+    // A valid number moves over whole, whatever the new options show. Other text stays for the new widget to read.
+    const carried: string | null = phoneNumber.isValid() ? phoneNumber.formatE164() : null;
+    // Without national digits the field holds a calling code at most, which the new options seed again.
+    const startsOver: boolean = carried !== null || phoneNumber.getNationalNumber() === '';
+    teardown();
+    if (startsOver) renderer.setProperty(element, 'value', '');
+    build('options', nextOptions, carried);
   }
 
   return {
@@ -115,9 +142,15 @@ export function createFormControlBridge(options: FormControlBridgeOptions): Form
     attach(nextOptions: TelixonPhoneInputOptions): void {
       if (isDestroyed || phone() !== null) return;
       // A field still holding exactly what the form wrote tells the form nothing new about its value.
-      const holdsWrittenText: boolean = writtenText !== null && element.value === writtenText;
+      const written: string | null = writtenText !== null && element.value === writtenText ? writtenText : null;
       writtenText = null;
-      withReporting(holdsWrittenText ? 'seed' : 'edit', () => create(nextOptions));
+      if (written === null) {
+        build('edit', nextOptions, null);
+        return;
+      }
+      // The widget takes the written number through `show`, the same way as a later write.
+      renderer.setProperty(element, 'value', '');
+      build('seed', nextOptions, written === '' ? null : written);
     },
 
     update(nextOptions: TelixonPhoneInputOptions): void {
@@ -144,7 +177,8 @@ export function createFormControlBridge(options: FormControlBridgeOptions): Form
         renderer.setProperty(element, 'value', shown);
         return;
       }
-      withReporting('write', () => widget.setValue(shown));
+      const options: TelixonPhoneInputOptions | null = appliedOptions;
+      if (options !== null) withReporting('write', () => show(widget, shown, options));
     },
 
     error(): ValidationError | null {

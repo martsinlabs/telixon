@@ -1,7 +1,7 @@
 {
   "name": "@telixon/angular",
   "version": "20.0.0",
-  "description": "Angular binding for @telixon/web-sdk.",
+  "description": "Phone fields for Angular, built on @telixon/web-sdk.",
   "keywords": [
     "angular",
     "phone-input",
@@ -21,8 +21,15 @@
   },
   "license": "Apache-2.0",
   "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "type": "module",
+  "exports": {
+    "./flags/flags.css": {
+      "default": "./flags/flags.css"
+    }
+  },
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "prepublishOnly": "pnpm run build",

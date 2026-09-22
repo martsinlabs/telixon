@@ -1,0 +1,65 @@
+<button
+  #trigger
+  type="button"
+  tabindex="0"
+  class="tlx-region-picker__trigger"
+  [attr.aria-label]="triggerAriaLabel()"
+  [attr.aria-expanded]="isOpen()"
+  [disabled]="isInert()"
+>
+  @if (triggerTemplate(); as custom) {
+    <ng-container
+      [ngTemplateOutlet]="custom.template"
+      [ngTemplateOutletContext]="{ $implicit: region(), option: selected() }"
+    />
+  } @else {
+    <telixon-flag [region]="region()" />
+    @if (callingCode(); as code) {
+      <span class="tlx-region-picker__calling-code">+{{ code }}</span>
+    }
+    <span class="tlx-region-picker__chevron" aria-hidden="true"></span>
+  }
+</button>
+
+<div #popup popover="manual" class="tlx-region-picker__popup" [hidden]="!isOpen()">
+  <input
+    #search
+    type="text"
+    class="tlx-region-picker__search"
+    autocomplete="off"
+    autocapitalize="none"
+    spellcheck="false"
+    [attr.aria-label]="searchLabel()"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-activedescendant]="activeRowId()"
+    [placeholder]="searchLabel()"
+    [value]="state()?.searchQuery ?? ''"
+  />
+  <ul #listbox class="tlx-region-picker__listbox" [attr.aria-label]="triggerLabel()">
+    @if (isOpen()) {
+      @for (option of state()?.options ?? []; track option.region) {
+        <li
+          class="tlx-region-picker__option"
+          role="option"
+          [id]="rowId(option.region)"
+          [attr.data-region]="option.region"
+          [attr.aria-selected]="option.region === selected()?.region"
+          [attr.data-active]="option.region === state()?.active ? 'true' : null"
+        >
+          @if (optionTemplate(); as custom) {
+            <ng-container [ngTemplateOutlet]="custom.template" [ngTemplateOutletContext]="{ $implicit: option }" />
+          } @else {
+            <telixon-flag [region]="option.region" />
+            <span class="tlx-region-picker__option-name">{{ option.displayName }}</span>
+            <span class="tlx-region-picker__option-calling-code">+{{ option.callingCode }}</span>
+          }
+        </li>
+      }
+    }
+  </ul>
+  <div class="tlx-region-picker__empty" role="status">
+    @if (isOpen() && state()?.options?.length === 0) {
+      {{ emptyText() }}
+    }
+  </div>
+</div>

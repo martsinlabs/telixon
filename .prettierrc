@@ -4,5 +4,13 @@
   "trailingComma": "all",
   "printWidth": 120,
   "tabWidth": 2,
-  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-packagejson"]
+  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-packagejson"],
+  "overrides": [
+    {
+      "files": "packages/angular/**/*.html",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
 }

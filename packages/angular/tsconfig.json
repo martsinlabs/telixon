@@ -14,7 +14,8 @@
     "paths": {
       "@telixon/core": ["../core/src/index.browser.ts"],
       "@telixon/core/*": ["../core/src/*"],
-      "@telixon/web-sdk": ["../web-sdk/src/index.ts"]
+      "@telixon/web-sdk": ["../web-sdk/src/index.ts"],
+      "@telixon/web-sdk/flags": ["../web-sdk/src/flags/index.ts"]
     }
   },
   "include": ["src"]

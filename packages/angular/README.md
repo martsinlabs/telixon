@@ -1,6 +1,8 @@
 # @telixon/angular
 
-Phone fields for Angular. A directive turns any `<input>` into a phone field that formats as the user types, keeps the caret and the history, and works as a form control, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk).
+Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk). A directive turns an `<input>` into a phone field that works as a form control. A region picker adds the flag and a searchable list of regions.
+
+The two are a construction kit. The directive goes on your own `<input>`, while the picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
 
 **[Documentation](https://telixon.dev/web-sdk/)**
 
@@ -10,41 +12,56 @@ Phone fields for Angular. A directive turns any `<input>` into a phone field tha
 npm install @telixon/angular
 ```
 
-`@telixon/core` and `@telixon/web-sdk` come with it. The package re-exports both, which puts every widget, function, and type behind one import.
+`@telixon/core` and `@telixon/web-sdk` come with it, behind one import.
 
 ## Quick start
 
+Add the flags to the application's styles:
+
+```css
+/* styles.css */
+@import '@telixon/angular/flags/flags.css';
+```
+
+`provideTelixon({ preloadEngine: true })` loads the engine in the background right after the first render:
+
+```ts
+// app.config.ts
+import { type ApplicationConfig } from '@angular/core';
+import { provideTelixon } from '@telixon/angular';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideTelixon({ preloadEngine: true })],
+};
+```
+
+A phone field with a region picker:
+
 ```ts
 import { Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TelixonPhoneInput } from '@telixon/angular';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { TelixonPhoneInput, TelixonRegionPicker } from '@telixon/angular';
 
 @Component({
   selector: 'app-contact',
-  imports: [ReactiveFormsModule, TelixonPhoneInput],
+  imports: [ReactiveFormsModule, TelixonPhoneInput, TelixonRegionPicker],
   template: `
+    <telixon-region-picker [for]="phone" [prioritize]="['US', 'CA', 'GB']" />
+
     <input
       #phone="telixonPhoneInput"
-      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
+      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
       [formControl]="control"
       [placeholder]="phone.state()?.placeholder ?? ''"
     />
-
-    @if (control.errors?.['telixonPhone']; as error) {
-      <p>{{ error.kind }}</p>
-    } @else if (control.errors?.['required']) {
-      <p>Phone number is required.</p>
-    }
   `,
 })
 export class Contact {
-  readonly control = new FormControl<string | null>(null, Validators.required);
+  readonly control = new FormControl<string | null>(null);
 }
 ```
 
-The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`. A field with no digits after the calling code reports none, which leaves emptiness to `Validators.required`. A partial number keeps the value `null`, which makes `Validators.required` report next to `telixonPhone`. Check `telixonPhone` first, as the example does. The options are those of `createPhoneInput`. The field follows them when they change. A bare `telixonPhoneInput` attribute makes an international field. The directive exposes the web-sdk widget as `phone` and its latest state as `state`, and `focus()` moves focus into the field.
-
-`provideTelixon({ preloadEngine: true })` loads the engine right after the first render, which suits a field on the first screen.
+The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`.
 
 ## Versions
 
