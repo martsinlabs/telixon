@@ -1,0 +1,138 @@
+/* Every rule sits in the telixon layer inside :where(), at zero specificity. Any rule of the application wins. */
+@layer telixon {
+  /* Centered on the line it sits in, such as the prefix of a form field, where the flag has no text baseline. */
+  :where(.tlx-region-picker) {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
+  :where(.tlx-region-picker__trigger) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375em;
+    padding: 0.5em 0.625em;
+    border: 1px solid var(--tlx-picker-border, color-mix(in srgb, currentColor 30%, transparent));
+    border-radius: var(--tlx-picker-radius, 0.375em);
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  :where(.tlx-region-picker__trigger:disabled) {
+    cursor: default;
+  }
+
+  :where(.tlx-region-picker[data-disabled] .tlx-region-picker__trigger) {
+    opacity: 0.55;
+  }
+
+  :where(.tlx-region-picker__chevron) {
+    width: 0.4em;
+    height: 0.4em;
+    margin-block-start: -0.2em;
+    border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    opacity: 0.6;
+    transform: rotate(45deg);
+  }
+
+  /* The popup opens in the top layer, above every ancestor. The component sets its top and left. */
+  :where(.tlx-region-picker__popup) {
+    position: fixed;
+    inset: auto;
+    box-sizing: border-box;
+    width: var(--tlx-picker-popup-width, 20em);
+    max-width: 90vw;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--tlx-picker-border, color-mix(in srgb, currentColor 30%, transparent));
+    border-radius: var(--tlx-picker-radius, 0.375em);
+    background: var(--tlx-picker-surface, Canvas);
+    color: var(--tlx-picker-text, CanvasText);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+  }
+
+  /* A browser without the Popover API keeps the popup inside the picker. */
+  @supports not selector(:popover-open) {
+    :where(.tlx-region-picker__popup) {
+      position: absolute;
+      inset-block-start: calc(100% + var(--tlx-picker-popup-offset-y, 4px));
+      inset-inline-start: var(--tlx-picker-popup-offset-x, 0px);
+      z-index: 1000;
+    }
+
+    :where(.tlx-region-picker__popup[data-side='top']) {
+      inset-block: auto calc(100% + var(--tlx-picker-popup-offset-y, 4px));
+    }
+
+    :where(.tlx-region-picker__popup[data-align='end']) {
+      inset-inline: auto calc(-1 * var(--tlx-picker-popup-offset-x, 0px));
+    }
+  }
+
+  :where(.tlx-region-picker__popup[hidden]) {
+    display: none;
+  }
+
+  /* The browser's own focus ring, drawn inside the field so the popup's edge does not clip it. */
+  :where(.tlx-region-picker__search) {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.625em 0.75em;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    outline-offset: -2px;
+  }
+
+  :where(.tlx-region-picker__listbox) {
+    max-height: var(--tlx-picker-list-height, 16em);
+    margin: 0;
+    padding: 0.25em;
+    border-block-start: 1px solid var(--tlx-picker-border, color-mix(in srgb, currentColor 30%, transparent));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+  }
+
+  :where(.tlx-region-picker__option) {
+    display: flex;
+    align-items: center;
+    gap: 0.625em;
+    padding: 0.4375em 0.5em;
+    border-radius: var(--tlx-picker-radius, 0.375em);
+    cursor: pointer;
+  }
+
+  :where(.tlx-region-picker__option[data-active]) {
+    background: var(--tlx-picker-active, color-mix(in srgb, currentColor 10%, transparent));
+  }
+
+  :where(.tlx-region-picker__option[aria-selected='true']) {
+    font-weight: 600;
+  }
+
+  :where(.tlx-region-picker__option-name) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :where(.tlx-region-picker__option-calling-code, .tlx-region-picker__empty) {
+    opacity: 0.65;
+  }
+
+  :where(.tlx-region-picker__empty) {
+    padding: 0.75em;
+  }
+
+  :where(.tlx-region-picker__empty:empty) {
+    display: none;
+  }
+}

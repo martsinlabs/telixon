@@ -10,9 +10,11 @@ import {
   inject,
   input,
   Renderer2,
+  signal,
   untracked,
   type InputSignalWithTransform,
   type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import {
   NG_VALIDATORS,
@@ -31,8 +33,7 @@ import { toPhoneInputOptions } from './utils/phone-input-options';
 const NOOP = (): void => undefined;
 
 /**
- * Turns an `<input>` into a phone field. The field formats as the user types, keeps the caret and the
- * history, and works as a form control.
+ * Turns an `<input>` into a phone field that works as a form control.
  *
  * The form value is the number in E.164 while it is valid and `null` otherwise. The validator reports
  * an invalid number under `telixonPhone` with the kind of the fault. A field with no digits after the
@@ -59,9 +60,12 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator {
     transform: toPhoneInputOptions,
   });
 
-  private readonly element: HTMLInputElement = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
+  /** The input the directive sits on. */
+  readonly element: HTMLInputElement = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
+
   private readonly renderer: Renderer2 = inject(Renderer2);
   private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly isDisabled: WritableSignal<boolean> = signal(false);
 
   private onChange: (value: string | null) => void = NOOP;
   private onTouched: () => void = NOOP;
@@ -89,6 +93,9 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator {
 
   /** The field's latest state, `null` until the engine has loaded. */
   readonly state: Signal<PhoneInputState | null> = this.bridge.state;
+
+  /** Whether the form has disabled the field. */
+  readonly disabled: Signal<boolean> = this.isDisabled.asReadonly();
 
   constructor() {
     const errorHandler: ErrorHandler = inject(ErrorHandler);
@@ -126,6 +133,7 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator {
 
   setDisabledState(isDisabled: boolean): void {
     this.renderer.setProperty(this.element, 'disabled', isDisabled);
+    this.isDisabled.set(isDisabled);
   }
 
   validate(): ValidationErrors | null {

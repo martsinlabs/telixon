@@ -364,6 +364,61 @@ describe('TelixonPhoneInput: writing a value', () => {
     subscription.unsubscribe();
   });
 
+  it('takes a written number apart for a field that keeps the calling code out of its text', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+    const { control, directive } = fixture.componentInstance;
+
+    control.setValue('+442071838750');
+
+    expect(directive().state()?.region).toBe('GB');
+    expect(inputOf(fixture).value).toBe('20 7183 8750');
+    expect(control.valid).toBe(true);
+    expect(control.value).toBe('+442071838750');
+    expect(control.pristine).toBe(true);
+  });
+
+  it('takes apart a number written before the engine loads, with nothing to undo', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    fixture.componentInstance.control.setValue('+14155550132');
+    await settle(fixture);
+    const { control, directive } = fixture.componentInstance;
+
+    expect(inputOf(fixture).value).toBe('415-555-0132');
+    expect(control.valid).toBe(true);
+    expect(control.pristine).toBe(true);
+    expect(directive().phone()?.canUndo()).toBe(false);
+  });
+
+  it('writes a number into a national field in its national format and follows its region', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({ mode: 'national', defaultRegion: 'GB' });
+    await settle(fixture);
+    const { control, directive } = fixture.componentInstance;
+
+    control.setValue('+442071838750');
+    expect(inputOf(fixture).value).toBe('020 7183 8750');
+    expect(control.valid).toBe(true);
+
+    control.setValue('+14155550132');
+    expect(directive().state()?.region).toBe('US');
+    expect(inputOf(fixture).value).toBe('(415) 555-0132');
+    expect(control.valid).toBe(true);
+  });
+
   it('clears the field for null', async () => {
     configure();
     const fixture = await mount(ReactiveHost);
@@ -435,6 +490,20 @@ describe('TelixonPhoneInput: options', () => {
     expect(control.value).toBe('+14155550132');
   });
 
+  it('hands the form a value that a new widget changes', async () => {
+    configure();
+    const fixture = await mount(ReactiveHost);
+    const { control } = fixture.componentInstance;
+    typeText(inputOf(fixture), '+14155550132');
+    expect(control.value).toBe('+14155550132');
+
+    fixture.componentInstance.options.set({ mode: 'international', strict: true, regionFilter: ['GB'] });
+    await settle(fixture);
+
+    expect(control.value).toBe(null);
+    expect(control.invalid).toBe(true);
+  });
+
   it('leaves the control pristine when new options keep the value', async () => {
     configure();
     const fixture = TestBed.createComponent(ReactiveHost);
@@ -474,6 +543,65 @@ describe('TelixonPhoneInput: options', () => {
 
     expect(fixture.componentInstance.control.value).toBe('+1415');
     expect(fixture.componentInstance.control.pristine).toBe(true);
+  });
+
+  it('carries a valid number into a new widget, whatever the new options show', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({ mode: 'national', defaultRegion: 'US' });
+    fixture.componentInstance.control.setValue('+14155550132');
+    await settle(fixture);
+    const { control } = fixture.componentInstance;
+    const emitted: (string | null)[] = [];
+    const subscription = control.valueChanges.subscribe((value) => emitted.push(value));
+
+    fixture.componentInstance.options.set({ mode: 'international', defaultRegion: 'US' });
+    await settle(fixture);
+    expect(inputOf(fixture).value).toBe('1 415-555-0132');
+
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+    expect(inputOf(fixture).value).toBe('415-555-0132');
+
+    fixture.componentInstance.options.set({ mode: 'national', defaultRegion: 'GB' });
+    await settle(fixture);
+    expect(inputOf(fixture).value).toBe('(415) 555-0132');
+
+    expect(control.value).toBe('+14155550132');
+    expect(control.valid).toBe(true);
+    expect(control.pristine).toBe(true);
+    expect(emitted).toEqual([]);
+    subscription.unsubscribe();
+  });
+
+  it('keeps a region picked for a field through a new widget', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+    const { control, directive } = fixture.componentInstance;
+    directive().phone()?.setRegion('GB');
+    typeText(inputOf(fixture), '2071838750');
+    expect(control.value).toBe('+442071838750');
+
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      strict: true,
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+
+    expect(directive().state()?.region).toBe('GB');
+    expect(control.value).toBe('+442071838750');
   });
 
   it('seeds the new calling code when the default region changes under an untouched field', async () => {

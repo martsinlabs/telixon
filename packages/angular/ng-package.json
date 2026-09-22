@@ -4,5 +4,6 @@
   "lib": {
     "entryFile": "src/index.ts"
   },
-  "allowedNonPeerDependencies": ["@telixon/core", "@telixon/web-sdk"]
+  "allowedNonPeerDependencies": ["@telixon/core", "@telixon/web-sdk"],
+  "assets": ["flags/flags.css"]
 }
