@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node ../../scripts/generate-size.mjs && astro build",
+    "build": "pnpm run demos && node ../../scripts/generate-size.mjs && astro build",
     "check:links": "node ../../scripts/check-links.mjs dist",
+    "demos": "pnpm --filter @telixon/example-angular-material build && node ../../scripts/sync-demos.mjs",
     "dev": "astro dev",
     "preview": "astro preview",
     "typecheck": "astro check"

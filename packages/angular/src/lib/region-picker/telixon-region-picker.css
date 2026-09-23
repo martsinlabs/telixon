@@ -112,8 +112,16 @@
     background: var(--tlx-picker-active, color-mix(in srgb, currentColor 10%, transparent));
   }
 
-  :where(.tlx-region-picker__option[aria-selected='true']) {
-    font-weight: 600;
+  /* The selected row ends with a check mark, drawn like the chevron, which a custom row template keeps. */
+  :where(.tlx-region-picker__option[aria-selected='true'])::after {
+    content: '';
+    flex-shrink: 0;
+    width: 0.35em;
+    height: 0.7em;
+    margin-block-start: -0.25em;
+    border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    transform: rotate(45deg);
   }
 
   :where(.tlx-region-picker__option-name) {

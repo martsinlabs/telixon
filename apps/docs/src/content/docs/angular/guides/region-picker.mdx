@@ -1,0 +1,92 @@
+---
+title: Add a region picker
+description: A region picker linked to a phone field, pinned regions, localized names, and the picker restyled.
+---
+
+[`TelixonRegionPicker`](/angular/region-picker/) is a trigger with the flag and a searchable list
+of regions, linked to a field through `[for]`.
+
+## Link it to the field
+
+```angular-html
+<telixon-region-picker [for]="phone" [prioritize]="['US', 'CA', 'GB']" />
+
+<input
+  #phone="telixonPhoneInput"
+  [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+  [formControl]="control"
+/>
+```
+
+Opening the list and picking the United Kingdom puts `+44` on the trigger and `7400 123456` in
+the placeholder. Typing `2071838750` then leaves the control holding `+442071838750`.
+
+## Pin and name the regions
+
+`prioritize` puts regions first, in the given order. `sort` orders the rest, alphabetically by
+default or by calling code. The names come from the application's `LOCALE_ID`, which `locale`
+overrides:
+
+```angular-html
+<telixon-region-picker
+  [for]="phone"
+  locale="de"
+  triggerLabel="Region wählen"
+  searchLabel="Suchen"
+  emptyText="Keine Treffer"
+/>
+```
+
+## Restyle it
+
+The trigger and the selected row, restyled from the application's stylesheet:
+
+```css
+.tlx-region-picker__trigger {
+  border-color: #b7d9cc;
+  background: #f2faf7;
+}
+
+.tlx-region-picker__option[aria-selected='true'] {
+  color: #1f7a5c;
+}
+```
+
+The [reference](/angular/region-picker/#styles) lists the parts and the custom properties they
+share.
+
+## Replace the trigger and the rows
+
+Two templates replace the content of the trigger and of every row.
+[`TelixonFlag`](/angular/flag/) draws a flag inside either one:
+
+```angular-html
+<telixon-region-picker [for]="phone" sort="callingCode">
+  <ng-template telixonRegionTrigger let-region>
+    <telixon-flag [region]="region" />
+    <span>{{ region }}</span>
+  </ng-template>
+  <ng-template telixonRegionOption let-option>
+    <telixon-flag [region]="option.region" />
+    <span>+{{ option.callingCode }} {{ option.displayName }}</span>
+  </ng-template>
+</telixon-region-picker>
+```
+
+The [reference](/angular/region-picker/#templates) describes both contexts.
+
+## Place the list
+
+`anchor` lines the list up with another element, such as the whole field:
+
+```angular-html
+<div class="field" #field>
+  <telixon-region-picker [for]="phone" [anchor]="field" />
+  <input #phone="telixonPhoneInput" telixonPhoneInput [formControl]="control" />
+</div>
+```
+
+`popupOffset` moves it.
+
+[Use it with Angular Material](/angular/guides/material/) puts the picker inside `mat-form-field`,
+where the anchor is a selector.

@@ -1,0 +1,25 @@
+---
+title: provideTelixon
+description: The providers of @telixon/angular, with an engine preload for a field on the first screen.
+---
+
+```ts
+function provideTelixon(options?: TelixonOptions): EnvironmentProviders;
+```
+
+Adds Telixon's providers to an application. Every directive and component works without it. The
+call adds the engine preload.
+
+```ts
+export const appConfig: ApplicationConfig = {
+  providers: [provideTelixon({ preloadEngine: true })],
+};
+```
+
+## TelixonOptions
+
+| Field           | Type      | Meaning                                                                                                       |
+| --------------- | --------- | ------------------------------------------------------------------------------------------------------------- |
+| `preloadEngine` | `boolean` | Start loading the engine right after the application's first render, in the browser only; `false` by default. |
+
+A field on the first screen then finds the engine ready. A failed load reports to `ErrorHandler`.

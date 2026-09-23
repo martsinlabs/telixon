@@ -1,0 +1,98 @@
+---
+title: Build a phone field
+description: A phone field on a reactive form control, with its value, its errors, and its placeholder in use.
+---
+
+[`TelixonPhoneInput`](/angular/phone-input/) turns the `<input>` of a form control into a phone
+field.
+
+## The control
+
+```ts
+import { Component } from '@angular/core';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TelixonPhoneInput } from '@telixon/angular';
+
+@Component({
+  selector: 'app-contact',
+  imports: [ReactiveFormsModule, TelixonPhoneInput],
+  template: `
+    <input
+      type="tel"
+      #phone="telixonPhoneInput"
+      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
+      [formControl]="control"
+      [placeholder]="phone.state()?.placeholder ?? ''"
+    />
+  `,
+})
+export class Contact {
+  readonly control = new FormControl<string | null>(null, Validators.required);
+}
+```
+
+With the calling code inside the field, the input opens showing `1 `, the seed of the default
+region. Typing `4155550132` leaves it at `1 415-555-0132`, while the control holds `+14155550132`
+from the last digit on. The [options](/angular/phone-input/#options) are those of
+`createPhoneInput`.
+
+## Show the errors
+
+The fault of an invalid number sits under `telixonPhone` as a
+[`ValidationError`](/core/reference/validation-error/). A partial number keeps the value `null`,
+which makes `required` report next to it. Check `telixonPhone` first:
+
+```angular-html
+@if (control.touched) {
+  @if (control.errors?.['telixonPhone']; as fault) {
+    <p>{{ message(fault) }}</p>
+  } @else if (control.errors?.['required']) {
+    <p>Phone number is required.</p>
+  }
+}
+```
+
+```ts
+message(fault: ValidationError): string {
+  switch (fault.kind) {
+    case 'TOO_SHORT':
+    case 'POSSIBLE_LOCAL_ONLY':
+      return 'This number is too short.';
+    case 'TOO_LONG':
+      return 'This number is too long.';
+    default:
+      return 'This number does not exist.';
+  }
+}
+```
+
+`ValidationError` comes from `@telixon/angular`.
+
+## The placeholder
+
+`[placeholder]="phone.state()?.placeholder ?? ''"` puts the example number of the region on the
+input, in the field's own format:
+
+| Options                                          | Placeholder      |
+| ------------------------------------------------ | ---------------- |
+| `{ mode: 'national', defaultRegion: 'US' }`      | `(201) 555-0123` |
+| `{ mode: 'international', defaultRegion: 'US' }` | `1 201-555-0123` |
+| with `display: { callingCodeInInput: false }`    | `201-555-0123`   |
+| `{ mode: 'national', defaultRegion: 'GB' }`      | `07400 123456`   |
+
+## Template-driven forms
+
+The directive works with `ngModel` the same way:
+
+```angular-html
+<input name="phone" [telixonPhoneInput]="{ mode: 'international' }" [(ngModel)]="phone" #model="ngModel" />
+```
+
+`phone` receives `+14155550132` once the number is valid and `null` otherwise, while `model.errors`
+carries `telixonPhone`.
+
+## Write a value
+
+Writing `+442071838750` to the control shows `44 20 7183 8750`.
+
+[Add a region picker](/angular/guides/region-picker/) links a picker to the field.
