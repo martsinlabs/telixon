@@ -6,6 +6,8 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-23
+
 ### Added
 
 - `bindRegionPicker` wires the behavior of a region picker to a trigger, a popup, and a listbox
@@ -62,7 +64,8 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 - `regionToFlagEmoji` mapping a region code to its flag emoji.
 - `@telixon/core` as a peer dependency; the engine loads through it directly.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.1.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.2.0...HEAD
+[1.2.0]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.1.0...web-sdk@v1.2.0
 [1.1.0]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.1...web-sdk@v1.1.0
 [1.0.1]: https://github.com/martsinlabs/telixon/compare/web-sdk@v1.0.0...web-sdk@v1.0.1
 [1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/web-sdk@v1.0.0
