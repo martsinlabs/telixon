@@ -14,6 +14,14 @@ Both are built on [`@telixon/web-sdk`](/web-sdk/).
 
 <Tabs syncKey="pkg">
 
+<TabItem label="Angular CLI">
+
+```sh
+ng add @telixon/angular
+```
+
+</TabItem>
+
 <TabItem label="npm">
 
 ```sh
@@ -48,7 +56,9 @@ bun add @telixon/angular
 
 </Tabs>
 
-`@telixon/core` and `@telixon/web-sdk` install with it. The package re-exports both.
+`ng add` installs the package, puts the flags stylesheet in the application's styles, and provides
+`provideTelixon` with the engine preload, which covers the next two steps. `@telixon/core` and
+`@telixon/web-sdk` install with it. The package re-exports both.
 
 ## Add the flags
 

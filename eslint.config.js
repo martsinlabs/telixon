@@ -6,7 +6,7 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

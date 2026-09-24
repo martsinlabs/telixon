@@ -27,5 +27,7 @@ Angular major, with minor and patch versions for the package's own changes.
   `ErrorHandler`.
 - The package depends on `@telixon/core` and `@telixon/web-sdk` and re-exports both, which puts
   every widget, function, and type behind one import.
+- `ng add @telixon/angular` puts the flags stylesheet in the application's styles and provides
+  `provideTelixon` in its root providers, with the engine preload unless `--preload-engine=false`.
 
 [Unreleased]: https://github.com/martsinlabs/telixon/commits/main/packages/angular
