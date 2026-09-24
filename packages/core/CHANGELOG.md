@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-09-24
+
 ### Changed
 
 - The engine metadata moves to google/libphonenumber v9.0.38 (from v9.0.37).
@@ -14,6 +16,11 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ### Fixed
 
+- A national input controller without national digits reports its own region. It reported the
+  calling code's primary region, which showed a Canadian field as US and dropped a `setRegion`
+  call on an empty field.
+- `getValidationError` returns `null` for a valid number whose length is dialed only locally, such
+  as Canada's seven-digit `310` numbers. It reported `POSSIBLE_LOCAL_ONLY` while `isValid` was true.
 - A selection reported past the stored value is clamped to its bounds before it is kept, keeping
   `currentState` and the history snapshots coherent for coerced degenerate input.
 
@@ -82,7 +89,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.2...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.3...HEAD
+[1.1.3]: https://github.com/martsinlabs/telixon/compare/core@v1.1.2...core@v1.1.3
 [1.1.2]: https://github.com/martsinlabs/telixon/compare/core@v1.1.1...core@v1.1.2
 [1.1.1]: https://github.com/martsinlabs/telixon/compare/core@v1.1.0...core@v1.1.1
 [1.1.0]: https://github.com/martsinlabs/telixon/compare/core@v1.0.1...core@v1.1.0
