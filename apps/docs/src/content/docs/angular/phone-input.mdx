@@ -1,0 +1,112 @@
+---
+title: TelixonPhoneInput
+description: The directive that turns an input into a phone field and a form control.
+---
+
+A directive on `input[telixonPhoneInput]`, exported as `telixonPhoneInput`. It attaches a
+[`PhoneInput`](/web-sdk/phone-input/) to the element once the engine has loaded and registers
+itself as the control's value accessor and validator. Until then the element is a plain input, which
+is also what it stays on the server.
+
+```angular-html
+<input #phone="telixonPhoneInput" [telixonPhoneInput]="options" [formControl]="control" />
+```
+
+## Options
+
+`[telixonPhoneInput]` takes a `TelixonPhoneInputOptions`, the
+[`PhoneInputOptions`](/web-sdk/phone-input/#phoneinputoptions) of `createPhoneInput` without
+`input` and `initialValue`. A bare `telixonPhoneInput` attribute stands for
+`{ mode: 'international' }`.
+
+New `regionFilter` and `numberTypeFilter` values apply to the widget it has. Any other new option
+replaces the widget. A valid number moves into the new widget whole, while other text stays for
+the new widget to read. A field with no digits after the calling code starts over, which lets a new
+`defaultRegion` seed its calling code.
+
+## Form value
+
+The number in E.164 while it is valid and `null` otherwise. The control turns dirty on the first
+edit, the way any input does.
+
+A written value reaches the widget in the shape the field shows. `+442071838750` shows
+`20 7183 8750` in a field that keeps the calling code outside, with the United Kingdom as its
+region, `020 7183 8750` in a national field, and `44 20 7183 8750` with the calling code inside. The
+control stays pristine. A value written before the engine has loaded shows as written until the
+field is live.
+
+## Validation
+
+An invalid number reports its
+[`ValidationError`](/core/reference/validation-error/) under `telixonPhone`:
+
+```ts
+control.errors; // { telixonPhone: { kind: 'TOO_SHORT', minLength: 10 } }
+```
+
+A field with no digits after the calling code reports nothing, which leaves emptiness to
+`Validators.required`. The seeded calling code of an untouched field counts as no digits. A number
+that is valid without its trunk prefix, such as `2071838750` in a national United Kingdom field,
+reports nothing either, while the widget's own state still carries the
+`NATIONAL_PREFIX_MISSING` hint.
+
+The validator runs again whenever the fault changes while the value stays `null`, which moves a
+form from `TOO_SHORT` to `TOO_LONG` as the user keeps typing.
+
+## Members
+
+### options
+
+```ts
+readonly options: InputSignalWithTransform<TelixonPhoneInputOptions, TelixonPhoneInputOptions | ''>;
+```
+
+The options the field runs with.
+
+### phone
+
+```ts
+readonly phone: Signal<PhoneInput | null>;
+```
+
+The web-sdk widget behind the field, `null` until the engine has loaded. It changes when new
+options replace the widget, which a picker linked through `[for]` follows.
+
+### state
+
+```ts
+readonly state: Signal<PhoneInputState | null>;
+```
+
+The field's latest [`PhoneInputState`](/web-sdk/phone-input/#phoneinputstate), `null` until the
+engine has loaded.
+
+### disabled
+
+```ts
+readonly disabled: Signal<boolean>;
+```
+
+Whether the form has disabled the control.
+
+### element
+
+```ts
+readonly element: HTMLInputElement;
+```
+
+The input the directive sits on.
+
+### focus
+
+```ts
+focus(options?: FocusOptions): void;
+```
+
+Moves focus into the field.
+
+## The engine
+
+The directive calls [`ensureEngineReady`](/core/load-the-engine/) after the first render. A failed
+load reports to `ErrorHandler`. [`provideTelixon`](/angular/provide-telixon/) starts the load
+earlier.

@@ -43,7 +43,15 @@ export default [
     },
   },
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/engine/**', '**/.cache/**', '**/.astro/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      '**/engine/**',
+      '**/.cache/**',
+      '**/.astro/**',
+      '**/public/demos/**',
+    ],
   },
   prettier,
 ];

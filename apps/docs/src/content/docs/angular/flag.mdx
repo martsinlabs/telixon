@@ -1,0 +1,34 @@
+---
+title: TelixonFlag
+description: The flag of a region, cut from the web-sdk sprite sheet.
+---
+
+A component on `telixon-flag`. It shows the cell of its region from the
+[sprite sheet](/web-sdk/flags/) of `@telixon/web-sdk`. The flag is decorative and carries
+`aria-hidden`, which leaves the region's name to the text next to it.
+
+```angular-html
+<telixon-flag region="US" />
+```
+
+## Inputs
+
+| Input    | Type                 | Meaning                                                               |
+| -------- | -------------------- | --------------------------------------------------------------------- |
+| `region` | `RegionCode \| null` | Required. The region whose flag shows; `null` shows the neutral flag. |
+
+## The stylesheet
+
+`@telixon/angular/flags/flags.css` defines the cell and the sheet and carries the images. Import it
+once in the application's styles:
+
+```css
+@import '@telixon/angular/flags/flags.css';
+```
+
+A component with shadow DOM imports it in its own styles as well, since the application's
+stylesheet does not reach into a shadow root.
+
+The cell is `1.5em` wide with a `4 / 3` aspect ratio. Set the width of `.tlx-flag` to size the
+flag. The package re-exports [`flagTransform`](/web-sdk/flags/#flagtransform) and
+[`flagOffset`](/web-sdk/flags/#flagoffset) for markup of your own.

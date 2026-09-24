@@ -1,0 +1,14 @@
+---
+// The Angular Material demo is a custom element, built from examples/angular/material into
+// public/demos. Its stylesheet carries the Material theme, which follows the site's color scheme.
+import DemoFrame from './DemoFrame.astro';
+---
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" />
+<link rel="stylesheet" href="/demos/angular-material/styles.css" />
+
+<DemoFrame>
+  <telixon-material-demo></telixon-material-demo>
+</DemoFrame>
+
+<script type="module" src="/demos/angular-material/main.js" is:inline></script>

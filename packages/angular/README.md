@@ -4,7 +4,7 @@ Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/pa
 
 The two are a construction kit. The directive goes on your own `<input>`, while the picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
 
-**[Documentation](https://telixon.dev/web-sdk/)**
+**[Documentation](https://telixon.dev/angular/)**
 
 ## Install
 
@@ -49,6 +49,7 @@ import { TelixonPhoneInput, TelixonRegionPicker } from '@telixon/angular';
     <telixon-region-picker [for]="phone" [prioritize]="['US', 'CA', 'GB']" />
 
     <input
+      type="tel"
       #phone="telixonPhoneInput"
       [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
       [formControl]="control"
@@ -65,7 +66,7 @@ The form value is the number in E.164 while it is valid and `null` otherwise. An
 
 ## Versions
 
-The major version follows Angular's. `@telixon/angular` 20 targets Angular 20. Each Angular major gets its own line of the package. The package's own changes bump the minor and patch versions.
+The major version follows Angular's, where `@telixon/angular` 20 targets Angular 20. The package's own changes bump the minor and patch versions.
 
 ## Support
 
