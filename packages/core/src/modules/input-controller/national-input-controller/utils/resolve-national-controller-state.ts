@@ -53,10 +53,12 @@ export function resolveNationalControllerState(
       // Strict never leaves the preferred region: report it even when the digits resolve elsewhere (NANP shares a calling code).
       region = resourceProvider.regionIds[regionIndex] ?? null;
     } else {
-      // No specific region (possible but not valid): fall back to the calling code's primary region.
-      const fallbackRegionIndex: number = formatRef
-        ? regionIndex
-        : resolvePrimaryRegionIndex(snapshot.callingCodeState, regionIndex);
+      // A possible number that names no territory reports the calling code's primary region, while a field
+      // without national digits has nothing to resolve and keeps its own region.
+      const fallbackRegionIndex: number =
+        formatRef || snapshot.nationalDigits === ''
+          ? regionIndex
+          : resolvePrimaryRegionIndex(snapshot.callingCodeState, regionIndex);
       region = resolveRegionCodeOrFallback(
         snapshot.callingCodeState,
         snapshot.endState,

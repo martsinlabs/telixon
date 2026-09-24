@@ -1,7 +1,15 @@
 import { getExampleNumber } from '@telixon/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createInternationalInputController } from '../../../input-controller/international-input-controller';
+import type { InputController } from '../../../input-controller/models';
+import { createNationalInputController } from '../../../input-controller/national-input-controller';
 import { parsePhoneNumber } from '../../../parse-phone-number';
+import type { PhoneNumber } from '../../models';
+
+function typed(controller: InputController, text: string): PhoneNumber {
+  controller.setValue(text);
+  return controller.getPhoneNumber();
+}
 
 const US_MOBILE = getExampleNumber('US', 'MOBILE');
 const AE_MOBILE = getExampleNumber('AE', 'MOBILE');
@@ -57,6 +65,15 @@ describe('PhoneNumber.getValidationError', () => {
     expect(error).toEqual({ kind: 'POSSIBLE_LOCAL_ONLY' });
   });
 
+  // Canada's seven-digit 310 numbers are valid UANs, while seven digits stay a local-only length under calling code 1.
+  it('returns null for a valid number whose length is dialed only locally', () => {
+    const phoneNumber = parsePhoneNumber('+13104334');
+
+    expect(phoneNumber.isValid()).toBe(true);
+    expect(phoneNumber.isPossibleWithReason()).toBe('IS_POSSIBLE_LOCAL_ONLY');
+    expect(phoneNumber.getValidationError()).toBe(null);
+  });
+
   it('returns NATIONAL_PREFIX_MISSING when a required prefix is absent', () => {
     const error = parsePhoneNumber(AE_MOBILE, { defaultRegion: 'AE' }).getValidationError();
     expect(error).toEqual({ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' });
@@ -78,5 +95,33 @@ describe('PhoneNumber.getValidationError', () => {
     const controller = createInternationalInputController({});
 
     expect(controller.getPhoneNumber().getValidationError()).toEqual({ kind: 'EMPTY' });
+  });
+});
+
+describe('PhoneNumber.getValidationError: one verdict from every entry point', () => {
+  it.each([
+    ['parsePhoneNumber', () => parsePhoneNumber('+13104334')],
+    ['a national field', () => typed(createNationalInputController({ defaultRegion: 'CA' }), '3104334')],
+    ['an international field', () => typed(createInternationalInputController({}), '+13104334')],
+    [
+      'a field with the calling code outside',
+      () =>
+        typed(
+          createInternationalInputController({ defaultRegion: 'CA', display: { callingCodeInInput: false } }),
+          '3104334',
+        ),
+    ],
+  ])('%s holds a valid 310 number without a fault', (_name, resolve) => {
+    const phoneNumber = resolve();
+
+    expect(phoneNumber.isValid()).toBe(true);
+    expect(phoneNumber.getValidationError()).toBe(null);
+  });
+
+  it.each([
+    ['parsePhoneNumber', () => parsePhoneNumber('5550132', { defaultRegion: 'US' })],
+    ['a national field', () => typed(createNationalInputController({ defaultRegion: 'US' }), '5550132')],
+  ])('%s still reports a local-only number that is not valid', (_name, resolve) => {
+    expect(resolve().getValidationError()).toEqual({ kind: 'POSSIBLE_LOCAL_ONLY' });
   });
 });

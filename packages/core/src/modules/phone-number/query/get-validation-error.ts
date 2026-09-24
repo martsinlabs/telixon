@@ -55,10 +55,9 @@ export function getValidationError(
   if (reason === 'TOO_LONG') return { kind: 'TOO_LONG', maxLength: getMaxLength(nationalMask) };
   if (reason === 'INVALID_LENGTH') return { kind: 'INVALID_LENGTH', possibleLengths: getPossibleLengths(nationalMask) };
 
-  // Possible only for local dialing (e.g. a subscriber number without its area code): an incompleteness case, distinct from a pattern fault.
-  if (reason === 'IS_POSSIBLE_LOCAL_ONLY') return { kind: 'POSSIBLE_LOCAL_ONLY' };
-
-  if (!valid) return { kind: 'PATTERN_MISMATCH' };
+  // A local-only length, such as a subscriber number without its area code, is an incomplete number.
+  if (!valid)
+    return reason === 'IS_POSSIBLE_LOCAL_ONLY' ? { kind: 'POSSIBLE_LOCAL_ONLY' } : { kind: 'PATTERN_MISMATCH' };
 
   // International input legitimately omits the trunk prefix; only national-mode input can be missing it.
   if (readAsNational && !nationalPrefixPresent) {
