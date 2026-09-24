@@ -18,10 +18,11 @@ type ValidationError =
 
 The fault to correct in the input. Returned by
 [`getValidationError`](/core/reference/phone-number/#getvalidationerror), which is `null` when
-none applies. Five of the nine variants carry data that names the fix. Since the union is
-discriminated on `kind`, a `switch` narrows every variant. With a
-declared return type on the switching function, a newly added variant stops compiling until every
-`switch` handles it. The kinds mirror Google libphonenumber where applicable.
+none applies. A valid number reports `null`, or `NATIONAL_PREFIX_MISSING` where its national
+format expects a trunk prefix the input omits. Five of the nine variants carry data that names the
+fix. Since the union is discriminated on `kind`, a `switch` narrows every variant. With a declared
+return type on the switching function, a newly added variant stops compiling until every `switch`
+handles it. The kinds mirror Google libphonenumber where applicable.
 
 ## Variants
 
