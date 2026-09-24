@@ -9,14 +9,16 @@ The two are a construction kit. The directive goes on your own `<input>`, while 
 ## Install
 
 ```bash
-npm install @telixon/angular
+ng add @telixon/angular
 ```
 
-`@telixon/core` and `@telixon/web-sdk` come with it, behind one import.
+`ng add` installs the package, puts the flags stylesheet in the application's styles, and provides `provideTelixon` with the engine preload.
 
-## Quick start
+Or install the package and take the other two steps by hand:
 
-Add the flags to the application's styles:
+```bash
+npm install @telixon/angular
+```
 
 ```css
 /* styles.css */
@@ -34,6 +36,8 @@ export const appConfig: ApplicationConfig = {
   providers: [provideTelixon({ preloadEngine: true })],
 };
 ```
+
+## Quick start
 
 A phone field with a region picker:
 

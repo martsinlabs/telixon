@@ -31,9 +31,9 @@
     }
   },
   "scripts": {
-    "build": "ng-packagr -p ng-package.json",
+    "build": "ng-packagr -p ng-package.json && node scripts/build-schematics.mjs",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.lib.json"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.lib.json && tsc --noEmit -p tsconfig.schematics.json"
   },
   "dependencies": {
     "@telixon/core": "workspace:^",
@@ -43,6 +43,8 @@
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "2.7.2",
     "@analogjs/vitest-angular": "2.7.2",
+    "@angular-devkit/core": "~20.3.37",
+    "@angular-devkit/schematics": "~20.3.37",
     "@angular/build": "~20.3.37",
     "@angular/common": "~20.3.0",
     "@angular/compiler": "~20.3.0",
@@ -50,6 +52,7 @@
     "@angular/core": "~20.3.0",
     "@angular/forms": "~20.3.0",
     "@angular/platform-browser": "~20.3.0",
+    "@schematics/angular": "~20.3.37",
     "jsdom": "^28.0.0",
     "ng-packagr": "~20.3.0",
     "rxjs": "^7.8.0",
@@ -67,5 +70,9 @@
   "publishConfig": {
     "access": "public",
     "directory": "dist"
-  }
+  },
+  "ng-add": {
+    "save": "dependencies"
+  },
+  "schematics": "./schematics/collection.json"
 }

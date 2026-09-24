@@ -14,6 +14,7 @@ export default defineConfig({
         test: { name: 'packages', exclude: [...configDefaults.exclude, '**/conformance/**', 'packages/angular/**'] },
       },
       './packages/angular/vitest.config.ts',
+      './packages/angular/vitest.schematics.config.ts',
     ],
   },
 });
