@@ -16,6 +16,7 @@ import { TelixonPhoneInput, TelixonRegionPicker, type ValidationError } from '@t
       <input
         matInput
         type="tel"
+        autocomplete="tel"
         #phone="telixonPhoneInput"
         [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
         [formControl]="control"
@@ -28,7 +29,7 @@ import { TelixonPhoneInput, TelixonRegionPicker, type ValidationError } from '@t
         <mat-error>Phone number is required.</mat-error>
       }
 
-      <mat-hint>We only call about your order.</mat-hint>
+      <mat-hint>Pick the country, then type the number.</mat-hint>
     </mat-form-field>
   `,
 })

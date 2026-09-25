@@ -54,6 +54,7 @@ import { TelixonPhoneInput, TelixonRegionPicker } from '@telixon/angular';
 
     <input
       type="tel"
+      autocomplete="tel"
       #phone="telixonPhoneInput"
       [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
       [formControl]="control"

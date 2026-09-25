@@ -8,13 +8,25 @@
     "sourceMap": true,
     "inlineSources": true,
     "types": [],
-    "paths": {}
+    "paths": {},
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "angularCompilerOptions": {
     "compilationMode": "partial",
     "strictTemplates": true,
     "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true
+    "strictInputAccessModifiers": true,
+    "strictStandalone": true,
+    "strictInputTypes": true,
+    "strictOutputEventTypes": true,
+    "strictDomEventTypes": true,
+    "typeCheckHostBindings": true,
+    "extendedDiagnostics": {
+      "defaultCategory": "error"
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/__tests__/**", "src/test-setup.ts"]

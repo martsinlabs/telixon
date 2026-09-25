@@ -8,26 +8,26 @@ import AngularMaterialDemo from '../../../../components/AngularMaterialDemo.astr
 import contact from '../../../../../../../examples/angular/material/src/contact.ts?raw';
 import styles from '../../../../../../../examples/angular/material/src/styles.scss?raw';
 
-[`TelixonPhoneInput`](/angular/phone-input/) shares the input with `matInput`, while the picker goes
-in as a text prefix. Material's floating label, outline notch, and error state follow the field on
-their own.
+[`TelixonPhoneInput`](/angular/phone-input/) shares one `<input>` with `matInput`. The picker goes
+into the form field as a text prefix. Material's floating label, outline notch, and error state
+follow the field without extra code.
 
 ## Live demo
 
 Pick the United Kingdom and type `2071838750`. The label floats and the field shows `20 7183 8750`,
-while the control holds `+442071838750`. Leave the field after `2071` and Material shows
-`This number is too short.` in its error color. Clear it and the required message takes over.
+while the control holds `+442071838750`. Leave the field after `2071` and Material shows the error.
 
 <AngularMaterialDemo />
 
 ## The code
 
-The demo runs the component and the stylesheet below. `matTextPrefix` places the picker on the text
-line, while `anchor=".mdc-text-field"` names the box Material draws around the field, which the list
-lines up with. The `telixonPhone` check comes before `required`, as in
-[Build a phone field](/angular/guides/phone-field/#show-the-errors). The stylesheet carries the
-Material theme, the flags, and one rule that drops the trigger's border inside the field. The rule
-belongs in the global styles, where it reaches the picker.
+The demo runs the component and the stylesheet shown below. In the component, `matTextPrefix`
+places the picker on the text line of the form field. `anchor=".mdc-text-field"` names the box
+Material draws around the field. The list lines up with that box. The `telixonPhone` check comes
+before the `required` check, for the reason
+[Build a phone field](/angular/guides/phone-field/#show-the-errors) gives. The stylesheet carries
+the Material theme, the flags, and one rule that removes the trigger's border inside the form field.
+That rule belongs in the global styles, because component styles do not reach the picker.
 
 <Tabs syncKey="source">
 

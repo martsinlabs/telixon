@@ -3,12 +3,18 @@ title: Getting started
 description: Install @telixon/angular and put a phone field with a region picker into a form.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import contact from '../../../../../../examples/angular/kitchen-sink/src/app/docs/getting-started.ts?raw';
+import ManualSetup from './_manual-setup.mdx';
 
-`@telixon/angular` puts phone fields into Angular forms. [`TelixonPhoneInput`](/angular/phone-input/)
-turns an `<input>` into a phone field that works as a form control, while
-[`TelixonRegionPicker`](/angular/region-picker/) adds the flag and a searchable list of regions.
-Both are built on [`@telixon/web-sdk`](/web-sdk/).
+`@telixon/angular` has two parts. [`TelixonPhoneInput`](/angular/phone-input/) is a directive that
+makes an `<input>` a phone form control. [`TelixonRegionPicker`](/angular/region-picker/) is a
+component that adds the flag and a searchable list of regions next to the input. Both are built on
+[`@telixon/web-sdk`](/web-sdk/).
+
+Each Angular major gets its own line of the package, starting with 20 for Angular 20. The package
+renders on the server and hydrates. Its end-to-end suite runs on Chromium, Firefox, and WebKit
+against a prerendered page.
 
 ## Install
 
@@ -20,6 +26,9 @@ Both are built on [`@telixon/web-sdk`](/web-sdk/).
 ng add @telixon/angular
 ```
 
+`ng add` installs the package, adds the flags stylesheet to the application's styles, and registers
+`provideTelixon` with the engine preload. Nothing else is needed before the first field.
+
 </TabItem>
 
 <TabItem label="npm">
@@ -27,6 +36,8 @@ ng add @telixon/angular
 ```sh
 npm install @telixon/angular
 ```
+
+<ManualSetup />
 
 </TabItem>
 
@@ -36,6 +47,8 @@ npm install @telixon/angular
 pnpm add @telixon/angular
 ```
 
+<ManualSetup />
+
 </TabItem>
 
 <TabItem label="Yarn">
@@ -43,6 +56,8 @@ pnpm add @telixon/angular
 ```sh
 yarn add @telixon/angular
 ```
+
+<ManualSetup />
 
 </TabItem>
 
@@ -52,74 +67,33 @@ yarn add @telixon/angular
 bun add @telixon/angular
 ```
 
+<ManualSetup />
+
 </TabItem>
 
 </Tabs>
 
-`ng add` installs the package, puts the flags stylesheet in the application's styles, and provides
-`provideTelixon` with the engine preload, which covers the next two steps. `@telixon/core` and
-`@telixon/web-sdk` install with it. The package re-exports both.
-
-## Add the flags
-
-```css
-/* styles.css */
-@import '@telixon/angular/flags/flags.css';
-```
-
-The picker draws its flags from this [sprite sheet](/angular/flag/).
-
-## Provide
-
-```ts
-// app.config.ts
-import { type ApplicationConfig } from '@angular/core';
-import { provideTelixon } from '@telixon/angular';
-
-export const appConfig: ApplicationConfig = {
-  providers: [provideTelixon({ preloadEngine: true })],
-};
-```
-
-[`provideTelixon`](/angular/provide-telixon/) with `preloadEngine` loads the engine in the background
-right after the first render. Without it, the first field loads the engine itself.
+The package depends on `@telixon/core` and `@telixon/web-sdk` and re-exports both. One import covers
+every widget, function, and type.
 
 ## A phone field
 
-```ts
-import { Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { TelixonPhoneInput, TelixonRegionPicker } from '@telixon/angular';
+A phone field and a region picker, linked through `[for]`:
 
-@Component({
-  selector: 'app-contact',
-  imports: [ReactiveFormsModule, TelixonPhoneInput, TelixonRegionPicker],
-  template: `
-    <telixon-region-picker [for]="phone" [prioritize]="['US', 'CA', 'GB']" />
+<Code lang="ts" code={contact} title="contact.ts" />
 
-    <input
-      type="tel"
-      #phone="telixonPhoneInput"
-      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
-      [formControl]="control"
-      [placeholder]="phone.state()?.placeholder ?? ''"
-    />
-  `,
-})
-export class Contact {
-  readonly control = new FormControl<string | null>(null);
-}
-```
-
-The field opens with the United States flag on the picker and `201-555-0123` as its placeholder.
-Typing `4155550132` leaves it showing `415-555-0132` while the control holds `+14155550132`. A
-partial number holds `null` and reports its fault:
+At first the picker shows the United States flag and the field shows the placeholder
+`201-555-0123`. After typing `4155550132` the field shows `415-555-0132` while the control holds
+`+14155550132`.
+For a partial number the control holds `null` and reports the fault:
 
 ```ts
 control.value; // null
 control.errors; // { telixonPhone: { kind: 'TOO_SHORT', minLength: 10 } }
 ```
 
-[Build a phone field](/angular/guides/phone-field/) covers the form contract and the error messages,
-[Add a region picker](/angular/guides/region-picker/) the picker and its styles, and
-[Use it with Angular Material](/angular/guides/material/) the same field inside `mat-form-field`.
+- [Build a phone field](/angular/guides/phone-field/) explains the form contract and the error
+  messages.
+- [Add a region picker](/angular/guides/region-picker/) covers the picker and its styles.
+- [Use it with Angular Material](/angular/guides/material/) puts the same field inside
+  `mat-form-field`.

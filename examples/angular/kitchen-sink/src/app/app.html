@@ -1,0 +1,213 @@
+<main>
+  <h1>Telixon Angular kitchen sink</h1>
+
+  <section id="outside">
+    <h2>Calling code outside the input</h2>
+    <label for="outside-input">Phone</label>
+    <div class="field">
+      <telixon-region-picker data-testid="outside-picker" [for]="outsideField" [prioritize]="['US', 'CA', 'GB']" />
+      <input
+        id="outside-input"
+        data-testid="outside-input"
+        type="tel"
+        autocomplete="off"
+        #outsideField="telixonPhoneInput"
+        [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+        [formControl]="outside"
+        [placeholder]="outsideField.state()?.placeholder ?? ''"
+      />
+    </div>
+    <output data-testid="outside-value">{{ outside.value ?? 'null' }}</output>
+    <output class="fault" data-testid="outside-error">{{ outside.errors?.['telixonPhone']?.kind ?? 'none' }}</output>
+  </section>
+
+  <section id="inside">
+    <h2>Calling code inside the input</h2>
+    <label for="inside-input">Phone</label>
+    <div class="field">
+      <telixon-region-picker data-testid="inside-picker" [for]="insideField" [prioritize]="['US', 'CA', 'GB']" />
+      <input
+        id="inside-input"
+        data-testid="inside-input"
+        type="tel"
+        autocomplete="off"
+        #insideField="telixonPhoneInput"
+        [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
+        [formControl]="inside"
+      />
+    </div>
+    <output data-testid="inside-value">{{ inside.value ?? 'null' }}</output>
+    <output class="fault" data-testid="inside-error">{{ inside.errors?.['telixonPhone']?.kind ?? 'none' }}</output>
+  </section>
+
+  <section id="national">
+    <h2>National field</h2>
+    <label for="national-input">Phone</label>
+    <input
+      id="national-input"
+      data-testid="national-input"
+      type="tel"
+      autocomplete="off"
+      #nationalField="telixonPhoneInput"
+      [telixonPhoneInput]="{ mode: 'national', defaultRegion: 'GB' }"
+      [formControl]="national"
+      [placeholder]="nationalField.state()?.placeholder ?? ''"
+    />
+    <output data-testid="national-value">{{ national.value ?? 'null' }}</output>
+  </section>
+
+  <section id="template">
+    <h2>Template-driven field</h2>
+    <label for="template-input">Phone</label>
+    <input
+      id="template-input"
+      data-testid="template-input"
+      type="tel"
+      autocomplete="off"
+      name="phone"
+      telixonPhoneInput
+      [(ngModel)]="templateValue"
+    />
+    <output data-testid="template-value">{{ templateValue ?? 'null' }}</output>
+  </section>
+
+  <section id="disabled">
+    <h2>Disabled control</h2>
+    <label for="disabled-input">Phone</label>
+    <input
+      id="disabled-input"
+      data-testid="disabled-input"
+      type="tel"
+      autocomplete="off"
+      telixonPhoneInput
+      [formControl]="disabled"
+    />
+  </section>
+
+  <section id="form">
+    <h2>Inside a form with a submit button</h2>
+    <form data-testid="form" (ngSubmit)="submit()">
+      <label for="form-input">Phone</label>
+      <div class="field">
+        <telixon-region-picker data-testid="form-picker" [for]="formField" />
+        <input
+          id="form-input"
+          data-testid="form-input"
+          type="tel"
+          autocomplete="off"
+          #formField="telixonPhoneInput"
+          [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+          [formControl]="formPhone"
+        />
+        <button type="submit">Send</button>
+      </div>
+    </form>
+    <output class="count" data-testid="form-submissions">{{ submissions() }}</output>
+  </section>
+
+  <section id="material">
+    <h2>Angular Material</h2>
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <telixon-region-picker
+        data-testid="material-picker"
+        matTextPrefix
+        [for]="materialField"
+        anchor=".mdc-text-field"
+        [prioritize]="['US', 'CA', 'GB']"
+      />
+      <input
+        data-testid="material-input"
+        matInput
+        type="tel"
+        autocomplete="off"
+        #materialField="telixonPhoneInput"
+        [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+        [formControl]="material"
+        [placeholder]="materialField.state()?.placeholder ?? ''"
+      />
+      @if (material.hasError('telixonPhone')) {
+        <mat-error data-testid="material-error">{{ message(material.getError('telixonPhone')) }}</mat-error>
+      } @else if (material.hasError('required')) {
+        <mat-error data-testid="material-error">Phone number is required.</mat-error>
+      }
+    </mat-form-field>
+  </section>
+
+  <section id="rtl" dir="rtl">
+    <h2>Right to left</h2>
+    <label for="rtl-input">Phone</label>
+    <div class="field">
+      <telixon-region-picker data-testid="rtl-picker" [for]="rtlField" [prioritize]="['SA', 'AE', 'EG']" />
+      <input
+        id="rtl-input"
+        data-testid="rtl-input"
+        type="tel"
+        autocomplete="off"
+        #rtlField="telixonPhoneInput"
+        [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'SA', display: { callingCodeInInput: false } }"
+        [formControl]="rtl"
+      />
+    </div>
+  </section>
+
+  <section id="deferred">
+    <h2>Inside a deferred block</h2>
+    @defer (hydrate on interaction) {
+      <label for="deferred-input">Phone</label>
+      <div class="field">
+        <telixon-region-picker data-testid="deferred-picker" [for]="deferredField" />
+        <input
+          id="deferred-input"
+          data-testid="deferred-input"
+          type="tel"
+          autocomplete="off"
+          #deferredField="telixonPhoneInput"
+          [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+          [formControl]="deferred"
+        />
+      </div>
+      <output data-testid="deferred-value">{{ deferred.value ?? 'null' }}</output>
+    } @placeholder {
+      <p data-testid="deferred-placeholder">Loading the deferred field</p>
+    }
+  </section>
+
+  <section id="autofill">
+    <h2>Browser autofill</h2>
+    <form data-testid="autofill-inside-form" class="stack">
+      <input type="text" name="name" autocomplete="name" placeholder="Name" aria-label="Name" />
+      <input type="email" name="email" autocomplete="email" placeholder="Email" aria-label="Email" />
+      <label for="autofill-inside-input">Phone</label>
+      <input
+        id="autofill-inside-input"
+        data-testid="autofill-inside-input"
+        type="tel"
+        name="phone"
+        autocomplete="tel"
+        [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
+        [formControl]="autofillInside"
+      />
+    </form>
+    <output data-testid="autofill-inside-value">{{ autofillInside.value ?? 'null' }}</output>
+    <form data-testid="autofill-outside-form" class="stack">
+      <input type="text" name="name" autocomplete="name" placeholder="Name" aria-label="Name" />
+      <input type="email" name="email" autocomplete="email" placeholder="Email" aria-label="Email" />
+      <label for="autofill-outside-input">Phone</label>
+      <div class="field">
+        <telixon-region-picker data-testid="autofill-outside-picker" [for]="autofillOutsideField" />
+        <input
+          id="autofill-outside-input"
+          data-testid="autofill-outside-input"
+          type="tel"
+          name="phone"
+          autocomplete="tel"
+          #autofillOutsideField="telixonPhoneInput"
+          [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+          [formControl]="autofillOutside"
+        />
+      </div>
+    </form>
+    <output data-testid="autofill-outside-value">{{ autofillOutside.value ?? 'null' }}</output>
+  </section>
+</main>

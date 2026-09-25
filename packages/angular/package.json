@@ -74,5 +74,13 @@
   "ng-add": {
     "save": "dependencies"
   },
+  "ng-update": {
+    "migrations": "./schematics/migration.json",
+    "packageGroup": [
+      "@telixon/core",
+      "@telixon/web-sdk",
+      "@telixon/angular"
+    ]
+  },
   "schematics": "./schematics/collection.json"
 }

@@ -7,8 +7,8 @@ description: The providers of @telixon/angular, with an engine preload for a fie
 function provideTelixon(options?: TelixonOptions): EnvironmentProviders;
 ```
 
-Adds Telixon's providers to an application. Every directive and component works without it. The
-call adds the engine preload.
+Adds the package's providers to an application. Every directive and component works without the
+call. What the call adds is the engine preload.
 
 ```ts
 export const appConfig: ApplicationConfig = {
@@ -22,4 +22,5 @@ export const appConfig: ApplicationConfig = {
 | --------------- | --------- | ------------------------------------------------------------------------------------------------------------- |
 | `preloadEngine` | `boolean` | Start loading the engine right after the application's first render, in the browser only; `false` by default. |
 
-A field on the first screen then finds the engine ready. A failed load reports to `ErrorHandler`.
+With the preload, a field on the first screen finds the engine ready. A failed load reports to
+`ErrorHandler`.

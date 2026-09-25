@@ -6,3 +6,5 @@ Each example lives under the package it demonstrates, as `examples/<package>/<to
   Vite build. Published at [proof.telixon.dev/bundle.html](https://proof.telixon.dev/bundle.html).
 - [angular/material](angular/material): a phone field with a region picker inside an Angular Material form field.
   Built into the docs and embedded in [Use it with Angular Material](https://telixon.dev/angular/guides/material/).
+- [angular/kitchen-sink](angular/kitchen-sink): every mode of the Angular field and picker on one prerendered page, driven by
+  the Playwright suite in CI across Chromium, Firefox, and WebKit, with hydration, keyboard, axe, and autofill checks.

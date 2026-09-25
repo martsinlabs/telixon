@@ -8,7 +8,7 @@ import {
   type Type,
 } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { createPhoneInput } from '@telixon/web-sdk';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TelixonPhoneInputOptions } from '../models';
@@ -60,6 +60,32 @@ class BareHost {
 class TemplateHost {
   value: string | null = '+14155550132';
   readonly directive = viewChild.required(TelixonPhoneInput);
+}
+
+@Component({
+  imports: [ReactiveFormsModule, TelixonPhoneInput],
+  template: `
+    <form [formGroup]="form" (ngSubmit)="submitted = true">
+      <input telixonPhoneInput formControlName="phone" />
+      <button type="submit">Send</button>
+    </form>
+  `,
+})
+class GroupHost {
+  readonly form = new FormGroup({ phone: new FormControl<string | null>(null) });
+  submitted: boolean = false;
+}
+
+@Component({
+  imports: [ReactiveFormsModule, TelixonPhoneInput],
+  template: `
+    <form [formGroup]="form">
+      <input telixonPhoneInput formControlName="phone" />
+    </form>
+  `,
+})
+class SubmitHost {
+  readonly form = new FormGroup({ phone: new FormControl<string | null>(null, { updateOn: 'submit' }) });
 }
 
 function configure(): void {
@@ -701,6 +727,71 @@ describe('TelixonPhoneInput: state, focus, and control state', () => {
     inputOf(fixture).dispatchEvent(new FocusEvent('blur'));
 
     expect(fixture.componentInstance.control.touched).toBe(true);
+  });
+});
+
+describe('TelixonPhoneInput: forms contract', () => {
+  it('follows a control disabled before the field attaches', async () => {
+    configure();
+    const fixture: ComponentFixture<ReactiveHost> = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.control.disable();
+    await settle(fixture);
+
+    expect(inputOf(fixture).disabled).toBe(true);
+    expect(fixture.componentInstance.directive().disabled()).toBe(true);
+  });
+
+  it('follows a disable that emits no events', async () => {
+    configure();
+    const fixture: ComponentFixture<ReactiveHost> = await mount(ReactiveHost);
+
+    fixture.componentInstance.control.disable({ emitEvent: false });
+    await fixture.whenStable();
+
+    expect(inputOf(fixture).disabled).toBe(true);
+  });
+
+  it('leaves a reset control pristine, untouched, and empty', async () => {
+    configure();
+    const fixture: ComponentFixture<ReactiveHost> = await mount(ReactiveHost);
+    const input: HTMLInputElement = inputOf(fixture);
+    typeText(input, '+1415');
+    input.dispatchEvent(new FocusEvent('blur'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.control.dirty).toBe(true);
+
+    fixture.componentInstance.control.reset();
+    await fixture.whenStable();
+
+    expect(input.value).toBe('');
+    expect(fixture.componentInstance.control.value).toBe(null);
+    expect(fixture.componentInstance.control.pristine).toBe(true);
+    expect(fixture.componentInstance.control.untouched).toBe(true);
+  });
+
+  it('works through formControlName inside a form group', async () => {
+    configure();
+    const fixture: ComponentFixture<GroupHost> = await mount(GroupHost);
+
+    typeText(inputOf(fixture), '+14155550132');
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.value).toEqual({ phone: '+14155550132' });
+  });
+
+  it('holds a value typed under updateOn submit until the form submits', async () => {
+    configure();
+    const fixture: ComponentFixture<SubmitHost> = await mount(SubmitHost);
+    const input: HTMLInputElement = inputOf(fixture);
+
+    typeText(input, '+14155550132');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.form.value).toEqual({ phone: null });
+
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.value).toEqual({ phone: '+14155550132' });
   });
 });
 

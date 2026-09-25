@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(packageRoot, process.argv[2] ?? 'dist/schematics');
-const copiedFiles = ['collection.json', 'ng-add/schema.json'];
+const copiedFiles = ['collection.json', 'migration.json', 'ng-add/schema.json'];
 
 const compile = spawnSync(
   process.execPath,
@@ -34,4 +34,6 @@ for (const [name, entry] of Object.entries(collection.schematics)) {
   const schema = JSON.parse(readFileSync(resolve(dirname(collectionPath), entry.schema), 'utf8'));
   if (!('$id' in schema)) throw new Error(`${name}: ${entry.schema} needs a "$id"`);
 }
+const migrations = JSON.parse(readFileSync(join(outDir, 'migration.json'), 'utf8'));
+if (typeof migrations.schematics !== 'object') throw new Error('migration.json needs a "schematics" map');
 console.log(`schematics: ${Object.keys(collection.schematics).length} packaged into ${outDir}`);
