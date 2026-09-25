@@ -57,7 +57,7 @@
     "ng-packagr": "~20.3.0",
     "rxjs": "^7.8.0",
     "typescript": "~5.9.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.16.3"
   },
   "peerDependencies": {
     "@angular/common": "^20.0.0",

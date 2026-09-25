@@ -27,7 +27,7 @@
     "@angular/cli": "~20.3.37",
     "@angular/compiler-cli": "~20.3.0",
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.63.0",
     "typescript": "~5.9.0"
   }
 }
