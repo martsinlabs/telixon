@@ -1,0 +1,23 @@
+Then add the flags stylesheet to the application's styles:
+
+```css
+/* styles.css */
+@import '@telixon/angular/flags/flags.css';
+```
+
+And register the providers:
+
+```ts
+// app.config.ts
+import { type ApplicationConfig } from '@angular/core';
+import { provideTelixon } from '@telixon/angular';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideTelixon({ preloadEngine: true })],
+};
+```
+
+The flags come from a [sprite sheet](/angular/flag/) that the stylesheet loads.
+[`provideTelixon`](/angular/provide-telixon/) registers the package's providers. With
+`preloadEngine: true` the engine starts loading right after the first render, before any field needs
+it. Without the preload, the first field on the page loads the engine when it appears.

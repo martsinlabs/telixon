@@ -4,6 +4,8 @@ dist
 examples/core/bundle-size/report
 apps/docs/public/demos
 .angular
+test-results
+playwright-report
 packages/core/oracle/.cache
 .DS_Store
 .claude/settings.local.json

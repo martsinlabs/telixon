@@ -3,75 +3,36 @@ title: Build a phone field
 description: A phone field on a reactive form control, with its value, its errors, and its placeholder in use.
 ---
 
-[`TelixonPhoneInput`](/angular/phone-input/) turns the `<input>` of a form control into a phone
-field.
+import { Code } from '@astrojs/starlight/components';
+import contact from '../../../../../../../examples/angular/kitchen-sink/src/app/docs/phone-field.ts?raw';
+
+[`TelixonPhoneInput`](/angular/phone-input/) is a directive for an `<input>` bound to a form
+control. The user types into the input and sees a formatted number. The form control receives the
+same number in E.164, or `null` while the number is incomplete.
 
 ## The control
 
-```ts
-import { Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TelixonPhoneInput } from '@telixon/angular';
+<Code lang="ts" code={contact} title="contact.ts" />
 
-@Component({
-  selector: 'app-contact',
-  imports: [ReactiveFormsModule, TelixonPhoneInput],
-  template: `
-    <input
-      type="tel"
-      #phone="telixonPhoneInput"
-      [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US' }"
-      [formControl]="control"
-      [placeholder]="phone.state()?.placeholder ?? ''"
-    />
-  `,
-})
-export class Contact {
-  readonly control = new FormControl<string | null>(null, Validators.required);
-}
-```
-
-With the calling code inside the field, the input opens showing `1 `, the seed of the default
-region. Typing `4155550132` leaves it at `1 415-555-0132`, while the control holds `+14155550132`
-from the last digit on. The [options](/angular/phone-input/#options) are those of
-`createPhoneInput`.
+The input shows the calling code of the default region, `1 `, as soon as it renders. Typing
+`4155550132` turns it into `1 415-555-0132`. Once the last digit is typed, the control holds
+`+14155550132`. The [options](/angular/phone-input/#options) are the ones `createPhoneInput` takes.
 
 ## Show the errors
 
-The fault of an invalid number sits under `telixonPhone` as a
-[`ValidationError`](/core/reference/validation-error/). A partial number keeps the value `null`,
-which makes `required` report next to it. Check `telixonPhone` first:
+An invalid number puts a [`ValidationError`](/core/reference/validation-error/) under the
+`telixonPhone` key of `control.errors`. A partial number keeps the control's value at `null`, which
+makes `required` report at the same time. The template therefore checks `telixonPhone` before
+`required`. The `message` method turns each fault kind into text.
 
-```angular-html
-@if (control.touched) {
-  @if (control.errors?.['telixonPhone']; as fault) {
-    <p>{{ message(fault) }}</p>
-  } @else if (control.errors?.['required']) {
-    <p>Phone number is required.</p>
-  }
-}
-```
-
-```ts
-message(fault: ValidationError): string {
-  switch (fault.kind) {
-    case 'TOO_SHORT':
-    case 'POSSIBLE_LOCAL_ONLY':
-      return 'This number is too short.';
-    case 'TOO_LONG':
-      return 'This number is too long.';
-    default:
-      return 'This number does not exist.';
-  }
-}
-```
-
-`ValidationError` comes from `@telixon/angular`.
+The input's `aria-describedby` points at the message element. `aria-invalid` follows
+`control.touched && control.invalid`. Inside a Material form field, `mat-error` sets both on its
+own.
 
 ## The placeholder
 
-`[placeholder]="phone.state()?.placeholder ?? ''"` puts the example number of the region on the
-input, in the field's own format:
+The binding `[placeholder]="phone.state()?.placeholder ?? ''"` puts an example number on the input.
+The example belongs to the field's region and follows the field's format:
 
 | Options                                          | Placeholder      |
 | ------------------------------------------------ | ---------------- |
@@ -88,11 +49,11 @@ The directive works with `ngModel` the same way:
 <input name="phone" [telixonPhoneInput]="{ mode: 'international' }" [(ngModel)]="phone" #model="ngModel" />
 ```
 
-`phone` receives `+14155550132` once the number is valid and `null` otherwise, while `model.errors`
-carries `telixonPhone`.
+`phone` receives `+14155550132` once the number is valid and `null` at any other time.
+`model.errors` carries `telixonPhone`.
 
 ## Write a value
 
-Writing `+442071838750` to the control shows `44 20 7183 8750`.
+Writing `+442071838750` to the control shows `44 20 7183 8750` in the field.
 
-[Add a region picker](/angular/guides/region-picker/) links a picker to the field.
+[Add a region picker](/angular/guides/region-picker/) puts a region picker next to the field.

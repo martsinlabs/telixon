@@ -7,7 +7,7 @@
   "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-packagejson"],
   "overrides": [
     {
-      "files": "packages/angular/**/*.html",
+      "files": ["packages/angular/**/*.html", "examples/angular/**/*.html"],
       "options": {
         "parser": "angular"
       }

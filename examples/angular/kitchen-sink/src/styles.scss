@@ -1,0 +1,125 @@
+@use '@angular/material' as mat;
+@import '@telixon/angular/flags/flags.css';
+
+:root {
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  margin: 0;
+  color: #1c1c1c;
+  font:
+    16px/1.5 system-ui,
+    sans-serif;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem;
+}
+
+h1 {
+  font-size: 1.75rem;
+  margin-block: 1.5rem 2.5rem;
+}
+
+section {
+  margin-block: 2.25rem;
+}
+
+h2 {
+  font-size: 1.125rem;
+  margin-block: 0 0.75rem;
+}
+
+label {
+  display: block;
+  margin-block-end: 0.375rem;
+  font-weight: 500;
+}
+
+/* The picker sits left of its field under one label. */
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.field > input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+input {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.stack {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+  margin-block: 0.5rem 1rem;
+}
+
+input:not([matInput]) {
+  font-size: 16px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #b9b9b9;
+  border-radius: 0.375rem;
+  background: #fff;
+}
+
+input:not([matInput]):disabled {
+  color: #777;
+  background: #f4f4f4;
+}
+
+output {
+  display: block;
+  margin-block-start: 0.5rem;
+  color: #666;
+  font:
+    0.875rem/1.5 ui-monospace,
+    monospace;
+}
+
+output::before {
+  content: 'value ';
+  color: #999;
+}
+
+output.fault::before {
+  content: 'fault ';
+}
+
+output.count::before {
+  content: 'submissions ';
+}
+
+button[type='submit'] {
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #b9b9b9;
+  border-radius: 0.375rem;
+  background: #fff;
+  font: inherit;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-form-field .tlx-region-picker__trigger {
+  border: 0;
+  padding: 0.5em 1rem 0.5em 0.5em;
+  margin-inline-start: -0.5em;
+  translate: 0 -1px;
+}

@@ -3,48 +3,54 @@ title: TelixonRegionPicker
 description: The region picker of a phone field, a trigger with the flag and a searchable list of regions.
 ---
 
-A component on `telixon-region-picker`, exported as `telixonRegionPicker`. Linked to a
-[`TelixonPhoneInput`](/angular/phone-input/) through `[for]`, it drives a
-[`RegionPicker`](/web-sdk/region-picker/) over the field's widget. The field owns the region. A
-pick switches it where the field keeps the calling code outside its text or holds a national
-number, while a typed number moves the flag. With the calling code inside, the digits decide the
-region and a pick only settles a shared calling code, such as Canada under `+1`. Before the engine
-has loaded, the trigger shows the flag of the field's `defaultRegion` and stays disabled, on the
-server as well.
+A component with the selector `telixon-region-picker`, exported as `telixonRegionPicker`. The
+component links to a [`TelixonPhoneInput`](/angular/phone-input/) through `[for]` and drives a
+[`RegionPicker`](/web-sdk/region-picker/) built on the field's widget.
+
+The field owns the region. With the calling code outside the input, or in a national field, a pick
+switches the region. With the calling code inside the input, the typed digits decide the region. A
+pick then only settles a shared calling code, such as Canada under `+1`. A typed number moves the
+flag in every mode. Before the engine has loaded, the trigger shows the flag of the field's
+`defaultRegion` and stays disabled. The server renders the same.
 
 ```angular-html
 <telixon-region-picker [for]="phone" />
 
-<input #phone="telixonPhoneInput" telixonPhoneInput [formControl]="control" />
+<input
+  #phone="telixonPhoneInput"
+  [telixonPhoneInput]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+  [formControl]="control"
+/>
 ```
 
 ## Inputs
 
-| Input          | Type                    | Meaning                                                                                                                                           |
-| -------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `for`          | `TelixonPhoneInput`     | Required. The field the picker belongs to, through its `telixonPhoneInput` export.                                                                |
-| `prioritize`   | `readonly RegionCode[]` | Regions shown first, in this order.                                                                                                               |
-| `sort`         | `RegionListSort`        | The order of the rows after the pinned ones; `'alphabetical'` by default, `'callingCode'`, or a comparator.                                       |
-| `locale`       | `string`                | The locale of the region names; `LOCALE_ID` by default.                                                                                           |
-| `anchor`       | `HTMLElement \| string` | The element the list lines up with and takes its width from. A selector names the closest ancestor that matches it. The picker itself by default. |
-| `popupOffset`  | `TelixonPopupOffset`    | How far the list sits from its anchor, in pixels; `{ x: 0, y: 4 }` by default.                                                                    |
-| `triggerLabel` | `string`                | The accessible name of the trigger and of the list; `'Select region'` by default.                                                                 |
-| `searchLabel`  | `string`                | The accessible name and the placeholder of the search field; `'Search'` by default.                                                               |
-| `emptyText`    | `string`                | The text shown while no region matches the search; `'No matches'` by default.                                                                     |
-| `autoFocus`    | `boolean`               | Whether the search field takes focus when the list opens; `true` by default. A touch screen raises its keyboard for it.                           |
+| Input          | Type                    | Meaning                                                                                                                                                            |
+| -------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `for`          | `TelixonPhoneInput`     | Required. The field the picker belongs to, through its `telixonPhoneInput` export.                                                                                 |
+| `prioritize`   | `readonly RegionCode[]` | Regions shown first, in this order.                                                                                                                                |
+| `sort`         | `RegionListSort`        | The order of the rows after the pinned ones; `'alphabetical'` by default, `'callingCode'`, or a comparator.                                                        |
+| `locale`       | `string`                | The locale of the region names; `LOCALE_ID` by default.                                                                                                            |
+| `anchor`       | `HTMLElement \| string` | The element the list lines up with and takes its width from. A selector string names the closest ancestor that matches the selector. The picker itself by default. |
+| `popupOffset`  | `TelixonPopupOffset`    | How far the list sits from its anchor, in pixels; `{ x: 0, y: 4 }` by default.                                                                                     |
+| `triggerLabel` | `string`                | The accessible name of the trigger and of the list; `'Select region'` by default.                                                                                  |
+| `searchLabel`  | `string`                | The accessible name and the placeholder of the search field; `'Search'` by default.                                                                                |
+| `emptyText`    | `string`                | The text shown while no region matches the search; `'No matches'` by default.                                                                                      |
+| `autoFocus`    | `boolean`               | Whether the search field takes focus when the list opens; `true` by default. On a touch screen the keyboard opens with it.                                         |
 
 The list follows the field's `regionFilter` and `numberTypeFilter`.
 
-`TelixonPopupOffset` has `x` and `y`. `y` is the distance below or above the anchor, while `x`
-shifts the list along the anchor's edge toward the end, which mirrors in right-to-left text.
+`TelixonPopupOffset` has `x` and `y`. `y` is the distance between the list and its anchor, below or
+above. `x` shifts the list along the anchor's edge toward the end side, which mirrors in
+right-to-left text.
 
 ## Templates
 
 `telixonRegionTrigger` on an `ng-template` replaces the content of the trigger. Its context carries
-the region as `$implicit`, known from the first paint, and the region's
-[`RegionOption`](/web-sdk/region-list/#regionoption) as `option`, `null` until the engine has
-loaded. `telixonRegionOption` replaces the content of every row, with the row's `RegionOption` as
-`$implicit`.
+the region code as `$implicit`, available from the first render, and the region's
+[`RegionOption`](/web-sdk/region-list/#regionoption) as `option`, which is `null` until the engine
+has loaded. `telixonRegionOption` replaces the content of every row. Its context carries the row's
+`RegionOption` as `$implicit`.
 
 ```angular-html
 <telixon-region-picker [for]="phone">
@@ -81,18 +87,19 @@ until the field is live.
 
 ## The list
 
-The list opens in the top layer through the Popover API, where no ancestor clips it. It follows its
-anchor while the page scrolls or resizes. It opens below the anchor at the start edge. Where the
-viewport leaves no room, it moves above the anchor or to the end edge, which `data-side` and
-`data-align` on the popup report. The rows render only while the list is open.
+The list opens in the top layer through the Popover API, where no ancestor clips it. The list
+follows its anchor while the page scrolls or resizes. It opens below the anchor, aligned to the
+start edge. Where the viewport leaves no room, the list moves above the anchor or to the end edge.
+`data-side` and `data-align` on the popup report where the list went. The rows render only while
+the list is open.
 
-Arrow Down and Arrow Up open a closed list and move the cursor in an open one. Enter picks the
-cursor's row. Escape closes the list and puts focus on the trigger. Typing in the search field
+Arrow Down and Arrow Up open a closed list and move the cursor in an open one. Enter picks the row
+under the cursor. Escape closes the list and puts focus on the trigger. Typing in the search field
 narrows the rows by name, region code, and calling code. A pick closes the list and returns focus
-to the phone field. A press outside closes it, as does focus leaving.
+to the phone field. A press outside the list closes it, as does focus leaving it.
 
-The search field carries the combobox role with `aria-activedescendant` naming the cursor's row,
-the list is the listbox, and the empty text is a status region.
+The search field carries the combobox role, with `aria-activedescendant` naming the row under the
+cursor. The list is the listbox. The empty text is a status region.
 
 ## Styles
 
@@ -100,19 +107,19 @@ The styles sit in the `telixon` cascade layer inside `:where()`, at zero specifi
 selector in the application's styles restyles any part. An application that declares its own layer
 order lists `telixon` first.
 
-| Class                                    | Part                                                                                    |
-| ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| `tlx-region-picker`                      | The host, with `data-disabled` while the control is disabled.                           |
-| `tlx-region-picker__trigger`             | The button with the flag.                                                               |
-| `tlx-region-picker__calling-code`        | The calling code on the trigger, shown while the field keeps the code outside its text. |
-| `tlx-region-picker__chevron`             | The arrow on the trigger.                                                               |
-| `tlx-region-picker__popup`               | The list's container, with `data-side` and `data-align`.                                |
-| `tlx-region-picker__search`              | The search field.                                                                       |
-| `tlx-region-picker__listbox`             | The list of rows.                                                                       |
-| `tlx-region-picker__option`              | A row, with `aria-selected` on the selected one and `data-active` under the cursor.     |
-| `tlx-region-picker__option-name`         | The region's name in a row.                                                             |
-| `tlx-region-picker__option-calling-code` | The calling code in a row.                                                              |
-| `tlx-region-picker__empty`               | The text shown while no region matches.                                                 |
+| Class                                    | Part                                                                                |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `tlx-region-picker`                      | The host, with `data-disabled` while the control is disabled.                       |
+| `tlx-region-picker__trigger`             | The button with the flag.                                                           |
+| `tlx-region-picker__calling-code`        | The calling code on the trigger, shown with the calling code outside the input.     |
+| `tlx-region-picker__chevron`             | The arrow on the trigger.                                                           |
+| `tlx-region-picker__popup`               | The list's container, with `data-side` and `data-align`.                            |
+| `tlx-region-picker__search`              | The search field.                                                                   |
+| `tlx-region-picker__listbox`             | The list of rows.                                                                   |
+| `tlx-region-picker__option`              | A row, with `aria-selected` on the selected one and `data-active` under the cursor. |
+| `tlx-region-picker__option-name`         | The region's name in a row.                                                         |
+| `tlx-region-picker__option-calling-code` | The calling code in a row.                                                          |
+| `tlx-region-picker__empty`               | The text shown while no region matches.                                             |
 
 These custom properties on `telixon-region-picker` carry the values several parts share, shown
 with their defaults:
@@ -129,11 +136,12 @@ telixon-region-picker {
 }
 ```
 
-The flags need the [sprite sheet's stylesheet](/angular/flag/#the-stylesheet).
+The flags need the [sprite sheet's stylesheet](/angular/flag/#the-stylesheet). The picker animates
+nothing. In forced-colors mode the row under the cursor keeps an outline.
 
 ## Inside a form field
 
-A click inside the picker never reaches the elements above it, since a Material form field answers
-any click inside it by focusing its input, which would close the list.
+A click inside the picker never reaches the elements above it. A Material form field answers any
+click inside it by focusing its input, which would close the list.
 [Use it with Angular Material](/angular/guides/material/) has the whole recipe, with a selector as
 the anchor.

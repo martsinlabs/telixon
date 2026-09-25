@@ -3,13 +3,14 @@ title: Add a region picker
 description: A region picker linked to a phone field, pinned regions, localized names, and the picker restyled.
 ---
 
-[`TelixonRegionPicker`](/angular/region-picker/) is a trigger with the flag and a searchable list
-of regions, linked to a field through `[for]`.
+[`TelixonRegionPicker`](/angular/region-picker/) is a button that shows the flag of the current
+region. Pressing the button opens a searchable list of regions. The picker links to a phone field
+through `[for]`.
 
 ## Link it to the field
 
 ```angular-html
-<telixon-region-picker [for]="phone" [prioritize]="['US', 'CA', 'GB']" />
+<telixon-region-picker [for]="phone" />
 
 <input
   #phone="telixonPhoneInput"
@@ -18,18 +19,23 @@ of regions, linked to a field through `[for]`.
 />
 ```
 
-Opening the list and picking the United Kingdom puts `+44` on the trigger and `7400 123456` in
-the placeholder. Typing `2071838750` then leaves the control holding `+442071838750`.
+`[for]` takes the field's `telixonPhoneInput` export. Open the list and pick the United Kingdom. The
+trigger now shows `+44` while the placeholder reads `7400 123456`. Typing `2071838750` then leaves
+the control holding `+442071838750`.
 
 ## Pin and name the regions
 
-`prioritize` puts regions first, in the given order. `sort` orders the rest, alphabetically by
-default or by calling code. The names come from the application's `LOCALE_ID`, which `locale`
-overrides:
+`prioritize` puts the listed regions first, in the given order. `sort` orders the remaining regions,
+alphabetically by default or by calling code. The region names come from the application's
+`LOCALE_ID`. The `locale` input overrides that locale for one picker. `triggerLabel`, `searchLabel`,
+and `emptyText` replace the picker's three built-in strings. This picker pins the German-speaking
+regions, orders the rest by calling code, and shows German names and labels:
 
 ```angular-html
 <telixon-region-picker
   [for]="phone"
+  [prioritize]="['DE', 'AT', 'CH']"
+  sort="callingCode"
   locale="de"
   triggerLabel="Region wählen"
   searchLabel="Suchen"
@@ -39,7 +45,9 @@ overrides:
 
 ## Restyle it
 
-The trigger and the selected row, restyled from the application's stylesheet:
+Every part of the picker carries a class. The package's own rules have no specificity, which lets
+one class selector in the application's stylesheet restyle any part. This example recolors the
+trigger and the selected row:
 
 ```css
 .tlx-region-picker__trigger {
@@ -52,16 +60,16 @@ The trigger and the selected row, restyled from the application's stylesheet:
 }
 ```
 
-The [reference](/angular/region-picker/#styles) lists the parts and the custom properties they
-share.
+The [reference](/angular/region-picker/#styles) lists every class and the custom properties the
+parts share.
 
 ## Replace the trigger and the rows
 
-Two templates replace the content of the trigger and of every row.
+Two templates replace the content of the trigger and the content of every row.
 [`TelixonFlag`](/angular/flag/) draws a flag inside either one:
 
 ```angular-html
-<telixon-region-picker [for]="phone" sort="callingCode">
+<telixon-region-picker [for]="phone">
   <ng-template telixonRegionTrigger let-region>
     <telixon-flag [region]="region" />
     <span>{{ region }}</span>
@@ -73,11 +81,12 @@ Two templates replace the content of the trigger and of every row.
 </telixon-region-picker>
 ```
 
-The [reference](/angular/region-picker/#templates) describes both contexts.
+The [reference](/angular/region-picker/#templates) describes the context each template receives.
 
 ## Place the list
 
-`anchor` lines the list up with another element, such as the whole field:
+By default the list opens under the trigger. `anchor` lines the list up with another element and
+gives the list that element's width. Here the anchor is the whole field:
 
 ```angular-html
 <div class="field" #field>
@@ -86,7 +95,7 @@ The [reference](/angular/region-picker/#templates) describes both contexts.
 </div>
 ```
 
-`popupOffset` moves it.
+`popupOffset` moves the list away from its anchor by a number of pixels.
 
 [Use it with Angular Material](/angular/guides/material/) puts the picker inside `mat-form-field`,
-where the anchor is a selector.
+where the anchor is given as a selector.
