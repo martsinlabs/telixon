@@ -29,11 +29,12 @@ try {
     nodeEntry: entries.find((entry) => entry.artifact.includes('Node entry')),
     browserEntry: entries.find((entry) => entry.artifact.includes('browser entry')),
     webSdk: entries.find((entry) => entry.artifact === '@telixon/web-sdk'),
+    angular: entries.find((entry) => entry.artifact === '@telixon/angular'),
   };
 
   writeFileSync(outputPath, JSON.stringify(size, null, 2) + '\n');
   console.log(
-    `size.json regenerated: ${size.nodeEntry.measured}, ${size.browserEntry.measured}, ${size.webSdk.measured}`,
+    `size.json regenerated: ${size.nodeEntry.measured}, ${size.browserEntry.measured}, ${size.webSdk.measured}, ${size.angular.measured}`,
   );
 } catch (error) {
   if (existsSync(outputPath)) {

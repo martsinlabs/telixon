@@ -24,11 +24,15 @@ A pnpm monorepo.
 ```
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
-packages/angular   @telixon/angular Angular binding on web-sdk
+packages/angular   @telixon/angular phone field directive and region picker for Angular
 apps/docs          landing page and documentation site (telixon.dev)
 apps/sandbox       internal dev workbench
 examples/          runnable examples, one per topic
 ```
+
+`examples/angular/material` also feeds the docs site. The docs build compiles it with the Angular CLI and
+copies the output into `apps/docs/public/demos` through `scripts/sync-demos.mjs`, where the Material guide
+embeds it.
 
 ## Development
 

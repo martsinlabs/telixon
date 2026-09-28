@@ -10,7 +10,7 @@ pnpm monorepo (`packages/*`).
 packages/
   core/       # @telixon/core: pure TS engine, all phone number logic
   web-sdk/    # @telixon/web-sdk: headless DOM adapter
-  angular/    # @telixon/angular: Angular binding on web-sdk
+  angular/    # @telixon/angular: phone field directive and region picker for Angular
   react/      # (planned)
   vue/        # (planned)
   web-components/ # (planned)

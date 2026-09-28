@@ -6,6 +6,8 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+## [20.0.0] - 2026-09-28
+
 ### Added
 
 - `TelixonPhoneInput` turns an `<input>` into a phone field that works as a form control. The form
@@ -30,4 +32,5 @@ Angular major, with minor and patch versions for the package's own changes.
 - `ng add @telixon/angular` puts the flags stylesheet in the application's styles and provides
   `provideTelixon` in its root providers, with the engine preload unless `--preload-engine=false`.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/commits/main/packages/angular
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/angular@v20.0.0...HEAD
+[20.0.0]: https://github.com/martsinlabs/telixon/releases/tag/angular@v20.0.0
