@@ -69,6 +69,8 @@ export class Contact {
 
 The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`.
 
+Open it on StackBlitz: [the field](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or [the field inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
+
 ## Versions
 
 The major version follows Angular's, where `@telixon/angular` 20 targets Angular 20. The package's own changes bump the minor and patch versions.
