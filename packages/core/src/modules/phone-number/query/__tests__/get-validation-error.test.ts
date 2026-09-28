@@ -24,6 +24,33 @@ describe('PhoneNumber.getValidationError', () => {
     expect(parsePhoneNumber('').getValidationError()).toEqual({ kind: 'EMPTY' });
   });
 
+  it('returns EMPTY for no digits under a default region', () => {
+    expect(parsePhoneNumber('', { defaultRegion: 'US' }).getValidationError()).toEqual({ kind: 'EMPTY' });
+    expect(parsePhoneNumber('abc', { defaultRegion: 'US' }).getValidationError()).toEqual({ kind: 'EMPTY' });
+  });
+
+  it('returns EMPTY for a field that holds no digits', () => {
+    const national = createNationalInputController({ defaultRegion: 'US' });
+    expect(national.getPhoneNumber().getValidationError()).toEqual({ kind: 'EMPTY' });
+
+    const selector = createInternationalInputController({
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    expect(selector.getPhoneNumber().getValidationError()).toEqual({ kind: 'EMPTY' });
+  });
+
+  it('returns TOO_SHORT for a field that holds only its calling code', () => {
+    const controller = createInternationalInputController({ defaultRegion: 'US' });
+    expect(controller.getPhoneNumber().getValidationError()).toEqual({ kind: 'TOO_SHORT', minLength: 10 });
+  });
+
+  it('returns TOO_SHORT for a lone national prefix', () => {
+    const controller = createNationalInputController({ defaultRegion: 'GB' });
+    controller.insert('', '0', 0, 0);
+    expect(controller.getPhoneNumber().getValidationError()?.kind).toBe('TOO_SHORT');
+  });
+
   it('returns INVALID_CALLING_CODE when digits do not resolve to a region', () => {
     const controller = createInternationalInputController({});
     controller.setValue('0');

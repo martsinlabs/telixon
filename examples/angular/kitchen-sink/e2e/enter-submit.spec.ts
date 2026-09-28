@@ -12,9 +12,7 @@ test('Enter in the picker search field does not submit the form around it', asyn
   await expect(trigger(page, 'form')).toContainText('+1');
 });
 
-test('Enter in the phone field submits the form', async ({ page, browserName }) => {
-  // Deferred to web-sdk: its beforeinput handler prevents Chromium's insertLineBreak, which cancels implicit submission.
-  test.fail(browserName === 'chromium', 'web-sdk swallows Enter in Chromium');
+test('Enter in the phone field submits the form', async ({ page }) => {
   await open(page);
   await page.getByTestId('form-input').pressSequentially('4155550132');
 

@@ -1,6 +1,7 @@
 import { getRegionCallingCode, getRegionInternationalPrefix, getRegionNationalPrefix } from '@telixon/core/engine';
 import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { DIGIT_CHARS, digitValue, FIRST_MAPPED_SCRIPT } from '@telixon/core/utils/digit-value';
 import { getProcessScopedCache } from '@telixon/core/utils/get-process-scoped-cache';
 import { applyLeadingCallingCodeStrip } from './apply-leading-calling-code-strip';
 import { applyNationalPrefixStrip } from './apply-national-prefix-strip';
@@ -38,7 +39,14 @@ function collectDigits(input: string): string {
   let digits = '';
   for (let index = 0; index < input.length; index++) {
     const charCode: number = input.charCodeAt(index);
-    if (charCode >= 0x30 && charCode <= 0x39) digits += input[index];
+    // ASCII answers inline; only a character above the Latin blocks reaches the script reader.
+    if (charCode >= 0x30 && charCode <= 0x39) {
+      digits += input[index];
+      continue;
+    }
+    if (charCode < FIRST_MAPPED_SCRIPT) continue;
+    const value: number = digitValue(charCode);
+    if (value !== -1) digits += DIGIT_CHARS[value];
   }
   return digits;
 }
@@ -59,6 +67,13 @@ function collectDigitsDetectingExtensionSuspect(input: string): CollectedDigits 
     if (charCode >= 0x30 && charCode <= 0x39) {
       digits += input[index];
       continue;
+    }
+    if (charCode >= FIRST_MAPPED_SCRIPT) {
+      const value: number = digitValue(charCode);
+      if (value !== -1) {
+        digits += DIGIT_CHARS[value];
+        continue;
+      }
     }
     if (extensionSuspect) continue;
     if (
@@ -93,7 +108,13 @@ function stripIddPrefix(digits: string, matcher: RegExp): string | null {
 function walkInput(resolver: NumberResolver, input: string): void {
   for (let index = 0; index < input.length; index++) {
     const charCode: number = input.charCodeAt(index);
-    if (charCode >= 0x30 && charCode <= 0x39) resolver.advance(charCode - 48);
+    if (charCode >= 0x30 && charCode <= 0x39) {
+      resolver.advance(charCode - 48);
+      continue;
+    }
+    if (charCode < FIRST_MAPPED_SCRIPT) continue;
+    const value: number = digitValue(charCode);
+    if (value !== -1) resolver.advance(value);
   }
 }
 
@@ -107,6 +128,13 @@ function walkInputDetectingExtensionSuspect(resolver: NumberResolver, input: str
     if (charCode >= 0x30 && charCode <= 0x39) {
       resolver.advance(charCode - 48);
       continue;
+    }
+    if (charCode >= FIRST_MAPPED_SCRIPT) {
+      const value: number = digitValue(charCode);
+      if (value !== -1) {
+        resolver.advance(value);
+        continue;
+      }
     }
     if (extensionSuspect) continue;
     if (

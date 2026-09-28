@@ -41,17 +41,13 @@ const profiles: { title: string; country: string; region: string; phone: string;
   },
 ];
 
-// The CDP recipe below is the harness for the day core reads every shape Chrome fills.
+// Chrome fills the number of the profile in its own national spelling, trunk prefix and all.
 for (const profile of profiles) {
   test(`autofill of ${profile.title} into a field set to that region, calling code outside`, async ({
     page,
     browserName,
   }) => {
     test.skip(browserName !== 'chromium', 'The Autofill domain exists in Chromium only');
-    // Deferred to core. Chrome fills the national number with its trunk prefix (02071838750, 03012345678) or, for a US
-    // profile, either 2015550123 or the plus-less whole number 12015550123. The field rejects the trunk prefix and the
-    // repeated calling code; only the bare national digits parse today.
-    test.fixme(true, 'core rejects a trunk prefix or a repeated calling code after the picked region');
     await open(page);
     await pick(page, 'autofill-outside', profile.region);
 
@@ -70,8 +66,48 @@ for (const profile of profiles) {
     const value: string = (await readout.textContent()) ?? '';
     expect({ filled, value }).toEqual({ filled, value: profile.expected });
   });
-
-  test.fixme(`autofill of ${profile.title} into the calling-code-inside field`, async () => {
-    // Deferred to core: national digits filled without a plus (2015550123, 02071838750) are read as a calling code.
-  });
 }
+
+// The second form has no picker. Its field stays on its own default region.
+test('autofill of a matching profile into the calling-code-inside field', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'The Autofill domain exists in Chromium only');
+  await open(page);
+
+  await autofill(page, 'autofill-inside-input', [
+    { name: 'NAME_FULL', value: 'Jane Doe' },
+    { name: 'EMAIL_ADDRESS', value: 'jane@example.com' },
+    { name: 'ADDRESS_HOME_COUNTRY', value: 'United States' },
+    { name: 'PHONE_HOME_WHOLE_NUMBER', value: '+12015550123' },
+  ]);
+
+  await expect(page.getByTestId('autofill-inside-value')).toHaveText('+12015550123');
+  await expect(page.getByTestId('autofill-inside-input')).toHaveValue('1 201-555-0123');
+});
+
+test('autofill of another country into a field pinned to one reads whatever Chrome fills', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'chromium', 'The Autofill domain exists in Chromium only');
+  await open(page);
+
+  await autofill(page, 'autofill-inside-input', [
+    { name: 'NAME_FULL', value: 'Jane Doe' },
+    { name: 'EMAIL_ADDRESS', value: 'jane@example.com' },
+    { name: 'ADDRESS_HOME_COUNTRY', value: 'United Kingdom' },
+    { name: 'PHONE_HOME_WHOLE_NUMBER', value: '+442071838750' },
+  ]);
+
+  // Chrome fills either spelling of the profile's number. The national one carries no country, so
+  // a field pinned to the United States keeps it as text with no value. The international one
+  // names its country and resolves.
+  const input = page.getByTestId('autofill-inside-input');
+  await expect(input).not.toHaveValue('1 ');
+  const filled: string = await input.inputValue();
+  const outcomes: Record<string, string> = {
+    '02071838750': 'null',
+    '44 20 7183 8750': '+442071838750',
+  };
+  expect(Object.keys(outcomes), `Chrome filled ${JSON.stringify(filled)}`).toContain(filled);
+  await expect(page.getByTestId('autofill-inside-value')).toHaveText(outcomes[filled] ?? '');
+});

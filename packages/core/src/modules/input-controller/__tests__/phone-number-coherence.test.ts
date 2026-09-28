@@ -157,12 +157,12 @@ describe('Selector mode resolves the field as an international significant numbe
     expect(phoneNumber.getValidationError()?.kind).toBe('TOO_SHORT');
   });
 
-  it('reports TOO_SHORT for the empty field', () => {
-    const controller = createSelectorController('UA');
+  it('reports EMPTY for the empty field', () => {
+    const controller = createSelectorController('GB');
     const phoneNumber = controller.getPhoneNumber();
 
     expectCoherent(phoneNumber, 'selector');
-    expect(phoneNumber.getValidationError()?.kind).toBe('TOO_SHORT');
+    expect(phoneNumber.getValidationError()).toEqual({ kind: 'EMPTY' });
   });
 
   it('answers every query exactly like parsePhoneNumber of the calling code plus the displayed value', () => {

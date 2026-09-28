@@ -1,4 +1,5 @@
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { firstPlusOrDigitIndex } from '@telixon/core/utils/first-plus-or-digit-index';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { toInputString } from '@telixon/core/utils/to-input-string';
 import { ResolvedNumberState, resolveNumber } from '../number-resolver/resolve-number';
@@ -6,16 +7,6 @@ import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../phone-
 import { ParsePhoneNumberOptions } from './models';
 import { extractPossibleNumber } from './utils/extract-possible-number';
 import { stripExtension } from './utils/strip-extension';
-
-// The index of the first plus or digit, or -1. ASCII checks match the resolver, which reads ASCII
-// digits only.
-function firstPlusOrDigitIndex(input: string): number {
-  for (let index = 0; index < input.length; index++) {
-    const code: number = input.charCodeAt(index);
-    if ((code >= 0x30 && code <= 0x39) || code === 0x2b) return index;
-  }
-  return -1;
-}
 
 /**
  * Parses a phone number to validate, format, and inspect it. A leading `+` reads as international;
@@ -41,7 +32,8 @@ export function parsePhoneNumber(input: string, options: ParsePhoneNumberOptions
   const strict: boolean = options.strict ?? false;
 
   const startIndex: number = firstPlusOrDigitIndex(safeInput);
-  const hasLeadingPlus: boolean = startIndex !== -1 && safeInput.charCodeAt(startIndex) === 0x2b;
+  const leadingCode: number = startIndex === -1 ? 0 : safeInput.charCodeAt(startIndex);
+  const hasLeadingPlus: boolean = leadingCode === 0x2b || leadingCode === 0xff0b;
   const resolved: ResolvedNumberState = resolveNumber({
     input: safeInput,
     hasLeadingPlus,

@@ -1,5 +1,7 @@
 import { getRegionCallingCode, NumberType, RegionCode } from '@telixon/core/engine';
+import { BinaryFilter } from '@telixon/core/models';
 import { getResourceProvider } from '@telixon/core/resource-provider';
+import { isDigitCharCode } from '@telixon/core/utils/digit-value';
 import { requireEngineReady } from '@telixon/core/utils/require-engine-ready';
 import { toInputString } from '@telixon/core/utils/to-input-string';
 import { NumberResolver } from '../../number-resolver';
@@ -7,6 +9,7 @@ import { NumberResolverSnapshot, NumberTypeProfileRef } from '../../number-resol
 import { ResolvedNumberState, resolveNumber } from '../../number-resolver/resolve-number';
 import { resolveProfile } from '../../number-resolver/resolve-profile';
 import { createNumberTypeFilter, createRegionFilter } from '../../number-resolver/utils/filter-factory';
+import { resolvePrimaryRegionIndex } from '../../number-resolver/utils/resolve-primary-region-index';
 import { createPhoneNumber, PhoneNumber, toResolvedPhoneNumber } from '../../phone-number';
 import { InputStateHistory } from '../input-state-history';
 import { InputChange, InputController, InputControllerState, InputState } from '../models';
@@ -18,14 +21,14 @@ import {
   toInputState,
   toInputStateWithSelection,
 } from '../utils';
+import { PastedInternationalNumber, readInternationalPaste } from '../utils/read-international-paste';
 import { resolveInput } from '../utils/resolve-input';
 import { InternationalInputControllerConfig } from './models';
 import { resolveInternationalControllerState } from './utils';
 
 function hasDigitAtOrAfter(value: string, index: number): boolean {
   for (let i = index; i < value.length; i++) {
-    const charCode: number = value.charCodeAt(i);
-    if (charCode >= 48 && charCode <= 57) return true;
+    if (isDigitCharCode(value.charCodeAt(i))) return true;
   }
   return false;
 }
@@ -162,10 +165,60 @@ class InternationalInputController implements InputController {
     );
   }
 
+  // A pasted international number replaces the field. With the calling code outside the field, the
+  // number's region becomes the field's region and its national part the field's text.
+  #resolveInternationalText(text: string): InputControllerState | null {
+    const pasted: PastedInternationalNumber | null = readInternationalPaste(
+      text,
+      this.#defaultRegionIndex,
+      this.#numberResolver.regionFilter,
+      this.#numberResolver.numberTypeFilter,
+    );
+    if (pasted === null) return null;
+
+    if (this.#config.display?.callingCodeInInput !== false) {
+      return this.#resolveState('', { insertText: pasted.text, selectionStart: 0, selectionEnd: 0 }, 'forward', false);
+    }
+
+    const { snapshot } = pasted;
+
+    // A complete number names its region. An incomplete one keeps the field's region under the same calling code.
+    const profile: NumberTypeProfileRef | null = resolveProfile(snapshot, this.#defaultRegionIndex);
+    const keepsRegion: boolean = profile === null && snapshot.callingCodeDigits === this.#defaultCallingCode;
+    const regionIndex: number =
+      profile !== null
+        ? profile.regionIndex
+        : keepsRegion
+          ? this.#defaultRegionIndex
+          : resolvePrimaryRegionIndex(snapshot.callingCodeState, this.#defaultRegionIndex);
+    const region: RegionCode | undefined = getResourceProvider().regionIds[regionIndex];
+    if (region === undefined) return null;
+    // A region the filter rejects stays out, and a strict field keeps the region it is pinned to.
+    // The paste then reads literally, as any other text does.
+    const regionFilter: BinaryFilter | null = this.#numberResolver.regionFilter;
+    if (regionFilter !== null && regionFilter[regionIndex] === 0) return null;
+    if (this.#config.strict === true && regionIndex !== this.#defaultRegionIndex) return null;
+
+    this.#setDefaultRegion(region);
+    return this.#resolveState(
+      '',
+      { insertText: snapshot.nationalDigits, selectionStart: 0, selectionEnd: 0 },
+      'forward',
+      false,
+    );
+  }
+
   insert(rawValue: string, rawText: string, selectionStart: number, selectionEnd: number): InputState {
     const value: string = toInputString(rawValue);
     const text: string = toInputString(rawText);
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
+
+    // One character is never a whole number, which keeps a keystroke out of the paste read.
+    const pasted: InputControllerState | null = text.length > 1 ? this.#resolveInternationalText(text) : null;
+    if (pasted !== null) {
+      this.#history.push(pasted);
+      return toInputState(this.#history.current);
+    }
 
     const plusRestored: boolean = selectionStart === 0 && text.startsWith('+');
     const plusErased: boolean = this.#plusErased && !plusRestored;
@@ -297,16 +350,9 @@ class InternationalInputController implements InputController {
     // With an erasable plus, the given string decides plus visibility; an empty string resets to an empty field.
     const plusErased: boolean = this.#plusErasable && !value.startsWith('+');
 
-    const nextState: InputControllerState = this.#resolveState(
-      '',
-      {
-        insertText: value,
-        selectionStart: 0,
-        selectionEnd: 0,
-      },
-      'forward',
-      plusErased,
-    );
+    const nextState: InputControllerState =
+      this.#resolveInternationalText(value) ??
+      this.#resolveState('', { insertText: value, selectionStart: 0, selectionEnd: 0 }, 'forward', plusErased);
 
     this.#history.push(nextState);
 
@@ -314,16 +360,24 @@ class InternationalInputController implements InputController {
   }
 
   setRegion(region: RegionCode): InputState {
+    // A region the engine does not know names nothing to switch to. The field keeps the one it has.
+    if (getResourceProvider().regionKeyToIndex[region] === undefined) return toInputState(this.#history.current);
+
     this.#setDefaultRegion(region);
 
-    const { value } = this.#history.current;
+    const current: InputControllerState = this.#history.current;
+    const callingCode: string | null = this.#defaultCallingCode;
+    // A field that shows the calling code takes the picked region's code and keeps the national digits.
+    const rewrites: boolean = this.#config.display?.callingCodeInInput !== false && callingCode !== null;
+    const value: string = rewrites ? '' : current.value;
+    const caret: number = rewrites ? 0 : value.length;
 
     const nextState: InputControllerState = this.#resolveState(
       value,
       {
-        insertText: '',
-        selectionStart: value.length,
-        selectionEnd: value.length,
+        insertText: rewrites ? `${callingCode}${current.snapshot.nationalDigits}` : '',
+        selectionStart: caret,
+        selectionEnd: caret,
       },
       'forward',
       this.#plusErased,

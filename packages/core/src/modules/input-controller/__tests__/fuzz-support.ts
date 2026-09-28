@@ -44,6 +44,7 @@ export const NUMBER_TYPES: readonly NumberType[] = [
 ];
 
 // Bare digits, formatted text, a leading plus, and non-digit noise all reach a real field.
+// The whole international numbers among them arrive the way a paste does.
 export const INSERT_PAYLOADS: readonly string[] = [
   '5',
   '12',
@@ -58,6 +59,10 @@ export const INSERT_PAYLOADS: readonly string[] = [
   '+',
   '() -',
   '99999999999999',
+  '+1 201 555 0123',
+  '+44 (0)20 7183 8750',
+  '+49 30 12345678 ext. 7',
+  '  +61 2 3456 7890\n',
 ];
 
 export const COMPARED_METHODS = [

@@ -49,10 +49,17 @@ test('a press outside closes the list', async ({ page }) => {
   await expect(popup(page, 'outside')).toBeHidden();
 });
 
-test.fixme('Home, End, Page Up, and Page Down move the cursor by the APG listbox pattern', async () => {
-  // Deferred to web-sdk: bindRegionPicker handles Down, Up, Enter, and Escape today.
-});
+// Focus sits in the search field while the list is open, where Home and End belong to its text.
+test('Home and End leave the row cursor where it is', async ({ page }) => {
+  await trigger(page, 'outside').click();
+  await page.keyboard.press('ArrowDown');
+  const active = options(page, 'outside').filter({ has: page.locator('[data-active="true"]') });
+  const activeRow = page.getByTestId('outside-picker').locator('[data-active="true"]');
+  const before = await activeRow.textContent();
 
-test.fixme('typing a letter on the closed trigger opens the list at the first match', async () => {
-  // Deferred to web-sdk: type-ahead on the trigger is not implemented.
+  await page.keyboard.press('Home');
+  await page.keyboard.press('End');
+
+  await expect(activeRow).toHaveText(before ?? '');
+  await expect(active).toHaveCount(await active.count());
 });

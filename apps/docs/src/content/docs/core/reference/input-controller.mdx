@@ -99,7 +99,11 @@ insert(value: string, text: string, selectionStart: number, selectionEnd: number
 ```
 
 Replaces the selection from `selectionStart` to `selectionEnd` in `value` with `text`, then
-reformats. `text` can be one keystroke or a whole paste.
+reformats. `text` can be one keystroke or a whole paste. Digits are read in ASCII, in fullwidth,
+and in the two Arabic-Indic scripts. A paste that carries a plus before any digit and a whole number
+behind it replaces the value with that number, trunk prefix and extension left out. With the
+calling code outside the field, the region follows the number. A national field takes a number
+under its own calling code. A `strict` field keeps its region. Any other text reads as digits.
 
 ### deleteBackward
 
@@ -125,7 +129,8 @@ Mirrors [`deleteBackward`](#deletebackward) for the character after the caret.
 setValue(value: string): InputState;
 ```
 
-Replaces the whole value and reformats, as for a paste or a programmatic set.
+Replaces the whole value and reformats, as for a paste or a programmatic set. A value that carries
+a plus before any digit follows the paste rule of [`insert`](#insert).
 
 ## Region and filters
 
@@ -138,8 +143,10 @@ setRegion(region: RegionCode): InputState;
 ```
 
 Switches to `region` and reformats the current digits the way that region writes them. Where the
-calling code lives in the field, the digits keep deciding the region. Where the field holds the
-international significant number, the switch applies.
+calling code lives in the field, the field takes the calling code of `region` and keeps the
+national digits, where a field holding `1 416-555-0132` switched to `DE` reads `49 4165 550132`.
+The value still decides the reported region. Switching between two regions of one calling code
+leaves the digits to say which one it is.
 
 ### setRegionFilter
 
