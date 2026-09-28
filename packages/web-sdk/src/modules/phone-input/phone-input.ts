@@ -4,6 +4,7 @@ import {
   isBackwardDeleteInputType,
   isForwardDeleteInputType,
   isInsertInputType,
+  isTextPreservingInputType,
   isWordBackwardDeleteInputType,
   isWordForwardDeleteInputType,
 } from './constants/before-input-types';
@@ -13,6 +14,7 @@ import { assertSupportedInputType } from './utils/assert-supported-input-type';
 import { resolveInsertText } from './utils/before-input';
 import { buildController } from './utils/build-controller';
 import { deriveState } from './utils/derive-state';
+import { readExternalValue } from './utils/read-external-value';
 import { buildPlaceholderConfig, resolvePlaceholder, type PlaceholderConfig } from './utils/resolve-placeholder';
 import { findNextWordBoundary, findPreviousWordBoundary } from './utils/word-boundary';
 
@@ -100,7 +102,8 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     const domValue: string = input.value;
     if (domValue === inputController.currentState.value) return;
 
-    commit(() => inputController.setValue(domValue));
+    const region: RegionCode | null = inputController.currentState.region ?? placeholderFallbackRegion;
+    commit(() => inputController.setValue(readExternalValue(domValue, region)));
   }
 
   function handleCompositionEnd(event: CompositionEvent): void {
@@ -138,26 +141,34 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     const selectionStart: number = input.selectionStart ?? 0;
     const selectionEnd: number = input.selectionEnd ?? 0;
 
-    event.preventDefault();
+    // The widget owns every edit of the value. An event it performs is cancelled and applied here.
+    // An event it does not recognize is cancelled outright, which keeps unknown edits out of the
+    // field. Only a type that leaves the text alone passes, which lets Enter submit the form.
+    const apply = (edit: () => void): void => {
+      event.preventDefault();
+      commit(edit);
+    };
 
     if (isInsertInputType(inputType)) {
       const insertText: string = resolveInsertText(event);
+      // Text the event does not carry is left to the browser, which the input event then reads
+      // back through the controller. Cancelling here would drop the paste with nothing to read.
       if (insertText === '') return;
-      commit(() => {
+      apply(() => {
         inputController.insert(value, insertText, selectionStart, selectionEnd);
       });
       return;
     }
 
     if (isBackwardDeleteInputType(inputType)) {
-      commit(() => {
+      apply(() => {
         inputController.deleteBackward(value, selectionStart, selectionEnd);
       });
       return;
     }
 
     if (isForwardDeleteInputType(inputType)) {
-      commit(() => {
+      apply(() => {
         inputController.deleteForward(value, selectionStart, selectionEnd);
       });
       return;
@@ -166,7 +177,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     if (isWordBackwardDeleteInputType(inputType)) {
       const wordStart: number =
         selectionStart === selectionEnd ? findPreviousWordBoundary(value, selectionStart) : selectionStart;
-      commit(() => {
+      apply(() => {
         inputController.deleteBackward(value, wordStart, selectionEnd);
       });
       return;
@@ -175,7 +186,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     if (isWordForwardDeleteInputType(inputType)) {
       const wordEnd: number =
         selectionStart === selectionEnd ? findNextWordBoundary(value, selectionEnd) : selectionEnd;
-      commit(() => {
+      apply(() => {
         inputController.deleteForward(value, selectionStart, wordEnd);
       });
       return;
@@ -184,7 +195,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
     switch (inputType) {
       case 'deleteSoftLineBackward':
       case 'deleteHardLineBackward': {
-        commit(() => {
+        apply(() => {
           inputController.deleteBackward(value, 0, selectionEnd);
         });
         return;
@@ -192,7 +203,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
       case 'deleteSoftLineForward':
       case 'deleteHardLineForward': {
-        commit(() => {
+        apply(() => {
           inputController.deleteForward(value, selectionEnd, value.length);
         });
         return;
@@ -200,21 +211,24 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
       case 'deleteEntireSoftLine':
       case 'deleteEntireHardLine': {
-        commit(() => {
+        apply(() => {
           inputController.deleteBackward(value, 0, value.length);
         });
         return;
       }
 
       case 'historyUndo':
-        if (inputController.canUndo) commit(() => inputController.undo());
+        if (inputController.canUndo) apply(() => inputController.undo());
+        else event.preventDefault();
         return;
 
       case 'historyRedo':
-        if (inputController.canRedo) commit(() => inputController.redo());
+        if (inputController.canRedo) apply(() => inputController.redo());
+        else event.preventDefault();
         return;
 
       default:
+        if (!isTextPreservingInputType(inputType)) event.preventDefault();
         return;
     }
   }

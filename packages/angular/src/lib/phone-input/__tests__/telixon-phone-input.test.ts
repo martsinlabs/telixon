@@ -117,6 +117,13 @@ function typeText(input: HTMLInputElement, text: string): void {
   }
 }
 
+function pasteText(input: HTMLInputElement, text: string, selectAll: boolean = false): void {
+  input.setSelectionRange(selectAll ? 0 : input.value.length, input.value.length);
+  input.dispatchEvent(
+    new InputEvent('beforeinput', { inputType: 'insertFromPaste', data: text, bubbles: true, cancelable: true }),
+  );
+}
+
 function deleteBackward(input: HTMLInputElement, count: number): void {
   for (let step = 0; step < count; step++) {
     input.dispatchEvent(
@@ -835,5 +842,62 @@ describe('TelixonPhoneInput: lifecycle', () => {
     await mount(BareHost);
 
     expect(reported).toHaveLength(1);
+  });
+});
+
+describe('TelixonPhoneInput pasted international numbers', () => {
+  it('moves the field to the region of the pasted number and takes its value', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+    const { control, directive } = fixture.componentInstance;
+
+    pasteText(inputOf(fixture), '+44 20 7183 8750');
+    await settle(fixture);
+
+    expect(inputOf(fixture).value).toBe('20 7183 8750');
+    expect(directive().state()?.region).toBe('GB');
+    expect(control.value).toBe('+442071838750');
+    expect(control.dirty).toBe(true);
+    expect(control.errors).toBeNull();
+  });
+
+  it('replaces a typed number with the pasted one', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({
+      mode: 'international',
+      defaultRegion: 'US',
+      display: { callingCodeInInput: false },
+    });
+    await settle(fixture);
+    const { control } = fixture.componentInstance;
+    typeText(inputOf(fixture), '2015550123');
+    await settle(fixture);
+    expect(control.value).toBe('+12015550123');
+
+    pasteText(inputOf(fixture), '+44 20 7183 8750', true);
+    await settle(fixture);
+
+    expect(inputOf(fixture).value).toBe('20 7183 8750');
+    expect(control.value).toBe('+442071838750');
+  });
+
+  it('takes a pasted number into a national field in its national format', async () => {
+    configure();
+    const fixture = TestBed.createComponent(ReactiveHost);
+    fixture.componentInstance.options.set({ mode: 'national', defaultRegion: 'GB' });
+    await settle(fixture);
+
+    pasteText(inputOf(fixture), '+44 20 7183 8750');
+    await settle(fixture);
+
+    expect(inputOf(fixture).value).toBe('020 7183 8750');
+    expect(fixture.componentInstance.control.value).toBe('+442071838750');
   });
 });

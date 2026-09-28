@@ -1,4 +1,3 @@
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 // Differential fuzzer against Google's actual libphonenumber. Long-running; configure with FUZZ_N
@@ -6,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 // FUZZ_AIRTIGHT (the exhaustive proof), and FUZZ_MINLEN/FUZZ_MAXLEN (length range). The timeout is the
 // GitHub job ceiling so a single job can run the full airtight space when it is not sharded.
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: { tsconfigPaths: true },
   test: {
     include: ['packages/core/conformance/fuzz.ts'],
     setupFiles: ['./packages/core/src/test-setup.ts'],

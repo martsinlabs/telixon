@@ -1,3 +1,4 @@
+import { isDigitCharCode } from '@telixon/core/utils/digit-value';
 // Port of libphonenumber's extractPossibleNumber at the engine's pinned commit: cut to the first
 // plus or digit, drop trailing characters that are neither digit, letter, nor `#`, then cut before
 // a second number marked `/x` or `\x`. Runs once per parse, ahead of the extension strip.
@@ -8,7 +9,7 @@ function isPlusOrDigit(code: number): boolean {
   return (
     code === 0x2b ||
     code === 0xff0b ||
-    (code >= 0x30 && code <= 0x39) ||
+    isDigitCharCode(code) ||
     (code >= 0xff10 && code <= 0xff19) ||
     (code >= 0x0660 && code <= 0x0669) ||
     (code >= 0x06f0 && code <= 0x06f9)
@@ -18,7 +19,7 @@ function isPlusOrDigit(code: number): boolean {
 // The complement of UNWANTED_END_CHAR_PATTERN_: trailing characters that survive the end trim.
 function isWantedEndChar(code: number): boolean {
   return (
-    (code >= 0x30 && code <= 0x39) ||
+    isDigitCharCode(code) ||
     (code >= 0x41 && code <= 0x5a) ||
     (code >= 0x61 && code <= 0x7a) ||
     code === 0x23 ||

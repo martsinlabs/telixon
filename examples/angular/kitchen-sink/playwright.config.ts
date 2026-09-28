@@ -7,6 +7,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
+  // Three engines launch a browser per worker, and the full Chromium build is the heaviest of them.
+  // More workers than this starve a launch past the test timeout without running anything faster.
+  workers: process.env['CI'] ? 2 : 4,
   reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${port}`,

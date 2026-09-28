@@ -8,10 +8,12 @@ component links to a [`TelixonPhoneInput`](/angular/phone-input/) through `[for]
 [`RegionPicker`](/web-sdk/region-picker/) built on the field's widget.
 
 The field owns the region. With the calling code outside the input, or in a national field, a pick
-switches the region. With the calling code inside the input, the typed digits decide the region. A
-pick then only settles a shared calling code, such as Canada under `+1`. A typed number moves the
-flag in every mode. Before the engine has loaded, the trigger shows the flag of the field's
-`defaultRegion` and stays disabled. The server renders the same.
+switches the region and keeps the typed digits. With the calling code inside the input, a pick
+writes that region's calling code into the input and keeps the national digits. Two regions of one
+calling code, such as Canada and the United States under `+1`, leave the digits to say which one a
+number belongs to. A typed number moves the flag in every mode. Before the engine has loaded, the
+trigger shows the flag of the field's `defaultRegion` and stays disabled. The server renders the
+same.
 
 ```angular-html
 <telixon-region-picker [for]="phone" />

@@ -78,12 +78,14 @@ yourself.
 
 `validationError` is
 [`getValidationError`](/core/reference/phone-number/#getvalidationerror) for the current value. An
-empty national field reports `TOO_SHORT` under its region.
+empty field reports `EMPTY`.
 
 ## Covered events
 
 - Typing, including IME composition (`insertText`, `insertReplacementText`, `compositionend`)
-- Paste, drop, yank (`insertFromPaste`, `insertFromDrop`, `insertFromYank`)
+- Paste, drop, yank (`insertFromPaste`, `insertFromDrop`, `insertFromYank`): text holding a whole
+  international number enters as that number, the way
+  [`insert`](/core/reference/input-controller/#insert) describes
 - Deletes, including cut and drag-out (`deleteContentBackward`, `deleteContentForward`,
   `deleteByCut`, `deleteByDrag`, `deleteContent`)
 - Word deletes (`deleteWordBackward`, `deleteWordForward`): each consumes one digit group, skipping
@@ -93,7 +95,16 @@ empty national field reports `TOO_SHORT` under its region.
 - Undo and redo: the native `historyUndo` and `historyRedo` input types, plus Cmd/Ctrl+Z,
   Cmd/Ctrl+Shift+Z, and Cmd/Ctrl+Y
 - Browser autofill and password managers: a value change that arrives with a bare `input` event
-  resynchronizes the controller from the field
+  resynchronizes the controller from the field. A browser fills the number in its own national
+  spelling, trunk prefix and all, which the field reads against its region and takes as that number
+  when it is valid there
+
+The widget owns every edit of the value. It cancels each `beforeinput` it performs and each one it
+does not recognize, which leaves no way for text to reach the field except through the controller.
+The exceptions are `insertLineBreak` and `insertParagraph`, which leave the text alone in a
+single-line input and carry Enter to the form around the field. An insert whose text the event does
+not expose also passes. The `input` event that follows reads the result back through the
+controller.
 
 ## Members
 

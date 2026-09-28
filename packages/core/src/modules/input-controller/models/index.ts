@@ -43,7 +43,7 @@ export interface InputController {
   deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
   /** Replaces the whole value and reformats, as for a paste or a programmatic set. */
   setValue(value: string): InputState;
-  /** Switches to `region` and reformats the current digits the way that region writes them. */
+  /** Switches to `region` and reformats the current digits the way that region writes them; a field that shows its calling code takes the calling code of `region` and keeps the national digits. */
   setRegion(region: RegionCode): InputState;
   /** Steps back to the previous state in history. */
   undo(): InputState;

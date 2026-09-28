@@ -6,6 +6,33 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Added
+
+- Fullwidth digits and both Arabic-Indic ranges read like ASCII digits, which are the three scripts
+  google/libphonenumber maps. A number pasted from a page written in one of them, or typed through
+  an input method that sends fullwidth digits, reached the field as no digits at all. With the paste
+  reading below, the browser entry grows from 26.68 kB to 27.68 kB brotli.
+
+### Fixed
+
+- `setRegion` on a field that shows the calling code writes that region's code into the field and
+  keeps the national digits. It kept the code already there, which left a pick without effect until
+  the field was cleared.
+- Text carrying a plus, a calling code and a national part enters an input controller as one
+  international number, without a written trunk prefix and without an extension. With the calling
+  code outside the field the region moves to the number's own. Both controllers read such text as
+  loose digits, which left `+44 20 7183 8750` in a US field as `442071838750`.
+- A pasted number is found behind a `tel:` scheme, a label, quotes or a text direction mark. A
+  fullwidth plus counts as a plus. Only text whose first character was a plus read as a whole
+  number.
+- `getValidationError` reports `EMPTY` for an input without digits under a default region. It
+  reported `TOO_SHORT`, which left `EMPTY` unreachable for a pristine field.
+- `setRegion` with a region the engine does not know leaves the field alone. It cleared the field's
+  region, which dropped the placeholder and re-read the value of a calling-code-outside field as an
+  international number.
+- `formatE164` returns `null` for digits behind no calling code, such as `+00123456` under a default
+  region. It returned those digits after a plus, which is no E.164 number.
+
 ## [1.1.3] - 2026-09-24
 
 ### Changed

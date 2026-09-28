@@ -31,7 +31,10 @@ export function getValidationError(
     callingCodeSeeded,
   } = resolved;
 
-  if (nationalDigits.length === 0 && callingCode.length === 0) return { kind: 'EMPTY' };
+  // No national digits behind no typed calling code is an empty input, whether or not a default region implies one.
+  if (nationalDigits.length === 0 && (callingCode.length === 0 || callingCodeSeeded || readAsNational)) {
+    return { kind: 'EMPTY' };
+  }
 
   if (reason === 'INVALID_CALLING_CODE') return { kind: 'INVALID_CALLING_CODE' };
 

@@ -38,6 +38,15 @@ const PLUS_PREFIXES: readonly PlusPrefixMode[] = ['none', 'fixed', 'erasable'];
 // the plus. Adding it back lets parsePhoneNumber read the value the same way.
 const forcedPlus = (value: string): string => (value.startsWith('+') ? value : `+${value}`);
 
+// A pasted international number moves a selector to the number's region. The state shows where it
+// went; a paste the field read literally leaves the region where it was.
+function regionAfterPaste(payload: string, state: InputState, region: RegionCode): RegionCode {
+  const trimmed: string = payload.trimStart();
+  if (!trimmed.startsWith('+') || digitsOf(trimmed) === '' || state.region === null) return region;
+  const pastedCode: string | null = parsePhoneNumber(trimmed).getCallingCode();
+  return getCallingCodeForRegion(state.region) === pastedCode ? state.region : region;
+}
+
 function runSession(session: number): string | null {
   const random = createRandom(0x85ebca6b ^ (session * 2246822519));
   const pick = <Item>(items: readonly Item[]): Item => items[Math.floor(random() * items.length)]!;
@@ -76,6 +85,7 @@ function runSession(session: number): string | null {
         const payload: string = pick(INSERT_PAYLOADS);
         label = `insert(${JSON.stringify(payload)} @${rangeStart}..${rangeEnd})`;
         state = controller.insert(value, payload, rangeStart, rangeEnd);
+        if (selectorMode) region = regionAfterPaste(payload, state, region);
         break;
       }
       case 2: {

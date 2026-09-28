@@ -7,10 +7,10 @@ import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 import contact from '../../../../../../examples/angular/kitchen-sink/src/app/docs/getting-started.ts?raw';
 import ManualSetup from './_manual-setup.mdx';
 
-`@telixon/angular` has two parts. [`TelixonPhoneInput`](/angular/phone-input/) is a directive that
-makes an `<input>` a phone form control. [`TelixonRegionPicker`](/angular/region-picker/) is a
-component that adds the flag and a searchable list of regions next to the input. Both are built on
-[`@telixon/web-sdk`](/web-sdk/).
+`@telixon/angular` has two parts. [`TelixonPhoneInput`](/angular/phone-input/) is a directive for an
+`<input>`. The user sees a formatted number while the form control holds it in E.164.
+[`TelixonRegionPicker`](/angular/region-picker/) is a component that adds the flag and a searchable
+list of regions next to the input. Both are built on [`@telixon/web-sdk`](/web-sdk/).
 
 Each Angular major gets its own line of the package, starting with 20 for Angular 20. The package
 renders on the server and hydrates. Its end-to-end suite runs on Chromium, Firefox, and WebKit

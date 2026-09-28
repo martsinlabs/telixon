@@ -6,6 +6,18 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+### Fixed
+
+- A phone input cancels every `beforeinput` except the two that leave the text alone,
+  `insertLineBreak` and `insertParagraph`. Cancelling those swallowed Chromium's Enter, which left
+  the form around the field unable to submit.
+- A value written into the element from outside, such as a browser autofill, is read against the
+  field's region when it is a whole valid number there. The digits were read one by one, which left
+  Chrome's `02071838750` for a United Kingdom profile invalid and its `2015550123` for a United
+  States profile resolved as an Egyptian number.
+- An insert whose text the event does not carry is left to the browser, whose result the `input`
+  event reads back through the controller. It was cancelled, which dropped such a paste entirely.
+
 ## [1.2.0] - 2026-09-23
 
 ### Added

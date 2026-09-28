@@ -24,6 +24,7 @@ import {
   toInputState,
   toInputStateWithSelection,
 } from '../utils';
+import { PastedInternationalNumber, readInternationalPaste } from '../utils/read-international-paste';
 import { resolveInput } from '../utils/resolve-input';
 import { NationalControllerState, NationalInputControllerConfig } from './models';
 import { resolveNationalControllerState } from './utils';
@@ -158,13 +159,31 @@ class NationalInputController implements InputController {
     return nextState;
   }
 
+  // A pasted international number under the field's own calling code enters in the national format, as if typed.
+  #resolveInternationalText(text: string): NationalControllerState | null {
+    const pasted: PastedInternationalNumber | null = readInternationalPaste(
+      text,
+      this.#defaultRegionIndex,
+      this.#numberResolver.regionFilter,
+      this.#numberResolver.numberTypeFilter,
+    );
+    if (pasted === null || pasted.snapshot.callingCodeDigits !== this.#defaultCallingCode) return null;
+
+    const phoneNumber: PhoneNumber = createPhoneNumber(
+      toResolvedPhoneNumber(pasted.resolved, this.#defaultRegionIndex, null),
+    );
+    const digits: string = collectDigits(phoneNumber.formatNational() ?? pasted.snapshot.nationalDigits);
+    return this.#resolveFromTyped(digits, digits.length);
+  }
+
   insert(value: string, text: string, selectionStart: number, selectionEnd: number): InputState {
     const safeValue: string = toInputString(value);
     const safeText: string = toInputString(text);
     this.#history.updateCurrentSelection(selectionStart, selectionEnd);
 
     this.#history.push(
-      this.#resolveFromEdit(safeValue, { insertText: safeText, selectionStart, selectionEnd }, 'forward'),
+      (safeText.length > 1 ? this.#resolveInternationalText(safeText) : null) ??
+        this.#resolveFromEdit(safeValue, { insertText: safeText, selectionStart, selectionEnd }, 'forward'),
     );
 
     return toInputState(this.#history.current);
@@ -243,12 +262,17 @@ class NationalInputController implements InputController {
 
     // Any other string is parsed as new typed content.
     const typedDigits: string = collectDigits(value);
-    this.#history.push(this.#resolveFromTyped(typedDigits, typedDigits.length));
+    this.#history.push(
+      this.#resolveInternationalText(value) ?? this.#resolveFromTyped(typedDigits, typedDigits.length),
+    );
 
     return toInputState(this.#history.current);
   }
 
   setRegion(region: RegionCode): InputState {
+    // A region the engine does not know names nothing to switch to. The field keeps the one it has.
+    if (getResourceProvider().regionKeyToIndex[region] === undefined) return toInputState(this.#history.current);
+
     this.#setRegion(region);
 
     const { rawDigits } = this.#history.current;

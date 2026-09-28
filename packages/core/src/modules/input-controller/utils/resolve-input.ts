@@ -1,3 +1,4 @@
+import { digitValue, FIRST_MAPPED_SCRIPT } from '@telixon/core/utils/digit-value';
 import { CaretIndex, InputChange } from '../models';
 
 /**
@@ -18,20 +19,32 @@ export function resolveInput(
   const selectionEnd: number = Math.max(selectionStart, Math.min(change.selectionEnd, valueLength));
 
   let digit: number;
+  let code: number;
   let digitIndex = 0;
 
   // ---- BEFORE ----
   for (let i = 0; i < selectionStart; i++) {
-    digit = value.charCodeAt(i) - 48;
-    if (digit < 0 || digit > 9) continue;
+    code = value.charCodeAt(i);
+    digit = code - 48;
+    // ASCII answers inline; only a character above the Latin blocks reaches the script reader.
+    if (digit < 0 || digit > 9) {
+      if (code < FIRST_MAPPED_SCRIPT) continue;
+      digit = digitValue(code);
+      if (digit === -1) continue;
+    }
     onDigit(digit, digitIndex);
     digitIndex++;
   }
 
   // ---- INSERT ----
   for (let i = 0; i < change.insertText.length; i++) {
-    digit = change.insertText.charCodeAt(i) - 48;
-    if (digit < 0 || digit > 9) continue;
+    code = change.insertText.charCodeAt(i);
+    digit = code - 48;
+    if (digit < 0 || digit > 9) {
+      if (code < FIRST_MAPPED_SCRIPT) continue;
+      digit = digitValue(code);
+      if (digit === -1) continue;
+    }
     onDigit(digit, digitIndex);
     digitIndex++;
   }
@@ -40,8 +53,13 @@ export function resolveInput(
 
   // ---- AFTER ----
   for (let i = selectionEnd; i < valueLength; i++) {
-    digit = value.charCodeAt(i) - 48;
-    if (digit < 0 || digit > 9) continue;
+    code = value.charCodeAt(i);
+    digit = code - 48;
+    if (digit < 0 || digit > 9) {
+      if (code < FIRST_MAPPED_SCRIPT) continue;
+      digit = digitValue(code);
+      if (digit === -1) continue;
+    }
     onDigit(digit, digitIndex);
     digitIndex++;
   }

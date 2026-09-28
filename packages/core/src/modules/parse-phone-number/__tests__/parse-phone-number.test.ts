@@ -71,4 +71,15 @@ describe('parsePhoneNumber: unresolvable input', () => {
     expect(phone.getNationalNumber()).toBe('');
     expect(phone.formatE164()).toBeNull();
   });
+
+  // Digits behind no calling code have no E.164 form, whatever their length says about the region.
+  it('has no E.164 form for digits the walk reads no calling code from', () => {
+    const phone = parsePhoneNumber('+00123456', { defaultRegion: 'GB' });
+
+    expect(phone.getCallingCode()).toBeNull();
+    expect(phone.isPossible()).toBe(true);
+    expect(phone.formatE164()).toBeNull();
+    expect(phone.formatInternational()).toBeNull();
+    expect(phone.formatRfc3966()).toBeNull();
+  });
 });
