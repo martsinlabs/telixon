@@ -2,10 +2,24 @@ name: Site
 
 on:
   pull_request:
-    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/site.yml']
+    paths:
+      - 'apps/docs/**'
+      - 'examples/angular/material/**'
+      - 'examples/angular/kitchen-sink/src/app/docs/**'
+      - 'packages/angular/**'
+      - 'scripts/check-links.mjs'
+      - 'scripts/sync-demos.mjs'
+      - '.github/workflows/site.yml'
   push:
     branches: [main]
-    paths: ['apps/docs/**', 'scripts/check-links.mjs', '.github/workflows/site.yml']
+    paths:
+      - 'apps/docs/**'
+      - 'examples/angular/material/**'
+      - 'examples/angular/kitchen-sink/src/app/docs/**'
+      - 'packages/angular/**'
+      - 'scripts/check-links.mjs'
+      - 'scripts/sync-demos.mjs'
+      - '.github/workflows/site.yml'
   workflow_dispatch:
 
 permissions:

@@ -41,7 +41,7 @@ telixon/
   packages/
     core/          @telixon/core    pure engine, all phone-number logic
     web-sdk/       @telixon/web-sdk headless widgets for the phone input and the region picker, plus the flag sprite
-    angular/       @telixon/angular Angular binding on web-sdk
+    angular/       @telixon/angular phone field directive and region picker for Angular
   apps/
     docs/          landing page and documentation site (telixon.dev), never published to npm
     sandbox/       internal dev workbench (Vite + TS), never published
@@ -49,6 +49,10 @@ telixon/
   CLAUDE.md        engineering standards and AI-assistant operating notes
   ARCHITECTURE.md  this document
 ```
+
+`examples/angular/material` also feeds the docs site. The docs build compiles it with the Angular CLI and
+copies the output into `apps/docs/public/demos` through `scripts/sync-demos.mjs`, where the Material guide
+embeds it.
 
 Planned packages (not yet present): `web-components`, `react`, `vue`.
 The layer model below is designed so they slot in without reshaping existing packages.

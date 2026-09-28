@@ -2,6 +2,11 @@
 
 Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk). A directive turns an `<input>` into a phone field that works as a form control. A region picker adds the flag and a searchable list of regions.
 
+[![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
+[![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
+[![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fangular%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/angular)
+[![downloads](https://img.shields.io/npm/dm/%40telixon%2Fangular?color=26997b&label=downloads)](https://www.npmjs.com/package/@telixon/angular)
+
 The two are a construction kit. The directive goes on your own `<input>`, while the picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
 
 **[Documentation](https://telixon.dev/angular/)**

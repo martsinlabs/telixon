@@ -2,7 +2,7 @@
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Telixon",
   "description": "Phone number parsing, validation, formatting, and a headless input controller for JavaScript and TypeScript. Verified against Google libphonenumber.",
-  "folders": ["apps/docs/src/content/docs", "packages/core", "packages/web-sdk"],
+  "folders": ["apps/docs/src/content/docs", "packages/core", "packages/web-sdk", "packages/angular"],
   "url": "https://context7.com/martsinlabs/telixon",
   "public_key": "pk_KeLqdRvVss8o07MHEKW3D",
   "excludeFolders": [
@@ -12,13 +12,18 @@
     "packages/core/bench",
     "packages/core/conformance",
     "packages/web-sdk/src",
-    "packages/web-sdk/dist"
+    "packages/web-sdk/dist",
+    "packages/angular/src",
+    "packages/angular/dist",
+    "packages/angular/schematics",
+    "packages/angular/scripts"
   ],
   "excludeFiles": ["CHANGELOG.md"],
   "rules": [
     "Telixon is a standalone library with its own engine compiled from Google libphonenumber metadata; it has no runtime dependency on any other phone number library.",
     "Initialize the engine with ensureEngineReady before calling parse or controller APIs; ensureEngineReadySync from @telixon/core/sync-init is the synchronous entry.",
     "Use @telixon/core for parsing, formatting, and validation; use @telixon/web-sdk to attach the input controller to a DOM input element.",
+    "Use @telixon/angular in Angular applications; TelixonPhoneInput turns an input into a phone field that works as a form control, TelixonRegionPicker adds the flag and a searchable list of regions, and ng add @telixon/angular sets an application up.",
     "The full documentation lives at https://telixon.dev and the conformance dashboards at https://proof.telixon.dev."
   ]
 }
