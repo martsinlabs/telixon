@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-28
+
 ### Added
 
 - Fullwidth digits and both Arabic-Indic ranges read like ASCII digits, which are the three scripts
@@ -116,7 +118,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.1.3...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.2.0...HEAD
+[1.2.0]: https://github.com/martsinlabs/telixon/compare/core@v1.1.3...core@v1.2.0
 [1.1.3]: https://github.com/martsinlabs/telixon/compare/core@v1.1.2...core@v1.1.3
 [1.1.2]: https://github.com/martsinlabs/telixon/compare/core@v1.1.1...core@v1.1.2
 [1.1.1]: https://github.com/martsinlabs/telixon/compare/core@v1.1.0...core@v1.1.1
