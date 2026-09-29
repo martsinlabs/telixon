@@ -8,8 +8,8 @@ function matchPhoneNumbers(first: string | PhoneNumber, second: string | PhoneNu
 ```
 
 Grades whether two inputs denote the same phone number. It accepts raw strings and parsed
-[`PhoneNumber`](/core/reference/phone-number/) values in any combination; a string parses on the
-spot. Mirrors Google libphonenumber's `isNumberMatch`.
+[`PhoneNumber`](/core/reference/phone-number/) values in any combination. Mirrors Google
+libphonenumber's `isNumberMatch`.
 
 ```ts
 matchPhoneNumbers('+14155550132', '+1 (415) 555-0132'); // 'EXACT_MATCH'
@@ -26,7 +26,7 @@ type PhoneNumberMatch = 'EXACT_MATCH' | 'NSN_MATCH' | 'SHORT_NSN_MATCH' | 'NO_MA
 | ----------------- | ------------------------------------------------------------------------ |
 | `EXACT_MATCH`     | The calling code, the national number, and the extension all agree       |
 | `NSN_MATCH`       | The national numbers agree while at least one side names no calling code |
-| `SHORT_NSN_MATCH` | One national number is a shorter variant of the other                    |
+| `SHORT_NSN_MATCH` | One national number ends with the other                                  |
 | `NO_MATCH`        | Both sides read as numbers and they differ                               |
 | `NOT_A_NUMBER`    | No number could be read from one of the inputs                           |
 
@@ -52,5 +52,5 @@ matchPhoneNumbers('020 7183 8750', '+44 20 7183 8750'); // 'NSN_MATCH'
 
 ## Conformance
 
-Every grade is compared with Google libphonenumber's `isNumberMatch` over deterministic pairs
+The grades are compared with Google libphonenumber's `isNumberMatch` over deterministic pairs
 derived from its example numbers, as part of [the gate](/verified/#conformance).

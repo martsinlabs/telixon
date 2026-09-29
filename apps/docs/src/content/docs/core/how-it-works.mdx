@@ -1,16 +1,16 @@
 ---
 title: How Telixon works
-description: Digits walk one automaton where validity is an accepting state, a walk the parser and the input controllers share.
+description: The parser and the input controllers walk one automaton, where a valid number ends on an accepting state.
 ---
 
 Google libphonenumber's metadata is compiled ahead of time into a single
 [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)
-(DFA), stored as binary tables. Every answer about a phone number comes from that automaton.
+(DFA), stored as binary tables. Every answer about a phone number is read from those tables.
 
 ## Parsing
 
 Parsing is a walk over the automaton, one digit per step. The state the walk ends on determines
-the region, the number type, whether the number is valid, and how to format it.
+the region, the number type, and whether the number is valid.
 
 ```ts
 const number = parsePhoneNumber('+1 (415) 555-0132');
@@ -23,22 +23,22 @@ number.isValid(); // true
 
 ## Validity
 
-A number is valid when the walk ends on an accepting state. That is the whole definition.
-Everything else is a classified failure, returned as a typed value:
+A number is valid when the walk ends on an accepting state. Everything else is a classified
+failure, returned as a typed value:
 
 ```ts
 parsePhoneNumber('5550132', { defaultRegion: 'US' }).getValidationError();
 // { kind: 'POSSIBLE_LOCAL_ONLY' }
 ```
 
-Seven digits form a US number that connects only inside its own area. The walk ends on a state that
-records exactly that. The nine variants are in
+Seven digits form a US number that can be dialed only inside its own area code. The walk ends on a
+state that records exactly that. The nine variants are in
 [`ValidationError`](/core/reference/validation-error/).
 
 ## Parser and controller consistency
 
-`parsePhoneNumber` walks the automaton once, over a whole string. An input controller walks it
-again on every keystroke, over the value as it stands. It is the same walk, which makes their
+`parsePhoneNumber` walks the automaton over the whole string. An input controller walks it again
+on every keystroke, over the value as it stands. It is the same walk, which makes their
 answers agree by construction. A controller can hand you a `PhoneNumber` at any moment, mid-typing.
 
 ```ts
@@ -53,7 +53,8 @@ parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
 
 - **[Bad input does not throw.](/core/reference/parse-phone-number/)** A walk always ends
   somewhere. Where it ends is the result.
-- **[Formatting can return `null`.](/core/reference/phone-number/#formats)** The formats follow
-  possibility. A number whose calling code or length can never work has no format to give.
+- **[Formatting can return `null`.](/core/reference/phone-number/#formats)** A format exists only
+  for a possible number. When the calling code or the length can never work, there is nothing to
+  format.
 - **[The engine loads first.](/core/load-the-engine/)** Without the tables there is nothing to
   walk.

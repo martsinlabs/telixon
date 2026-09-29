@@ -20,8 +20,8 @@ through `[for]`.
 ```
 
 `[for]` takes the field's `telixonPhoneInput` export. Open the list and pick the United Kingdom. The
-trigger now shows `+44` while the placeholder reads `7400 123456`. Typing `2071838750` then leaves
-the control holding `+442071838750`.
+trigger now shows `+44` while the placeholder reads `7400 123456`. Typing `2071838750` then puts
+`+442071838750` in the control.
 
 ## Pin and name the regions
 
@@ -65,8 +65,10 @@ parts share.
 
 ## Replace the trigger and the rows
 
-Two templates replace the content of the trigger and the content of every row.
-[`TelixonFlag`](/angular/flag/) draws a flag inside either one:
+Two templates replace the content of the trigger and the content of every row. Their directives,
+`TelixonRegionTriggerTemplate` and `TelixonRegionOptionTemplate`, go into the component's `imports`
+beside `TelixonRegionPicker`. So does [`TelixonFlag`](/angular/flag/), which draws the flag inside
+either one:
 
 ```angular-html
 <telixon-region-picker [for]="phone">

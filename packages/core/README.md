@@ -48,22 +48,21 @@ controller.deleteBackward('(415) 555-0132', 3, 8);
 ## Highlights
 
 - **Conformance-verified.** Every query method with a Google libphonenumber counterpart is compared
-  against it in CI, on every push.
+  against it in CI, on every pull request and every push to main.
 - **One deterministic finite automaton.** Google publishes its metadata as regular expressions;
   Telixon compiles them ahead of time into one automaton. A single linear-time walk yields validity,
   number type, region, and format.
-- **An order of magnitude faster.** A single linear walk parses millions of numbers a second,
-  while the established libraries interpret regex metadata on every call. The
-  [live benchmark](https://proof.telixon.dev/benchmark.html) proves the gap on every push.
-- **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
-  export conditions and each exercised in CI.
+- **An order of magnitude faster.** A single linear walk parses millions of numbers a second. The
+  [live benchmark](https://proof.telixon.dev/benchmark.html) publishes the per-method ratios.
+- **Node.js, browsers, Deno, Bun, and edge runtimes.** Package export conditions pick the build.
+  CI runs each one.
 - **Zero dependencies.**
 
 ## Support
 
 Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
-feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
-follow [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md).
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Report a
+vulnerability as [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md) describes.
 
 ## Contributing
 

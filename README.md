@@ -42,8 +42,8 @@ number.getRegion(); // 'US'
 number.formatE164(); // '+14155550132'
 ```
 
-[`@telixon/web-sdk`](packages/web-sdk/README.md) turns a plain `<input>` into a phone field,
-handling the events, the caret, and the history:
+[`@telixon/web-sdk`](packages/web-sdk/README.md) drives a plain `<input>`. It formats every
+keystroke, keeps the caret in place, and records undo history:
 
 ```bash
 npm install @telixon/web-sdk
@@ -76,13 +76,12 @@ phone.subscribe((state) => {
 - **Compiled to one automaton.** Google publishes its metadata as regular expressions; Telixon
   compiles them ahead of time into a single deterministic finite automaton. Resolving a number is
   one linear-time walk; the state it ends on carries validity, type, region, and format.
-- **An order of magnitude faster.** That one walk parses millions of numbers a second, while the
-  established libraries interpret regex metadata on every call. The
-  [live benchmark](https://proof.telixon.dev/benchmark.html) proves the gap on every push.
-- **A real input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
+- **An order of magnitude faster.** That one walk parses millions of numbers a second. The
+  [live benchmark](https://proof.telixon.dev/benchmark.html) publishes the per-method ratios.
+- **A full input controller.** Formatting on every keystroke, with caret tracking, undo and redo,
   and the full query surface mid-typing.
-- **Every JavaScript runtime.** Node.js, browsers, Deno, Bun, and edge, selected through package
-  export conditions and each exercised in CI.
+- **Node.js, browsers, Deno, Bun, and edge runtimes.** Package export conditions pick the build.
+  CI runs each one.
 - **TypeScript-first.** Region codes and number types are closed unions; a typo fails to compile.
 - **Zero dependencies.**
 
@@ -91,7 +90,8 @@ phone.subscribe((state) => {
 Every query method with a Google libphonenumber counterpart is compared against it, across all 245
 regions. The oracle runs Google's own source at the commit
 [PROVENANCE.json](packages/core/src/engine/PROVENANCE.json) pins for the engine, which rules out
-version drift. The gate runs in CI on every push and pull request. Any divergence fails the build.
+version drift. The gate runs in CI on every pull request and every push to main. Any divergence
+fails the build.
 
 Run it locally with `pnpm conformance`. The [live report](https://proof.telixon.dev/parity.html)
 publishes every run; the [methodology](packages/core/conformance/README.md) covers the corpus. Found
@@ -104,16 +104,16 @@ a divergence the gate misses?
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------- | --------------------------------------- |
 | [`@telixon/core`](packages/core/README.md)       | [![npm](https://img.shields.io/npm/v/%40telixon%2Fcore?color=26997b&label=npm)](https://www.npmjs.com/package/@telixon/core)       | shipped | parsing, formatting, validation         |
 | [`@telixon/web-sdk`](packages/web-sdk/README.md) | [![npm](https://img.shields.io/npm/v/%40telixon%2Fweb-sdk?color=26997b&label=npm)](https://www.npmjs.com/package/@telixon/web-sdk) | shipped | headless phone-field widgets            |
-| `@telixon/web-components`                        |                                                                                                                                    | planned | drop-in Web Component (`<tel-input>`)   |
+| `@telixon/web-components`                        |                                                                                                                                    | planned | web component                           |
 | [`@telixon/angular`](packages/angular/README.md) | [![npm](https://img.shields.io/npm/v/%40telixon%2Fangular?color=26997b&label=npm)](https://www.npmjs.com/package/@telixon/angular) | shipped | phone field directive and region picker |
-| `@telixon/react`                                 |                                                                                                                                    | planned | React binding (hook + component)        |
+| `@telixon/react`                                 |                                                                                                                                    | planned | React binding                           |
 | `@telixon/vue`                                   |                                                                                                                                    | planned | Vue binding                             |
 
 ## Support
 
 Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
-feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
-follow [SECURITY.md](SECURITY.md).
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Report a
+vulnerability as [SECURITY.md](SECURITY.md) describes.
 
 ## Contributing
 

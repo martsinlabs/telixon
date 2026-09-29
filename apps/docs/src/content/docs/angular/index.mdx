@@ -12,9 +12,9 @@ import ManualSetup from './_manual-setup.mdx';
 [`TelixonRegionPicker`](/angular/region-picker/) is a component that adds the flag and a searchable
 list of regions next to the input. Both are built on [`@telixon/web-sdk`](/web-sdk/).
 
-Each Angular major gets its own line of the package, starting with 20 for Angular 20. The package
-renders on the server and hydrates. Its end-to-end suite runs on Chromium, Firefox, and WebKit
-against a prerendered page.
+The major version follows Angular's. `@telixon/angular` 20 runs on Angular 20. The fields render
+on the server and hydrate. The end-to-end suite runs on Chromium, Firefox, and WebKit against a
+prerendered page.
 
 ## Install
 
@@ -27,7 +27,7 @@ ng add @telixon/angular
 ```
 
 `ng add` installs the package, adds the flags stylesheet to the application's styles, and registers
-`provideTelixon` with the engine preload. Nothing else is needed before the first field.
+`provideTelixon` with the engine preload.
 
 </TabItem>
 
@@ -82,7 +82,7 @@ A phone field and a region picker, linked through `[for]`:
 
 <Code lang="ts" code={contact} title="contact.ts" />
 
-The same field runs as a whole application on StackBlitz,
+The same field runs on StackBlitz,
 [on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or
 [inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
 

@@ -7,9 +7,9 @@ description: The headless widget behind a region picker's trigger and list.
 state, the keyboard cursor, and the selected option. Every change emits a
 [`RegionPickerState`](#regionpickerstate) snapshot. Bound to a
 [`PhoneInput`](/web-sdk/phone-input/), the phone owns the selected region and the picker follows
-it. No emit fires at construction. Read the bootstrap with [`getState`](#getstate).
+it. No emit fires at construction. Read the initial state with [`getState`](#getstate).
 
-Two functions take the widget to the DOM. [`bindRegionPicker`](#bindregionpicker) wires the events
+Two functions connect the widget to the DOM. [`bindRegionPicker`](#bindregionpicker) wires the events
 and leaves the rendering to the caller, and [`attachRegionPicker`](#attachregionpicker) renders the
 rows as well.
 
@@ -51,8 +51,8 @@ type RegionPickerState<T = undefined> = {
 
 `selected` is `null` until a region is selected. It is the option from the list's base set, the same
 object the list renders. It follows [`localize`](/web-sdk/region-list/#localize) and
-[`refresh`](/web-sdk/region-list/#refresh). `active` is the row under the keyboard cursor and is
-`null` while closed. `options` and `searchQuery` mirror the list's state.
+[`refresh`](/web-sdk/region-list/#refresh). `active` is the row under the keyboard cursor, `null`
+when there is none. `options` and `searchQuery` mirror the list's state.
 
 ## Bound to a phone input
 
@@ -62,8 +62,8 @@ reports `null`. [`select`](#select) hands the region to
 [`setRegion`](/web-sdk/phone-input/#setregion) instead of storing it. Undo on the phone therefore
 moves the picker as well. A `select` that round-trips through the phone emits once.
 
-The picker writes only its search query to `regions`. Filters stay where they are set. Give the
-list and the phone the same `regionFilter` and `numberTypeFilter` when the rows must match what the
+The picker writes only the search query to `regions` and never touches its filters. Give the list
+and the phone the same `regionFilter` and `numberTypeFilter` when the rows must match what the
 phone accepts.
 
 ## Members
@@ -143,7 +143,7 @@ select(region: RegionCode): void;
 ```
 
 Selects a region. Bound to a phone, the phone receives the region; on its own, the picker keeps
-it. A region the list does not know changes nothing. Closing the list after a pick stays with the
+it. A region the engine does not know changes nothing. Closing the list after a pick stays with the
 caller.
 
 ### destroy
@@ -169,9 +169,9 @@ picker's state into elements. [`attachRegionPicker`](#attachregionpicker) adds t
 What the binding wires:
 
 - A click on the trigger toggles the list and takes focus to the trigger, which Safari never does
-  on its own. A caller that moves focus into the popup as the list opens still wins, since that
-  move runs on the emit. On the trigger and on the search field, `ArrowDown` and `ArrowUp` open a
-  closed list and move the cursor in an open one. `Enter` picks the cursor's row, moves focus to
+  on its own. A caller that moves focus into the popup on open keeps it, because the binding
+  focuses the trigger before it toggles the list. On the trigger and on the search field,
+  `ArrowDown` and `ArrowUp` open a closed list and move the cursor in an open one. `Enter` picks the cursor's row, moves focus to
   `returnFocusTo`, and closes. While the list is open, `Enter` never submits a surrounding form.
   `Escape` returns focus to the trigger and closes. Focus moves before the list closes, which never
   strands it inside a hidden popup. Keys pressed during IME composition are ignored.
@@ -181,11 +181,12 @@ What the binding wires:
 - A press outside the trigger and the popup closes the list, as does focus leaving them. The press
   is seen in the capture phase, before any handler on the pressed element. A press inside a shadow
   root is followed to the element it really landed on.
-- Once, the attributes that describe the parts. On the trigger, `type="button"` when the attribute
-  is absent, `aria-haspopup`, and `aria-controls`. On the search field, or on the trigger without
-  one, `role="combobox"` and `aria-controls`, plus `aria-autocomplete="list"` on the search field.
-  On the list, an id, `role="listbox"`, and `tabindex="-1"`, which keeps a scrollable list out of
-  the tab order. No other attribute follows.
+- The attributes that describe the parts, written once when the binding is made. On the trigger,
+  `type="button"` when the attribute is absent, `aria-haspopup`, and `aria-controls`. On the search
+  field, or on the trigger without one, `role="combobox"` and `aria-controls`, plus
+  `aria-autocomplete="list"` on the search field. On the list, an id, `role="listbox"`, and
+  `tabindex="-1"`, which keeps a scrollable list out of the tab order. The binding writes no other
+  attribute.
 
 The rows and everything that follows the state stay with the caller:
 
@@ -201,8 +202,8 @@ The rows and everything that follows the state stay with the caller:
 | focus on open           | the search field                  | the edge from closed to open |
 
 Every row carries `data-region` with its region code, which is how the binding finds the row a
-click, a pointer, or the cursor belongs to. A combobox announces itself through `aria-expanded`. A
-host left without one reaches the screen reader incomplete.
+click, a pointer, or the cursor belongs to. The combobox role requires `aria-expanded`. Without it
+a screen reader cannot tell whether the list is open.
 
 ```ts
 const binding = bindRegionPicker({ picker, trigger, popup, search, listbox });
@@ -250,9 +251,9 @@ picker.subscribe((state) => {
 readonly ids: { readonly listbox: string; option(region: RegionCode): string };
 ```
 
-The listbox id, plus a ready-made id for a row. Both are unique per binding,
-which keeps them apart across the pickers on a page. A listbox that already carries an id keeps it,
-which lets a template own the id and the binding point `aria-controls` at it.
+The listbox id, plus a ready-made id for a row. The generated ids are unique per binding, which
+keeps two pickers on one page apart. A listbox that already carries an id keeps it, which lets a
+template own the id while the binding points `aria-controls` at it.
 
 A row's id is never read by the binding, which leaves it with the caller. A framework that renders
 rows on its first pass, before the binding exists, gives them ids of its own and points
@@ -265,8 +266,8 @@ revealCursor(): void;
 ```
 
 Scrolls the row under the cursor into view inside the listbox. Arrow keys call it already. Call it
-where the rows reach the DOM after the state changed, as a framework renders them, which covers
-the list opening on a fresh row set.
+after your framework has rendered the rows for a new state. That also covers the list opening on a
+fresh row set.
 
 ### destroy
 
@@ -291,8 +292,8 @@ type AttachRegionPickerOptions<T = undefined> = BindRegionPickerOptions<T> & {
 ```
 
 [`bindRegionPicker`](#bindregionpicker) with the rendering on top. Every event above flows in the
-same way, while the state the binding leaves to a caller is written here. The adapter builds no
-elements of its own. Rows come from `renderOption` and the empty element from `renderEmpty`. It
+same way. The adapter writes the state the binding leaves to the caller and builds no elements of
+its own. Rows come from `renderOption` and the empty element from `renderEmpty`. It
 leaves the trigger's content, the styling, and the popup's position alone.
 
 What the adapter adds:

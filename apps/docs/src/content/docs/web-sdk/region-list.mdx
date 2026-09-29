@@ -5,8 +5,8 @@ description: The headless widget that produces a region picker's rows.
 
 The headless widget that produces a region picker's rows. It emits a
 [`RegionListState`](#regionliststate) snapshot on every change. Each change recomputes the
-options through one pipeline of region filter, number-type filter, search, sort, and prioritized
-pins. No emit fires at construction; read the bootstrap with [`getState`](#getstate).
+options through one pipeline of region filter, number-type filter, search, sort, and `prioritize`.
+No emit fires at construction; read the initial state with [`getState`](#getstate).
 
 ## createRegionList
 
@@ -26,19 +26,19 @@ regions.getState().options[0];
 
 ## RegionListOptions
 
-| Field              | Type                            | Meaning                                                                                                                |
-| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `dataFactory`      | `RegionDataFactory<T>`          | Produces the `data` slot from the option's `region`, `callingCode`, and `displayName`; its return type flows into `T`. |
-| `locale`           | `string`                        | Locale for display names; `'en'` by default.                                                                           |
-| `sort`             | `RegionListSort`                | `'alphabetical'` (default), `'callingCode'`, or a comparator.                                                          |
-| `prioritize`       | `readonly RegionCode[]`         | Regions pinned to the top, in the given order.                                                                         |
-| `regionFilter`     | `readonly RegionCode[] \| null` | Restricts the list to these regions.                                                                                   |
-| `numberTypeFilter` | `readonly NumberType[] \| null` | Keeps regions that assign at least one of these types.                                                                 |
-| `searchQuery`      | `string`                        | Initial search query.                                                                                                  |
-| `searchFn`         | `RegionSearchFn<T>`             | Custom search predicate; the default is described under [Search matching](#search-matching).                           |
+| Field              | Type                            | Meaning                                                                                      |
+| ------------------ | ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `dataFactory`      | `RegionDataFactory<T>`          | Produces `data` for each option; its return type becomes `T`.                                |
+| `locale`           | `string`                        | Locale for display names; `'en'` by default.                                                 |
+| `sort`             | `RegionListSort`                | `'alphabetical'` (default), `'callingCode'`, or a comparator.                                |
+| `prioritize`       | `readonly RegionCode[]`         | Regions pinned to the top, in the given order.                                               |
+| `regionFilter`     | `readonly RegionCode[] \| null` | Restricts the list to these regions.                                                         |
+| `numberTypeFilter` | `readonly NumberType[] \| null` | Keeps regions that assign at least one of these types.                                       |
+| `searchQuery`      | `string`                        | Initial search query.                                                                        |
+| `searchFn`         | `RegionSearchFn<T>`             | Custom search predicate; the default is described under [Search matching](#search-matching). |
 
-`RegionDataFactory<T>` is `(input: RegionDataFactoryInput) => T`, where `RegionDataFactoryInput`
-carries the option's `region`, `callingCode`, and `displayName`. `RegionSearchFn<T>` is
+`RegionDataFactory<T>` is `(input: RegionDataFactoryInput) => T`, where the input carries
+`region`, `callingCode`, `displayName`, and `locale`. `RegionSearchFn<T>` is
 `(query: string, option: RegionOption<T>) => boolean`.
 
 For both filters, `null` lifts the restriction; `[]` matches nothing.

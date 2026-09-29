@@ -26,7 +26,7 @@ makes `required` report at the same time. The template therefore checks `telixon
 `required`. The `message` method turns each fault kind into text.
 
 The input's `aria-describedby` points at the message element. `aria-invalid` follows
-`control.touched && control.invalid`. Inside a Material form field, `mat-error` sets both on its
+`control.touched && control.invalid`. Inside a Material form field, `matInput` sets both on its
 own.
 
 ## The placeholder
@@ -51,9 +51,5 @@ The directive works with `ngModel` the same way:
 
 `phone` receives `+14155550132` once the number is valid and `null` at any other time.
 `model.errors` carries `telixonPhone`.
-
-## Write a value
-
-Writing `+442071838750` to the control shows `44 20 7183 8750` in the field.
 
 [Add a region picker](/angular/guides/region-picker/) puts a region picker next to the field.

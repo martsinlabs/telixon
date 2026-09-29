@@ -53,10 +53,10 @@ input.addEventListener('beforeinput', (event) => {
 });
 ```
 
-Typing `4155550132` leaves the field showing `(415) 555-0132`, with the caret after the last
-digit. A paste flows through the same handler. This minimal handler stops at typing, paste, and
-plain deletes; word deletes, line deletes, and IME composition need branches of their own, which
-[`PhoneInput`](/web-sdk/phone-input/) from `@telixon/web-sdk` already wires for production.
+Type `4155550132` and the field shows `(415) 555-0132`, with the caret after the last digit. A
+paste flows through the same handler. This minimal handler stops at typing, paste, and plain
+deletes; word deletes, line deletes, and IME composition need branches of their own, which
+[`PhoneInput`](/web-sdk/phone-input/) from `@telixon/web-sdk` handles.
 
 ## Undo and redo
 
@@ -85,8 +85,8 @@ controller.getPhoneNumber().isValid(); // true
 controller.getPhoneNumber().formatE164(); // '+14155550132'
 ```
 
-The full query surface is available on that number, including the possibility check and the typed
-validation error; see [Validate a phone number](/core/guides/validate-a-phone-number/).
+Every `PhoneNumber` method is available on it, the possibility check and the typed validation
+error included. [Validate a phone number](/core/guides/validate-a-phone-number/) covers them.
 
 ## The international field
 

@@ -45,7 +45,7 @@ Run from the repo root:
 | `pnpm lint:fix`              | ESLint with autofix                                                          |
 | `pnpm format`                | Prettier (write)                                                             |
 | `pnpm format:check`          | Prettier (check only; used by CI)                                            |
-| `pnpm typecheck`             | TypeScript, no emit, all packages                                            |
+| `pnpm typecheck`             | TypeScript, no emit, every workspace project                                 |
 | `pnpm typecheck:conformance` | TypeScript for the conformance harness                                       |
 | `pnpm bench`                 | benchmarks on the built packages (`pnpm build` first), console output        |
 | `pnpm bench:report`          | bench + writes `bench.json`, `bench-badge.json`, `benchmark.html`            |
@@ -66,8 +66,8 @@ the pull request title the commit subject on `main`.
    documentation changes.
 4. Push to your fork and open a pull request against `main`. Give it a short, one-line conventional
    title: `type(scope): summary` (for example `feat(core): add parsePhoneNumber`).
-5. The `verify`, `test-matrix`, `runtime-*`, `conformance`, `codspeed`, and `bundle` checks must
-   pass on the pull request, with the branch up to date with `main`.
+5. Every CI job must pass on the pull request, with the branch up to date with `main`. The branch
+   rules require `verify`, `conformance`, `codspeed`, and `bundle`.
 6. Keep the pull request small and single-purpose.
 
 Telixon has a single maintainer who reviews and merges.
