@@ -5,7 +5,8 @@ description: The fourteen query and format methods on a parsed number.
 
 A parsed number, returned by [`parsePhoneNumber`](/core/reference/parse-phone-number/) and by a
 controller's [`getPhoneNumber`](/core/reference/input-controller/#getphonenumber). Fourteen methods
-query and format it. Every answer derives from the state resolved at parse time.
+query and format it. The answers are fixed at parse time. A `PhoneNumber` a controller already
+returned never changes with later edits.
 
 The examples share one number:
 
@@ -35,8 +36,8 @@ number.isValidForRegion('CA'); // false
 
 ### isPossible
 
-Whether the calling code resolves and the length is one the region dials. The digits themselves go
-unchecked. A possible number can still be invalid.
+Whether the calling code resolves and the length is one the region dials. Only the length is
+checked, which means a possible number can still be invalid.
 
 ```ts
 number.isPossible(); // true
@@ -91,8 +92,7 @@ number.getRegion(); // 'US'
 
 ### getCallingCode
 
-The country calling code read from the digits, without the `+`, or `null` when the digits carry
-none.
+The country calling code, without the `+`, or `null` when none resolved.
 
 ```ts
 number.getCallingCode(); // '1'

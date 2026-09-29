@@ -11,9 +11,8 @@ Parses a phone number to validate, format, and inspect it. A leading `+` reads a
 otherwise the digits resolve against `defaultRegion`, with the region's IDD prefix, a redundant
 leading calling code, and the national prefix all recognized and stripped. Spacing and punctuation
 are ignored. It never throws on bad input; the returned
-[`PhoneNumber`](/core/reference/phone-number/) reports why it is not valid. Like every entry
-point, it requires a [loaded engine](/core/load-the-engine/) and throws `EngineNotReadyError`
-before that.
+[`PhoneNumber`](/core/reference/phone-number/) reports why it is not valid. It requires a
+[loaded engine](/core/load-the-engine/) and throws `EngineNotReadyError` before that.
 
 ```ts
 parsePhoneNumber('+1 (415) 555-0132').formatE164(); // '+14155550132'
@@ -24,9 +23,9 @@ parsePhoneNumber('(415) 555-0132', { defaultRegion: 'US' }).isValid(); // true
 
 A trailing extension is captured and split off before the digits resolve, under the notations
 Google libphonenumber recognizes, among them `ext.`, `extension`, `x`, `#`, `int`, comma, tilde,
-and the RFC 3966 `;ext=` parameter. The captured digits surface through
-[`getExtension`](/core/reference/phone-number/#getextension) and travel through the
-[formats](/core/reference/phone-number/#formats); validity is judged on the base number alone.
+and the RFC 3966 `;ext=` parameter. [`getExtension`](/core/reference/phone-number/#getextension)
+returns the captured digits and the [formats](/core/reference/phone-number/#formats) append them.
+Validity is judged on the base number alone.
 
 ```ts
 parsePhoneNumber('+1 415 555 0132 ext. 22').isValid(); // true

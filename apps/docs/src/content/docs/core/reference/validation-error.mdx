@@ -17,35 +17,29 @@ type ValidationError =
 ```
 
 The fault to correct in the input. Returned by
-[`getValidationError`](/core/reference/phone-number/#getvalidationerror), which is `null` when
-none applies. A valid number reports `null`, or `NATIONAL_PREFIX_MISSING` where its national
-format expects a trunk prefix the input omits. Five of the nine variants carry data that names the
-fix. Since the union is discriminated on `kind`, a `switch` narrows every variant. With a declared
-return type on the switching function, a newly added variant stops compiling until every `switch`
-handles it. The kinds mirror Google libphonenumber where applicable.
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror). A valid number reports
+`null`, or `NATIONAL_PREFIX_MISSING` where its national format expects a trunk prefix the input
+omits. Five of the nine variants carry data that names the fix. Switch on `kind` to narrow it.
 
 ## Variants
 
-Every row is a real input and its real result.
-
-| Input                                                         | `getValidationError()`                                     | Meaning                                                       |
-| ------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------- |
-| `''`                                                          | `{ kind: 'EMPTY' }`                                        | No digits to resolve                                          |
-| `'+999 123'`                                                  | `{ kind: 'INVALID_CALLING_CODE' }`                         | The digits begin with no known calling code                   |
-| `'+1 21'`                                                     | `{ kind: 'TOO_SHORT', minLength: 10 }`                     | Fewer digits than the region's shortest number                |
-| `'+1 21255512345678'`                                         | `{ kind: 'TOO_LONG', maxLength: 10 }`                      | More digits than the region's longest number                  |
-| `'+57 321 123 456'`                                           | `{ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }` | The length falls in a gap between valid lengths               |
-| `'5550132'` with `defaultRegion: 'US'`                        | `{ kind: 'POSSIBLE_LOCAL_ONLY' }`                          | Valid only when dialed inside its own area                    |
-| `'+1 1234567890'`                                             | `{ kind: 'PATTERN_MISMATCH' }`                             | The length is valid and the digits match no number            |
-| `'501234567'` with `defaultRegion: 'AE'`                      | `{ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }` | A required national (trunk) prefix was missing                |
-| `'0501234567'` in an `AE` field with the calling code outside | `{ kind: 'NATIONAL_PREFIX_PRESENT', prefix: '0' }`         | The trunk prefix was typed where international input omits it |
+| Input                                                         | `getValidationError()`                                     | Meaning                                                                            |
+| ------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `''`                                                          | `{ kind: 'EMPTY' }`                                        | No digits to resolve                                                               |
+| `'+999 123'`                                                  | `{ kind: 'INVALID_CALLING_CODE' }`                         | The digits begin with no known calling code                                        |
+| `'+1 21'`                                                     | `{ kind: 'TOO_SHORT', minLength: 10 }`                     | Fewer digits than the region's shortest number                                     |
+| `'+1 21255512345678'`                                         | `{ kind: 'TOO_LONG', maxLength: 10 }`                      | More digits than the region's longest number                                       |
+| `'+57 321 123 456'`                                           | `{ kind: 'INVALID_LENGTH', possibleLengths: [8, 10, 11] }` | The length falls in a gap between valid lengths                                    |
+| `'5550132'` with `defaultRegion: 'US'`                        | `{ kind: 'POSSIBLE_LOCAL_ONLY' }`                          | Possible only for local dialing, such as a subscriber number missing its area code |
+| `'+1 1234567890'`                                             | `{ kind: 'PATTERN_MISMATCH' }`                             | The length is valid and the digits match no number                                 |
+| `'501234567'` with `defaultRegion: 'AE'`                      | `{ kind: 'NATIONAL_PREFIX_MISSING', expectedPrefix: '0' }` | A required national (trunk) prefix was missing                                     |
+| `'0501234567'` in an `AE` field with the calling code outside | `{ kind: 'NATIONAL_PREFIX_PRESENT', prefix: '0' }`         | The trunk prefix was typed where international input omits it                      |
 
 `NATIONAL_PREFIX_PRESENT` comes only from a controller holding the calling code outside the field
-(`callingCodeInInput: false`), where the digits are the international significant number. It
-reports when a number that is not valid as typed begins with a national-dialing chunk, the trunk
-prefix or a carrier code, whose removal leaves a valid number. `prefix` is the exact leading chunk
-to drop; a Belarusian number typed as `80 29...` reports `prefix: '80'`. Reproducing it takes a
-controller:
+(`callingCodeInInput: false`), where the digits are the international significant number. It fires
+when the typed number is invalid but becomes valid once its leading trunk prefix or carrier code is
+dropped. `prefix` is the exact leading chunk to drop. A Belarusian number typed as `80 29...`
+reports `prefix: '80'`. Reproducing it takes a controller:
 
 ```ts
 const controller = createInternationalInputController({

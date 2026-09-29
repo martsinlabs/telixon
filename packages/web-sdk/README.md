@@ -1,6 +1,6 @@
 # @telixon/web-sdk
 
-The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping three headless widgets. `PhoneInput` drives a plain `<input>`, `RegionList` feeds the region picker, and `RegionPicker` drives the picker's trigger and list.
+The DOM adapter for [`@telixon/core`](https://www.npmjs.com/package/@telixon/core), shipping three headless widgets. `PhoneInput` drives a plain `<input>`, `RegionPicker` runs a picker's trigger and list, and `RegionList` supplies its rows. A flag sprite covers every region.
 
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 [![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
@@ -55,8 +55,8 @@ regions.search('united');
 regions.getState().options.map((option) => option.region); // ['US', 'GB', 'AE']
 ```
 
-`createRegionPicker` holds the open state, the row the arrow keys highlight (the keyboard cursor
-that Enter picks), and the selection. Bound to a phone, it follows the phone's resolved region:
+`createRegionPicker` holds the open state, the keyboard cursor, and the selection. Bound to a phone,
+it follows the phone's resolved region:
 
 ```ts
 import { createRegionPicker } from '@telixon/web-sdk';
@@ -73,8 +73,8 @@ picker.close();
 handles the clicks, the keys, outside presses, the ARIA attributes, and the row rendering.
 `bindRegionPicker` wires the same behavior where a framework already renders the rows.
 
-`@telixon/web-sdk/flags` ships a sprite sheet with a flag for every region. A cell is two elements.
-The stylesheet carries the sheet:
+`@telixon/web-sdk/flags` ships a sprite sheet with a flag for every region. A flag is two nested
+spans. The stylesheet brings the image:
 
 ```html
 <span class="tlx-flag" aria-hidden="true"><span class="tlx-flag__image"></span></span>
@@ -95,14 +95,14 @@ image.style.transform = flagTransform('US'); // 'translate(-18.75%, -87.5%)'
 - **Full input controller.** Live formatting on every keystroke with a stable caret, across
   mid-string edits, deletions, and paste.
 - **Controlled history.** Undo and redo restore the exact prior value and selection.
-- **Headless.** No styles, no rendering. Binds a plain `<input>` in React, Vue, Angular, Svelte, or
-  vanilla JS.
+- **Headless.** You own the markup and the styles. The widgets bind a plain `<input>` in React,
+  Vue, Angular, Svelte, or vanilla JS.
 
 ## Support
 
 Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
-feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
-follow [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md).
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Report a
+vulnerability as [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md) describes.
 
 ## Contributing
 

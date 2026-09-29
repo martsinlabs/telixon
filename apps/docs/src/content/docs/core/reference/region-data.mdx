@@ -3,8 +3,8 @@ title: Region data
 description: REGION_CODES, NUMBER_TYPES, and the four region query functions.
 ---
 
-Static data and lookups about regions and number types, the building blocks for region dropdowns,
-placeholders, and input constraints.
+Region and number-type data for region dropdowns, placeholders, and input constraints. The two
+constants need nothing. The four functions need a [loaded engine](/core/load-the-engine/).
 
 ## REGION_CODES
 
@@ -62,7 +62,7 @@ function getPlaceholders(region: RegionCode, type: NumberType): Placeholders | n
 ```
 
 A region's example number for one type, in each format a field might use. It returns `null` when
-the region has no example for that type.
+the region has no example for that type, or no format to write it in.
 
 ```ts
 getPlaceholders('US', 'FIXED_LINE');

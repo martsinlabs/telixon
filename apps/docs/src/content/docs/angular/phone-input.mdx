@@ -1,12 +1,12 @@
 ---
 title: TelixonPhoneInput
-description: The directive that turns an input into a phone field and a form control.
+description: The directive that formats a phone number in the input and hands the form control its E.164 value.
 ---
 
-A directive with the selector `input[telixonPhoneInput]`, exported as `telixonPhoneInput`. Once the
-engine has loaded, the directive attaches a [`PhoneInput`](/web-sdk/phone-input/) to the element
-and registers itself as the form control's value accessor and validator. Until then the element is
-a plain input. On the server it stays a plain input.
+A directive with the selector `input[telixonPhoneInput]`, exported as `telixonPhoneInput`. It is
+the form control's value accessor and validator. Once the engine has loaded, it attaches a
+[`PhoneInput`](/web-sdk/phone-input/) to the element. Until then, and on the server throughout, the
+element is a plain input.
 
 ```angular-html
 <input #phone="telixonPhoneInput" [telixonPhoneInput]="options" [formControl]="control" />
@@ -19,8 +19,8 @@ a plain input. On the server it stays a plain input.
 `input` and `initialValue`. A bare `telixonPhoneInput` attribute means `{ mode: 'international' }`.
 
 When the options change, new `regionFilter` and `numberTypeFilter` values go to the existing widget.
-Any other change replaces the widget. A valid number is carried over to the new widget as it is. Any
-other text stays in the input, where the new widget reads it. A field that holds only a calling code
+Any other change replaces the widget. A valid number moves into the new widget, which shows it in
+its own format. Any other text stays in the input, where the new widget reads it. A field that holds only a calling code
 starts over. A new `defaultRegion` then seeds its own calling code.
 
 ## Form value
@@ -49,17 +49,17 @@ number that is valid without its trunk prefix, such as `2071838750` in a nationa
 field, reports no error either. The widget's own state still carries the `NATIONAL_PREFIX_MISSING`
 hint for it.
 
-The validator runs again whenever the fault changes while the value stays `null`. A form therefore
-moves from `TOO_SHORT` to `TOO_LONG` as the user keeps typing.
+The validator runs again whenever the fault changes while the value stays `null`. `control.errors`
+therefore moves from `TOO_SHORT` to `TOO_LONG` as the user keeps typing.
 
 ## The input element
 
 `type="tel"` shows the phone keypad on iOS and Android. `autocomplete="tel"` lets the browser fill
-the number from the user's profile. An autofilled value reaches the field as one `input` event and
-is read like a paste. Keep the input's font size at 16 px or larger, because iOS Safari zooms into a
-smaller field on focus. `enterkeyhint="done"` labels the keyboard's action key on the last field of
-a form. Leave `maxlength` off, because Chrome fills a national number without its country code into
-a field that is too short for the whole number.
+the number from the user's profile. An autofilled value replaces the field's text and is read
+against the field's region. Keep the input's font size at 16 px or larger, because iOS Safari zooms
+into a smaller field on focus. `enterkeyhint="done"` labels the keyboard's action key on the last
+field of a form. Leave `maxlength` off. Chrome autofills the national number without its country
+code when the whole number does not fit.
 
 The input keeps its native textbox role and the label you give it. Formatting makes no announcement
 of its own. A screen reader reads the current value when the field takes focus.
@@ -119,5 +119,5 @@ Moves focus into the field.
 ## The engine
 
 The directive calls [`ensureEngineReady`](/core/load-the-engine/) after the first render. A failed
-load reports to `ErrorHandler`. [`provideTelixon`](/angular/provide-telixon/) starts the load
-earlier, right after the application's first render.
+load reports to `ErrorHandler`. [`provideTelixon`](/angular/provide-telixon/) starts the same load
+at the application's first render, ahead of any field that appears later.

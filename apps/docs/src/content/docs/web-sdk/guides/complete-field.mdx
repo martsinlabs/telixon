@@ -1,6 +1,6 @@
 ---
 title: Build the complete field
-description: A working phone field with a region picker wired to drive the region.
+description: A phone field whose region picker sets the calling code.
 ---
 
 import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
@@ -11,14 +11,12 @@ import code from '../../../../components/demos/complete-field.js?raw';
 
 This guide wires the [phone field](/web-sdk/guides/phone-field/) and the
 [region picker](/web-sdk/guides/region-picker/) into one widget, where the picker supplies the
-calling code and the input holds the rest. [`RegionPicker`](/web-sdk/region-picker/) sits between
-the list and the phone, while [`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker)
-sits between the picker and the DOM. The [flag sprite](/web-sdk/flags/) draws the flags.
+calling code and the input holds the rest. The [flag sprite](/web-sdk/flags/) draws the flags.
 
 ## Live demo
 
-Open the picker, search `canada`, and pick it. The button shows the Canadian flag on `+1`, with the
-empty field's placeholder now a Canadian example. Type `6045550132` and the field shows
+Open the picker, search `canada`, and pick it. The button shows the Canadian flag and `+1`. The
+placeholder switches to a Canadian example number. Type `6045550132` and the field shows
 `604-555-0132` with the status `Valid: +16045550132`. Reopen the picker and choose United States.
 `604` still belongs to Canada, which flips the flag straight back.
 
@@ -26,9 +24,9 @@ Undo reaches the picker as well. Cmd/Ctrl+Z steps back through the digits, then 
 change itself, carrying the flag and the calling code with it. Cmd/Ctrl+Shift+Z replays the whole
 sequence.
 
-The keyboard works throughout. Search `united k` and press Enter, or walk the rows with the arrow
-keys. Select the United Kingdom and type `07400123456`. The leading zero is a trunk prefix with no
-place after `+44`. The status reads `NATIONAL_PREFIX_PRESENT`.
+Search `united k` and press Enter, or walk the rows with the arrow keys. Select the United Kingdom
+and type `07400123456`. The leading zero is the UK trunk prefix and does not belong after `+44`.
+The status reads `NATIONAL_PREFIX_PRESENT`.
 
 <CompleteFieldDemo />
 
@@ -36,31 +34,27 @@ place after `+44`. The status reads `NATIONAL_PREFIX_PRESENT`.
 
 The demo and the source are the same three files. The markup is the region button with a flag
 cell, the input, a popup with the search box and the list, and a status line.
-[`callingCodeInInput: false`](/core/reference/input-controller/#internationalinputcontrollerconfig)
-keeps the calling code out of the input, leaving the selected region to supply it.
 
 The script creates three widgets. [`createRegionList`](/web-sdk/region-list/#createregionlist)
 builds the rows with US, CA, and GB pinned on top.
-[`createPhoneInput`](/web-sdk/phone-input/#createphoneinput) binds the input.
-[`createRegionPicker`](/web-sdk/region-picker/#createregionpicker) takes both, which makes the
-phone the owner of the region. A pick reaches [`setRegion`](/web-sdk/phone-input/#setregion). The
-picker follows the phone's resolved [`region`](/web-sdk/phone-input/#phoneinputstate) back, moving
-the flag when the digits land in another region on the same calling code.
+[`createPhoneInput`](/web-sdk/phone-input/#createphoneinput) binds the input with
+[`callingCodeInInput: false`](/core/reference/input-controller/#internationalinputcontrollerconfig),
+which keeps the calling code out of the field and leaves it to the selected region.
+[`createRegionPicker`](/web-sdk/region-picker/#createregionpicker) takes both. From then on the
+phone owns the region. A pick calls the phone's [`setRegion`](/web-sdk/phone-input/#setregion). The
+picker follows the phone's resolved [`region`](/web-sdk/phone-input/#phoneinputstate) back and
+moves the flag when the digits land in another region on the same calling code.
 
-[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wires the button, the search
-box, and the list to the picker and owns the clicks, the keys, the outside press, and the ARIA
-attributes. The demo hands it three functions. `renderOption` builds a row from a flag cell, the
-name, and the calling code, with [`flagTransform`](/web-sdk/flags/#flagtransform) selecting the
-cell. `renderEmpty` builds the row shown when the search matches nothing. `renderTrigger` puts the
-selected region's flag and calling code on the button. `returnFocusTo` sends focus to the input
-after a pick.
+The [`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) call matches
+[Build a region picker](/web-sdk/guides/region-picker/), except that `renderTrigger` writes the
+calling code next to the flag and `returnFocusTo` sends focus to the input after a pick.
 
-Two things stay with the demo. `positionPopup` flips the popup above the field when the viewport
-below cannot fit it, since positioning is the caller's. `renderStatus` draws the placeholder and
-the status from each emitted [state](/web-sdk/phone-input/#phoneinputstate).
+The demo positions the popup itself. `positionPopup` flips it above the field when there is no
+room below. `renderStatus` draws the placeholder and the status from each emitted
+[state](/web-sdk/phone-input/#phoneinputstate).
 
-Inside a framework component, call [`destroy`](/web-sdk/region-picker/#destroy-2) on the
-attachment and on each widget on unmount.
+When a framework component unmounts, call [`destroy`](/web-sdk/region-picker/#destroy-2) on the
+attachment and on each widget.
 
 <Tabs syncKey="source">
 
@@ -77,7 +71,3 @@ attachment and on each widget on unmount.
 </TabItem>
 
 </Tabs>
-
-`PhoneInput` and `RegionList` never learn about each other. `RegionPicker` holds the open state,
-the keyboard cursor, and the selection between them. `attachRegionPicker` turns that state into a
-working control.

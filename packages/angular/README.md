@@ -1,13 +1,13 @@
 # @telixon/angular
 
-Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk). A directive turns an `<input>` into a phone field that works as a form control. A region picker adds the flag and a searchable list of regions.
+Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/package/@telixon/web-sdk). A directive goes on your own `<input>`. The user sees a formatted number while the form control holds it in E.164. A region picker adds the flag and a searchable list of regions.
 
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 [![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
 [![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fangular%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/angular)
 [![downloads](https://img.shields.io/npm/dm/%40telixon%2Fangular?color=26997b&label=downloads)](https://www.npmjs.com/package/@telixon/angular)
 
-The two are a construction kit. The directive goes on your own `<input>`, while the picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
+Both parts fit around your own markup. The picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
 
 **[Documentation](https://telixon.dev/angular/)**
 
@@ -17,7 +17,7 @@ The two are a construction kit. The directive goes on your own `<input>`, while 
 ng add @telixon/angular
 ```
 
-`ng add` installs the package, puts the flags stylesheet in the application's styles, and provides `provideTelixon` with the engine preload.
+`ng add` installs the package, adds the flags stylesheet to the application's styles, and registers `provideTelixon` with the engine preload.
 
 Or install the package and take the other two steps by hand:
 
@@ -74,7 +74,7 @@ export class Contact {
 
 The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`.
 
-Open it on StackBlitz: [the field](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or [the field inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
+The same field runs on StackBlitz, [on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or [inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
 
 ## Versions
 
@@ -83,8 +83,8 @@ The major version follows Angular's, where `@telixon/angular` 20 targets Angular
 ## Support
 
 Questions belong in [Discussions](https://github.com/martsinlabs/telixon/discussions). Bugs and
-feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Vulnerabilities
-follow [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md).
+feature requests belong in [Issues](https://github.com/martsinlabs/telixon/issues). Report a
+vulnerability as [SECURITY.md](https://github.com/martsinlabs/telixon/blob/main/SECURITY.md) describes.
 
 ## Contributing
 

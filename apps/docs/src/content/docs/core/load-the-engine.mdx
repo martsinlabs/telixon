@@ -1,10 +1,10 @@
 ---
 title: Load the engine
-description: Explicit initialization with ensureEngineReady, or synchronously with ensureEngineReadySync.
+description: Load the engine once with ensureEngineReady, or without awaiting through ensureEngineReadySync.
 ---
 
-Every query and every controller runs on the engine. It ships in separate modules, outside the
-initial bundle. You load it wherever it fits your app's flow.
+Every query and every controller runs on the engine. Under the default entry it ships as separate
+modules, outside the initial bundle. You load it when it suits your app.
 
 ## ensureEngineReady
 
@@ -51,7 +51,7 @@ try {
 function isEngineReady(): boolean;
 ```
 
-Whether the engine is loaded. It returns `false` where a query would throw `EngineNotReadyError`.
+Whether the engine is loaded. It is `false` while a query would still throw `EngineNotReadyError`.
 
 ```ts
 import { isEngineReady } from '@telixon/core';
@@ -66,8 +66,7 @@ function ensureEngineReadySync(): void;
 ```
 
 Initializes the engine synchronously, from tables embedded in the bundle. That weight lands only
-where this entry is imported; the [bundle report](https://proof.telixon.dev/bundle.html) measures
-it chunk by chunk.
+where this entry is imported.
 
 ```ts
 import { ensureEngineReadySync } from '@telixon/core/sync-init';
@@ -96,8 +95,8 @@ Under `ensureEngineReady`, the browser and edge builds import the tables as code
 then inflate them with `DecompressionStream`, falling back to a pure-JS inflater where the API is
 missing. The Node build decodes with native zlib, off the event loop.
 
-`@telixon/core/sync-init` resolves two builds of its own. Node decodes with native zlib; every
-other runtime uses the pure-JS inflater.
+`@telixon/core/sync-init` resolves two builds of its own. Node.js, Deno, and Bun decode with native
+zlib; browsers and edge runtimes use the pure-JS inflater.
 
 ## One engine per process
 

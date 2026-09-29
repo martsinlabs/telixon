@@ -46,7 +46,7 @@ The adapter adds these fields:
 | `placeholderNumberType` | `NumberType`                    | The type the placeholder demonstrates; `'MOBILE'` by default.        |
 
 A value already present in the input element seeds the controller when `initialValue` is omitted,
-which keeps server-rendered and pre-attach autofilled values.
+which keeps a server-rendered value or one the browser filled before the widget attached.
 
 ## PhoneInputState
 
@@ -64,14 +64,14 @@ type PhoneInputState = {
 ```
 
 `value`, `region`, and the selection mirror the core
-[`InputState`](/core/reference/input-controller/#inputstate). The two filters echo the active
-restrictions.
+[`InputState`](/core/reference/input-controller/#inputstate). `regionFilter` and
+`numberTypeFilter` are the filters currently applied.
 
 `placeholder` is the example number for the resolved region, in the field's own display shape.
 While the value resolves no region, it falls back to the configured `defaultRegion`. It is `null`
 without a region to fall back to, or when the region's metadata carries no example for the
 configured type. A national US field gets `'(201) 555-0123'`. An international field with the
-calling code inside gets `'1 201-555-0123'`.
+calling code inside gets `'1 201-555-0123'`, with a leading `+` when `plusPrefix` shows one.
 
 It lives in the state only. The DOM `placeholder` attribute stays untouched; you render it
 yourself.
@@ -83,28 +83,26 @@ empty field reports `EMPTY`.
 ## Covered events
 
 - Typing, including IME composition (`insertText`, `insertReplacementText`, `compositionend`)
-- Paste, drop, yank (`insertFromPaste`, `insertFromDrop`, `insertFromYank`): text holding a whole
-  international number enters as that number, the way
+- Paste, drop, yank (`insertFromPaste`, `insertFromDrop`, `insertFromYank`): pasted text that holds
+  a whole international number is taken as that number, as
   [`insert`](/core/reference/input-controller/#insert) describes
 - Deletes, including cut and drag-out (`deleteContentBackward`, `deleteContentForward`,
   `deleteByCut`, `deleteByDrag`, `deleteContent`)
 - Word deletes (`deleteWordBackward`, `deleteWordForward`): each consumes one digit group, skipping
   adjacent formatting
-- Line deletes (`deleteSoftLineBackward`, `deleteHardLineForward`, `deleteEntireSoftLine`, and the
-  rest of the family)
+- Line deletes (`deleteSoftLineBackward`, `deleteHardLineBackward`, `deleteSoftLineForward`,
+  `deleteHardLineForward`, `deleteEntireSoftLine`, `deleteEntireHardLine`)
 - Undo and redo: the native `historyUndo` and `historyRedo` input types, plus Cmd/Ctrl+Z,
   Cmd/Ctrl+Shift+Z, and Cmd/Ctrl+Y
-- Browser autofill and password managers: a value change that arrives with a bare `input` event
-  resynchronizes the controller from the field. A browser fills the number in its own national
-  spelling, trunk prefix and all, which the field reads against its region and takes as that number
-  when it is valid there
+- Browser autofill and password managers: a value that arrives with an `input` event and no
+  `beforeinput` is read back from the field. A browser fills the number the way the user stored it,
+  usually in national form with the trunk prefix. The field parses that text against its region
+  and, when it is a valid number there, takes it as that number
 
 The widget owns every edit of the value. It cancels each `beforeinput` it performs and each one it
-does not recognize, which leaves no way for text to reach the field except through the controller.
-The exceptions are `insertLineBreak` and `insertParagraph`, which leave the text alone in a
-single-line input and carry Enter to the form around the field. An insert whose text the event does
-not expose also passes. The `input` event that follows reads the result back through the
-controller.
+does not recognize. Two types pass untouched, `insertLineBreak` and `insertParagraph`, which change
+nothing in a single-line input and let Enter submit the form. An insert whose text the event does
+not carry also passes. The `input` event that follows reads the result back through the controller.
 
 ## Members
 
@@ -132,10 +130,8 @@ setValue(value: string): void;
 ```
 
 Replaces the value through the controller's
-[`setValue`](/core/reference/input-controller/#setvalue), writes the result back, then emits.
-Browser autofill and password managers announce their writes with an `input` event, and the widget
-adopts those on its own. A script that assigns `input.value` directly fires no event; push such
-values through this method.
+[`setValue`](/core/reference/input-controller/#setvalue), writes the result back, then emits. A
+script that assigns `input.value` directly fires no event. Push such values through this method.
 
 ### setRegion
 
@@ -214,6 +210,7 @@ getPhoneNumber(): PhoneNumber;
 The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query.
 
 ```ts
+phone.setValue('4155550132');
 phone.getPhoneNumber().formatE164(); // '+14155550132'
 ```
 
@@ -228,7 +225,7 @@ field behaves as a plain input again.
 
 ## Pair with a region picker
 
-A [`RegionPicker`](/web-sdk/region-picker/) created with the phone hands a pick to
-[`setRegion`](#setregion) and follows the resolved [`region`](#phoneinputstate) back.
+A [`RegionPicker`](/web-sdk/region-picker/) created with the phone sends each pick to
+[`setRegion`](#setregion) and follows the phone's resolved [`region`](#phoneinputstate).
 [`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wires the DOM. The full field,
 with a live demo, is in [Build the complete field](/web-sdk/guides/complete-field/).

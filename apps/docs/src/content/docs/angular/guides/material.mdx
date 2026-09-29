@@ -10,7 +10,7 @@ import styles from '../../../../../../../examples/angular/material/src/styles.sc
 
 [`TelixonPhoneInput`](/angular/phone-input/) shares one `<input>` with `matInput`. The picker goes
 into the form field as a text prefix. Material's floating label, outline notch, and error state
-follow the field without extra code.
+follow the field.
 
 ## Live demo
 
@@ -26,8 +26,9 @@ places the picker on the text line of the form field. `anchor=".mdc-text-field"`
 Material draws around the field. The list lines up with that box. The `telixonPhone` check comes
 before the `required` check, for the reason
 [Build a phone field](/angular/guides/phone-field/#show-the-errors) gives. The stylesheet carries
-the Material theme, the flags, and one rule that removes the trigger's border inside the form field.
-That rule belongs in the global styles, because component styles do not reach the picker.
+the Material theme, the flags, and one rule that strips the trigger's border and seats it on the
+text line inside the form field. That rule belongs in the global styles, because component styles
+do not reach the picker.
 
 <Tabs syncKey="source">
 

@@ -1,6 +1,6 @@
 ---
 title: Flag sprite
-description: One sprite sheet with a flag for every engine region, selected through a translate offset.
+description: One sprite sheet with a flag for every region, selected with a translate offset.
 ---
 
 `@telixon/web-sdk/flags` ships a sprite sheet, at 1x and 2x, with a flag for every region the
@@ -36,8 +36,8 @@ name belongs in text next to it.
 
 `.tlx-flag__image` is the sheet, `1600%` by `1600%` of the cell, with `sprite.png` (512 by 384
 pixels) as its background and `sprite@2x.png` (1024 by 768 pixels) from `1.5dppx` up. Until a
-script sets a transform, the stylesheet shows the neutral cell. It prints with background graphics
-switched off.
+script sets a transform, the stylesheet shows the neutral cell. It prints even when the browser's
+background-graphics option is off.
 
 Importing the stylesheet is the whole setup. Bundlers rebase its relative URLs from
 `node_modules`. Parcel needs `"@parcel/resolver-default": { "packageExports": true }` in the
@@ -95,7 +95,6 @@ regions.getState().options[0];
 
 ## Artwork
 
-The cells are rendered from the 4:3 artwork of [flag-icons](https://github.com/lipis/flag-icons),
-distributed under the MIT License. The notice ships in the package's `NOTICE` file. A test asserts
-that the sheet order equals `REGION_CODES`.
+The cells are rendered from the 4 by 3 artwork of [flag-icons](https://github.com/lipis/flag-icons),
+distributed under the MIT License. The notice ships in the package's `NOTICE` file.
 [`regionToFlagEmoji`](/web-sdk/region-list/#regiontoflagemoji) remains available for emoji.

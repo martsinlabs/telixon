@@ -6,12 +6,12 @@ description: Install @telixon/web-sdk and bind a phone input and a region list t
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `@telixon/web-sdk` is the DOM adapter for [`@telixon/core`](/core/). It ships three
-headless widgets. [`PhoneInput`](/web-sdk/phone-input/) drives a real `<input>`,
-[`RegionList`](/web-sdk/region-list/) feeds region pickers, and
-[`RegionPicker`](/web-sdk/region-picker/) drives a picker's trigger and list, with
-[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wiring the DOM to it. A
-standalone [flag sprite](/web-sdk/flags/) shows a flag for every region on every platform. Try the
-widgets together in the [input playground](/playground/input/).
+headless widgets. [`PhoneInput`](/web-sdk/phone-input/) drives a plain `<input>`.
+[`RegionPicker`](/web-sdk/region-picker/) runs a picker's trigger and list, with
+[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) wiring the DOM to it.
+[`RegionList`](/web-sdk/region-list/) supplies the picker's rows. A
+[flag sprite](/web-sdk/flags/) shows every region's flag. Try the widgets together in the
+[input playground](/playground/input/).
 
 ## Install
 
@@ -59,7 +59,7 @@ deno add npm:@telixon/core npm:@telixon/web-sdk
 
 </Tabs>
 
-Your code imports both packages, since the engine loads through `@telixon/core` directly.
+Your code imports both packages, because the engine loads through `@telixon/core`.
 
 ## Load the engine
 
@@ -86,8 +86,8 @@ phone.subscribe((state) => {
 });
 ```
 
-Typing `4155550132` leaves the field showing `(415) 555-0132`; the class drops at the tenth digit.
-The last emitted [state](/web-sdk/phone-input/#phoneinputstate):
+Type `4155550132` and the field shows `(415) 555-0132`. The `invalid` class drops at the tenth
+digit. The last emitted [state](/web-sdk/phone-input/#phoneinputstate):
 
 ```ts
 // {

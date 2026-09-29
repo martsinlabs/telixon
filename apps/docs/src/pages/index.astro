@@ -1565,8 +1565,8 @@ const closedTypesCode = `controller.setRegion('USA')
                 href="https://github.com/google/libphonenumber/blob/master/resources/PhoneNumberMetadata.xml"
                 target="_blank"
                 rel="noreferrer">metadata and rules</a
-              > into a deterministic finite automaton (DFA), stored as compact binary tables. Most libraries interpret those
-              rules at runtime, on every parse. Telixon does that work once, ahead of time.
+              > into a deterministic finite automaton (DFA), stored as compact binary tables. Google libphonenumber interprets
+              those rules at runtime, on every parse. Telixon does that work once, ahead of time.
             </p>
             <p>
               Parsing a number is a walk over the DFA, one digit per step. The state the walk ends on already holds the
@@ -1594,7 +1594,7 @@ const closedTypesCode = `controller.setRegion('USA')
         </div>
         <div class="bench-strip">
           <div class="bench">
-            <div class="num">119 KB</div>
+            <div class="num">85 KB</div>
             <div class="label">the whole world's numbering rules, compiled and compressed</div>
           </div>
           <div class="bench">
@@ -1633,7 +1633,7 @@ const closedTypesCode = `controller.setRegion('USA')
             <p class="case-label">Hard case, Argentina mobile</p>
             <p>
               In Argentina, a mobile number carries two dialing prefixes that aren't part of the number itself: a
-              leading <code>0</code> and a mobile <code>15</code>. So Telixon runs a full round-trip on every keystroke:
+              leading <code>0</code> and a mobile <code>15</code>. On every keystroke Telixon runs a full round-trip:
             </p>
             <ol class="steps-list">
               <li>
@@ -1692,7 +1692,7 @@ const closedTypesCode = `controller.setRegion('USA')
           </div>
         </div>
         <p class="after-paths">
-          The full controller API lives in <a class="link-green" href="/web-sdk/">the docs</a>.
+          The full controller API is in <a class="link-green" href="/core/reference/input-controller/">the reference</a>.
         </p>
       </div>
     </section>
@@ -1703,7 +1703,6 @@ const closedTypesCode = `controller.setRegion('USA')
     <section id="features">
       <div class="container reveal">
         <div class="sec-head"><h2>Developer experience</h2></div>
-        <p class="lead">What it is like to have Telixon in a codebase.</p>
         <div class="bento">
           <div class="cell wide">
             <h3><span class="tick" aria-hidden="true">+</span> Structured errors</h3>
@@ -1727,7 +1726,7 @@ const closedTypesCode = `controller.setRegion('USA')
           </div>
           <div class="cell">
             <h3><span class="tick" aria-hidden="true">+</span> Nothing on import</h3>
-            <p>Importing runs no fetches and sets no globals. The engine loads only when you call for it.</p>
+            <p>Importing runs no fetches and starts no work. The engine loads only when you call for it.</p>
           </div>
           <div class="cell">
             <h3><span class="tick" aria-hidden="true">+</span> One object, every query</h3>
@@ -1749,7 +1748,7 @@ const closedTypesCode = `controller.setRegion('USA')
             <h3><span class="tick" aria-hidden="true">+</span> Every intent handled</h3>
             <p>
               Twenty beforeinput types plus IME composition: typing, autocorrect, paste, drop, cut, word and line
-              deletion. Anything unrecognized is cancelled; nothing reaches the field the controller did not produce.
+              deletion. Anything unrecognized is canceled. Nothing reaches the field except what the controller produced.
             </p>
           </div>
           <div class="cell wide">
@@ -1778,7 +1777,7 @@ const closedTypesCode = `controller.setRegion('USA')
       <div class="container reveal">
         <div class="sec-head"><h2>Packages</h2></div>
         <p class="lead">
-          Telixon is an ecosystem built around one core, with thin layers you add only where you need them.
+          One core, with thin layers you add only where you need them.
         </p>
         <div class="stack">
           <a class="slab" href="/core/">
@@ -1797,7 +1796,7 @@ const closedTypesCode = `controller.setRegion('USA')
           <div class="slab">
             <span class="name">@telixon/web-components</span>
             <span class="chip chip-planned">Planned</span>
-            <span class="desc">A drop-in phone input as a standard web component.</span>
+            <span class="desc">A drop-in web component.</span>
           </div>
           <a class="slab" href="/angular/">
             <span class="name">@telixon/angular</span>
@@ -1807,16 +1806,16 @@ const closedTypesCode = `controller.setRegion('USA')
           <div class="slab">
             <span class="name">@telixon/react</span>
             <span class="chip chip-planned">Planned</span>
-            <span class="desc">The same controller with idiomatic React bindings.</span>
+            <span class="desc">React bindings.</span>
           </div>
           <div class="slab">
             <span class="name">@telixon/vue</span>
             <span class="chip chip-planned">Planned</span>
-            <span class="desc">The same controller with idiomatic Vue bindings.</span>
+            <span class="desc">Vue bindings.</span>
           </div>
         </div>
         <p class="stack-note">
-          Every layer is optional. Take the raw API and build exactly the behavior you need, or take a ready-made layer.
+          Every layer above core is optional.
         </p>
       </div>
     </section>

@@ -59,14 +59,13 @@ code is in the field, `defaultRegion` pre-fills the field with that region's cod
 | `display`                                  | The field holds                                                                                           |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
 | omitted                                    | Calling-code digits, with no `+` rendered                                                                 |
-| `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits, with the `+` under `plusPrefix`                                                      |
+| `{ callingCodeInInput: true, plusPrefix }` | Calling-code digits; `plusPrefix` decides whether the `+` shows                                           |
 | `{ callingCodeInInput: false }`            | The international significant number; the region comes from `defaultRegion` and [`setRegion`](#setregion) |
 
-`plusPrefix`, a `PlusPrefixMode`, renders the leading `+`, with `'none'` never showing it,
-`'fixed'` always, and `'erasable'` while the value carries one. Under `'erasable'`, backspace
-right after the `+` removes it. Every plus-less start, an empty or omitted `initialValue`
-included, begins with the plus erased, leaving an empty field truly empty; only the
-calling-code seed from `defaultRegion` keeps the visible plus.
+`plusPrefix`, a `PlusPrefixMode`, controls the leading `+`. `'none'` never shows it, `'fixed'`
+always shows it, and `'erasable'` shows it while the value starts with one. Under `'erasable'`,
+backspace right after the `+` removes it. A value set without a `+` starts without it, while the
+calling code seeded from `defaultRegion` starts with it.
 
 ## InputState
 
@@ -83,14 +82,15 @@ The next value and selection to apply to the field. `value` is the formatted str
 indices point into it.
 
 `region` is the region the value resolves to, or `null` when none does. Within a shared calling
-code it reports the resolved owner of the digits, where a `604` number comes back as `CA` even in a
-US-configured field. A field with no digits reports the configured default region, keeping the
-region stable when the value is cleared.
+code the digits decide. A `604` number typed into a US field reports `CA`, unless the field is
+`strict`, which keeps reporting its `defaultRegion`. A field with no digits reports the configured
+default region, which keeps the region stable when the value is cleared.
 
 ## Edits
 
-All four take the field's value as an argument, keeping the controller working from what the
-field actually shows.
+The three edits take the field's current value and selection. Pass what the field shows. A value
+the controller never rendered, such as an autofill, is read from scratch. `setValue` takes the new
+value.
 
 ### insert
 
@@ -100,10 +100,11 @@ insert(value: string, text: string, selectionStart: number, selectionEnd: number
 
 Replaces the selection from `selectionStart` to `selectionEnd` in `value` with `text`, then
 reformats. `text` can be one keystroke or a whole paste. Digits are read in ASCII, in fullwidth,
-and in the two Arabic-Indic scripts. A paste that carries a plus before any digit and a whole number
-behind it replaces the value with that number, trunk prefix and extension left out. With the
-calling code outside the field, the region follows the number. A national field takes a number
-under its own calling code. A `strict` field keeps its region. Any other text reads as digits.
+and in the two Arabic-Indic scripts. A paste that starts with a `+` and carries a whole number
+replaces the value with that number, minus any written trunk prefix and extension. With the calling
+code outside the field, the region switches to the number's own, while a national field accepts the
+number only under its own calling code and a `strict` field keeps its region. Anything else reads
+as digits.
 
 ### deleteBackward
 
@@ -111,9 +112,9 @@ under its own calling code. A `strict` field keeps its region. Any other text re
 deleteBackward(value: string, selectionStart: number, selectionEnd: number): InputState;
 ```
 
-Deletes the selection, or the character before the caret when the selection is empty, then
-reformats. When that character is a formatting character, the call snaps the caret across it to
-the nearest digit without deleting; the next delete removes the digit itself.
+Deletes the selection, or the digit before the caret when the selection is empty, then reformats.
+Formatting characters are skipped. With the caret right after `)` in `(415) 555-0132`, one call
+removes the `5` before it.
 
 ### deleteForward
 
@@ -121,7 +122,7 @@ the nearest digit without deleting; the next delete removes the digit itself.
 deleteForward(value: string, selectionStart: number, selectionEnd: number): InputState;
 ```
 
-Mirrors [`deleteBackward`](#deletebackward) for the character after the caret.
+Mirrors [`deleteBackward`](#deletebackward) for the digit after the caret.
 
 ### setValue
 
@@ -142,11 +143,11 @@ Every change here re-resolves the value already in the field.
 setRegion(region: RegionCode): InputState;
 ```
 
-Switches to `region` and reformats the current digits the way that region writes them. Where the
-calling code lives in the field, the field takes the calling code of `region` and keeps the
-national digits, where a field holding `1 416-555-0132` switched to `DE` reads `49 4165 550132`.
-The value still decides the reported region. Switching between two regions of one calling code
-leaves the digits to say which one it is.
+Switches to `region` and reformats the current digits the way that region writes them. With the
+calling code in the field, the field swaps in the calling code of `region` and keeps the national
+digits. A field holding `1 416-555-0132` switched to `DE` reads `49 4165 550132`. The digits still
+decide the reported region. With digits in the field, switching between two regions of one calling
+code changes nothing.
 
 ### setRegionFilter
 
@@ -225,15 +226,15 @@ Reading changes nothing.
 getPhoneNumber(): PhoneNumber;
 ```
 
-The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query, equal to
-`parsePhoneNumber` of the displayed value, with the national controller's `defaultRegion` and
-`strict` carried along. Active filters have no `parsePhoneNumber` equivalent and narrow the result
-further.
+The current value as a [`PhoneNumber`](/core/reference/phone-number/) to query. For a national
+field it equals `parsePhoneNumber` of the displayed value with the field's `defaultRegion` and
+`strict`. For an international field with the calling code in the field it equals
+`parsePhoneNumber` of the displayed value. `strict` on an international field and any active filter
+narrow the result further and have no `parsePhoneNumber` equivalent.
 
-With the calling code kept out of the field (`callingCodeInInput: false`), the digits resolve
-literally as the international significant number behind the selected region's calling code. A
-typed national (trunk) prefix there reports
-[`NATIONAL_PREFIX_PRESENT`](/core/reference/validation-error/).
+With the calling code kept out of the field (`callingCodeInInput: false`), the digits are read as
+typed behind the selected region's calling code, with no trunk prefix stripped. A typed national
+(trunk) prefix there reports [`NATIONAL_PREFIX_PRESENT`](/core/reference/validation-error/).
 
 ### currentState
 
@@ -245,7 +246,7 @@ The value and selection as they stand.
 
 ## Conformance
 
-The conformance suite types enumerated inputs through a controller, character by character,
-requiring the [`getPhoneNumber`](#getphonenumber) equality on every input. Since `parsePhoneNumber`
-is the Google-compared path, the controllers are held to the same parity; see
-[Verified](/verified/#conformance).
+The conformance suite types enumerated inputs into a controller character by character and checks
+on each one that [`getPhoneNumber`](#getphonenumber) equals `parsePhoneNumber` of the displayed
+value, which holds the controllers to the same parity as the Google-compared `parsePhoneNumber`.
+The numbers are on [Verified](/verified/#conformance).

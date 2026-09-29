@@ -10,7 +10,7 @@ the field holds the digits after the calling code.
 
 [`REGION_CODES`](/core/reference/region-data/#region_codes) and
 [`getCallingCodeForRegion`](/core/reference/region-data/#getcallingcodeforregion) supply the
-dropdown rows. Display names come from the platform:
+dropdown rows. `Intl.DisplayNames` supplies the names:
 
 ```ts
 import { REGION_CODES, getCallingCodeForRegion } from '@telixon/core';
@@ -67,7 +67,7 @@ controller.getPhoneNumber().formatE164(); // '+16045550132'
 
 ## Pin the field to the selection
 
-[`setRegionFilter`](/core/reference/input-controller/#setregionfilter) pins resolution to the
+[`setRegionFilter`](/core/reference/input-controller/#setregionfilter) limits the field to the
 dropdown's choice. Digits from any other region stop validating:
 
 ```ts

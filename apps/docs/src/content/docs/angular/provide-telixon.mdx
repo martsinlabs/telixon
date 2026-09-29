@@ -1,6 +1,6 @@
 ---
 title: provideTelixon
-description: The providers of @telixon/angular, with an engine preload for a field on the first screen.
+description: The providers of @telixon/angular, with an engine preload for fields that appear later.
 ---
 
 ```ts
@@ -22,5 +22,6 @@ export const appConfig: ApplicationConfig = {
 | --------------- | --------- | ------------------------------------------------------------------------------------------------------------- |
 | `preloadEngine` | `boolean` | Start loading the engine right after the application's first render, in the browser only; `false` by default. |
 
-With the preload, a field on the first screen finds the engine ready. A failed load reports to
-`ErrorHandler`.
+With the preload, a field that appears after the first render, on a lazy route or inside a `@defer`
+block, finds the engine ready. A field on the first screen starts the same load on its own. A
+failed load reports to `ErrorHandler`.

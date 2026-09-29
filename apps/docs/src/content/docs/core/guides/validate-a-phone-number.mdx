@@ -3,9 +3,9 @@ title: Validate a phone number
 description: The possibility check, the typed validation error, and the canonical form.
 ---
 
-`isValid` is the verdict. `isPossibleWithReason` weighs the calling code and the length while
-leaving the digits alone, which lets an incomplete number pass. `getValidationError` names the exact
-fault behind a failed `isValid`, carrying the numbers that describe it.
+`isValid` is the verdict. `isPossibleWithReason` checks the calling code and the length and never
+reads the digits, which is why a number nobody was assigned can still pass. `getValidationError`
+names the exact fault, with the length or the prefix that fixes it where one exists.
 
 ## Possibility
 
@@ -30,9 +30,11 @@ The six reason codes are under
 
 ## Validation error
 
-[`getValidationError`](/core/reference/phone-number/#getvalidationerror) returns `null` for a valid
-number. Otherwise it returns one of nine kinds, each
-[carrying the numbers](/core/reference/validation-error/) behind the fault:
+[`getValidationError`](/core/reference/phone-number/#getvalidationerror) returns `null` when
+nothing needs correcting. A valid number typed without its trunk prefix still gets
+`NATIONAL_PREFIX_MISSING`, which is why this guide gates on `isValid` first. Otherwise it returns
+one of [nine kinds](/core/reference/validation-error/). Five of them carry the length or the prefix
+behind the fault:
 
 ```ts
 import { parsePhoneNumber, type ValidationError } from '@telixon/core';

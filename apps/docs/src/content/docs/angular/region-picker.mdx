@@ -9,9 +9,9 @@ component links to a [`TelixonPhoneInput`](/angular/phone-input/) through `[for]
 
 The field owns the region. With the calling code outside the input, or in a national field, a pick
 switches the region and keeps the typed digits. With the calling code inside the input, a pick
-writes that region's calling code into the input and keeps the national digits. Two regions of one
-calling code, such as Canada and the United States under `+1`, leave the digits to say which one a
-number belongs to. A typed number moves the flag in every mode. Before the engine has loaded, the
+writes that region's calling code into the input and keeps the national digits. Under a shared
+calling code such as `+1`, the digits decide. Canada stays picked until the typed number belongs to
+the United States. A typed number moves the flag in every mode. Before the engine has loaded, the
 trigger shows the flag of the field's `defaultRegion` and stays disabled. The server renders the
 same.
 
@@ -27,18 +27,18 @@ same.
 
 ## Inputs
 
-| Input          | Type                    | Meaning                                                                                                                                                            |
-| -------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `for`          | `TelixonPhoneInput`     | Required. The field the picker belongs to, through its `telixonPhoneInput` export.                                                                                 |
-| `prioritize`   | `readonly RegionCode[]` | Regions shown first, in this order.                                                                                                                                |
-| `sort`         | `RegionListSort`        | The order of the rows after the pinned ones; `'alphabetical'` by default, `'callingCode'`, or a comparator.                                                        |
-| `locale`       | `string`                | The locale of the region names; `LOCALE_ID` by default.                                                                                                            |
-| `anchor`       | `HTMLElement \| string` | The element the list lines up with and takes its width from. A selector string names the closest ancestor that matches the selector. The picker itself by default. |
-| `popupOffset`  | `TelixonPopupOffset`    | How far the list sits from its anchor, in pixels; `{ x: 0, y: 4 }` by default.                                                                                     |
-| `triggerLabel` | `string`                | The accessible name of the trigger and of the list; `'Select region'` by default.                                                                                  |
-| `searchLabel`  | `string`                | The accessible name and the placeholder of the search field; `'Search'` by default.                                                                                |
-| `emptyText`    | `string`                | The text shown while no region matches the search; `'No matches'` by default.                                                                                      |
-| `autoFocus`    | `boolean`               | Whether the search field takes focus when the list opens; `true` by default. On a touch screen the keyboard opens with it.                                         |
+| Input          | Type                    | Meaning                                                                                                                                                  |
+| -------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `for`          | `TelixonPhoneInput`     | Required. The field the picker belongs to, through its `telixonPhoneInput` export.                                                                       |
+| `prioritize`   | `readonly RegionCode[]` | Regions shown first, in this order.                                                                                                                      |
+| `sort`         | `RegionListSort`        | The order of the rows after the pinned ones; `'alphabetical'` by default, `'callingCode'`, or a comparator.                                              |
+| `locale`       | `string`                | The locale of the region names; `LOCALE_ID` by default.                                                                                                  |
+| `anchor`       | `HTMLElement \| string` | The element the list lines up with and takes its width from. A selector string names the closest ancestor that matches it. The picker itself by default. |
+| `popupOffset`  | `TelixonPopupOffset`    | How far the list sits from its anchor, in pixels; `{ x: 0, y: 4 }` by default.                                                                           |
+| `triggerLabel` | `string`                | The accessible name of the trigger and of the list; `'Select region'` by default.                                                                        |
+| `searchLabel`  | `string`                | The accessible name and the placeholder of the search field; `'Search'` by default.                                                                      |
+| `emptyText`    | `string`                | The text shown while no region matches the search; `'No matches'` by default.                                                                            |
+| `autoFocus`    | `boolean`               | Whether the search field takes focus when the list opens; `true` by default. On a touch screen the keyboard opens with it.                               |
 
 The list follows the field's `regionFilter` and `numberTypeFilter`.
 
@@ -48,11 +48,15 @@ right-to-left text.
 
 ## Templates
 
-`telixonRegionTrigger` on an `ng-template` replaces the content of the trigger. Its context carries
+Two directives mark the templates of the picker. `TelixonRegionTriggerTemplate`, with the selector
+`telixonRegionTrigger` on an `ng-template`, replaces the content of the trigger. Its context carries
 the region code as `$implicit`, available from the first render, and the region's
 [`RegionOption`](/web-sdk/region-list/#regionoption) as `option`, which is `null` until the engine
-has loaded. `telixonRegionOption` replaces the content of every row. Its context carries the row's
-`RegionOption` as `$implicit`.
+has loaded. `TelixonRegionOptionTemplate`, with the selector `telixonRegionOption`, replaces the
+content of every row. Its context carries the row's `RegionOption` as `$implicit`. A component that
+uses a template lists its directive in `imports` beside `TelixonRegionPicker`, with `TelixonFlag`
+for the flag inside it. Without the directive import the `ng-template` compiles without an error
+and the picker keeps its default content.
 
 ```angular-html
 <telixon-region-picker [for]="phone">
