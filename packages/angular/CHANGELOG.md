@@ -6,6 +6,11 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+### Changed
+
+- The package targets Angular 21. `@angular/core`, `@angular/common`, and `@angular/forms` are
+  peer dependencies at `^21.0.0`. The 20 line stays at 20.0.0.
+
 ## [20.0.0] - 2026-09-28
 
 ### Added
