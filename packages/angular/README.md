@@ -78,7 +78,7 @@ The same field runs on StackBlitz, [on its own](https://stackblitz.com/github/ma
 
 ## Versions
 
-The major version follows Angular's, where `@telixon/angular` 20 targets Angular 20. The package's own changes bump the minor and patch versions.
+The major version follows Angular's, where `@telixon/angular` 21 targets Angular 21. The package's own changes bump the minor and patch versions.
 
 ## Support
 
