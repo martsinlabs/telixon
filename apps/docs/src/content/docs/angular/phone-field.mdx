@@ -1,0 +1,184 @@
+---
+title: TelixonPhoneField
+description: The phone field for Signal Forms, bound through formField, with the number in E.164 and the fault as a parse error.
+---
+
+New in `@telixon/angular` 22. A directive with the selector `input[telixonPhoneField]`, exported
+as `telixonPhoneField`. It is a `FormValueControl` for
+[Signal Forms](https://angular.dev/guide/forms/signals/overview), bound with `[formField]`. It runs
+the same [`PhoneInput`](/web-sdk/phone-input/) as [`TelixonPhoneInput`](/angular/phone-input/), the
+field for reactive and template-driven forms. Until the field is live, and on the server
+throughout, the element is a plain input.
+
+```angular-html
+<input #phone="telixonPhoneField" [telixonPhoneField]="options" [formField]="contactForm.phone" />
+```
+
+## Options
+
+`[telixonPhoneField]` takes a `TelixonPhoneInputOptions`, the
+[options](/angular/phone-input/#options) of `TelixonPhoneInput`. A bare `telixonPhoneField`
+attribute means `{ mode: 'international' }`. A change of options has the same effect as on
+`TelixonPhoneInput`.
+
+## Field value
+
+The field holds the number in E.164 while the number is valid and `null` at any other time. A
+value the form writes appears formatted in the input, as
+[`TelixonPhoneInput`](/angular/phone-input/#form-value) describes. The write leaves the field
+pristine. An invalid written value stays in the model while its fault reaches `errors()`. Signal
+Forms marks a field dirty when its value changes. A partial number keeps the value at `null`, which
+leaves the field pristine until the number becomes valid, while `TelixonPhoneInput` turns dirty on
+the first edit.
+
+Without a form, `[(value)]` binds the same E.164 value two-way. The directive throws when the input
+also carries `[formControl]`, `formControlName`, or `ngModel`, which belong on
+[`TelixonPhoneInput`](/angular/phone-input/).
+
+## Errors
+
+An invalid number reaches the field's `errors()` as a `TelixonPhoneFieldError`, a parse error with
+the kind `telixonPhone`, the `message` to show, and the
+[`ValidationError`](/core/reference/validation-error/) behind it as `fault`:
+
+```ts
+contactForm.phone().errors();
+// [{ kind: 'telixonPhone', message: 'This number is too short.', fault: { kind: 'TOO_SHORT', minLength: 10 } }]
+```
+
+The error marks the field invalid and blocks submission, as a schema rule does. A field with no
+digits after the calling code reports no error, which leaves the empty field to the schema's
+`required`. `errorMessage` takes a function that turns the fault into a message of your own. A new
+function rewrites the message of the error the field holds. The messages are English by default:
+
+| Fault                              | Message                                                       |
+| ---------------------------------- | ------------------------------------------------------------- |
+| `INVALID_CALLING_CODE`             | No country uses this calling code.                            |
+| `TOO_SHORT`, `POSSIBLE_LOCAL_ONLY` | This number is too short.                                     |
+| `TOO_LONG`                         | This number is too long.                                      |
+| `INVALID_LENGTH`                   | This number has the wrong length.                             |
+| `NATIONAL_PREFIX_MISSING`          | Add the leading 0. The digit is the fault's `expectedPrefix`. |
+| `NATIONAL_PREFIX_PRESENT`          | Remove the leading 0. The digit is the fault's `prefix`.      |
+| `PATTERN_MISMATCH`                 | This number does not exist.                                   |
+
+## Field state
+
+`disabled`, `readonly`, and `required` come from the schema and are set on the input element. Blur
+emits `touch`, which marks the field touched. A form reset calls `reset`, which discards partial
+text, shows the field's value again, and clears the undo history.
+
+## Members
+
+### options
+
+```ts
+readonly options: InputSignalWithTransform<TelixonPhoneInputOptions, TelixonPhoneInputOptions | ''>;
+```
+
+The options the field runs with.
+
+### value
+
+```ts
+readonly value: ModelSignal<string | null>;
+```
+
+The number in E.164 while it is valid and `null` otherwise. `[formField]` keeps it in step with the
+form's field.
+
+### disabled
+
+```ts
+readonly disabled: InputSignal<boolean>;
+```
+
+Whether the form has disabled the field.
+
+### readonly
+
+```ts
+readonly readonly: InputSignal<boolean>;
+```
+
+Whether the form has made the field read-only.
+
+### required
+
+```ts
+readonly required: InputSignal<boolean>;
+```
+
+Whether the schema requires the field.
+
+### errorMessage
+
+```ts
+readonly errorMessage: InputSignal<TelixonPhoneMessage>;
+```
+
+Turns a fault into the message of the error. `TelixonPhoneMessage` is
+`(fault: ValidationError) => string`. English by default.
+
+### touch
+
+```ts
+readonly touch: OutputEmitterRef<void>;
+```
+
+Fires when focus leaves the field.
+
+### phone
+
+```ts
+readonly phone: Signal<PhoneInput | null>;
+```
+
+The web-sdk widget behind the field, `null` until the field is live. The signal changes when
+new options replace the widget. A picker linked through `[for]` follows that change.
+
+### state
+
+```ts
+readonly state: Signal<PhoneInputState | null>;
+```
+
+The field's latest [`PhoneInputState`](/web-sdk/phone-input/#phoneinputstate), `null` until the
+field is live.
+
+### element
+
+```ts
+readonly element: HTMLInputElement;
+```
+
+The input the directive sits on.
+
+### focus
+
+```ts
+focus(options?: FocusOptions): void;
+```
+
+Moves focus into the field.
+
+### reset
+
+```ts
+reset(): void;
+```
+
+Discards partial text, shows the field's value again, and clears the undo history. A form reset
+calls it.
+
+## The input element
+
+The advice under [TelixonPhoneInput](/angular/phone-input/#the-input-element) applies here
+unchanged. Inside `mat-form-field` the directive shares the input with `matInput`, which reads the
+field's state through Signal Forms and sets `aria-required`, `aria-invalid`, and the `mat-error`
+link on its own.
+
+## The engine
+
+The directive calls [`ensureEngineReady`](/core/load-the-engine/) after the first render. A failed
+load reports to `ErrorHandler`. [`provideTelixon`](/angular/provide-telixon/) starts the same load
+at the application's first render, ahead of any field that appears later.

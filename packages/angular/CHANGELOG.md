@@ -6,6 +6,13 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+### Added
+
+- `TelixonPhoneField` puts the phone field into a Signal Form through `[formField]`. The field holds
+  the number in E.164 while it is valid and `null` otherwise. An invalid number reaches `errors()`
+  as a parse error of kind `telixonPhone` with a message and the fault. `disabled`, `readonly`, and
+  `required` follow the schema. A region picker links to it through `[for]`.
+
 ### Changed
 
 - The package targets Angular 22. `@angular/core`, `@angular/common`, and `@angular/forms` are

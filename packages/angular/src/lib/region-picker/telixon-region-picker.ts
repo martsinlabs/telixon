@@ -21,7 +21,7 @@ import {
 import type { RegionCode } from '@telixon/core';
 import type { RegionListSort, RegionOption, RegionPicker, RegionPickerState } from '@telixon/web-sdk';
 import { TelixonFlag } from '../flag';
-import type { TelixonPhoneInput, TelixonPhoneInputOptions } from '../phone-input';
+import type { TelixonPhoneHost, TelixonPhoneInputOptions } from '../phone-input';
 import { DEFAULT_EMPTY_TEXT, DEFAULT_SEARCH_LABEL, DEFAULT_TRIGGER_LABEL } from './constants/labels';
 import { DEFAULT_POPUP_OFFSET, POPUP_OFFSET_X_PROPERTY, POPUP_OFFSET_Y_PROPERTY } from './constants/popup';
 import type { TelixonPopupOffset } from './models';
@@ -64,13 +64,13 @@ import { showsCallingCode } from './utils/shows-calling-code';
     '[attr.data-disabled]': 'phoneInput().disabled() ? "" : null',
     [`[style.${POPUP_OFFSET_X_PROPERTY}.px]`]: 'popupOffset().x',
     [`[style.${POPUP_OFFSET_Y_PROPERTY}.px]`]: 'popupOffset().y',
-    // A Material form field answers any click inside it by focusing its input, which would close the list.
+    // A click inside the picker never reaches the elements above it, where a wrapping form field would move focus to its input and close the list.
     '(click)': '$event.stopPropagation()',
   },
 })
 export class TelixonRegionPicker {
-  /** The phone field the picker belongs to, through its `telixonPhoneInput` export. */
-  readonly phoneInput: InputSignal<TelixonPhoneInput> = input.required({ alias: 'for' });
+  /** The phone field the picker belongs to, through its `telixonPhoneInput` or `telixonPhoneField` export. */
+  readonly phoneInput: InputSignal<TelixonPhoneHost> = input.required({ alias: 'for' });
 
   /** Regions shown first, in this order. */
   readonly prioritize: InputSignal<readonly RegionCode[]> = input<readonly RegionCode[]>([]);

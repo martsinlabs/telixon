@@ -173,6 +173,54 @@
     }
   </section>
 
+  <section id="signal-forms">
+    <h2>Signal Forms</h2>
+    <label for="signal-input">Phone</label>
+    <div class="field">
+      <telixon-region-picker data-testid="signal-picker" [for]="signalField" [prioritize]="['US', 'CA', 'GB']" />
+      <input
+        id="signal-input"
+        data-testid="signal-input"
+        type="tel"
+        autocomplete="off"
+        #signalField="telixonPhoneField"
+        [telixonPhoneField]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+        [formField]="signalForm.phone"
+        [placeholder]="signalField.state()?.placeholder ?? ''"
+      />
+    </div>
+    <output data-testid="signal-value">{{ signalModel().phone ?? 'null' }}</output>
+    <output class="fault" data-testid="signal-error">{{ signalError() }}</output>
+    <output data-testid="signal-state">{{ signalState() }}</output>
+  </section>
+
+  <section id="signal-material">
+    <h2>Signal Forms inside Angular Material</h2>
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <telixon-region-picker
+        data-testid="signal-material-picker"
+        matTextPrefix
+        [for]="signalMaterialField"
+        anchor=".mdc-text-field"
+        [prioritize]="['US', 'CA', 'GB']"
+      />
+      <input
+        data-testid="signal-material-input"
+        matInput
+        type="tel"
+        autocomplete="off"
+        #signalMaterialField="telixonPhoneField"
+        [telixonPhoneField]="{ mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } }"
+        [formField]="signalMaterialForm.phone"
+        [placeholder]="signalMaterialField.state()?.placeholder ?? ''"
+      />
+      @if (signalMaterialForm.phone().touched() && signalMaterialForm.phone().invalid()) {
+        <mat-error data-testid="signal-material-error">{{ signalMaterialError() }}</mat-error>
+      }
+    </mat-form-field>
+  </section>
+
   <section id="autofill">
     <h2>Browser autofill</h2>
     <form data-testid="autofill-inside-form" class="stack">

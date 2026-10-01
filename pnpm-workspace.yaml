@@ -5,6 +5,7 @@ packages:
   # The quick starts install the published packages from npm, the way StackBlitz opens them.
   - '!examples/angular/quick-start'
   - '!examples/angular/quick-start-material'
+  - '!examples/angular/quick-start-signal-forms'
 
 ignoredBuiltDependencies:
   - '@parcel/watcher'

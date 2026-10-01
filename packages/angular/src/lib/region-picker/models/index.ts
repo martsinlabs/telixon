@@ -8,7 +8,7 @@ export type TelixonRegionOptionContext = {
 
 /**
  * Context of a `telixonRegionTrigger` template. The region is known from the first paint, while its
- * option arrives once the engine has loaded.
+ * option arrives once the field is live.
  */
 export type TelixonRegionTriggerContext = {
   readonly $implicit: RegionCode | null;

@@ -74,7 +74,9 @@ export class Contact {
 
 The form value is the number in E.164 while it is valid and `null` otherwise. An invalid number reports its fault under `telixonPhone`.
 
-The same field runs on StackBlitz, [on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or [inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
+On a Signal Form, `TelixonPhoneField` binds the same field through `[formField]`, as the [guide](https://telixon.dev/angular/guides/signal-forms/) shows.
+
+The same field runs on StackBlitz, [on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start), [inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material), or [on a Signal Form](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-signal-forms).
 
 ## Versions
 

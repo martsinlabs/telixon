@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [quick-start, quick-start-material]
+        app: [quick-start, quick-start-material, quick-start-signal-forms]
     defaults:
       run:
         working-directory: examples/angular/${{ matrix.app }}

@@ -25,7 +25,7 @@ import {
 } from '@angular/forms';
 import { ensureEngineReady } from '@telixon/core';
 import type { PhoneInput, PhoneInputState } from '@telixon/web-sdk';
-import type { TelixonPhoneInputOptions } from './models';
+import type { TelixonPhoneHost, TelixonPhoneInputOptions } from './models';
 import { createFormControlBridge, type FormControlBridge } from './utils/form-control-bridge';
 import { toValidationErrors } from './utils/form-error';
 import { toPhoneInputOptions } from './utils/phone-input-options';
@@ -53,7 +53,7 @@ const NOOP = (): void => undefined;
   ],
   host: { '(blur)': 'markTouched()' },
 })
-export class TelixonPhoneInput implements ControlValueAccessor, Validator {
+export class TelixonPhoneInput implements ControlValueAccessor, Validator, TelixonPhoneHost {
   /** The options of `createPhoneInput` for this field. A bare attribute makes an international field. */
   readonly options: InputSignalWithTransform<TelixonPhoneInputOptions, TelixonPhoneInputOptions | ''> = input.required({
     alias: 'telixonPhoneInput',
@@ -86,12 +86,12 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator {
   });
 
   /**
-   * The web-sdk phone input behind the field, `null` until the engine has loaded. New filters apply to
+   * The web-sdk phone input behind the field, `null` until the field is live. New filters apply to
    * it, while any other new option replaces it.
    */
   readonly phone: Signal<PhoneInput | null> = this.bridge.phone;
 
-  /** The field's latest state, `null` until the engine has loaded. */
+  /** The field's latest state, `null` until the field is live. */
   readonly state: Signal<PhoneInputState | null> = this.bridge.state;
 
   /** Whether the form has disabled the field. */
