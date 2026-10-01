@@ -4,9 +4,9 @@ description: A phone field on a reactive form control, with its value, its error
 ---
 
 import { Code } from '@astrojs/starlight/components';
-import contact from '../../../../../../../examples/angular/kitchen-sink/src/app/docs/phone-field.ts?raw';
+import contact from '../_examples/phone-field.ts?raw';
 
-[`TelixonPhoneInput`](/angular/phone-input/) is a directive for an `<input>` bound to a form
+[`TelixonPhoneInput`](/angular/v21/phone-input/) is a directive for an `<input>` bound to a form
 control. The user types into the input and sees a formatted number. The form control receives the
 same number in E.164, or `null` while the number is incomplete.
 
@@ -14,9 +14,9 @@ same number in E.164, or `null` while the number is incomplete.
 
 <Code lang="ts" code={contact} title="contact.ts" />
 
-The input shows the calling code of the default region, `1 `. Typing
+Once the engine has loaded, the input shows the calling code of the default region, `1 `. Typing
 `4155550132` turns it into `1 415-555-0132`. Once the last digit is typed, the control holds
-`+14155550132`. The [options](/angular/phone-input/#options) are the ones `createPhoneInput` takes.
+`+14155550132`. The [options](/angular/v21/phone-input/#options) are the ones `createPhoneInput` takes.
 
 ## Show the errors
 
@@ -52,4 +52,4 @@ The directive works with `ngModel` the same way:
 `phone` receives `+14155550132` once the number is valid and `null` at any other time.
 `model.errors` carries `telixonPhone`.
 
-[Add a region picker](/angular/guides/region-picker/) puts a region picker next to the field.
+[Add a region picker](/angular/v21/guides/region-picker/) puts a region picker next to the field.

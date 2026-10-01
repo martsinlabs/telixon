@@ -8,9 +8,8 @@ const LETTER_A: number = 65; // 'A'.charCodeAt(0)
  * symbols for its letters. `regionToFlagEmoji('US')` returns the United States flag
  * (U+1F1FA U+1F1F8).
  *
- * Rendering belongs to the platform. Systems with flag-emoji support (iOS, macOS, Android, most
- * Linux) show a flag; systems without it (notably Windows) show the two letters. For a flag on every
- * platform, render an SVG set keyed by the region code.
+ * Rendering belongs to the platform. Systems with flag emoji show a flag. Systems without them
+ * show the two letters. The sprite sheet of `@telixon/web-sdk/flags` shows a flag everywhere.
  *
  * Every {@link RegionCode} is two ASCII letters, which keeps the result a valid regional indicator
  * pair.

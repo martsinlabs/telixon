@@ -38,7 +38,7 @@ export function bindPickerEvents<T>(options: PickerEventsOptions<T>): () => void
     picker.close();
   }
 
-  // Safari never focuses a button on click, which leaves every key handler stranded. Focus moves
+  // Some browsers never focus a button on click, which leaves every key handler stranded. Focus moves
   // before the toggle, which keeps a caller's own move on open in charge.
   function handleTriggerClick(): void {
     if (document.activeElement !== trigger) trigger.focus({ preventScroll: true });

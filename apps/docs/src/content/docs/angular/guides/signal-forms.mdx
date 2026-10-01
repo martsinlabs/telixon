@@ -1,0 +1,51 @@
+---
+title: Use it with Signal Forms
+description: The phone field on a Signal Form, with its value, its errors, and the schema's required rule in use.
+---
+
+import { Code } from '@astrojs/starlight/components';
+import contact from '../../../../../../../examples/angular/kitchen-sink/src/app/docs/signal-forms.ts?raw';
+
+`@telixon/angular` 22 adds [`TelixonPhoneField`](/angular/phone-field/), the phone field for
+[Signal Forms](https://angular.dev/guide/forms/signals/overview). `[formField]` binds it the way it
+binds any custom control. The user types into the input and sees a formatted number. The field
+holds the same number in E.164 while the number is valid and `null` at any other time.
+
+## The field
+
+<Code lang="ts" code={contact} title="contact.ts" />
+
+The input shows the placeholder `201-555-0123`. After typing `4155550132` the input shows
+`415-555-0132` while the model holds `+14155550132`. The picker links to the field through `[for]`,
+as [Add a region picker](/angular/guides/region-picker/) shows for `TelixonPhoneInput`.
+
+## Show the errors
+
+An invalid number reaches `errors()` as a parse error of kind `telixonPhone`. Its `message` is ready
+to show and its `fault` is the [`ValidationError`](/core/reference/validation-error/) behind it. The
+schema's `required` covers the empty field. The template above shows the first message once the
+field is touched. To change the text, give `errorMessage` a function that turns the fault into
+your own message.
+
+## Follow the schema
+
+The schema's `disabled`, `readonly`, and `required` rules are set on the input element. A form
+reset discards partial text, shows the field's value again, and clears the undo history. The
+[reference](/angular/phone-field/) lists every member.
+
+## Inside Angular Material
+
+The directive sits on the same `<input>` as `matInput`, as
+[Use it with Angular Material](/angular/guides/material/) shows for `TelixonPhoneInput`. Material
+reads the field's state through Signal Forms, which gives you the floating label, the required
+marker, `aria-invalid`, and `mat-error` without extra code:
+
+```angular-html
+<mat-form-field appearance="outline">
+  <mat-label>Phone</mat-label>
+  <input matInput type="tel" telixonPhoneField [formField]="contactForm.phone" />
+  @if (contactForm.phone().touched() && contactForm.phone().invalid()) {
+    <mat-error>{{ contactForm.phone().errors()[0]?.message }}</mat-error>
+  }
+</mat-form-field>
+```

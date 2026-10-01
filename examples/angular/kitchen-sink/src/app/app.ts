@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField, form, required } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { TelixonPhoneInput, TelixonRegionPicker, type ValidationError } from '@telixon/angular';
+import { TelixonPhoneField, TelixonPhoneInput, TelixonRegionPicker, type ValidationError } from '@telixon/angular';
 
 // Every mode of the field and the picker on one page, which the SSR build prerenders and the e2e suite drives.
 @Component({
@@ -12,6 +13,8 @@ import { TelixonPhoneInput, TelixonRegionPicker, type ValidationError } from '@t
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
+    FormField,
+    TelixonPhoneField,
     TelixonPhoneInput,
     TelixonRegionPicker,
   ],
@@ -31,6 +34,20 @@ export class App {
   readonly autofillOutside = new FormControl<string | null>(null);
   templateValue: string | null = null;
   readonly submissions = signal(0);
+  readonly signalModel = signal<{ phone: string | null }>({ phone: null });
+  readonly signalForm = form(this.signalModel, (schema) => {
+    required(schema.phone, { message: 'Phone number is required.' });
+  });
+  readonly signalError = computed(() => this.signalForm.phone().errors()[0]?.message ?? 'none');
+  readonly signalMaterialModel = signal<{ phone: string | null }>({ phone: null });
+  readonly signalMaterialForm = form(this.signalMaterialModel, (schema) => {
+    required(schema.phone, { message: 'Phone number is required.' });
+  });
+  readonly signalMaterialError = computed(() => this.signalMaterialForm.phone().errors()[0]?.message ?? 'none');
+  readonly signalState = computed(() => {
+    const field = this.signalForm.phone();
+    return `${field.touched() ? 'touched' : 'untouched'} ${field.dirty() ? 'dirty' : 'pristine'}`;
+  });
 
   submit(): void {
     this.submissions.update((count: number): number => count + 1);

@@ -5,8 +5,8 @@ description: The directive that formats a phone number in the input and hands th
 
 A directive with the selector `input[telixonPhoneInput]`, exported as `telixonPhoneInput`. It is
 the form control's value accessor and validator. Once the engine has loaded, it attaches a
-[`PhoneInput`](/web-sdk/phone-input/) to the element, which makes the field live. Until then, and on
-the server throughout, the element is a plain input.
+[`PhoneInput`](/web-sdk/phone-input/) to the element. Until then, and on the server throughout, the
+element is a plain input.
 
 ```angular-html
 <input #phone="telixonPhoneInput" [telixonPhoneInput]="options" [formControl]="control" />
@@ -32,7 +32,7 @@ A value written by the form shows in the input the way the field formats numbers
 code outside the input, `+442071838750` shows as `20 7183 8750`, with the United Kingdom as the
 region. In a national field the same value shows as `020 7183 8750`. With the calling code inside
 the input it shows as `44 20 7183 8750`. A write leaves the control pristine. A value written before
-the field is live shows unformatted until then.
+the engine has loaded shows unformatted until the field is live.
 
 ## Validation
 
@@ -80,7 +80,7 @@ The options the field runs with.
 readonly phone: Signal<PhoneInput | null>;
 ```
 
-The web-sdk widget behind the field, `null` until the field is live. The signal changes when
+The web-sdk widget behind the field, `null` until the engine has loaded. The signal changes when
 new options replace the widget. A picker linked through `[for]` follows that change.
 
 ### state
@@ -90,7 +90,7 @@ readonly state: Signal<PhoneInputState | null>;
 ```
 
 The field's latest [`PhoneInputState`](/web-sdk/phone-input/#phoneinputstate), `null` until the
-field is live.
+engine has loaded.
 
 ### disabled
 
@@ -116,13 +116,8 @@ focus(options?: FocusOptions): void;
 
 Moves focus into the field.
 
-## TelixonPhoneHost
-
-The type of the picker's `for` input. `TelixonPhoneInput` and
-[`TelixonPhoneField`](/angular/phone-field/) both fit it.
-
 ## The engine
 
 The directive calls [`ensureEngineReady`](/core/load-the-engine/) after the first render. A failed
-load reports to `ErrorHandler`. [`provideTelixon`](/angular/provide-telixon/) starts the same load
+load reports to `ErrorHandler`. [`provideTelixon`](/angular/v21/provide-telixon/) starts the same load
 at the application's first render, ahead of any field that appears later.

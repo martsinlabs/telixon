@@ -4,17 +4,16 @@ description: Install @telixon/angular and put a phone field with a region picker
 ---
 
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
-import contact from '../../../../../../examples/angular/kitchen-sink/src/app/docs/getting-started.ts?raw';
+import contact from './_examples/getting-started.ts?raw';
 import ManualSetup from './_manual-setup.mdx';
 
-`@telixon/angular` has three parts. [`TelixonPhoneInput`](/angular/phone-input/) is a directive for an
+`@telixon/angular` has two parts. [`TelixonPhoneInput`](/angular/v21/phone-input/) is a directive for an
 `<input>`. The user sees a formatted number while the form control holds it in E.164.
-[`TelixonPhoneField`](/angular/phone-field/) is the same field for Signal Forms.
-[`TelixonRegionPicker`](/angular/region-picker/) is a component that adds the flag and a searchable
-list of regions next to the input. All three are built on [`@telixon/web-sdk`](/web-sdk/), render on
-the server, and hydrate.
+[`TelixonRegionPicker`](/angular/v21/region-picker/) is a component that adds the flag and a searchable
+list of regions next to the input. Both are built on [`@telixon/web-sdk`](/web-sdk/).
 
-The major version follows Angular's.
+The major version follows Angular's. `@telixon/angular` 21 runs on Angular 21. The fields render
+on the server and hydrate.
 
 ## Install
 
@@ -83,9 +82,8 @@ A phone field and a region picker, linked through `[for]`:
 <Code lang="ts" code={contact} title="contact.ts" />
 
 The same field runs on StackBlitz,
-[on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start),
-[inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material),
-or [on a Signal Form](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-signal-forms).
+[on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or
+[inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
 
 At first the picker shows the United States flag and the field shows the placeholder
 `201-555-0123`. After typing `4155550132` the field shows `415-555-0132` while the control holds
@@ -97,9 +95,8 @@ control.value; // null
 control.errors; // { telixonPhone: { kind: 'TOO_SHORT', minLength: 10 } }
 ```
 
-- [Build a phone field](/angular/guides/phone-field/) explains the form contract and the error
+- [Build a phone field](/angular/v21/guides/phone-field/) explains the form contract and the error
   messages.
-- [Add a region picker](/angular/guides/region-picker/) covers the picker and its styles.
-- [Use it with Signal Forms](/angular/guides/signal-forms/) puts the same field on a Signal Form.
-- [Use it with Angular Material](/angular/guides/material/) puts the same field inside
+- [Add a region picker](/angular/v21/guides/region-picker/) covers the picker and its styles.
+- [Use it with Angular Material](/angular/v21/guides/material/) puts the same field inside
   `mat-form-field`.

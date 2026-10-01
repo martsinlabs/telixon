@@ -115,16 +115,27 @@ export const PACKAGES: readonly DocsPackage[] = [
     name: '@telixon/angular',
     label: 'Angular',
     logo: 'angular',
-    lines: { latest: 21, archived: [angularLine(20)] },
+    lines: { latest: 22, archived: [angularLine(21), angularLine(20)] },
     sidebar: [
       'angular',
       {
         label: 'Guides',
-        items: ['angular/guides/phone-field', 'angular/guides/region-picker', 'angular/guides/material'],
+        items: [
+          'angular/guides/phone-field',
+          'angular/guides/region-picker',
+          'angular/guides/signal-forms',
+          'angular/guides/material',
+        ],
       },
       {
         label: 'Reference',
-        items: ['angular/phone-input', 'angular/region-picker', 'angular/flag', 'angular/provide-telixon'],
+        items: [
+          'angular/phone-input',
+          'angular/phone-field',
+          'angular/region-picker',
+          'angular/flag',
+          'angular/provide-telixon',
+        ],
       },
     ],
   },
