@@ -6,6 +6,12 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+### Changed
+
+- The package targets Angular 22. `@angular/core`, `@angular/common`, and `@angular/forms` are
+  peer dependencies at `^22.0.0`, and `engines.node` follows Angular 22. The 21 line stays at
+  21.0.0.
+
 ## [21.0.0] - 2026-09-30
 
 ### Changed
