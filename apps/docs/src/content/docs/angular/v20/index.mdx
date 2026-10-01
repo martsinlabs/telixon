@@ -1,0 +1,103 @@
+---
+title: Getting started
+description: Install @telixon/angular and put a phone field with a region picker into a form.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import contact from './_examples/getting-started.ts?raw';
+import ManualSetup from './_manual-setup.mdx';
+
+`@telixon/angular` has two parts. [`TelixonPhoneInput`](/angular/v20/phone-input/) is a directive for an
+`<input>`. The user sees a formatted number while the form control holds it in E.164.
+[`TelixonRegionPicker`](/angular/v20/region-picker/) is a component that adds the flag and a searchable
+list of regions next to the input. Both are built on [`@telixon/web-sdk`](/web-sdk/).
+
+Each Angular major gets its own line of the package, starting with 20 for Angular 20. The package
+renders on the server and hydrates. Its end-to-end suite runs on Chromium, Firefox, and WebKit
+against a prerendered page.
+
+## Install
+
+<Tabs syncKey="pkg">
+
+<TabItem label="Angular CLI">
+
+```sh
+ng add @telixon/angular
+```
+
+`ng add` installs the package, adds the flags stylesheet to the application's styles, and registers
+`provideTelixon` with the engine preload. Nothing else is needed before the first field.
+
+</TabItem>
+
+<TabItem label="npm">
+
+```sh
+npm install @telixon/angular
+```
+
+<ManualSetup />
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm add @telixon/angular
+```
+
+<ManualSetup />
+
+</TabItem>
+
+<TabItem label="Yarn">
+
+```sh
+yarn add @telixon/angular
+```
+
+<ManualSetup />
+
+</TabItem>
+
+<TabItem label="Bun">
+
+```sh
+bun add @telixon/angular
+```
+
+<ManualSetup />
+
+</TabItem>
+
+</Tabs>
+
+The package depends on `@telixon/core` and `@telixon/web-sdk` and re-exports both. One import covers
+every widget, function, and type.
+
+## A phone field
+
+A phone field and a region picker, linked through `[for]`:
+
+<Code lang="ts" code={contact} title="contact.ts" />
+
+The same field runs as a whole application on StackBlitz,
+[on its own](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start) or
+[inside Angular Material](https://stackblitz.com/github/martsinlabs/telixon/tree/main/examples/angular/quick-start-material).
+
+At first the picker shows the United States flag and the field shows the placeholder
+`201-555-0123`. After typing `4155550132` the field shows `415-555-0132` while the control holds
+`+14155550132`.
+For a partial number the control holds `null` and reports the fault:
+
+```ts
+control.value; // null
+control.errors; // { telixonPhone: { kind: 'TOO_SHORT', minLength: 10 } }
+```
+
+- [Build a phone field](/angular/v20/guides/phone-field/) explains the form contract and the error
+  messages.
+- [Add a region picker](/angular/v20/guides/region-picker/) covers the picker and its styles.
+- [Use it with Angular Material](/angular/v20/guides/material/) puts the same field inside
+  `mat-form-field`.
