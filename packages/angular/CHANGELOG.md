@@ -6,6 +6,8 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+## [21.0.0] - 2026-09-30
+
 ### Changed
 
 - The package targets Angular 21. `@angular/core`, `@angular/common`, and `@angular/forms` are
@@ -37,5 +39,6 @@ Angular major, with minor and patch versions for the package's own changes.
 - `ng add @telixon/angular` puts the flags stylesheet in the application's styles and provides
   `provideTelixon` in its root providers, with the engine preload unless `--preload-engine=false`.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/angular@v20.0.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/angular@v21.0.0...HEAD
+[21.0.0]: https://github.com/martsinlabs/telixon/compare/angular@v20.0.0...angular@v21.0.0
 [20.0.0]: https://github.com/martsinlabs/telixon/releases/tag/angular@v20.0.0
