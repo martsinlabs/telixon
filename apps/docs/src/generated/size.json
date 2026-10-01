@@ -16,7 +16,7 @@
   },
   "angular": {
     "artifact": "@telixon/angular",
-    "measured": "10.11 kB brotli",
+    "measured": "7.68 kB brotli",
     "budget": "12 kB"
   }
 }

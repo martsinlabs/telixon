@@ -81,7 +81,7 @@ request.
 1. Open a release pull request for the package.
    - Move the `Unreleased` section of `packages/<package>/CHANGELOG.md` under the new version with
      the release date. Add or retarget the comparison links at the bottom of the file.
-   - For `@telixon/angular` the major version follows Angular's. The 21.x line targets Angular 21
+   - For `@telixon/angular` the major version follows Angular's. The 22.x line targets Angular 22
      alone, while a new Angular major starts a new line. The changelog decides the minor and patch.
    - The changelog decides the bump. Entries under `Removed`, or breaking entries under `Changed`,
      make it major; `Added` makes it minor; `Fixed` alone makes it patch.
