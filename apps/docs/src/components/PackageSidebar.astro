@@ -1,19 +1,45 @@
 ---
-// Sidebar override: a compact package switcher on top, then only the active package's tree below.
+// Sidebar override: a compact package switcher on top, a version switcher where a package has earlier
+// lines, then only the active line's tree below.
 import Default from '@astrojs/starlight/components/Sidebar.astro';
-import { AVAILABLE_PACKAGES, PLANNED_PACKAGES, packageForPath } from '../package-registry';
+import {
+  AVAILABLE_PACKAGES,
+  PLANNED_PACKAGES,
+  archivedLineForPath,
+  groupLabel,
+  packageForPath,
+  pathOnLine,
+} from '../package-registry';
 import PackageMark from './PackageMark.astro';
 
 const active = packageForPath(Astro.url.pathname);
+const archivedLine = active.lines === undefined ? null : archivedLineForPath(active.lines, Astro.url.pathname);
+const label = groupLabel(active, archivedLine);
 
-// The config defines one group per package, matched by npm name; a missing group means the
+// The config defines one group per line, labeled through the registry; a missing group means the
 // registry and astro.config.mjs drifted apart, which must fail the build, not render silently.
 const { sidebar } = Astro.locals.starlightRoute;
-const activeGroup = sidebar.find((entry) => entry.type === 'group' && entry.label === active.name);
+const activeGroup = sidebar.find((entry) => entry.type === 'group' && entry.label === label);
 if (!activeGroup || activeGroup.type !== 'group') {
-  throw new Error(`PackageSidebar: no sidebar group labeled "${active.name}" in astro.config.mjs`);
+  throw new Error(`PackageSidebar: no sidebar group labeled "${label}" in astro.config.mjs`);
 }
 Astro.locals.starlightRoute.sidebar = activeGroup.entries;
+
+// Every line of the active package, latest first, with the same page on that line where it exists.
+const currentBase = archivedLine?.base ?? active.base;
+const currentMajor = archivedLine?.major ?? active.lines?.latest;
+const lines =
+  active.lines === undefined
+    ? []
+    : [
+        { major: active.lines.latest, base: active.base, sidebar: active.sidebar ?? [active.base], latest: true },
+        ...active.lines.archived.map((line) => ({ ...line, latest: false })),
+      ].map((line) => ({
+        major: line.major,
+        latest: line.latest,
+        href: pathOnLine(Astro.url.pathname, currentBase, line),
+        current: line.major === currentMajor,
+      }));
 ---
 
 <div class="pkg-switch">
@@ -47,6 +73,40 @@ Astro.locals.starlightRoute.sidebar = activeGroup.entries;
     </nav>
   </details>
 </div>
+
+{
+  lines.length > 0 && (
+    <div class="pkg-switch ver-switch">
+      <details>
+        <summary>
+          <span class="ver-label">Version</span>
+          <span class="pkg-name">v{currentMajor}</span>
+          <svg
+            class="pkg-chevrons"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 6.25 8 3.5l3 2.75" />
+            <path d="M5 9.75 8 12.5l3-2.75" />
+          </svg>
+        </summary>
+        <nav class="pkg-menu" aria-label="Versions">
+          {lines.map((line) => (
+            <a href={line.href} aria-current={line.current ? 'true' : undefined}>
+              <span class="pkg-name">v{line.major}</span>
+              {line.latest && <span class="ver-tag">latest</span>}
+            </a>
+          ))}
+        </nav>
+      </details>
+    </div>
+  )
+}
 
 <Default><slot /></Default>
 

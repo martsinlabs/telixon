@@ -2,12 +2,30 @@
 // astro.config.mjs derives sidebar groups from it; PackageSidebar.astro derives the switcher.
 // Adding a package here (plus its content folder) is the whole registration step.
 //
-// Versioning contract: latest docs live at the package root; an archived major is a frozen copy
-// in a version subfolder, registered via a future `archivedMajors` field. Sidebar groups must not
-// autogenerate from a package root, or they would swallow version subfolders.
+// Versioning contract: the latest line lives at the package root; an earlier line is a frozen copy
+// of its docs in a version subfolder, registered under `archivedLines`. Sidebar groups must not
+// autogenerate from a package root, or they would swallow the version subfolders.
 
 /** One sidebar entry: a page slug, or a labeled group of page slugs. */
 export type SidebarEntry = string | { readonly label: string; readonly items: readonly string[] };
+
+/** An earlier major line of a package, kept as a frozen copy of its docs. */
+export interface DocsLine {
+  /** The major version the line carries. */
+  readonly major: number;
+  /** URL base of the frozen tree, such as `angular/v21`. */
+  readonly base: string;
+  /** The line's sidebar, with slugs under its base. */
+  readonly sidebar: readonly SidebarEntry[];
+}
+
+/** The major lines of a package, present once an earlier line is kept beside the latest. */
+export interface DocsLines {
+  /** The major version of the latest line, which lives at the package root. */
+  readonly latest: number;
+  /** Earlier lines, newest first, each with its own docs tree. */
+  readonly archived: readonly DocsLine[];
+}
 
 export interface DocsPackage {
   /** npm package name; doubles as the sidebar group label, matched exactly by the switcher. */
@@ -20,6 +38,28 @@ export interface DocsPackage {
   readonly sidebar?: readonly SidebarEntry[];
   /** Official framework mark shown in the switcher. The gem stands in where none is set. */
   readonly logo?: 'angular' | 'react' | 'vue' | 'stencil';
+  /** The package's major lines, set once an earlier line is kept. */
+  readonly lines?: DocsLines;
+}
+
+// A frozen Angular line keeps these pages under its base.
+function angularLine(major: number): DocsLine {
+  const base = `angular/v${major}`;
+  return {
+    major,
+    base,
+    sidebar: [
+      base,
+      {
+        label: 'Guides',
+        items: [`${base}/guides/phone-field`, `${base}/guides/region-picker`, `${base}/guides/material`],
+      },
+      {
+        label: 'Reference',
+        items: [`${base}/phone-input`, `${base}/region-picker`, `${base}/flag`, `${base}/provide-telixon`],
+      },
+    ],
+  };
 }
 
 export const PACKAGES: readonly DocsPackage[] = [
@@ -75,6 +115,7 @@ export const PACKAGES: readonly DocsPackage[] = [
     name: '@telixon/angular',
     label: 'Angular',
     logo: 'angular',
+    lines: { latest: 21, archived: [angularLine(20)] },
     sidebar: [
       'angular',
       {
@@ -99,10 +140,45 @@ export const AVAILABLE_PACKAGES: readonly AvailablePackage[] = PACKAGES.filter(
 
 export const PLANNED_PACKAGES: readonly DocsPackage[] = PACKAGES.filter((pkg) => pkg.base === undefined);
 
-// The package owning a docs URL path: longest match wins on the first path segment, so future
-// versioned trees ("angular/v18/...") and new packages resolve without touching this logic.
+function trimSlashes(path: string): string {
+  return path.replace(/^\/+|\/+$/g, '');
+}
+
+function startsUnder(slug: string, base: string): boolean {
+  return slug === base || slug.startsWith(base + '/');
+}
+
+// The package owning a docs URL path, matched on its first path segment, which covers the version
+// subfolders as well.
 export function packageForPath(path: string): AvailablePackage {
-  const trimmed = path.replace(/^\/+|\/+$/g, '');
-  const owner = AVAILABLE_PACKAGES.find((pkg) => trimmed === pkg.base || trimmed.startsWith(pkg.base + '/'));
+  const slug = trimSlashes(path);
+  const owner = AVAILABLE_PACKAGES.find((pkg) => startsUnder(slug, pkg.base));
   return owner ?? AVAILABLE_PACKAGES[0]!;
+}
+
+/** The archived line a docs URL path sits in, or `null` on the latest line. */
+export function archivedLineForPath(lines: DocsLines, path: string): DocsLine | null {
+  const slug = trimSlashes(path);
+  return lines.archived.find((line) => startsUnder(slug, line.base)) ?? null;
+}
+
+/** The sidebar group label of a line, which astro.config.mjs and PackageSidebar share. */
+export function groupLabel(pkg: AvailablePackage, line: DocsLine | null): string {
+  return line === null ? pkg.name : `${pkg.name}@${line.major}`;
+}
+
+/** Every page slug of a sidebar, in order. */
+export function sidebarSlugs(sidebar: readonly SidebarEntry[]): readonly string[] {
+  return sidebar.flatMap((entry) => (typeof entry === 'string' ? [entry] : entry.items));
+}
+
+/**
+ * Where a page lives on another line: the same page when that line has it, otherwise the line's
+ * root. `currentBase` is the base of the line the path sits in.
+ */
+export function pathOnLine(path: string, currentBase: string, target: Pick<DocsLine, 'base' | 'sidebar'>): string {
+  const slug = trimSlashes(path);
+  const tail = slug === currentBase ? '' : slug.slice(currentBase.length + 1);
+  const candidate = tail === '' ? target.base : `${target.base}/${tail}`;
+  return `/${sidebarSlugs(target.sidebar).includes(candidate) ? candidate : target.base}/`;
 }

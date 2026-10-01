@@ -2,7 +2,14 @@
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightLlmsTxt from 'starlight-llms-txt';
-import { AVAILABLE_PACKAGES } from './src/package-registry';
+import { AVAILABLE_PACKAGES, groupLabel } from './src/package-registry';
+
+/** Starlight sidebar items for a registry sidebar. */
+function toItems(sidebar) {
+  return sidebar.map((entry) =>
+    typeof entry === 'string' ? { slug: entry } : { label: entry.label, items: entry.items.map((slug) => ({ slug })) },
+  );
+}
 
 export default defineConfig({
   site: 'https://telixon.dev',
@@ -47,17 +54,14 @@ export default defineConfig({
         { tag: 'meta', attrs: { property: 'og:image:height', content: '640' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
-      // One group per available package, labeled by npm name; PackageSidebar matches on that label.
-      // The pages inside a group come from the registry's sidebar field.
-      sidebar: AVAILABLE_PACKAGES.map((pkg) => ({
-        label: pkg.name,
-        items: (pkg.sidebar ?? [pkg.base]).map((entry) =>
-          typeof entry === 'string'
-            ? { slug: entry }
-            : { label: entry.label, items: entry.items.map((slug) => ({ slug })) },
-        ),
-      })),
+      // One group per line of every available package, labeled through the registry; PackageSidebar
+      // matches on that label. The pages inside a group come from the registry's sidebar fields.
+      sidebar: AVAILABLE_PACKAGES.flatMap((pkg) => [
+        { label: groupLabel(pkg, null), items: toItems(pkg.sidebar ?? [pkg.base]) },
+        ...(pkg.lines?.archived ?? []).map((line) => ({ label: groupLabel(pkg, line), items: toItems(line.sidebar) })),
+      ]),
       components: {
+        Banner: './src/components/LineBanner.astro',
         Sidebar: './src/components/PackageSidebar.astro',
         ThemeSelect: './src/components/ThemeToggle.astro',
       },

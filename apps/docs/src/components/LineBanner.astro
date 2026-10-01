@@ -1,0 +1,18 @@
+---
+// Banner override: a page of an earlier line shows the line banner from the registry. Every other page
+// keeps the banner of its own frontmatter.
+import Default from '@astrojs/starlight/components/Banner.astro';
+import { archivedLineForPath, packageForPath } from '../package-registry';
+
+const { name, base, lines } = packageForPath(Astro.url.pathname);
+if (lines !== undefined) {
+  const line = archivedLineForPath(lines, Astro.url.pathname);
+  if (line !== null) {
+    Astro.locals.starlightRoute.entry.data.banner = {
+      content: `Docs for the ${line.major} line of <code>${name}</code>. The latest line is <a href="/${base}/">${lines.latest}</a>.`,
+    };
+  }
+}
+---
+
+<Default><slot /></Default>

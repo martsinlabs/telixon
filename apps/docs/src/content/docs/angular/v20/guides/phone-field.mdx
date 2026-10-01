@@ -1,0 +1,59 @@
+---
+title: Build a phone field
+description: A phone field on a reactive form control, with its value, its errors, and its placeholder in use.
+---
+
+import { Code } from '@astrojs/starlight/components';
+import contact from '../_examples/phone-field.ts?raw';
+
+[`TelixonPhoneInput`](/angular/v20/phone-input/) is a directive for an `<input>` bound to a form
+control. The user types into the input and sees a formatted number. The form control receives the
+same number in E.164, or `null` while the number is incomplete.
+
+## The control
+
+<Code lang="ts" code={contact} title="contact.ts" />
+
+Once the engine has loaded, the input shows the calling code of the default region, `1 `. Typing
+`4155550132` turns it into `1 415-555-0132`. Once the last digit is typed, the control holds
+`+14155550132`. The [options](/angular/v20/phone-input/#options) are the ones `createPhoneInput` takes.
+
+## Show the errors
+
+An invalid number puts a [`ValidationError`](/core/reference/validation-error/) under the
+`telixonPhone` key of `control.errors`. A partial number keeps the control's value at `null`, which
+makes `required` report at the same time. The template therefore checks `telixonPhone` before
+`required`. The `message` method turns each fault kind into text.
+
+The input's `aria-describedby` points at the message element. `aria-invalid` follows
+`control.touched && control.invalid`. Inside a Material form field, `mat-error` sets both on its
+own.
+
+## The placeholder
+
+The binding `[placeholder]="phone.state()?.placeholder ?? ''"` puts an example number on the input.
+The example belongs to the field's region and follows the field's format:
+
+| Options                                          | Placeholder      |
+| ------------------------------------------------ | ---------------- |
+| `{ mode: 'national', defaultRegion: 'US' }`      | `(201) 555-0123` |
+| `{ mode: 'international', defaultRegion: 'US' }` | `1 201-555-0123` |
+| with `display: { callingCodeInInput: false }`    | `201-555-0123`   |
+| `{ mode: 'national', defaultRegion: 'GB' }`      | `07400 123456`   |
+
+## Template-driven forms
+
+The directive works with `ngModel` the same way:
+
+```angular-html
+<input name="phone" [telixonPhoneInput]="{ mode: 'international' }" [(ngModel)]="phone" #model="ngModel" />
+```
+
+`phone` receives `+14155550132` once the number is valid and `null` at any other time.
+`model.errors` carries `telixonPhone`.
+
+## Write a value
+
+Writing `+442071838750` to the control shows `44 20 7183 8750` in the field.
+
+[Add a region picker](/angular/v20/guides/region-picker/) puts a region picker next to the field.
