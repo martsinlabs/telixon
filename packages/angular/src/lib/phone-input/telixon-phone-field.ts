@@ -2,6 +2,7 @@ import {
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
+  ChangeDetectorRef,
   DestroyRef,
   Directive,
   effect,
@@ -88,6 +89,7 @@ export class TelixonPhoneField implements FormValueControl<string | null>, Telix
   readonly element: HTMLInputElement = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
 
   private readonly renderer: Renderer2 = inject(Renderer2);
+  private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
   private nextReport: ParseReport = ERROR_REPORT;
   private resetPending: boolean = false;
 
@@ -173,12 +175,14 @@ export class TelixonPhoneField implements FormValueControl<string | null>, Telix
     this.report({ kind: 'value', value });
     if (this.resetPending) this.phone()?.clearHistory();
     this.resetPending = false;
+    this.changeDetector.markForCheck();
   }
 
   // An edit the widget reported ends the fresh start of a reset.
   private edit(value: string | null): void {
     this.resetPending = false;
     this.report({ kind: 'value', value });
+    this.changeDetector.markForCheck();
   }
 
   // Setting the raw text runs the parse, which reads `nextReport` to shape its result.

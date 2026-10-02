@@ -1,4 +1,12 @@
-import { Component, computed, provideZonelessChangeDetection, signal, viewChild, type Type } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  provideZonelessChangeDetection,
+  signal,
+  viewChild,
+  type Type,
+} from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, disabled, form, readonly, required } from '@angular/forms/signals';
@@ -41,6 +49,19 @@ class FieldHost {
       .join(','),
   );
   readonly directive = viewChild.required(TelixonPhoneField);
+}
+
+@Component({
+  imports: [FormField, TelixonPhoneField],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <input #input telixonPhoneField [formField]="f.phone" />
+    <p id="shown">{{ input.value }}</p>
+  `,
+})
+class OnPushHost {
+  readonly model = signal<PhoneModel>({ phone: null });
+  readonly f = form(this.model);
 }
 
 @Component({
@@ -463,6 +484,19 @@ describe('TelixonPhoneField: values from the form', () => {
     expect(host.model().phone).toBe('+442071838750');
     expect(host.f.phone().valid()).toBe(true);
     expect(host.f.phone().dirty()).toBe(false);
+  });
+
+  it('refreshes an OnPush template on every change the field makes to its text', async () => {
+    const fixture = await mount(OnPushHost);
+    const host = fixture.componentInstance;
+
+    host.model.set({ phone: '+14155550132' });
+    await settle(fixture);
+    expect(text(fixture, '#shown')).toBe('1 415-555-0132');
+
+    typeText(inputOf(fixture), '9');
+    await settle(fixture);
+    expect(text(fixture, '#shown')).toBe('1 41555501329');
   });
 
   it('carries a valid number into a new widget when the options change', async () => {
