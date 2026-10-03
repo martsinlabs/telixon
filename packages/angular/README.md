@@ -7,7 +7,7 @@ Phone fields for Angular, built on [`@telixon/web-sdk`](https://www.npmjs.com/pa
 [![initial bundle](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fregistry.npmjs.org%2F%40telixon%2Fangular%2Flatest&query=%24.bundleSize&label=initial%20bundle&color=26997b)](https://www.npmjs.com/package/@telixon/angular)
 [![downloads](https://img.shields.io/npm/dm/%40telixon%2Fangular?color=26997b&label=downloads)](https://www.npmjs.com/package/@telixon/angular)
 
-Both parts fit around your own markup. The picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
+The parts fit around your own markup. The picker takes your templates for its trigger and its rows. Every part restyles through one class selector.
 
 **[Documentation](https://telixon.dev/angular/)**
 
