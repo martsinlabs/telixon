@@ -6,6 +6,7 @@ packages:
   - '!examples/angular/quick-start'
   - '!examples/angular/quick-start-material'
   - '!examples/angular/quick-start-signal-forms'
+  - '!examples/angular/quick-start-signal-forms-material'
 
 ignoredBuiltDependencies:
   - '@parcel/watcher'
