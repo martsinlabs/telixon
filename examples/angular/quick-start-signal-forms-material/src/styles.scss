@@ -1,0 +1,64 @@
+@use '@angular/material' as mat;
+@import '@telixon/angular/flags/flags.css';
+
+:root {
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+main {
+  max-width: 28rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+h1 {
+  font: var(--mat-sys-headline-small);
+  margin: 0 0 0.25rem;
+}
+
+p {
+  margin: 0 0 1.5rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// Inside a Material field the trigger drops its own border, keeps a tall hit area, and sits on the text line.
+.mat-mdc-form-field .tlx-region-picker__trigger {
+  border: 0;
+  padding: 0.5em 1rem 0.5em 0.5em;
+  margin-inline-start: -0.5em;
+  translate: 0 -1px;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 1rem 0 0;
+}
+
+dt {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+dd {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+}
