@@ -570,6 +570,10 @@ const closedTypesCode = `controller.setRegion('USA')
         min-width: 0;
         caret-color: var(--green-text);
       }
+      /* The site ring from theme.css arrives through the shared stylesheet. The shell carries focus for this input. */
+      .demo-input input:focus-visible {
+        outline: none;
+      }
       .demo-input input::placeholder {
         color: var(--faint);
         opacity: 1;
