@@ -8,6 +8,7 @@ import {
   ErrorHandler,
   forwardRef,
   inject,
+  Injector,
   input,
   Renderer2,
   signal,
@@ -23,6 +24,7 @@ import {
   type ValidationErrors,
   type Validator,
 } from '@angular/forms';
+import { FormField } from '@angular/forms/signals';
 import { ensureEngineReady } from '@telixon/core';
 import type { PhoneInput, PhoneInputState } from '@telixon/web-sdk';
 import type { TelixonPhoneHost, TelixonPhoneInputOptions } from './models';
@@ -65,6 +67,7 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator, Telix
 
   private readonly renderer: Renderer2 = inject(Renderer2);
   private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly injector: Injector = inject(Injector);
   private readonly isDisabled: WritableSignal<boolean> = signal(false);
 
   private onChange: (value: string | null) => void = NOOP;
@@ -79,8 +82,9 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator, Telix
       this.onChange(value);
       this.changeDetector.markForCheck();
     },
-    onErrorChange: (): void => {
-      this.onValidatorChange();
+    onErrorChange: (formValidates: boolean): void => {
+      // A Signal Form validates the accessor only on this call.
+      if (!formValidates || this.boundToFormField()) this.onValidatorChange();
       this.changeDetector.markForCheck();
     },
   });
@@ -142,6 +146,11 @@ export class TelixonPhoneInput implements ControlValueAccessor, Validator, Telix
 
   registerOnValidatorChange(onValidatorChange: () => void): void {
     this.onValidatorChange = onValidatorChange;
+  }
+
+  // Looked up late: a lookup at construction would cycle through the accessor the field injects.
+  private boundToFormField(): boolean {
+    return this.injector.get(FormField, null, { optional: true, self: true }) !== null;
   }
 
   protected markTouched(): void {

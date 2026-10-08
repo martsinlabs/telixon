@@ -13,8 +13,8 @@ export type FormControlBridgeOptions = {
   renderer: Renderer2;
   /** Gets the form value on every edit and whenever new options change it. A write from the form never reaches it. */
   onValue: (value: string | null) => void;
-  /** Called when the error changes while the form value stays the same. */
-  onErrorChange: () => void;
+  /** Called when the error changes. `formValidates` tells whether a classic control validates this state on its own. */
+  onErrorChange: (formValidates: boolean) => void;
 };
 
 /** A web-sdk phone input kept in step with the callbacks of an Angular form control. */
@@ -65,15 +65,17 @@ export function createFormControlBridge(options: FormControlBridgeOptions): Form
     heldError = nextError;
     heldText = widgetState.value;
 
-    if (reporting === 'write') return;
-    const isEdit: boolean = reporting === 'edit' && (textChanged || valueChanged);
-    const isNewValue: boolean = reporting === 'options' && valueChanged;
-    // Handing the value over marks the control dirty and makes the form validate, which reads the error set above.
-    if (isEdit || isNewValue) {
-      onValue(nextValue);
+    // A classic control validates a value it wrote itself, while a Signal Form relies on the error callback.
+    if (reporting === 'write') {
+      if (errorChanged) onErrorChange(true);
       return;
     }
-    if (errorChanged) onErrorChange();
+    const isEdit: boolean = reporting === 'edit' && (textChanged || valueChanged);
+    const isNewValue: boolean = reporting === 'options' && valueChanged;
+    // The value goes first, which marks the control dirty. A classic control validates it on its own.
+    const handedValue: boolean = isEdit || isNewValue;
+    if (handedValue) onValue(nextValue);
+    if (errorChanged) onErrorChange(handedValue);
   }
 
   function create(nextOptions: TelixonPhoneInputOptions): PhoneInput {

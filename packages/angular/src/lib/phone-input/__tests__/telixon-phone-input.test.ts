@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField, form, required } from '@angular/forms/signals';
 import { createPhoneInput } from '@telixon/web-sdk';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TelixonPhoneInputOptions } from '../models';
@@ -86,6 +87,18 @@ class GroupHost {
 })
 class SubmitHost {
   readonly form = new FormGroup({ phone: new FormControl<string | null>(null, { updateOn: 'submit' }) });
+}
+
+@Component({
+  imports: [FormField, TelixonPhoneInput],
+  template: `<input [telixonPhoneInput]="options()" [formField]="f.phone" />`,
+})
+class SignalFormHost {
+  readonly options = signal<TelixonPhoneInputOptions>({ mode: 'international' });
+  readonly model = signal<{ phone: string | null }>({ phone: null });
+  readonly f = form(this.model, (schema) => {
+    required(schema.phone, { message: 'Phone is required' });
+  });
 }
 
 function configure(): void {
@@ -899,5 +912,65 @@ describe('TelixonPhoneInput pasted international numbers', () => {
 
     expect(inputOf(fixture).value).toBe('020 7183 8750');
     expect(fixture.componentInstance.control.value).toBe('+442071838750');
+  });
+});
+
+describe('TelixonPhoneInput: on a Signal Form', () => {
+  it('reports the fault through the compatibility path and clears it', async () => {
+    const fixture = await mount(SignalFormHost);
+    const host = fixture.componentInstance;
+    const kinds = (): string[] =>
+      host.f
+        .phone()
+        .errors()
+        .map((error) => error.kind);
+
+    typeText(inputOf(fixture), '+1415');
+    await settle(fixture);
+    expect(kinds()).toEqual(['telixonPhone', 'required']);
+    expect(host.f.phone().errors()[0]).toMatchObject({ context: { kind: 'TOO_SHORT', minLength: 10 } });
+    expect(host.model()).toEqual({ phone: null });
+
+    typeText(inputOf(fixture), '5550132');
+    await settle(fixture);
+    expect(kinds()).toEqual([]);
+    expect(host.model()).toEqual({ phone: '+14155550132' });
+
+    typeText(inputOf(fixture), '9');
+    await settle(fixture);
+    expect(host.f.phone().errors()[0]).toMatchObject({ kind: 'telixonPhone', context: { kind: 'TOO_LONG' } });
+    expect(host.model()).toEqual({ phone: null });
+  });
+
+  it('reports the fault of a value the form wrote and clears it for a valid one', async () => {
+    const fixture = await mount(SignalFormHost);
+    const host = fixture.componentInstance;
+
+    host.model.set({ phone: '+1415' });
+    await settle(fixture);
+    expect(inputOf(fixture).value).toBe('1 415-');
+    expect(host.f.phone().errors()[0]).toMatchObject({ kind: 'telixonPhone', context: { kind: 'TOO_SHORT' } });
+
+    host.model.set({ phone: '+14155550132' });
+    await settle(fixture);
+    expect(inputOf(fixture).value).toBe('1 415-555-0132');
+    expect(host.f.phone().errors()).toEqual([]);
+  });
+
+  it('follows the fault that new options change while the value stays null', async () => {
+    const fixture = await mount(SignalFormHost);
+    const host = fixture.componentInstance;
+
+    typeText(inputOf(fixture), '+1415');
+    await settle(fixture);
+    expect(host.f.phone().errors()[0]).toMatchObject({ context: { kind: 'TOO_SHORT' } });
+
+    host.options.set({ mode: 'international', regionFilter: ['GB'] });
+    await settle(fixture);
+    expect(host.model()).toEqual({ phone: null });
+    expect(host.f.phone().errors()[0]).toMatchObject({
+      kind: 'telixonPhone',
+      context: { kind: 'INVALID_CALLING_CODE' },
+    });
   });
 });
