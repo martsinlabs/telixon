@@ -6,6 +6,12 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+### Fixed
+
+- `TelixonPhoneInput` on a Signal Form reports its fault. `[formField]` binds the directive through
+  a compatibility path, which validates only when the directive signals a change, and the directive
+  signals every change of the error.
+
 ## [22.0.0] - 2026-10-03
 
 ### Added
