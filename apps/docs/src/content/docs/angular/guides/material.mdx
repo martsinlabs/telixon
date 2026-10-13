@@ -1,6 +1,8 @@
 ---
-title: Use it with Angular Material
-description: The phone field and the region picker inside mat-form-field, with Material's label, errors, and hint.
+title: Phone input for Angular Material
+description: The phone input and the country picker inside mat-form-field, with Material's floating label, errors, and hint.
+sidebar:
+  label: Use it with Angular Material
 ---
 
 import { Code, TabItem, Tabs } from '@astrojs/starlight/components';
@@ -25,7 +27,7 @@ The demo runs the component and the stylesheet shown below. In the component, `m
 places the picker on the text line of the form field. `anchor=".mdc-text-field"` names the box
 Material draws around the field. The list lines up with that box. The `telixonPhone` check comes
 before the `required` check, for the reason
-[Build a phone field](/angular/guides/phone-field/#show-the-errors) gives. The stylesheet carries
+[Phone field on Angular reactive forms](/angular/guides/phone-field/#show-the-errors) gives. The stylesheet carries
 the Material theme, the flags, and one rule that strips the trigger's border and seats it on the
 text line inside the form field. That rule belongs in the global styles, because component styles
 do not reach the picker.

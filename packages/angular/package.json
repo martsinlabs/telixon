@@ -4,11 +4,19 @@
   "description": "Phone fields for Angular, built on @telixon/web-sdk.",
   "keywords": [
     "angular",
+    "angular-material",
+    "signal-forms",
     "phone-input",
+    "phone-field",
+    "tel-input",
+    "international-phone-input",
+    "country-picker",
     "phone-number",
     "phone-validation",
     "phone-formatter",
-    "intl-phone"
+    "intl-phone",
+    "libphonenumber",
+    "e164"
   ],
   "homepage": "https://telixon.dev",
   "bugs": {
