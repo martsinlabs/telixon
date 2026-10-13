@@ -1,6 +1,8 @@
 ---
-title: Use it with Signal Forms
-description: The phone field on a Signal Form, with its value, its errors, and the schema's required rule in use.
+title: Phone field on Angular Signal Forms
+description: The phone field on an Angular Signal Form, with its value in E.164, its errors, and the schema's required rule.
+sidebar:
+  label: Use it with Signal Forms
 ---
 
 import { Code } from '@astrojs/starlight/components';
@@ -17,7 +19,7 @@ holds the same number in E.164 while the number is valid and `null` at any other
 
 The input shows the placeholder `201-555-0123`. After typing `4155550132` the input shows
 `415-555-0132` while the model holds `+14155550132`. The picker links to the field through `[for]`,
-as [Add a region picker](/angular/guides/region-picker/) shows for `TelixonPhoneInput`.
+as [Country picker for an Angular phone input](/angular/guides/region-picker/) shows for `TelixonPhoneInput`.
 
 ## Show the errors
 
@@ -36,7 +38,7 @@ reset discards partial text, shows the field's value again, and clears the undo 
 ## Inside Angular Material
 
 The directive sits on the same `<input>` as `matInput`, as
-[Use it with Angular Material](/angular/guides/material/) shows for `TelixonPhoneInput`. Material
+[Phone input for Angular Material](/angular/guides/material/) shows for `TelixonPhoneInput`. Material
 reads the field's state through Signal Forms, which gives you the floating label, the required
 marker, `aria-invalid`, and `mat-error` without extra code:
 

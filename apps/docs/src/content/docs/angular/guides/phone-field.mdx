@@ -1,6 +1,8 @@
 ---
-title: Build a phone field
-description: A phone field on a reactive form control, with its value, its errors, and its placeholder in use.
+title: Phone field on Angular reactive forms
+description: A phone input on an Angular reactive form, with formatting as you type, the value in E.164, and typed validation errors.
+sidebar:
+  label: Build a phone field
 ---
 
 import { Code } from '@astrojs/starlight/components';
@@ -52,4 +54,4 @@ The directive works with `ngModel` the same way:
 `phone` receives `+14155550132` once the number is valid and `null` at any other time.
 `model.errors` carries `telixonPhone`.
 
-[Add a region picker](/angular/guides/region-picker/) puts a region picker next to the field.
+[Country picker for an Angular phone input](/angular/guides/region-picker/) adds the picker next to the field.
