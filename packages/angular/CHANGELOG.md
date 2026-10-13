@@ -6,6 +6,8 @@ Angular major, with minor and patch versions for the package's own changes.
 
 ## [Unreleased]
 
+## [22.0.1] - 2026-10-13
+
 ### Fixed
 
 - `TelixonPhoneInput` on a Signal Form reports its fault. `[formField]` binds the directive through
@@ -60,7 +62,8 @@ Angular major, with minor and patch versions for the package's own changes.
 - `ng add @telixon/angular` puts the flags stylesheet in the application's styles and provides
   `provideTelixon` in its root providers, with the engine preload unless `--preload-engine=false`.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/angular@v22.0.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/angular@v22.0.1...HEAD
+[22.0.1]: https://github.com/martsinlabs/telixon/compare/angular@v22.0.0...angular@v22.0.1
 [22.0.0]: https://github.com/martsinlabs/telixon/compare/angular@v21.0.0...angular@v22.0.0
 [21.0.0]: https://github.com/martsinlabs/telixon/compare/angular@v20.0.0...angular@v21.0.0
 [20.0.0]: https://github.com/martsinlabs/telixon/releases/tag/angular@v20.0.0
