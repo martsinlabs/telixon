@@ -1,6 +1,6 @@
 {
   "name": "@telixon/angular",
-  "version": "22.0.0",
+  "version": "22.0.1",
   "description": "Phone fields for Angular, built on @telixon/web-sdk.",
   "keywords": [
     "angular",
