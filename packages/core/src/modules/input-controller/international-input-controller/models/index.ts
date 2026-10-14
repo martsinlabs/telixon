@@ -12,8 +12,7 @@ export type PlusPrefixMode = 'none' | 'fixed' | 'erasable';
  * international significant number and the selected region supplies the calling code.
  */
 export type InternationalDisplayConfig =
-  | { readonly callingCodeInInput: false }
-  | { readonly callingCodeInInput: true; readonly plusPrefix: PlusPrefixMode };
+  { readonly callingCodeInInput: false } | { readonly callingCodeInInput: true; readonly plusPrefix: PlusPrefixMode };
 
 /**
  * Config for {@link createInternationalInputController}. `defaultRegion` is required only when the

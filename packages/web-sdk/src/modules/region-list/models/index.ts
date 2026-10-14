@@ -53,9 +53,7 @@ export type RegionSearchFn<T = undefined> = (query: string, option: RegionOption
  * - Function: custom comparator (you own its determinism).
  */
 export type RegionListSort<T = undefined> =
-  | 'alphabetical'
-  | 'callingCode'
-  | ((a: RegionOption<T>, b: RegionOption<T>) => number);
+  'alphabetical' | 'callingCode' | ((a: RegionOption<T>, b: RegionOption<T>) => number);
 
 /**
  * Construction options for {@link RegionList}.
