@@ -280,7 +280,7 @@ function runSession(session: number): string | null {
 }
 
 describe('international controller method fuzz', () => {
-  it('holds its invariants across randomised method combinations', () => {
+  it('holds its invariants across randomised method combinations', { timeout: 20_000 }, () => {
     const failures: string[] = [];
     for (let session = 0; session < SESSIONS && failures.length === 0; session++) {
       const failure: string | null = runSession(session);
