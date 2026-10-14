@@ -7,12 +7,7 @@ import { BinaryFilter } from '@telixon/core/models';
  * ValidationResult.
  */
 export type PossibilityResult =
-  | 'IS_POSSIBLE'
-  | 'IS_POSSIBLE_LOCAL_ONLY'
-  | 'INVALID_CALLING_CODE'
-  | 'TOO_SHORT'
-  | 'TOO_LONG'
-  | 'INVALID_LENGTH';
+  'IS_POSSIBLE' | 'IS_POSSIBLE_LOCAL_ONLY' | 'INVALID_CALLING_CODE' | 'TOO_SHORT' | 'TOO_LONG' | 'INVALID_LENGTH';
 
 /**
  * Why a number is not valid, discriminated on `kind`. Five variants carry data. Returned by
