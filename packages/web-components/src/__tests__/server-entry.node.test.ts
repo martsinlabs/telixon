@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 // The entry a server bundle resolves, where no DOM exists at import time.
 describe('the server entry', () => {
-  it('imports without a DOM and refuses to define the elements', async () => {
+  // The import transforms the whole of core through Vite, which takes a CI runner seconds.
+  it('imports without a DOM and refuses to define the elements', { timeout: 20_000 }, async () => {
     expect(typeof globalThis.HTMLElement).toBe('undefined');
     const entry = await import('../index.server');
     expect(entry.PHONE_FIELD_TAG).toBe('telixon-phone-field');
