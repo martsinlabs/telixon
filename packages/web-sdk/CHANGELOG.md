@@ -6,6 +6,19 @@ All notable changes to `@telixon/web-sdk` are documented in this file. The forma
 
 ## [Unreleased]
 
+### Added
+
+- `flags.css` declares `--tlx-flag-sheet-width`, `--tlx-flag-sheet-height`, and
+  `--tlx-flag-neutral-transform` on `:root`, the size of the sheet as a share of one cell and the
+  neutral cell, for an element that paints a cell on its own box.
+
+### Fixed
+
+- A phone input leaves a read-only or disabled input alone. Chromium raises `beforeinput` on such an
+  input, and the widget wrote the typed digits through its controller; undo and redo keys wrote too.
+- A region picker stays open while focus moves to the element a pick returns it to, which a field
+  wrapping the picker does on its own click.
+
 ## [1.2.1] - 2026-09-28
 
 ### Fixed

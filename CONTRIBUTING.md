@@ -25,6 +25,7 @@ A pnpm monorepo.
 packages/core      @telixon/core    engine and phone-number logic
 packages/web-sdk   @telixon/web-sdk headless DOM adapter
 packages/angular   @telixon/angular phone field directive and region picker for Angular
+packages/web-components @telixon/web-components custom elements around the page's own input
 apps/docs          landing page and documentation site (telixon.dev)
 apps/sandbox       internal dev workbench
 examples/          runnable examples, one per topic

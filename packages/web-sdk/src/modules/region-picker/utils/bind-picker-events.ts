@@ -65,9 +65,11 @@ export function bindPickerEvents<T>(options: PickerEventsOptions<T>): () => void
     if (picker.getState().open && !pressedInside(event)) picker.close();
   }
 
-  // A null relatedTarget names no destination, as after a press on a non-focusable spot or a window blur. Presses belong to handleOutsidePress. The list stays open otherwise.
+  // A null relatedTarget names no destination, as after a press on a non-focusable spot or a window blur. Presses belong to handleOutsidePress. The element a pick returns focus to counts as inside, which a wrapping field relies on.
   function handleFocusLeave(event: FocusEvent): void {
-    if (event.relatedTarget === null || isInside(event.relatedTarget) || !picker.getState().open) return;
+    const destination: EventTarget | null = event.relatedTarget;
+    if (destination === null || destination === returnFocusTo || isInside(destination) || !picker.getState().open)
+      return;
     picker.close();
   }
 

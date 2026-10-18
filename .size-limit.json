@@ -23,5 +23,10 @@
     "name": "@telixon/angular",
     "path": "packages/angular/dist/fesm2022/telixon-angular.mjs",
     "limit": "12 kB"
+  },
+  {
+    "name": "@telixon/web-components",
+    "path": "packages/web-components/dist/index.js",
+    "limit": "14 kB"
   }
 ]

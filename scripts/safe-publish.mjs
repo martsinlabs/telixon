@@ -31,6 +31,7 @@ const STRIP_FIELDS = ['devDependencies', 'scripts', 'packageManager', 'publishCo
 const BUNDLE_ENTRY_BY_PACKAGE = {
   '@telixon/core': '@telixon/core (browser entry)',
   '@telixon/web-sdk': '@telixon/web-sdk',
+  '@telixon/web-components': '@telixon/web-components',
   '@telixon/angular': '@telixon/angular',
 };
 

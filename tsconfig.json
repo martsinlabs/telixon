@@ -18,7 +18,9 @@
     "paths": {
       "@telixon/core": ["./packages/core/src/index.node.ts"],
       "@telixon/core/*": ["./packages/core/src/*"],
-      "@telixon/web-sdk": ["./packages/web-sdk/src/index.ts"]
+      "@telixon/web-sdk": ["./packages/web-sdk/src/index.ts"],
+      "@telixon/web-sdk/flags": ["./packages/web-sdk/src/flags/index.ts"],
+      "@telixon/web-components": ["./packages/web-components/src/index.ts"]
     }
   }
 }
