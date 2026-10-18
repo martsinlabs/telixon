@@ -7,13 +7,20 @@ export default defineConfig({
   test: {
     setupFiles: ['./packages/core/src/test-setup.ts'],
     exclude: [...configDefaults.exclude, '**/conformance/**', '**/e2e/**'],
-    // The Angular package compiles through the Angular compiler in a project of its own.
+    // The Angular package compiles through the Angular compiler in a project of its own, while the web
+    // components package runs in real browsers through its own config and its own CI job.
     projects: [
       {
         extends: true,
         test: {
           name: 'packages',
-          exclude: [...configDefaults.exclude, '**/conformance/**', '**/e2e/**', 'packages/angular/**'],
+          exclude: [
+            ...configDefaults.exclude,
+            '**/conformance/**',
+            '**/e2e/**',
+            'packages/angular/**',
+            'packages/web-components/**',
+          ],
         },
       },
       './packages/angular/vitest.config.ts',

@@ -10,3 +10,7 @@ packages/core/oracle/.cache
 .DS_Store
 .claude/settings.local.json
 .idea
+
+# Failure screenshots of the browser-mode tests.
+**/__screenshots__/
+**/.vitest-attachments/

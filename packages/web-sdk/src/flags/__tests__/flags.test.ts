@@ -101,6 +101,13 @@ describe('shipped assets', () => {
     expect(css).toContain('background-size: 100% 100%;');
   });
 
+  it('names the sheet size in custom properties on the root', async () => {
+    const css = await readFile(new URL('flags.css', ASSETS), 'utf8');
+    expect(css).toContain(`--tlx-flag-sheet-width: ${SPRITE_COLUMNS * 100}%;`);
+    expect(css).toContain(`--tlx-flag-sheet-height: ${SPRITE_ROWS * 100}%;`);
+    expect(css).toContain(`--tlx-flag-neutral-transform: ${flagTransform(null)};`);
+  });
+
   it('shows the neutral cell until a transform is set', async () => {
     const css = await readFile(new URL('flags.css', ASSETS), 'utf8');
     expect(css).toContain(`transform: ${flagTransform(null)};`);

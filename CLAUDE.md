@@ -13,7 +13,7 @@ packages/
   angular/    # @telixon/angular: phone field directive and region picker for Angular
   react/      # (planned)
   vue/        # (planned)
-  web-components/ # (planned)
+  web-components/ # @telixon/web-components: custom elements around the page's own <input>, built on web-sdk
 ```
 
 ### Core package

@@ -1,0 +1,83 @@
+{
+  "name": "@telixon/web-components",
+  "version": "0.1.0",
+  "description": "Phone field custom elements built on @telixon/web-sdk. A form-associated phone field around your own <input>, a region picker, and a flag.",
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "phone-input",
+    "phone-field",
+    "tel-input",
+    "international-phone-input",
+    "country-picker",
+    "phone-number",
+    "phone-validation",
+    "phone-formatter",
+    "intl-phone",
+    "libphonenumber",
+    "e164"
+  ],
+  "homepage": "https://telixon.dev",
+  "bugs": {
+    "url": "https://github.com/martsinlabs/telixon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martsinlabs/telixon.git",
+    "directory": "packages/web-components"
+  },
+  "license": "Apache-2.0",
+  "author": "Myroslav Martsin <myroslav@martsinlabs.com>",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./dist/index.server.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "default": "./dist/vue.js"
+    },
+    "./flags/flags.css": "./dist/flags/flags.css",
+    "./flags/sprite.png": "./dist/flags/sprite.png",
+    "./flags/sprite@2x.png": "./dist/flags/sprite@2x.png"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsup && node scripts/build-flags.mjs",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@telixon/core": "workspace:^",
+    "@telixon/web-sdk": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@vitest/browser": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.11",
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -134,6 +134,8 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
   function handleBeforeInput(event: InputEvent): void {
     if (event.target !== input) return;
     if (event.isComposing) return;
+    // Chromium raises the event on a read-only input, which the browser then leaves untouched.
+    if (input.readOnly || input.disabled) return;
 
     const { inputType } = event;
 
@@ -235,6 +237,7 @@ export function createPhoneInput(options: PhoneInputOptions): PhoneInput {
 
   function handleKeyDown(event: KeyboardEvent): void {
     if (event.target !== input) return;
+    if (input.readOnly || input.disabled) return;
     if (!event.ctrlKey && !event.metaKey) return;
 
     const key: string = event.key.toLowerCase();

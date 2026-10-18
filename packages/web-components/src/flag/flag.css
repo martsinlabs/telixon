@@ -1,0 +1,32 @@
+/* The flag element paints its sprite cell on its own box, and so does every flag the picker exposes as its `flag` part. The sheet size comes from the custom properties above. */
+telixon-flag,
+telixon-region-picker::part(flag) {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1.5em;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+telixon-flag::before,
+telixon-region-picker::part(flag)::before {
+  content: '';
+  display: block;
+  width: var(--tlx-flag-sheet-width);
+  height: var(--tlx-flag-sheet-height);
+  background-image: url(./sprite.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  transform: var(--tlx-flag-transform, var(--tlx-flag-neutral-transform));
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media (min-resolution: 1.5dppx) {
+  telixon-flag::before,
+  telixon-region-picker::part(flag)::before {
+    background-image: url(./sprite@2x.png);
+  }
+}
