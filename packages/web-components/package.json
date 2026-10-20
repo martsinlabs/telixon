@@ -1,6 +1,6 @@
 {
   "name": "@telixon/web-components",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Phone field custom elements built on @telixon/web-sdk. A form-associated phone field around your own <input>, a region picker, and a flag.",
   "keywords": [
     "web-components",

@@ -6,6 +6,8 @@ All notable changes to `@telixon/web-components` are documented in this file. Th
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-20
+
 ### Added
 
 - `<telixon-phone-field>`, a form-associated element around the page's own `<input>`.
@@ -19,3 +21,6 @@ All notable changes to `@telixon/web-components` are documented in this file. Th
   tags in JSX and in Vue templates.
 - Types for the `telixon-change` and `telixon-state` events, which `addEventListener` picks up on the
   element and on any ancestor they bubble to.
+
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/web-components@v1.0.0...HEAD
+[1.0.0]: https://github.com/martsinlabs/telixon/releases/tag/web-components@v1.0.0
