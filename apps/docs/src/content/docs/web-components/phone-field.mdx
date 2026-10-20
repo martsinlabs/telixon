@@ -1,0 +1,113 @@
+---
+title: '<telixon-phone-field>'
+description: The form-associated phone field element that runs on the input inside it, with its attributes, properties, events, and states.
+---
+
+The element turns the `<input>` inside it into a phone field. Once the engine has loaded, it
+attaches a [`PhoneInput`](/web-sdk/phone-input/) to the first `<input>` without a type, or with the
+type `text` or `tel`, inside it. From then on the field is live. The input may arrive after the
+element or be replaced later. The element follows it. Until the engine has loaded, and on the server
+throughout, the input is a plain input. The class is `TelixonPhoneFieldElement`.
+
+```html
+<telixon-phone-field name="phone" default-region="US" calling-code-in-input="false" required>
+  <input type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+## Attributes
+
+| Attribute                 | Default         | Meaning                                                                                                                                 |
+| ------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`                    | `international` | `international` or `national`.                                                                                                          |
+| `default-region`          |                 | The region the field starts in. Required with `mode="national"` and with `calling-code-in-input="false"`.                               |
+| `calling-code-in-input`   | `true`          | `"false"` keeps the calling code out of the input, where the picker shows it.                                                           |
+| `plus-prefix`             | `none`          | `none`, `fixed`, or `erasable`, for the plus before a calling code inside the input.                                                    |
+| `strict`                  | absent          | Validates against the default region only.                                                                                              |
+| `region-filter`           |                 | Comma-separated region codes the field accepts.                                                                                         |
+| `number-type-filter`      |                 | Comma-separated number types the field accepts.                                                                                         |
+| `placeholder-number-type` |                 | The number type the placeholder shows.                                                                                                  |
+| `auto-placeholder`        | absent          | Writes the region's example number into the input's placeholder.                                                                        |
+| `error-message`           |                 | The validation message for every fault.                                                                                                 |
+| `name`                    |                 | The name the form submits the value under.                                                                                              |
+| `value`                   |                 | The number the field starts with, in E.164 or as the field reads typed text, written into an empty input. A form reset goes back to it. |
+| `required`                | absent          | Reports `valueMissing` while the field holds no digits.                                                                                 |
+| `disabled`                | absent          | Disables the field and its input.                                                                                                       |
+| `readonly`                | absent          | Makes the input read-only.                                                                                                              |
+
+The first eight attributes map onto the [options of `createPhoneInput`](/web-sdk/phone-input/#phoneinputoptions).
+A value no option accepts surfaces as an error at the attribute's write, which exposes a typo in the
+markup.
+
+## Properties
+
+| Property                                                          | Type                          | Meaning                                                                                                                                    |
+| ----------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options`                                                         | `TelixonPhoneFieldOptions`    | The options the field runs with. A set object replaces the attributes as a whole. Setting `null` hands the options back to the attributes. |
+| `value`                                                           | `string \| null`              | The number in E.164 while valid and `null` otherwise. A set writes through the widget. `''` clears the field.                              |
+| `state`                                                           | `PhoneInputState \| null`     | The widget's latest state, `null` until the field is live.                                                                                 |
+| `phone`                                                           | `PhoneInput \| null`          | The widget, `null` until the field is live.                                                                                                |
+| `fault`                                                           | `ValidationError \| null`     | The fault of an invalid number, `null` while the number is valid or holds no digits.                                                       |
+| `errorMessage`                                                    | `TelixonPhoneMessage \| null` | A function from a fault to its message. `null` leaves the message to the `error-message` attribute or to the default.                      |
+| `inputElement`                                                    | `HTMLInputElement \| null`    | The input the field runs on.                                                                                                               |
+| `name`, `required`, `disabled`, `readOnly`                        |                               | Reflected to the attributes of the same name.                                                                                              |
+| `form`, `validity`, `validationMessage`, `willValidate`, `labels` |                               | The form association, as on a native field. `checkValidity()` and `reportValidity()` work the same way.                                    |
+
+`focus()` moves focus into the input.
+
+## Events
+
+| Event            | Detail                       | Fires                                                                                    |
+| ---------------- | ---------------------------- | ---------------------------------------------------------------------------------------- |
+| `telixon-change` | `{ value: string \| null }`  | When the E.164 value changes through an edit or through new options. A write fires none. |
+| `telixon-state`  | `{ state: PhoneInputState }` | On every state the widget reports.                                                       |
+
+Both events bubble. `GlobalEventHandlersEventMap` carries their types, which types `event.detail`
+in `addEventListener` on the element and on any ancestor.
+
+## States
+
+| State            | Meaning                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| `engine-loading` | From the connection of the element until the engine has loaded. |
+| `valid`          | The field holds a valid number.                                 |
+| `invalid`        | The field holds a fault, or no digits while `required`.         |
+| `user-valid`     | `valid`, once the field is touched.                             |
+| `user-invalid`   | `invalid`, once the field is touched.                           |
+
+`valid` and `invalid` follow every state the widget reports. Focus leaving the input touches the
+field. A blocked submission does the same. A form reset forgets the touch. The states match through
+`:state()`.
+
+## Validation
+
+An invalid number blocks the form's submission with a message anchored at the input. A field with no
+digits after the calling code reports no fault. With `required` it reports `valueMissing`. The
+message comes from `errorMessage`, then from the `error-message` attribute, then from an English
+default per fault. An empty message falls back to the default, since the form needs one.
+
+| Fault                                       | Message                            |
+| ------------------------------------------- | ---------------------------------- |
+| `EMPTY`, `TOO_SHORT`, `POSSIBLE_LOCAL_ONLY` | This number is too short.          |
+| `TOO_LONG`                                  | This number is too long.           |
+| `INVALID_LENGTH`                            | This number has the wrong length.  |
+| `INVALID_CALLING_CODE`                      | No country uses this calling code. |
+| `NATIONAL_PREFIX_MISSING`                   | Add the leading 0.                 |
+| `NATIONAL_PREFIX_PRESENT`                   | Remove the leading 0.              |
+| `PATTERN_MISMATCH`                          | This number does not exist.        |
+
+The prefix in the two national prefix messages is the one the region uses.
+
+## New options
+
+New `regionFilter` and `numberTypeFilter` values go to the running widget. Any other change replaces
+the widget. A valid number moves into the new widget as E.164, which shows it in its own format. Any
+other text stays in the input, where the new widget reads it. A field that holds only a calling code
+starts over. A new `default-region` then seeds its own calling code.
+
+## Types
+
+`TelixonPhoneFieldOptions` is the [`PhoneInputOptions`](/web-sdk/phone-input/#phoneinputoptions)
+type without `input` and `initialValue`. `TelixonPhoneChangeDetail` is `{ value: string | null }`.
+`TelixonPhoneStateDetail` is `{ state: PhoneInputState }`. `TelixonPhoneMessage` is
+`(fault: ValidationError) => string`. The package exports all four with the element class.

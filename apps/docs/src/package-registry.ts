@@ -37,7 +37,7 @@ export interface DocsPackage {
   /** The package's sidebar: page slugs or labeled groups of slugs; a single root page when absent. */
   readonly sidebar?: readonly SidebarEntry[];
   /** Official framework mark shown in the switcher. The gem stands in where none is set. */
-  readonly logo?: 'angular' | 'react' | 'vue' | 'stencil';
+  readonly logo?: 'angular' | 'react' | 'vue' | 'web-components';
   /** The package's major lines, set once an earlier line is kept. */
   readonly lines?: DocsLines;
 }
@@ -109,7 +109,33 @@ export const PACKAGES: readonly DocsPackage[] = [
       },
     ],
   },
-  { name: '@telixon/web-components', label: 'Web Components', logo: 'stencil' },
+  {
+    base: 'web-components',
+    name: '@telixon/web-components',
+    label: 'Web Components',
+    logo: 'web-components',
+    sidebar: [
+      'web-components',
+      {
+        label: 'Guides',
+        items: [
+          'web-components/guides/phone-field',
+          'web-components/guides/region-picker',
+          'web-components/guides/frameworks',
+          'web-components/guides/server-rendering',
+        ],
+      },
+      {
+        label: 'Reference',
+        items: [
+          'web-components/phone-field',
+          'web-components/region-picker',
+          'web-components/flag',
+          'web-components/define',
+        ],
+      },
+    ],
+  },
   {
     base: 'angular',
     name: '@telixon/angular',

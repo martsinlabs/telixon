@@ -8,3 +8,6 @@ Each example lives under the package it demonstrates, as `examples/<package>/<to
   Built into the docs and embedded in [Use it with Angular Material](https://telixon.dev/angular/guides/material/).
 - [angular/kitchen-sink](angular/kitchen-sink): every mode of the Angular field and picker on one prerendered page, driven by
   the Playwright suite in CI across Chromium, Firefox, and WebKit, with hydration, keyboard, axe, and autofill checks.
+- [web-components/kitchen-sink](web-components/kitchen-sink): the phone field with its region picker on a static page, a
+  server-rendered React page, and a Vue page, driven by the Playwright suite in CI across Chromium, Firefox, and WebKit,
+  with hydration, axe, and autofill checks. The docs show its sources.

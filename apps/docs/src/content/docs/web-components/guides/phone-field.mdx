@@ -1,0 +1,133 @@
+---
+title: Phone field in a form
+description: The attributes and the options of the phone field element, its E.164 value, its validation, its states, and its layout.
+sidebar:
+  label: Put a phone field in a form
+---
+
+import { Code } from '@astrojs/starlight/components';
+import styles from '../../../../../../../examples/web-components/kitchen-sink/src/static/styles.css?raw';
+
+[`<telixon-phone-field>`](/web-components/phone-field/) turns the `<input>` inside it into a phone
+field. Once the engine has loaded, the element attaches a [`PhoneInput`](/web-sdk/phone-input/) of
+`@telixon/web-sdk` to the input, the widget that formats the text and tracks the region. From then
+on the field is live. The element is form-associated. The form submits its value in E.164 under the
+element's `name` and validates it like a native field, while the input itself carries no name.
+
+## Configure the field
+
+The attributes `mode`, `default-region`, `calling-code-in-input`, `plus-prefix`, `strict`,
+`region-filter`, `number-type-filter`, and `placeholder-number-type` configure the widget. The
+[reference](/web-components/phone-field/#attributes) lists each with its default. An element
+without any of them runs in international mode with the calling code inside the input. The `value`
+attribute gives the field its first number.
+
+```html
+<telixon-phone-field name="phone" default-region="US" calling-code-in-input="false" value="+14155550132">
+  <input type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+Typing `4155550132` into an empty field of this shape shows `415-555-0132`. The same digits show
+`(415) 555-0132` in a field with `mode="national"`. With the calling code inside the input and
+`plus-prefix="fixed"`, they show `+1 415-555-0132`.
+
+The `options` property takes the whole options object, which a framework binds in one expression.
+A set object replaces the attributes as a whole. `null` hands the options back to the attributes:
+
+```js
+field.options = { mode: 'international', defaultRegion: 'US', display: { callingCodeInInput: false } };
+```
+
+A change of the options keeps or replaces the widget as [the reference](/web-components/phone-field/#new-options)
+describes.
+
+## Read and write the value
+
+The `value` property holds the number in E.164 while the number is valid and `null` at any other
+time. The `telixon-change` event fires whenever that value changes through an edit or through new
+options, with the value in `event.detail.value`:
+
+```js
+field.addEventListener('telixon-change', (event) => {
+  console.log(event.detail.value); // "+14155550132"
+});
+```
+
+A written value shows in the input the way the field formats numbers. With the calling code outside
+the input, `+442071838750` shows as `20 7183 8750` with the United Kingdom as the region. In a
+national field the same value shows as `020 7183 8750`. With the calling code inside the input it
+shows as `44 20 7183 8750`. A write fires no `telixon-change`, since the page already knows the
+value. `''` clears the field.
+
+```js
+field.value = '+442071838750';
+```
+
+The `state` property holds the widget's latest [state](/web-sdk/phone-input/#phoneinputstate),
+which carries the region and the text. `phone` holds the widget itself. Both are `null` until the
+field is live.
+
+## Validate with the form
+
+A partial number blocks the form's submission the way an invalid native field does, with a message
+anchored at the input. The `fault` property holds the
+[`ValidationError`](/core/reference/validation-error/) behind it:
+
+```js
+field.fault; // { kind: 'TOO_SHORT', minLength: 10 }
+field.validationMessage; // "This number is too short."
+```
+
+A field without digits reports no fault. `required` makes it report `valueMissing`, as
+[the reference](/web-components/phone-field/#validation) describes. `checkValidity()` and
+`reportValidity()` work as on a native field.
+
+The `error-message` attribute replaces the message for every fault. The `errorMessage` property takes
+a function from the fault to its message, which can give each fault its own text:
+
+```js
+field.errorMessage = (fault) => (fault.kind === 'TOO_SHORT' ? 'Add the missing digits.' : 'Check the number.');
+```
+
+Without either, the element uses an English message for each fault, which
+[the reference](/web-components/phone-field/#validation) lists.
+
+## Style the states
+
+The element exposes its validity through [custom states](/web-components/phone-field/#states), which
+match through `:state()`. `invalid` follows every keystroke, while `user-invalid` waits until the
+field is touched, which makes it the state to color a border with:
+
+```css
+telixon-phone-field:state(user-invalid) input {
+  border-color: #e5484d;
+}
+
+telixon-phone-field:state(engine-loading) input {
+  opacity: 0.7;
+}
+```
+
+## Lay out the field
+
+The element and the picker are inline by default. The stylesheet of the example lays the form out
+in a column, puts the picker and the input side by side, and colors the border of a field the user
+left invalid:
+
+<Code lang="css" code={styles} title="styles.css" />
+
+The picker takes `::part()` rules and the `--tlx-picker-*` custom properties, as
+[the picker guide](/web-components/guides/region-picker/#restyle-the-picker) shows.
+
+## The input element
+
+A `<label for>` points at the input, which takes focus. `type="tel"` shows the phone keypad on iOS
+and Android. `autocomplete="tel"` lets the browser fill the number from the user's profile, which the
+field reads against its region. Keep the input's font size at 16 px or larger, because iOS Safari
+zooms into a smaller field on focus.
+
+`required`, `disabled`, and `readonly` belong on the element. The element mirrors `disabled` and
+`readonly` onto the input and keeps a `disabled` or `readonly` the page put on the input itself. The
+`auto-placeholder` attribute shows an example number for the region, `201-555-0123` for the United
+States with the calling code outside the input.

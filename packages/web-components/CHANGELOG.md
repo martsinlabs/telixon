@@ -17,3 +17,5 @@ All notable changes to `@telixon/web-components` are documented in this file. Th
   its `flag` part.
 - Type entries `@telixon/web-components/react` and `@telixon/web-components/vue`, which type the three
   tags in JSX and in Vue templates.
+- Types for the `telixon-change` and `telixon-state` events, which `addEventListener` picks up on the
+  element and on any ancestor they bubble to.

@@ -14,6 +14,7 @@
   "dependencies": {
     "@astrojs/starlight": "^0.42.6",
     "@telixon/core": "workspace:*",
+    "@telixon/web-components": "workspace:*",
     "@telixon/web-sdk": "workspace:*",
     "astro": "^7.3.8",
     "sharp": "^0.35.5",

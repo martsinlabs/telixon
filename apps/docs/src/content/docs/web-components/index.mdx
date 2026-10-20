@@ -1,0 +1,142 @@
+---
+title: Phone field as custom elements
+description: Install @telixon/web-components and put a phone field with a country picker into any page.
+sidebar:
+  label: Getting started
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import WebComponentsFieldDemo from '../../../components/WebComponentsFieldDemo.astro';
+import page from '../../../../../../examples/web-components/kitchen-sink/index.html?raw';
+import styles from '../../../../../../examples/web-components/kitchen-sink/src/static/styles.css?raw';
+import script from '../../../../../../examples/web-components/kitchen-sink/src/static/main.ts?raw';
+
+`@telixon/web-components` has three parts. [`<telixon-phone-field>`](/web-components/phone-field/)
+turns the `<input>` inside it into a phone field the form submits and validates like a native
+field. The user sees a formatted number while the form submits it in E.164. The input stays in the page, where your
+labels, styles, and autofill apply to it. [`<telixon-region-picker>`](/web-components/region-picker/)
+adds the flag and a searchable list of regions. [`<telixon-flag>`](/web-components/flag/) shows the
+flag of a region. All three are custom elements built on [`@telixon/web-sdk`](/web-sdk/). They run
+in every current browser and inside the markup of any framework.
+
+## Install
+
+<Tabs syncKey="pkg">
+
+<TabItem label="npm">
+
+```sh
+npm install @telixon/web-components
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm add @telixon/web-components
+```
+
+</TabItem>
+
+<TabItem label="Yarn">
+
+```sh
+yarn add @telixon/web-components
+```
+
+</TabItem>
+
+<TabItem label="Bun">
+
+```sh
+bun add @telixon/web-components
+```
+
+</TabItem>
+
+</Tabs>
+
+The package depends on `@telixon/core` and `@telixon/web-sdk` and re-exports both. One import covers
+every element, function, and type.
+
+## The stylesheet
+
+`@telixon/web-components/flags/flags.css` paints the flags, on the page and inside the picker. Import
+it once, from the page's stylesheet or from the entry module of a bundled application:
+
+```css
+@import '@telixon/web-components/flags/flags.css';
+```
+
+## Define the elements
+
+One call defines the three elements. On a server-rendered page it belongs in the client entry, as
+[`defineTelixonElements`](/web-components/define/) describes:
+
+```js
+import { defineTelixonElements } from '@telixon/web-components';
+
+defineTelixonElements();
+```
+
+## A phone field
+
+A phone field with a region picker inside a form. Type a number, pick a region, and save:
+
+<WebComponentsFieldDemo />
+
+The demo runs the three files below. The markup is a form with the field around the input. The
+stylesheet lays the field out. The script defines the elements and reads the value. The example is
+a Vite project, which resolves the package from the module script. A page without a bundler loads
+the package through an import map, as [the frameworks guide](/web-components/guides/frameworks/#without-a-bundler)
+shows.
+
+<Tabs syncKey="source">
+
+<TabItem label="index.html">
+  <Code lang="html" code={page} />
+</TabItem>
+
+<TabItem label="styles.css">
+  <Code lang="css" code={styles} />
+</TabItem>
+
+<TabItem label="main.ts">
+  <Code lang="ts" code={script} />
+</TabItem>
+
+</Tabs>
+
+At first the picker shows the United States flag with `+1` and the field shows the placeholder
+`201-555-0123`. After typing `4155550132` the field shows `415-555-0132` while the value reads
+`+14155550132`. Save submits `phone=+14155550132`. A partial number keeps the value at `null` and
+blocks the submission with `This number is too short.` anchored at the input. Clear the field, pick
+the United Kingdom, and type `2071838750`. The field then shows `20 7183 8750` with the value
+`+442071838750`.
+
+The field loads the engine the first time it connects, which the `engine-loading` state marks.
+Until then the input is a plain input. An application that wants the engine earlier calls
+[`ensureEngineReady`](/core/load-the-engine/), which the package re-exports, before the field appears.
+
+- [Phone field in a form](/web-components/guides/phone-field/) explains the attributes, the value,
+  the validation, and the states.
+- [Country picker for a phone field](/web-components/guides/region-picker/) covers the picker, its
+  templates, and its styles.
+- [The elements in React, Vue, and Angular](/web-components/guides/frameworks/) puts the same field
+  into each framework's markup.
+- [Server rendering and hydration](/web-components/guides/server-rendering/) covers the server
+  entry and what a hydrated page sees.
+
+## Browser support
+
+The elements need form-associated custom elements, custom states, and the Popover API. Custom
+states and the popover set the floor:
+
+| Browser    | Version |
+| ---------- | ------- |
+| Chrome     | 125     |
+| Edge       | 125     |
+| Firefox    | 126     |
+| Safari     | 17.4    |
+| iOS Safari | 18.3    |

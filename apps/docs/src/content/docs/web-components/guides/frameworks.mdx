@@ -1,0 +1,127 @@
+---
+title: The elements in React, Vue, and Angular
+description: The phone field element in React 19 with server rendering, in Vue 3, in Angular, and on a page without a bundler.
+sidebar:
+  label: Use a framework
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import reactField from '../../../../../../../examples/web-components/kitchen-sink/src/react/PhoneField.tsx?raw';
+import reactEntry from '../../../../../../../examples/web-components/kitchen-sink/src/react/entry-client.tsx?raw';
+import vueField from '../../../../../../../examples/web-components/kitchen-sink/src/vue/PhoneField.vue?raw';
+import vueEntry from '../../../../../../../examples/web-components/kitchen-sink/src/vue/main.ts?raw';
+import viteConfig from '../../../../../../../examples/web-components/kitchen-sink/vite.config.ts?raw';
+
+The elements are custom elements, which every framework renders as markup. Each framework needs the
+call to `defineTelixonElements()` in its client entry. React and Vue take a
+[type entry](/web-components/define/#type-entries) for their templates as well. The React and Vue
+sources on this page come from the package's
+[example](https://github.com/martsinlabs/telixon/tree/main/examples/web-components/kitchen-sink).
+
+## React 19
+
+`@telixon/web-components/react` types the three tags for JSX. The `ref` of a tag is typed as its
+element class, which hands the component the element's properties. React 19 sets a prop as a
+property where the element has one, such as `options`, and listens to a custom event through its
+exact name, such as `ontelixon-change`. Both happen on a client render only. A server-rendered page
+passes the configuration as attributes and adds its listeners from an effect on the ref, which works
+on every page. The effect reads `value` once its listener is attached, since a field whose engine
+was cached may have gone live before the effect ran:
+
+<Tabs syncKey="source">
+
+<TabItem label="PhoneField.tsx">
+  <Code lang="tsx" code={reactField} />
+</TabItem>
+
+<TabItem label="entry-client.tsx">
+  <Code lang="tsx" code={reactEntry} />
+</TabItem>
+
+</Tabs>
+
+The server renders the same component through `renderToString`, as
+[the server rendering guide](/web-components/guides/server-rendering/) shows.
+
+## Vue 3
+
+`@telixon/web-components/vue` types the three tags for templates, where `@telixon-change` compiles
+to the `onTelixonChange` prop. One type import anywhere in the project, such as the entry, covers
+every template. Vue needs to know which tags are custom elements, through `isCustomElement` in the
+template compiler options. Vue sets `:options` and `required` as properties, since the element has
+both:
+
+<Tabs syncKey="source">
+
+<TabItem label="PhoneField.vue">
+  <Code lang="vue" code={vueField} />
+</TabItem>
+
+<TabItem label="main.ts">
+  <Code lang="ts" code={vueEntry} />
+</TabItem>
+
+<TabItem label="vite.config.ts">
+  <Code lang="ts" code={viteConfig} />
+</TabItem>
+
+</Tabs>
+
+## Angular
+
+Angular has a package of its own, [`@telixon/angular`](/angular/), with a directive that takes part
+in reactive, template-driven, and Signal Forms. An Angular template still renders the elements once
+the component declares `CUSTOM_ELEMENTS_SCHEMA`, which the compiler asks for on any custom element.
+`[options]` binds the property and `(telixon-change)` the event:
+
+```ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-phone',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `
+    <telixon-phone-field
+      name="phone"
+      default-region="US"
+      calling-code-in-input="false"
+      required
+      (telixon-change)="onChange($event)"
+    >
+      <telixon-region-picker></telixon-region-picker>
+      <input type="tel" autocomplete="tel" />
+    </telixon-phone-field>
+  `,
+})
+export class PhoneComponent {
+  onChange(event: Event): void {}
+}
+```
+
+`defineTelixonElements()` belongs in `main.ts`, which only the browser runs. This component compiles
+under `strictTemplates`.
+
+## Without a bundler
+
+A page without a bundler loads the package from a module script. An import map resolves the package,
+`@telixon/core`, `@telixon/web-sdk`, and `@telixon/web-sdk/flags` to their files, from a CDN or from
+the page's own copies. The sprite images sit next to `flags.css` and resolve from it:
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@telixon/core": "https://cdn.jsdelivr.net/npm/@telixon/core/dist/index.browser.js",
+      "@telixon/web-sdk": "https://cdn.jsdelivr.net/npm/@telixon/web-sdk/dist/index.js",
+      "@telixon/web-sdk/flags": "https://cdn.jsdelivr.net/npm/@telixon/web-sdk/dist/flags/index.js",
+      "@telixon/web-components": "https://cdn.jsdelivr.net/npm/@telixon/web-components/dist/index.js"
+    }
+  }
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@telixon/web-components/dist/flags/flags.css" />
+<script type="module">
+  import { defineTelixonElements } from '@telixon/web-components';
+
+  defineTelixonElements();
+</script>
+```

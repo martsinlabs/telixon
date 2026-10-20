@@ -1,0 +1,103 @@
+---
+title: '<telixon-region-picker>'
+description: The region picker element of a phone field, with its attributes, properties, templates, parts, and custom properties.
+---
+
+The element is the region picker of a [phone field](/web-components/phone-field/), which it needs.
+It belongs to the field around it, or to the field `for` names. The trigger shows the flag of the
+field's region and, where the field keeps the calling code out of the input, the calling code. The
+list opens in the top layer and follows the field's filters. A pick hands the region to the field
+and returns focus to the input. A disabled or read-only field makes the picker inert. The class is
+`TelixonRegionPickerElement`.
+
+```html
+<telixon-phone-field name="phone" default-region="US" calling-code-in-input="false">
+  <telixon-region-picker></telixon-region-picker>
+  <input type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+## Attributes
+
+| Attribute       | Default                                         | Meaning                                                                                                   |
+| --------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `for`           | the field around the picker                     | The id of the phone field, or of an element inside it.                                                    |
+| `locale`        | the closest `lang`, then the browser's language | The BCP 47 tag the region names are in.                                                                   |
+| `prioritize`    |                                                 | Comma-separated region codes shown first, in this order.                                                  |
+| `sort`          | `alphabetical`                                  | `alphabetical` or `callingCode`, for the regions after the pinned ones.                                   |
+| `anchor`        | the picker itself                               | A selector naming the closest ancestor the popup lines up with and takes its width from.                  |
+| `trigger-label` | `Select region`                                 | The accessible name of the trigger and of the list. The selected region's name follows it on the trigger. |
+| `search-label`  | `Search`                                        | The label and placeholder of the search field.                                                            |
+| `empty-text`    | `No matches`                                    | The text shown while no region matches.                                                                   |
+| `auto-focus`    | `true`                                          | `"false"` keeps focus off the search field when the list opens.                                           |
+
+A value no attribute accepts surfaces as an error at the attribute's write.
+
+## Properties
+
+| Property        | Type                            | Meaning                                                                                               |
+| --------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `forElement`    | `Element \| null`               | The phone field, or an element inside it. `null` leaves it to the `for` attribute.                    |
+| `anchor`        | `HTMLElement \| string \| null` | The element the popup lines up with, or a selector. `null` leaves it to the `anchor` attribute.       |
+| `popupOffset`   | `TelixonPopupOffset`            | How far the popup sits from its anchor, in pixels. Four pixels below it by default.                   |
+| `renderOption`  | `TelixonRenderOption \| null`   | Builds the row of a region. `null` leaves the rows to the `option` template or to the default markup. |
+| `renderTrigger` | `TelixonRenderTrigger \| null`  | Builds the trigger's content. `null` leaves it to the `trigger` template or to the default markup.    |
+| `picker`        | `RegionPicker \| null`          | The [web-sdk picker](/web-sdk/region-picker/) behind the element, `null` until the field is live.     |
+| `state`         | `RegionPickerState \| null`     | The picker's latest [state](/web-sdk/region-picker/#regionpickerstate).                               |
+
+## Templates
+
+A `<template slot="option">` child replaces the default row. A `<template slot="trigger">` child
+replaces the trigger's content. Inside a template, elements marked `data-field` receive the region's
+`display-name`, `calling-code`, or `region` as text. `<telixon-flag>` elements inside it receive the
+region. A template that arrives after the element connected takes effect at once. Every flag the
+picker renders, from a template, a render function, or the default markup, carries the `flag` part.
+
+## Parts
+
+| Part                  | Element                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| `trigger`             | The button that opens the list.                            |
+| `flag`                | Every flag inside the picker, in the trigger and the rows. |
+| `calling-code`        | The calling code on the trigger.                           |
+| `chevron`             | The arrow on the trigger.                                  |
+| `popup`               | The popover with the search field and the list.            |
+| `search`              | The search field.                                          |
+| `listbox`             | The list of rows.                                          |
+| `option`              | One row.                                                   |
+| `option-name`         | The region's name in a row.                                |
+| `option-calling-code` | The calling code in a row.                                 |
+| `empty`               | The text shown while no region matches.                    |
+
+## Custom properties
+
+| Property                   | Default                                             | Sets                                                                     |
+| -------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
+| `--tlx-picker-surface`     | `Canvas`                                            | The background of the popup.                                             |
+| `--tlx-picker-text`        | `CanvasText`                                        | The text color of the popup.                                             |
+| `--tlx-picker-border`      | `color-mix(in srgb, currentColor 30%, transparent)` | The border color of the trigger, the popup, and the line above the list. |
+| `--tlx-picker-radius`      | `0.375em`                                           | The corner radius of the trigger, the popup, and the rows.               |
+| `--tlx-picker-active`      | `color-mix(in srgb, currentColor 10%, transparent)` | The background of the active row.                                        |
+| `--tlx-picker-list-height` | `16em`                                              | The greatest height of the list.                                         |
+| `--tlx-picker-popup-width` | `20em`                                              | The width of the popup without an anchor.                                |
+
+## Styling hooks
+
+The element carries `data-disabled` while it has no field, or while its field is disabled or
+read-only.
+
+## Accessibility
+
+The trigger is a button named by `trigger-label` and the selected region, with `aria-expanded`
+while the list is open. The search field is a combobox and the rows are options in a listbox. The
+arrow keys move through the rows, Enter picks the active row, and Escape closes the list, as
+[`attachRegionPicker`](/web-sdk/region-picker/#attachregionpicker) describes. The flags are
+decorative and carry `aria-hidden`.
+
+## Types
+
+`TelixonPopupOffset` is `{ x: number; y: number }`, where `y` is the gap below or above the anchor
+and `x` the shift along its edge. `TelixonRenderOption` is `(option: RegionOption) => HTMLElement`.
+`TelixonRenderTrigger` is `(region: RegionCode | null, option: RegionOption | null) => HTMLElement`,
+where the option is `null` until the field is live. The package exports all three with the element
+class.
