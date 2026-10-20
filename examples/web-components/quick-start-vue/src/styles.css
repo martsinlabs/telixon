@@ -1,0 +1,39 @@
+#contact {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 24rem;
+}
+
+#contact telixon-phone-field {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#contact input {
+  flex: 1;
+  padding: 0.5em 0.75em;
+  border: 1px solid #c4c7c5;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+#contact telixon-phone-field:state(user-invalid) input {
+  border-color: #e5484d;
+}
+
+#contact button {
+  justify-self: start;
+  padding: 0.5em 1em;
+  border: 1px solid #c4c7c5;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+#contact p {
+  margin: 0;
+}
