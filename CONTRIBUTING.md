@@ -105,7 +105,8 @@ request.
 `@telixon/web-sdk` declares `@telixon/core` as a peer dependency; release core first. The web-sdk
 workflow stops before publishing when the core version it needs is not on npm. `@telixon/angular`
 depends on both at the workspace versions; release core and web-sdk first. Its workflow runs the
-same check for both.
+same check for both. `@telixon/web-components` depends on both the same way. Its workflow also
+stops while core or web-sdk carries unreleased changes in its changelog.
 
 ## Engineering standards
 

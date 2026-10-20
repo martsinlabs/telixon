@@ -5,7 +5,7 @@ Phone fields as custom elements, built on [`@telixon/web-sdk`](https://www.npmjs
 [![conformance](https://img.shields.io/endpoint?url=https://proof.telixon.dev/parity-badge.json)](https://proof.telixon.dev/parity.html)
 [![benchmarks](https://img.shields.io/endpoint?url=https://proof.telixon.dev/bench-badge.json)](https://proof.telixon.dev/benchmark.html)
 
-`<telixon-phone-field>`, `<telixon-region-picker>`, and `<telixon-flag>` are standard custom elements, which run in every current browser and inside the markup of any framework. The input stays in the page, where your styles, labels, and autofill apply to it. The picker keeps its trigger and list in a shadow root, styled through `::part()`, which a server-rendered page hydrates without a mismatch.
+`<telixon-phone-field>`, `<telixon-region-picker>`, and `<telixon-flag>` are standard custom elements. They run in every current browser and inside the markup of any framework. The input stays in the page, where your styles, labels, and autofill apply to it. The picker keeps its trigger and list in a shadow root, styled through `::part()`, which a server-rendered page hydrates without a mismatch.
 
 **[Documentation](https://telixon.dev/web-components/)**
 
@@ -45,7 +45,7 @@ A phone field with a region picker inside a form:
 </form>
 ```
 
-The form submits `phone` as the number in E.164 while it is valid. An invalid number blocks submission with a message anchored at the input. An empty `required` field does the same. The inner input carries no `name` of its own, since the element submits the value. The elements come to life once the engine has loaded. Until then the input stays a plain input.
+The form submits `phone` as the number in E.164 while it is valid. An invalid number blocks submission with a message anchored at the input. An empty `required` field does the same. The inner input carries no `name` of its own, since the element submits the value. The elements run once the engine has loaded. Until then the input stays a plain input.
 
 ```js
 const field = document.querySelector('telixon-phone-field');
@@ -55,11 +55,7 @@ field.value = '+14155550132';
 
 ## Elements
 
-`<telixon-phone-field>` runs the phone widget on the input inside it. Attributes `mode`, `default-region`, `calling-code-in-input`, `plus-prefix`, `strict`, `region-filter`, `number-type-filter`, and `placeholder-number-type` map to the options of `createPhoneInput`, while the `options` property takes the whole object. `name`, `required`, `disabled`, and `readonly` belong on the element, which joins them with the ones the input already carries. `value` reads and writes the number in E.164 and is `null` while the number is not valid. `''` clears the field. `auto-placeholder` shows an example number. `error-message` or the `errorMessage` function sets the text of the validation message. The states `valid`, `invalid`, `user-valid`, `user-invalid`, and `engine-loading` match through `:state()`.
-
-`<telixon-region-picker>` belongs to the phone field around it. Placed elsewhere, it names the field by id through `for` or takes it through the `forElement` property. `locale`, `prioritize`, `sort`, `anchor`, `trigger-label`, `search-label`, `empty-text`, and `auto-focus` shape the list. `anchor` takes a selector or, as a property, the element itself. A disabled or read-only field makes its picker inert. A `<template slot="option">` or `<template slot="trigger">` child replaces the default markup. The `renderOption` and `renderTrigger` properties take functions instead. The parts `trigger`, `flag`, `calling-code`, `chevron`, `popup`, `search`, `listbox`, `option`, `option-name`, `option-calling-code`, and `empty` take `::part()` rules. The `--tlx-picker-*` custom properties set the colors and sizes.
-
-`<telixon-flag region="US">` shows the flag of a region, painted on the element itself from the sprite `flags.css` names.
+`<telixon-phone-field>` runs the phone widget on the input inside it and hands the form its value. `<telixon-region-picker>` adds the flag and a searchable list of regions to the field around it. `<telixon-flag region="US">` shows the flag of a region. The [documentation](https://telixon.dev/web-components/) lists every attribute, property, event, state, part, and custom property.
 
 ## TypeScript
 
@@ -67,7 +63,7 @@ The main entry types the three tags for `document.createElement` and `querySelec
 
 ## Server rendering
 
-The server renders the tags and their attributes. Under the `node` export condition the package resolves to an entry without the element classes, which a server bundle imports without a DOM. On the client the elements upgrade and attach to the input, while the picker builds its markup inside a shadow root, which hydration leaves alone. React 19 sets properties such as `options` and adds listeners such as `ontelixon-change` on a client render only. A page it hydrates passes the options as attributes and adds listeners from an effect on a ref.
+The server renders the tags and their attributes. Under the `node` export condition the package resolves to an entry a server bundle imports without a DOM, where the element classes are stubs. On the client the elements upgrade and attach to the input, while the picker builds its markup inside a shadow root, which hydration leaves alone. React 19 sets properties such as `options` and adds listeners such as `ontelixon-change` on a client render only. A page it hydrates passes the options as attributes and adds listeners from an effect on a ref.
 
 ## Support
 
