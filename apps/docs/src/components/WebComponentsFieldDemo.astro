@@ -1,0 +1,30 @@
+---
+import DemoFrame from './DemoFrame.astro';
+import '@telixon/web-components/flags/flags.css';
+import '../../../../examples/web-components/kitchen-sink/src/static/styles.css';
+import page from '../../../../examples/web-components/kitchen-sink/index.html?raw';
+
+// The frame runs the form of the example's own page, which the Playwright suite drives in CI.
+const start = page.indexOf('<form');
+const end = page.indexOf('</form>');
+if (start === -1 || end === -1) throw new Error('examples/web-components/kitchen-sink/index.html has no <form> to embed.');
+const form = page.slice(start, end + '</form>'.length);
+---
+
+<DemoFrame><Fragment set:html={form} /></DemoFrame>
+
+<script>
+  import '../../../../examples/web-components/kitchen-sink/src/static/main.ts';
+</script>
+
+<style is:global>
+  .demo-frame > #contact {
+    font-size: 1rem;
+  }
+
+  [data-theme='dark'] .demo-frame > #contact telixon-region-picker {
+    --tlx-picker-surface: #131516;
+    --tlx-picker-text: var(--sl-color-white);
+    --tlx-picker-border: var(--sl-color-gray-5);
+  }
+</style>

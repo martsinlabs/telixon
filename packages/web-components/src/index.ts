@@ -8,7 +8,7 @@ export * from './phone-field';
 export * from './region-picker';
 
 import type { TelixonFlagElement } from './flag';
-import type { TelixonPhoneFieldElement } from './phone-field';
+import type { TelixonPhoneChangeDetail, TelixonPhoneFieldElement, TelixonPhoneStateDetail } from './phone-field';
 import type { TelixonRegionPickerElement } from './region-picker';
 
 declare global {
@@ -16,5 +16,11 @@ declare global {
     'telixon-phone-field': TelixonPhoneFieldElement;
     'telixon-region-picker': TelixonRegionPickerElement;
     'telixon-flag': TelixonFlagElement;
+  }
+
+  // The events of the phone field, typed for `addEventListener` on elements, documents, and windows, since both bubble.
+  interface GlobalEventHandlersEventMap {
+    'telixon-change': CustomEvent<TelixonPhoneChangeDetail>;
+    'telixon-state': CustomEvent<TelixonPhoneStateDetail>;
   }
 }

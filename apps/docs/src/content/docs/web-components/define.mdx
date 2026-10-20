@@ -1,0 +1,46 @@
+---
+title: defineTelixonElements
+description: The function that registers the three elements, the server entry, and the type entries for React and Vue.
+---
+
+```ts
+import { defineTelixonElements } from '@telixon/web-components';
+
+defineTelixonElements();
+```
+
+Registers `<telixon-phone-field>`, `<telixon-region-picker>`, and `<telixon-flag>`. Nothing
+registers at import time, which leaves the timing to the page. The call is idempotent. A tag already
+registered with another class throws, which surfaces a second copy of the package.
+
+The tag names are exported as `PHONE_FIELD_TAG`, `REGION_PICKER_TAG`, and `FLAG_TAG`, for a
+`querySelector` or a registry check without the literal. `HTMLElementTagNameMap` carries the element
+classes `TelixonPhoneFieldElement`, `TelixonRegionPickerElement`, and `TelixonFlagElement`, which
+types `document.createElement` and `querySelector` for the three tags. `GlobalEventHandlersEventMap`
+carries the `telixon-change` and `telixon-state` events, which types `event.detail` in
+`addEventListener`.
+
+## On the server
+
+Under the `node` export condition the package resolves to an entry a server bundle imports without
+a DOM. The entry carries every function and type of the main entry. Its element classes are stubs.
+`defineTelixonElements()` throws there, since a server has no registry to define the elements in.
+Constructing an element class throws for the same reason.
+
+## Type entries
+
+`@telixon/web-components/react` types the three tags for JSX in React 19, with their attributes,
+properties, a `ref` typed as the element class, and the `ontelixon-change` and `ontelixon-state`
+handlers. `@telixon/web-components/vue` types them for Vue templates through `GlobalComponents`,
+with `onTelixonChange` and `onTelixonState`. Both entries are types only, and one import anywhere
+in the project applies them:
+
+```ts
+import type {} from '@telixon/web-components/react';
+```
+
+## Re-exports
+
+The package re-exports `@telixon/core`, `@telixon/web-sdk`, and `@telixon/web-sdk/flags`. One
+import covers [`parsePhoneNumber`](/core/reference/parse-phone-number/),
+[`ensureEngineReady`](/core/load-the-engine/), the [widgets](/web-sdk/), and every type.

@@ -1,0 +1,60 @@
+---
+title: Server rendering and hydration
+description: What a server renders for the elements, the entry a server bundle resolves, and what a hydrated page sees once the elements upgrade.
+sidebar:
+  label: Render on the server
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import entryServer from '../../../../../../../examples/web-components/kitchen-sink/src/react/entry-server.tsx?raw';
+import prerender from '../../../../../../../examples/web-components/kitchen-sink/scripts/prerender.mjs?raw';
+
+The elements are markup on the server and upgrade in the browser. A server-rendered page carries
+the tags with their attributes and a plain `<input>` inside the field. The page works as a plain
+form until the elements upgrade.
+
+## The server entry
+
+A server bundle resolves the package to its [server entry](/web-components/define/#on-the-server),
+which imports without a DOM. The call to `defineTelixonElements()` belongs in the client entry of
+the application.
+
+## What the server renders
+
+The React example renders its component to a string and writes the markup into the page:
+
+<Tabs syncKey="source">
+
+<TabItem label="entry-server.tsx">
+  <Code lang="tsx" code={entryServer} />
+</TabItem>
+
+<TabItem label="prerender.mjs">
+  <Code lang="js" code={prerender} />
+</TabItem>
+
+</Tabs>
+
+The field in that page renders as its tags, their attributes, and the input:
+
+```html
+<telixon-phone-field name="phone" default-region="US" calling-code-in-input="false" auto-placeholder="" required="">
+  <telixon-region-picker></telixon-region-picker>
+  <input id="phone-input" type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+The picker renders empty. Its trigger, popup, search field, and listbox are built on the client
+inside a shadow root, which a hydrating framework never compares with its own markup. The flag paints
+itself through a pseudo-element and adds no children either.
+
+## The upgrade
+
+Once the client entry defines the elements, each one upgrades in place. The field finds its input,
+loads the engine, and attaches the widget. Until the engine has loaded, the element carries the
+`engine-loading` state and the input takes keystrokes as a plain input. Text typed before that moment
+is read once the widget attaches, which keeps a number typed before hydration in the form.
+
+React 19 sets attributes only while it hydrates. It adds no properties and no custom event listeners
+then, which is why the React example passes the configuration as attributes and listens from an
+effect, as [the frameworks guide](/web-components/guides/frameworks/#react-19) shows.

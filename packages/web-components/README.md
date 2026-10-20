@@ -63,7 +63,7 @@ field.value = '+14155550132';
 
 ## TypeScript
 
-The main entry types the three tags for `document.createElement` and `querySelector`. `@telixon/web-components/react` types them for JSX in React 19. `@telixon/web-components/vue` does the same for Vue templates.
+The main entry types the three tags for `document.createElement` and `querySelector`, and the `telixon-change` and `telixon-state` events for `addEventListener` on the element and on any ancestor they bubble to. `@telixon/web-components/react` types the tags for JSX in React 19, with a `ref` typed as the element class. `@telixon/web-components/vue` types them for Vue templates.
 
 ## Server rendering
 

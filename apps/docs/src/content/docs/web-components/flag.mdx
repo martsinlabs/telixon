@@ -1,0 +1,29 @@
+---
+title: '<telixon-flag>'
+description: The flag of a region, cut from the web-sdk sprite sheet and painted on the element itself.
+---
+
+The element shows the cell of its region from the [sprite sheet](/web-sdk/flags/) of
+`@telixon/web-sdk`, painted on its own box through a pseudo-element. It adds no children, which
+leaves server-rendered markup untouched through hydration. The flag is decorative and carries
+`aria-hidden`. The region's name belongs in the text next to the flag. The class is
+`TelixonFlagElement`.
+
+```html
+<telixon-flag region="US"></telixon-flag>
+```
+
+## Attributes and properties
+
+| Name     | Type                 | Meaning                                                                                                     |
+| -------- | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `region` | `RegionCode \| null` | The region whose flag shows. Without it, and for a region the sheet does not carry, the neutral flag shows. |
+
+The property reflects to the attribute.
+
+## The stylesheet
+
+The [stylesheet](/web-components/#the-stylesheet) of the package sizes the flag and loads the
+sprite images. The cell is `1.5em` wide with a `4 / 3` aspect ratio. Set the width of `telixon-flag`
+to size the flag. The same stylesheet reaches the flags inside a
+[region picker](/web-components/region-picker/) through its `flag` part.

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Phone field</title>
+    <link rel="stylesheet" href="/src/static/styles.css" />
+    <script type="module" src="/src/static/main.ts"></script>
+  </head>
+  <body>
+    <form id="contact">
+      <label for="phone-input">Phone</label>
+      <telixon-phone-field name="phone" default-region="US" calling-code-in-input="false" auto-placeholder required>
+        <telixon-region-picker></telixon-region-picker>
+        <input id="phone-input" type="tel" autocomplete="tel" />
+      </telixon-phone-field>
+      <button>Save</button>
+      <p>Value: <output id="value">null</output></p>
+      <p>Submitted: <output id="submitted">none</output></p>
+    </form>
+  </body>
+</html>

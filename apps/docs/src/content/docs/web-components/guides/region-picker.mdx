@@ -1,0 +1,122 @@
+---
+title: Country picker for a phone field
+description: A country picker with flags inside the phone field element, with pinned regions, localized names, templates, and the picker restyled through parts.
+sidebar:
+  label: Add a region picker
+---
+
+[`<telixon-region-picker>`](/web-components/region-picker/) is a button that shows the flag of the
+current region. Pressing the button opens a searchable list of regions. The phone field owns the
+region. A pick hands it to the field, while a typed calling code moves the flag. The picker needs
+a phone field.
+
+## Put it in the field
+
+A picker inside a phone field belongs to that field:
+
+```html
+<telixon-phone-field name="phone" default-region="US" calling-code-in-input="false" auto-placeholder>
+  <telixon-region-picker></telixon-region-picker>
+  <input type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+Open the list and pick the United Kingdom. The trigger now shows `+44` while the placeholder reads
+`7400 123456`. Typing `2071838750` then shows `20 7183 8750` and puts `+442071838750` in the value.
+
+A picker outside the field names the field, or any element inside it, by id through `for`. The
+`forElement` property takes the element itself, which a framework binds from a ref:
+
+```html
+<telixon-region-picker for="phone"></telixon-region-picker>
+
+<telixon-phone-field id="phone" name="phone" default-region="US" calling-code-in-input="false">
+  <input type="tel" autocomplete="tel" />
+</telixon-phone-field>
+```
+
+What the trigger shows and when the picker goes inert is on
+[the reference](/web-components/region-picker/).
+
+## Pin and name the regions
+
+`prioritize` puts the listed regions first, in the given order. `sort` orders the remaining regions,
+alphabetically by default or by calling code. The region names follow the `locale` attribute.
+`trigger-label`, `search-label`, and `empty-text` replace the picker's three built-in strings. This
+picker pins the German-speaking regions, orders the rest by calling code, and shows German names and
+labels:
+
+```html
+<telixon-region-picker
+  prioritize="DE, AT, CH"
+  sort="callingCode"
+  locale="de"
+  trigger-label="Land wählen"
+  search-label="Suchen"
+  empty-text="Keine Treffer"
+></telixon-region-picker>
+```
+
+The list follows the field's `region-filter` and `number-type-filter`. A region the field's filters
+exclude leaves the list. The search matches names and calling codes as
+[`RegionList`](/web-sdk/region-list/#search-matching) describes.
+
+## Replace the markup
+
+A `<template slot="option">` child replaces the default row. A `<template slot="trigger">` child
+replaces the trigger's content. Both are filled with the region as
+[the reference](/web-components/region-picker/#templates) describes:
+
+```html
+<telixon-region-picker>
+  <template slot="option">
+    <telixon-flag></telixon-flag>
+    <span data-field="display-name"></span>
+    <span data-field="calling-code"></span>
+  </template>
+  <template slot="trigger">
+    <telixon-flag></telixon-flag>
+    <span data-field="region"></span>
+  </template>
+</telixon-region-picker>
+```
+
+The `renderOption` and `renderTrigger` properties take functions for the same two pieces.
+`renderOption` gets the region's [option](/web-sdk/region-list/#regionoption) and returns the row's
+element. `renderTrigger` gets the region and its option, which is `null` until the field is live,
+and returns the trigger's content. Every flag in the result paints like any other flag.
+
+## Restyle the picker
+
+The trigger, the popup, the search field, the listbox, and the rows live in the element's shadow
+root. Each takes `::part()` rules from the page. The `--tlx-picker-*` custom properties set the
+colors and sizes. This picker gets a round trigger and a dark list:
+
+```css
+telixon-region-picker::part(trigger) {
+  border-radius: 999px;
+}
+
+telixon-region-picker {
+  --tlx-picker-surface: #111;
+  --tlx-picker-text: #eee;
+  --tlx-picker-border: #333;
+  --tlx-picker-active: #26997b;
+}
+```
+
+The popup opens in the top layer, which no ancestor clips, and lines up with the picker. The
+`anchor` attribute takes a selector. The popup then lines up with the closest matching ancestor and
+takes its width, which puts the list under the box a form field draws around the picker:
+
+```html
+<div class="field">
+  <telixon-phone-field name="phone" default-region="US" calling-code-in-input="false">
+    <telixon-region-picker anchor=".field"></telixon-region-picker>
+    <input type="tel" autocomplete="tel" />
+  </telixon-phone-field>
+</div>
+```
+
+The `anchor` property takes the element itself. The `popupOffset` property moves the popup away from
+its anchor, four pixels below it by default.
