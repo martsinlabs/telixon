@@ -68,10 +68,15 @@ export function resolveNationalControllerState(
       );
     }
 
-    // Prefer the profile's format; otherwise the calling code's national format, so possible numbers group.
-    const formatPosition: number = formatRef
-      ? formatRef.formatIndex
-      : selectNationalFormatIndex(callingCodeIndex, displayDigits, true);
+    // A parse-only transform adding digits, such as the area code 340 before a seven-digit Virgin Islands number,
+    // leaves the typed digits a shorter number of their own, grouped by its own length the way Google groups it.
+    const transformAddedDigits: boolean = snapshot.nationalDigits.length > displayDigits.length;
+
+    // Prefer the profile's format; otherwise the calling code's national format, which lets possible numbers group.
+    const formatPosition: number =
+      formatRef && !transformAddedDigits
+        ? formatRef.formatIndex
+        : selectNationalFormatIndex(callingCodeIndex, displayDigits, true);
 
     if (formatPosition !== -1) {
       appliedFormatIndex = formatPosition;

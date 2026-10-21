@@ -6,6 +6,18 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+### Changed
+
+- The engine metadata moves to google/libphonenumber v9.0.41 (from v9.0.38).
+
+### Fixed
+
+- A number completed by a digit-adding national prefix rule, such as a seven-digit Virgin Islands number
+  parsed with the area code 340 in front, groups by its typed length in the national input controller, the
+  way Google's formatter groups it. The typed digits showed in the mask of the completed number, with the
+  first three read as an area code. A full number passes through the same grouping at the local length and
+  regroups on the next digit, as in Google's formatter.
+
 ## [1.2.0] - 2026-09-28
 
 ### Added
