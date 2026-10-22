@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@telixon/web-components": "^1.0.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.44"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.10",
