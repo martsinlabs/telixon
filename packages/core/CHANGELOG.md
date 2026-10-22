@@ -6,6 +6,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-21
+
 ### Changed
 
 - The engine metadata moves to google/libphonenumber v9.0.41 (from v9.0.38).
@@ -130,7 +132,8 @@ All notable changes to `@telixon/core` are documented in this file. The format f
 - A conformance gate in CI comparing every query method with a Google libphonenumber counterpart
   against Google's source at the pinned metadata commit.
 
-[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.2.0...HEAD
+[Unreleased]: https://github.com/martsinlabs/telixon/compare/core@v1.2.1...HEAD
+[1.2.1]: https://github.com/martsinlabs/telixon/compare/core@v1.2.0...core@v1.2.1
 [1.2.0]: https://github.com/martsinlabs/telixon/compare/core@v1.1.3...core@v1.2.0
 [1.1.3]: https://github.com/martsinlabs/telixon/compare/core@v1.1.2...core@v1.1.3
 [1.1.2]: https://github.com/martsinlabs/telixon/compare/core@v1.1.1...core@v1.1.2
