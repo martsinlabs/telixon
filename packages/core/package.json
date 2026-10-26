@@ -61,7 +61,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/google-libphonenumber": "^7.4.30",
+    "@types/google-libphonenumber": "^7.4.31",
     "google-closure-library": "^20230802.0.0",
     "google-libphonenumber": "^3.2.47",
     "libphonenumber-js": "^1.13.15"
