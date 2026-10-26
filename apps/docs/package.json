@@ -12,16 +12,16 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.42.6",
+    "@astrojs/starlight": "^0.42.7",
     "@telixon/core": "workspace:*",
     "@telixon/web-components": "workspace:*",
     "@telixon/web-sdk": "workspace:*",
-    "astro": "^7.3.8",
+    "astro": "^7.4.2",
     "sharp": "^0.35.5",
     "starlight-llms-txt": "^0.12.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "typescript": "^6.0.3"
   }
 }
