@@ -34,7 +34,7 @@
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "flag-icons": "7.5.0",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "miniflare": "4.20260730.0",
     "playwright": "^1.64.0",
     "prettier": "^3.9.10",
